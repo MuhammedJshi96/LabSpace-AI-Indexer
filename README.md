@@ -1,12 +1,43 @@
 # LabSpace AI Indexer
 
-**Design the lab. Index every location.**
+<p align="center">
+  <img src="docs/submission/labspace-ai-indexer-thumbnail-3x2-source-v1.png" alt="LabSpace AI — Design, Index, Find" width="100%" />
+</p>
+
+<p align="center"><strong>Design the lab. Index every location. Find anything instantly.</strong></p>
 
 LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexing system with synchronized 2D and 3D views, millimetre-accurate scene data, physical storage indexing, inventory assignment, equipment records, versioning, labels, reports, and validation. It stores projects in a local SQLite database. Room 809 is included as an optional demonstration and visual reference, not as a feature boundary.
 
-![LabSpace Indexer editor](docs/screenshots/editor-1920x1080.png)
+## Finalized product tour
 
-![LabSpace Digital Twin project-wide spatial index](docs/screenshots/digital-twin-project-scope-3004.jpg)
+### Layout Editor
+
+The complete planning workspace combines the searchable 94-asset library, material-aware 2D plan, synchronized 3D room, editable room data, and surface controls in one desktop composition.
+
+![Finalized LabSpace Layout Editor with synchronized 2D and 3D views](docs/screenshots/layout-editor-final.png)
+
+### Ask LabSpace and exact-location evidence
+
+The Digital Twin resolves a natural-language request to the indexed BÜCHI rotary evaporator and its flask set, then traces the inventory to the precise cabinet drawer with a physical access preview.
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/digital-twin-buchi-final.png" alt="Ask LabSpace locating the BÜCHI rotary evaporator" />
+      <br /><strong>Equipment focus:</strong> grounded search, room navigation, equipment identity, service evidence, and one precise spatial selection.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/digital-twin-drawer-final.png" alt="Exact Drawer 02 access preview for the rotary evaporator flask set" />
+      <br /><strong>Storage proof:</strong> Drawer 02 opened in place with the inventory photograph, canonical location trail, quantity, owner, and QR identity.
+    </td>
+  </tr>
+</table>
+
+### PBR Asset Studio
+
+Authored laboratory models remain orbitable and inspectable from every side, with validated dimensions, materials, indexing behavior, catalog thumbnails, and the same GLB used in the room renderer.
+
+![Asset Studio showing the authored BÜCHI R-300-class rotary evaporator](docs/screenshots/asset-studio-rotary-final.png)
 
 ## Highlights
 

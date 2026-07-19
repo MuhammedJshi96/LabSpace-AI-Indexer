@@ -242,7 +242,7 @@ function RoomPanel() {
         </label>
         <div className="room-update-row">
           <span>Last updated: {new Date(room.updatedAt).toLocaleString()}</span>
-          <a href={`/digital-twin?room=${encodeURIComponent(room.id)}`}>View in Digital Twin</a>
+          <a href={`/digital-twin?room=${encodeURIComponent(room.id)}`}>View in Spatial Index</a>
         </div>
       </section>
       <section className="inspector-section surface-library-section">
@@ -514,7 +514,7 @@ function IndexPanel() {
         </span>
         <b>No indexed storage yet</b>
         <span>
-          Add a cabinet, shelf, drawer, or bin to create the room's exact Digital Twin evidence
+          Add a cabinet, shelf, drawer, or bin to create the room's exact Spatial Index evidence
           trail.
         </span>
         <button onClick={() => setPresentation("2d")}>Return to the layout</button>
@@ -1488,7 +1488,7 @@ function ObjectProperties({ object }: { object: SceneObject }) {
           </div>
           <p className="muted-copy">
             Add the authored drawers, cabinets, and shelves for this exact bench or storage family
-            so every location can be indexed in the Digital Twin.
+            so every location can be indexed in the Spatial Index.
           </p>
           <button onClick={() => initializeStorageForObject(object.id)}>
             <TreeStructure size={16} />

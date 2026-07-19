@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   cameraCommandKey,
   digitalTwinCameraApproach,
+  editorInitialIsometricPosition,
 } from "../../src/domain/camera-command";
 
 describe("3D camera command identity", () => {
@@ -32,7 +33,7 @@ describe("3D camera command identity", () => {
   });
 });
 
-describe("Digital Twin exact-location camera approach", () => {
+describe("Spatial Index exact-location camera approach", () => {
   it("rotates the evidence camera with the selected asset facade", () => {
     const front = digitalTwinCameraApproach({
       roomWidthMm: 8000,
@@ -65,5 +66,20 @@ describe("Digital Twin exact-location camera approach", () => {
     });
 
     expect(approach.forwardZ).toBeCloseTo(-1);
+  });
+});
+
+describe("editor initial 3D framing", () => {
+  it("reproduces the approved split-view zoom as a room-relative overview", () => {
+    const target = [0, 0.55, 0] as const;
+    const position = editorInitialIsometricPosition({
+      roomWidthMetres: 8.635,
+      roomDepthMetres: 8.705,
+      target,
+    });
+
+    expect(position[0]).toBeCloseTo(10.933, 2);
+    expect(position[1]).toBeCloseTo(11.483, 2);
+    expect(position[2]).toBeCloseTo(10.933, 2);
   });
 });

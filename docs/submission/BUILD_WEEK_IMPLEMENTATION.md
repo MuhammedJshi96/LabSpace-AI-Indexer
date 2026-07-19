@@ -19,8 +19,8 @@ Before Build Week, the project already had a local editor prototype, a versioned
 - blank-start multi-laboratory and multi-room project creation;
 - synchronized material-aware 2D/3D editing, camera-preserving moves, split resizing, continuous walls, hosted openings, elevation, flips, and direct wall editing;
 - exact storage hierarchies covering cabinets, shelves, drawers, compartments, and bins;
-- project-wide Digital Twin search, evidence photographs, stable codes, camera navigation, and storage access previews;
-- Ask LabSpace's no-billing grounded orchestration over canonical records and deterministic placement-validator output;
+- project-wide Spatial Index search, evidence photographs, stable codes, camera navigation, and storage access previews;
+- direct Layout Editor placement warnings backed by deterministic geometry validation;
 - a storage-first 12-object competition template containing one BÜCHI station and assigned Shelf 01 flask evidence;
 - the user's complete DEMO-01 video-showcase room as a sanitized, source-controlled fixture, while keeping the local SQLite database private;
 - authored GLBs, same-geometry plan/library renders, offline decoder delivery, release validation, and regression coverage;
@@ -30,21 +30,23 @@ Before Build Week, the project already had a local editor prototype, a versioned
 
 ```mermaid
 flowchart LR
-    A["Natural-language request"] --> B["Ask LabSpace intent resolver"]
-    B --> C["Canonical project index"]
-    C --> D["Room, equipment, inventory and storage records"]
-    B --> E["Deterministic placement validator"]
-    D --> F["Exact 2D/3D selection and camera focus"]
-    E --> G["Grounded conflict explanation and valid alternative"]
-    F --> H["Evidence inspector: human trail + canonical code"]
-    G --> H
+    A["Layout edit or index query"] --> B["Canonical project model"]
+    B --> C["Room, equipment, inventory and storage records"]
+    B --> D["Deterministic placement validator"]
+    C --> E["Spatial Index filtering and exact record selection"]
+    E --> F["2D/3D focus and evidence inspector"]
+    D --> G["Layout status and Warnings tab"]
+    H["Future optional LabSpace AI API"] -. intent and explanation .-> E
+    H -. tool call .-> D
 ```
 
 React and Zustand coordinate the editor. React Konva renders the 2D plan, React Three Fiber renders the synchronized 3D room, Zod validates versioned project data, Express exposes the local API, and Node's SQLite module persists the validated project JSON and named room versions.
 
-## Grounding boundary
+## Runtime evidence boundary
 
-Ask LabSpace may resolve stored rooms, equipment, inventory, storage locations, notes, service dates, and deterministic validation findings. It explicitly reports missing evidence and does not invent records, owners, locations, maintenance facts, utilities, or safety certification. The included runtime is labeled **grounded local mode** and requires no OpenAI Platform billing.
+The shipped Spatial Index Finder performs deterministic local filtering over stored rooms, equipment, inventory, storage locations, notes, service dates, and identifiers. Exact record selection—not generated text—drives camera focus and the evidence inspector. Placement findings come directly from the canonical validator in the Layout Editor. The runtime contains no live model provider and requires no OpenAI Platform billing.
+
+A future optional LabSpace AI API may select these index and validator tools and explain their returned evidence. It is not implemented in the current runtime and must never invent records, owners, locations, maintenance facts, utilities, or safety certification.
 
 ## Human and Codex/GPT-5.6 collaboration
 
@@ -52,7 +54,7 @@ The user selected the laboratory problem, authentic Room 809 case study, product
 
 `019f6a4d-25a9-7812-804c-88b695589b2a`
 
-The competition contribution is documented honestly: the shipped local assistant is deterministic software; Codex/GPT-5.6 was central to building and validating the product rather than being falsely represented as an online runtime response.
+The competition contribution is documented honestly: Codex/GPT-5.6 was central to building and validating the product rather than being falsely represented as an online runtime response.
 
 ## Current measured facts
 
@@ -63,7 +65,7 @@ The competition contribution is documented honestly: the shipped local assistant
 - Indexed template storage locations: 15.
 - Bundled DEMO-01 showcase: 50 total scene objects, including 30 placed non-architectural objects.
 - Bundled DEMO-01 records: 10 inventory items, 10 equipment records, and 15 storage locations.
-- Automated Vitest cases at repository preparation: 117.
+- Automated Vitest cases at repository preparation: 115 across 23 files.
 - Full release gate: lint, strict TypeScript, asset validation, tests, and production build.
 
 These are repository/runtime counts, not estimates of laboratory productivity impact. Search-time or usability impact should be claimed only after a timed evaluation is recorded.

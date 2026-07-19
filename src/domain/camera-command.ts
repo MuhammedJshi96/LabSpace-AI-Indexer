@@ -21,6 +21,27 @@ export type DigitalTwinCameraApproach = {
   lateralZ: number;
 };
 
+export type EditorInitialIsometricPositionInput = {
+  roomWidthMetres: number;
+  roomDepthMetres: number;
+  target: readonly [number, number, number];
+};
+
+// Captured from the user-approved split-view framing. Expressing the orbit as
+// a room-relative scale keeps the same relaxed overview for small and large
+// rooms without hard-coding DEMO-01 coordinates into the general editor.
+export const EDITOR_INITIAL_ISOMETRIC_COMPONENT_SCALE = 1.256;
+
+export function editorInitialIsometricPosition({
+  roomWidthMetres,
+  roomDepthMetres,
+  target,
+}: EditorInitialIsometricPositionInput): [number, number, number] {
+  const component =
+    Math.max(roomWidthMetres, roomDepthMetres) * EDITOR_INITIAL_ISOMETRIC_COMPONENT_SCALE;
+  return [target[0] + component, target[1] + component, target[2] + component];
+}
+
 /**
  * Returns an object-relative approach direction for exact-location evidence.
  *

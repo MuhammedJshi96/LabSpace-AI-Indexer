@@ -1507,13 +1507,10 @@ export function createSeedProject(): Project {
     ],
     updatedAt: CREATED,
   };
-  const competitionObjectIds = new Set(
-    [1, 2, 5, 9, 12, 14, 15, 17, 22, 25, 26, 27].map(seededId),
-  );
+  const competitionObjectIds = new Set([1, 2, 5, 9, 12, 14, 15, 17, 22, 25, 26, 27].map(seededId));
   const competitionObjects = scene.objects.filter(
     (object) =>
-      ["wall", "door", "window"].includes(object.objectType) ||
-      competitionObjectIds.has(object.id),
+      ["wall", "door", "window"].includes(object.objectType) || competitionObjectIds.has(object.id),
   );
   const competitionObjectIdSet = new Set(competitionObjects.map((object) => object.id));
   const competitionLocations = scene.storageLocations.filter((location) =>
@@ -1647,7 +1644,7 @@ export function createSeedProject(): Project {
         floorFinish: "warm-welded-vinyl",
         wallFinish: "clean-white-panel",
         notes:
-          "Storage-first Build Week demonstration based on Room 809, staged as a simple equipment-to-cabinet Digital Twin workflow. New rooms remain blank.",
+          "Storage-first Build Week demonstration based on Room 809, staged as a simple equipment-to-cabinet Spatial Index workflow. New rooms remain blank.",
         scene: competitionScene,
         createdAt: CREATED,
         updatedAt: CREATED,

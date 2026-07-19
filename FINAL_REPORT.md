@@ -1,4 +1,4 @@
-# LabSpace Indexer — Floorplanner-reconciled demonstration and Digital Twin milestone
+# LabSpace Indexer — Floorplanner-reconciled demonstration and Spatial Index milestone
 
 Date: 2026-07-18 (Asia/Tokyo)
 
@@ -10,7 +10,7 @@ A project can contain multiple laboratories and multiple blank rooms. The projec
 
 This milestone establishes the generalized product foundation and expands the reference-driven hero library. It does not claim the scan-like realism shown in `references/ref1.png` and `references/ref2.png`: 45 of 96 catalog assets have all-sided authored GLBs, while 51 use recognizable procedural planning geometry, including intentionally parametric hosted openings.
 
-The Digital Twin workspace now implements the reference's core interaction contract—project-wide search, cross-laboratory room switching, selected spatial trace, exact location hierarchy, record detail, camera navigation, and room-aware editor handoff—using canonical LabSpace data. Its current room image remains a real-time planning renderer, not a photogrammetric or scan-derived facility twin.
+The Spatial Index Finder now implements the reference's core interaction contract—project-wide deterministic search, cross-laboratory room switching, selected spatial trace, exact location hierarchy, record detail, camera navigation, and room-aware editor handoff—using canonical LabSpace data. Its current room image remains a real-time planning renderer, not a photogrammetric or scan-derived facility twin. No live model provider ships in the runtime; an optional LabSpace AI API remains future architecture.
 
 The optional Room 809 demonstration now also implements the five supplied Floorplanner views as its spatial contract. The former generic rectangle has been replaced by an eight-wall concave footprint with the entrance projection, hosted openings, two long islands, north rotary row, perimeter functions, and clear circulation shown in the references. This remains reusable demonstration content, not a dependency of blank rooms or the general editor.
 
@@ -21,7 +21,7 @@ The optional Room 809 demonstration now also implements the five supplied Floorp
 - Added original all-sided HPLC, gas chromatograph, UV-Vis spectrophotometer, microplate reader, microcentrifuge, and hotplate-stirrer GLBs with official-reference planning envelopes and functional front, rear, side, top, ventilation, interface, foot, and service construction.
 - Standardized their primary bodies on cool white, light instrument grey, brushed silver, and stainless finishes. Dark material is reserved for small functional details and deliberate working surfaces.
 - Rebuilt the service-bridge island around `Lab Bench Shimadzu Ref2.png`, preserving distinct casework on both long faces and replacing the open rack with a raised three-bay glazed sliding-door hutch and light service spine over the dark phenolic worktop.
-- Tightened the Digital Twin presentation with a closer camera, grid-free neutral background, darker epoxy floor, stronger contact grounding, and a camera-side wall cutaway that leaves the far architecture solid.
+- Tightened the Spatial Index presentation with a closer camera, grid-free neutral background, darker epoxy floor, stronger contact grounding, and a camera-side wall cutaway that leaves the far architecture solid.
 - Generated exact material-aware top and isometric renders from the same GLBs used by the room and Asset Studio, then regenerated the remaining procedural render set after four equipment migrations.
 
 ### Reference-derived Room 809 spatial reconstruction
@@ -72,12 +72,12 @@ The optional Room 809 demonstration now also implements the five supplied Floorp
 
 - Added five original all-sided casework assets based on the latest supplied references: sink bench, overhead service bench, open stainless wash basin, enclosed stainless basin, and island bench with a raised service bridge.
 - Added credible worktop openings, basin interiors, water and drain detail, faucets, casework seams, drawers, doors, pulls, rear service panels, feet, glazing, shelves, outlets, guards, and service raceways.
-- Added six authored storage workhorses: two-door base cabinet, five-drawer base cabinet, sink cabinet, framed-glass wall cabinet, split tall cabinet, and open shelving. Authored normalized drawer/bin bounds now give exact scalable Digital Twin traces for the demonstration hierarchy.
+- Added six authored storage workhorses: two-door base cabinet, five-drawer base cabinet, sink cabinet, framed-glass wall cabinet, split tall cabinet, and open shelving. Authored normalized drawer/bin bounds now give exact scalable Spatial Index traces for the demonstration hierarchy.
 - Added five reference-specific families: steel sliding cabinet, upper-glazed/lower-steel sliding cabinet with bins, stainless glassware drying rack, PHCbi-class biomedical freezer, and compact ventilated solvent cabinet.
 - Fully replaced the rotary evaporator with an original Büchi R-300-class model using the official 607 × 429 × 947 mm reference envelope and the supplied modern arrangement: left process interface, electric lift and angled drive, visible blue-coil vertical condenser and receiving train, right-side charged flask, separate digital bath, and detailed rear services.
 - Generated new 384 × 256 isometric and 384 × 384 top renders directly from the authored GLBs so the Asset Library, 2D plan, room view, and Asset Studio keep one geometry source.
 
-### Searchable Digital Twin workspace
+### Searchable Spatial Index workspace
 
 - Added `/digital-twin` with a large live 3D room, disciplined spatial-index navigation, unified inventory/equipment/location search, scrollable result cards, and a full-height selected-record panel.
 - The selected record drives one continuous teal trace across the result card, exact location breadcrumb, QR identity, nested storage region, and 3D scene selection.
@@ -107,10 +107,10 @@ The room view, Asset Studio, Asset Library, and 2D plan therefore use one canoni
 
 - Strict TypeScript checking and zero-warning linting.
 - 78 Vitest tests across 19 files.
-- 15 Playwright workflows are defined across two spec files. The current focused 3D canvas/Asset Studio, Digital Twin search/focus/fallback/deep-link, and large/small Asset Studio framing set passes 3 of 3; prior full and focused regression runs remain green.
+- The Playwright workflows include focused 3D canvas/Asset Studio, Spatial Index search/focus/evidence/deep-link, direct placement-warning, and large/small Asset Studio framing coverage.
 - Asset validation for 96 definitions, 45 GLBs, 90 authored renders, 102 procedural renders, and all 192 transparent PNGs.
 - Production build validation.
-- The local preview server remains on port 3004. Live browser inspection confirmed the tighter grid-free Digital Twin framing, darker epoxy floor, camera-side wall cutaway, 96-entry Asset Studio manifest, revised Shimadzu island, and new HPLC asset after the production build.
+- The local preview server remains on port 3004. Live browser inspection confirmed the tighter grid-free Spatial Index framing, darker epoxy floor, camera-side wall cutaway, 96-entry Asset Studio manifest, revised Shimadzu island, and new HPLC asset after the production build.
 
 See `TESTING.md` for commands and the manual regression checklist.
 
@@ -123,7 +123,7 @@ See `TESTING.md` for commands and the manual regression checklist.
 - Laboratory-aware indexes and equipment IDs: implemented.
 - Reusable material registry synchronized in 2D/3D: implemented for three finishes; photographic maps remain open for concrete and vinyl.
 - Optional per-room environment profiles: implemented; only the Room 809 demo profile is currently registered.
-- Reference-style searchable Digital Twin interaction contract: implemented against canonical project-wide laboratory and room data; item-specific photography and scan-level room rendering remain open.
+- Reference-style searchable Spatial Index interaction contract: implemented against canonical project-wide laboratory and room data; item-specific photography and scan-level room rendering remain open.
 - Blank rooms with no inherited demo state: implemented.
 - Reliable wall, object, viewport, split-view, and renderer interactions: implemented for the documented workflows.
 - Advanced floor topology beyond one simple closed straight-wall loop: still open.

@@ -28,7 +28,11 @@ import {
 } from "@phosphor-icons/react";
 import * as THREE from "three";
 import { getAssetDefinition } from "../domain/assets";
-import { cameraCommandKey, digitalTwinCameraApproach } from "../domain/camera-command";
+import {
+  cameraCommandKey,
+  digitalTwinCameraApproach,
+  editorInitialIsometricPosition,
+} from "../domain/camera-command";
 import { shouldCutawayWall } from "../domain/digital-twin-cutaway";
 import { mmToMetres, wallAngle, wallLength } from "../domain/geometry";
 import { hasLaboratoryEnvironmentProfile } from "../domain/laboratory-environment";
@@ -951,11 +955,9 @@ function CameraRig({
       : null;
     const digitalTwinFocusPosition: [number, number, number] | null = focusApproach
       ? [
-          target[0] +
-            distance * (focusApproach.forwardX * 0.9 + focusApproach.lateralX * 0.22),
+          target[0] + distance * (focusApproach.forwardX * 0.9 + focusApproach.lateralX * 0.22),
           target[1] + distance * (storageHighlight ? 0.58 : 0.66),
-          target[2] +
-            distance * (focusApproach.forwardZ * 0.9 + focusApproach.lateralZ * 0.22),
+          target[2] + distance * (focusApproach.forwardZ * 0.9 + focusApproach.lateralZ * 0.22),
         ]
       : null;
     const positions: Record<CameraPreset, [number, number, number]> = {
@@ -978,7 +980,11 @@ function CameraRig({
           : [target[0] + distance * 0.54, target[1] + distance * 1.02, target[2] + distance * 0.58]
         : commandPresentation === "digital-twin"
           ? [target[0] - distance * 0.42, target[1] + distance * 0.6, target[2] + distance * 0.7]
-          : [target[0] + distance * 0.72, target[1] + distance * 0.72, target[2] + distance * 0.72],
+          : editorInitialIsometricPosition({
+              roomWidthMetres: roomWidth,
+              roomDepthMetres: roomDepth,
+              target,
+            }),
       front: [target[0], target[1] + distance * 0.45, target[2] + distance * 1.15],
       right: [target[0] + distance * 1.15, target[1] + distance * 0.45, target[2]],
       left: [target[0] - distance * 1.15, target[1] + distance * 0.45, target[2]],

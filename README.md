@@ -16,18 +16,18 @@ The complete planning workspace combines the searchable 94-asset library, materi
 
 ![Finalized LabSpace Layout Editor with synchronized 2D and 3D views](docs/screenshots/layout-editor-final.png)
 
-### Ask LabSpace and exact-location evidence
+### Spatial Index Finder and exact-location evidence
 
-The Digital Twin resolves a natural-language request to the indexed BÜCHI rotary evaporator and its flask set, then traces the inventory to the precise cabinet drawer with a physical access preview.
+The Spatial Index Finder searches canonical equipment, inventory, rooms, and storage paths, then navigates from the selected record to precise room and cabinet evidence.
 
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/screenshots/digital-twin-buchi-final.png" alt="Ask LabSpace locating the BÜCHI rotary evaporator" />
-      <br /><strong>Equipment focus:</strong> grounded search, room navigation, equipment identity, service evidence, and one precise spatial selection.
+      <img src="docs/screenshots/spatial-index-finder-final.png" alt="Spatial Index Finder locating the BÜCHI rotary evaporator" />
+      <br /><strong>Equipment focus:</strong> deterministic project search, room navigation, equipment identity, service evidence, and one precise spatial selection.
     </td>
     <td width="50%">
-      <img src="docs/screenshots/digital-twin-drawer-final.png" alt="Exact Drawer 02 access preview for the rotary evaporator flask set" />
+      <img src="docs/screenshots/spatial-index-drawer-final.png" alt="Exact Drawer 02 access preview for the rotary evaporator flask set" />
       <br /><strong>Storage proof:</strong> Drawer 02 opened in place with the inventory photograph, canonical location trail, quantity, owner, and QR identity.
     </td>
   </tr>
@@ -43,7 +43,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 - One canonical, versioned scene model drives React Konva 2D and React Three Fiber 3D.
 - A project navigator creates and switches among multiple laboratories and rooms; generic project/laboratory/room factories never clone demonstration content into a blank workspace.
-- A dedicated project-wide Digital Twin workspace searches inventory, equipment, and nested storage locations across every laboratory and room, switches the live spatial scene to a selected result, highlights the related 3D asset or drawer/shelf/bin region, and deep-links back to the same room and editor record.
+- A dedicated project-wide Spatial Index Finder searches inventory, equipment, and nested storage locations across every laboratory and room, switches the live spatial scene to a selected result, highlights the related 3D asset or drawer/shelf/bin region, and deep-links back to the same room and editor record.
 - Every room owns semantic scene-local layers for walls, openings, furniture, storage, equipment, utilities, safety, labels, and measurements, so placement never depends on seed-owned layer IDs.
 - Laboratory-aware object indexes and equipment IDs use the active laboratory, room, and optional zone codes with normalized, case-insensitive uniqueness checks.
 - 96 original planning assets across architecture, furniture, storage, equipment, utilities, and safety.
@@ -61,7 +61,9 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - Continuous wall drawing carries each committed endpoint into the next segment; Enter or double-click finishes a chain, while Escape returns to Select.
 - Grid, multi-surface snapping, alignment guides, pointer-centred zoom, fit-to-room, camera presets, wall transparency, and floor visibility.
 - Split presentation has a draggable, keyboard-accessible, persistent divider with protected minimum pane widths.
+- Rooms without a saved camera pose open with the user-approved relaxed split-view isometric framing; manual orbit poses persist per room, and ordinary 2D object moves never reset the 3D camera.
 - The Asset Library and Inspector collapse into narrow, labeled, keyboard-accessible rails when more canvas space is needed.
+- A dedicated Favorites tab gives quick access to starred assets; stars update immediately, persist safely across reloads, and remain usable for the current session even when browser storage is unavailable.
 - Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The Room 809 reference-services profile is the first bundled example and remains independently hideable.
 - Visual predefined libraries synchronize six laboratory floor finishes and six professional wall finishes between the 2D plan and 3D PBR room, with per-wall overrides in the Inspector.
 - Cabinet, shelf, drawer, compartment, and bin hierarchies with stable codes and exact inventory locations.
@@ -72,13 +74,13 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - QR labels, A4 print layouts, and CSV reports.
 - Collision, boundary, door-swing, hierarchy, duplicate code, equipment ID, and serial-number warnings.
 
-## Ask LabSpace and the no-billing demo path
+## Spatial Index Finder and future AI API
 
-The competition workflow is fully testable without an OpenAI Platform API key or usage billing. **Ask LabSpace** runs in clearly labeled `grounded local mode`: it resolves a bounded set of spatial intents against the canonical project index, selects exact room/equipment/storage records, and explains results from LabSpace's deterministic placement validator. Unknown or missing evidence is reported as missing rather than completed with invented data.
+The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
 
-This local mode is deliberately not described as a live GPT response. The genuine GPT-5.6/Codex contribution is the documented Build Week implementation work—product architecture, spatial-assistant/tool design, UI iteration, debugging, asset workflows, and automated testing—captured by primary Codex session `019f6a4d-25a9-7812-804c-88b695589b2a`. A future hosted model adapter can be added as an optional intent-selection layer without changing the trusted room, inventory, or validation services; it is not required to run the judge demo.
+There is no live model response in the shipped runtime. GPT-5.6/Codex was the central Build Week engineering and design collaborator for product architecture, synchronized interaction delivery, UI iteration, debugging, asset workflows, browser verification, and automated tests. That work is captured by primary Codex session `019f6a4d-25a9-7812-804c-88b695589b2a`. A future optional **LabSpace AI API** may provide model-driven intent selection and explanations over the existing index and validator tools; until implemented, it is described only as API-ready future architecture.
 
-The competition presentation is performance-bounded: the Digital Twin renders at most 25 presentation instances while the canonical scene retains every object for editing, search, validation, persistence, and export. The Layout Editor always exposes the single complete searchable 96-asset library. Asset Studio loads one orbitable model at a time and releases the previous preview cache.
+The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 96-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
 
 ## Start locally
 
@@ -122,7 +124,7 @@ See [docs/submission/JUDGE_GUIDE.md](docs/submission/JUDGE_GUIDE.md) for the exa
 | `npm run assets:render-procedural` | Rebuild 44 same-geometry procedural catalog renders       |
 | `npm run lint`                     | Run ESLint                                                |
 | `npm run typecheck`                | Run strict TypeScript checks                              |
-| `npm run test`                     | Run the 117 Vitest unit/integration cases                 |
+| `npm run test`                     | Run the 115 Vitest unit/integration cases                 |
 | `npm run test:e2e`                 | Run the Playwright competition and editor workflows       |
 | `npm run validate:assets`          | Validate manifests, authored GLBs, and static PNG renders |
 | `npm run release:check`            | Run lint, types, asset validation, tests, and build       |
@@ -141,13 +143,13 @@ Before Build Week, the project had a local laboratory layout/indexing prototype,
 - immutable demo-template ownership plus user-owned Demo Room persistence;
 - synchronized, material-aware 2D/3D editing with camera-preserving object movement;
 - exact cabinet, shelf, drawer, compartment, and bin indexing;
-- project-wide Digital Twin search, photographic result evidence, and exact-location camera navigation;
-- the no-billing grounded Ask LabSpace orchestration layer over canonical records and deterministic placement validation;
+- project-wide Spatial Index search, photographic result evidence, and exact-location camera navigation;
+- direct Layout Editor placement warnings backed by deterministic geometry validation;
 - a restrained 12-object Room 809 competition template with one BÜCHI station and assigned flask evidence;
 - the user's full DEMO-01 video-showcase room as a sanitized source-controlled fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
 - authored GLB asset delivery, offline Draco decoding, regression tests, release checks, and submission documentation.
 
-The user made the product, laboratory-workflow, visual-reference, asset-priority, and competition-story decisions. Codex/GPT-5.6 accelerated implementation, debugging, test authoring, asset-pipeline scripting, UI iteration, release audits, and documentation. Ask LabSpace's included runtime path is deterministic local software and is explicitly labeled as such; it does not pretend to be a live GPT response. The primary Codex build-session ID retained for `/feedback` evidence is `019f6a4d-25a9-7812-804c-88b695589b2a`.
+The user made the product, laboratory-workflow, visual-reference, asset-priority, and competition-story decisions. Codex/GPT-5.6 accelerated architecture, implementation, debugging, test authoring, asset-pipeline scripting, UI iteration, browser verification, release audits, and documentation. The shipped Spatial Index is deterministic local software; a possible LabSpace AI API remains a clearly labeled future extension. The primary Codex build-session ID retained for `/feedback` evidence is `019f6a4d-25a9-7812-804c-88b695589b2a`.
 
 See [docs/submission/BUILD_WEEK_IMPLEMENTATION.md](docs/submission/BUILD_WEEK_IMPLEMENTATION.md) for the architecture, originality boundary, human/AI collaboration record, and measured demo facts.
 
@@ -162,7 +164,7 @@ React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, 
 - [DATA_MODEL.md](DATA_MODEL.md) — versioned domain schema
 - [ASSET_GUIDE.md](ASSET_GUIDE.md) — manifest and asset authoring pipeline
 - [docs/EQUIPMENT_REFERENCE_MATRIX.md](docs/EQUIPMENT_REFERENCE_MATRIX.md) — official manufacturer references for reusable laboratory-equipment GLBs
-- [docs/DIGITAL_TWIN_WORKSPACE.md](docs/DIGITAL_TWIN_WORKSPACE.md) — searchable spatial-index behavior, record trace contract, and fidelity boundary
+- [docs/DIGITAL_TWIN_WORKSPACE.md](docs/DIGITAL_TWIN_WORKSPACE.md) — Spatial Index Finder behavior, record trace contract, and fidelity boundary
 - [ASSET_LICENSES.md](ASSET_LICENSES.md) — asset provenance
 - [LICENSE](LICENSE) — Apache License 2.0 for application source code
 - [LICENSE-ASSETS.md](LICENSE-ASSETS.md) — separate terms for models, renders, media, references, and branding
@@ -187,7 +189,7 @@ media.
 - This is a single-user local prototype; it has no authentication, organizations, permissions, or concurrent editing.
 - Project navigation supports multiple laboratories and rooms, but laboratory/room rename, delete, and reorder workflows are not yet implemented.
 - The photoreal target is an active authoring phase: 74 of 96 catalog assets currently have authored hero GLBs, while 22 use procedural planning geometry.
-- The Digital Twin workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
+- The Spatial Index workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
 - All 96 entries now have same-geometry top/isometric imagery, but procedural equipment captures are not substitutes for manufacturer-informed, all-sided authored GLBs at the `references/ref1.png` and `references/ref2.png` detail level.
 - Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
 - Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.12 — 2026-07-19
+
+- Reframed the second competition workspace as **Spatial Index Finder** and removed the floating conversational assistant, sample prompts, generated-answer UI, and runtime-provider claims without changing the canonical index, exact-location evidence, QR identity, camera focus, or opt-in storage access preview.
+- Made index filtering deterministic and multi-term across stored rooms, equipment, inventory, nested storage, owners, notes, and identifiers. Explicit record selection remains the only source of evidence-panel and camera changes.
+- Kept placement findings in the Layout Editor's direct selection status and Warnings inspector, where the canonical geometry validator remains authoritative.
+- Documented GPT-5.6/Codex as the Build Week engineering and design collaborator and the optional LabSpace AI API as future architecture only. The shipped workflow remains self-contained and requires no API key or billing.
+- Captured the user-approved split-view zoom and made its relaxed isometric framing the room-relative default for 3D entry when no saved camera pose exists. Saved poses, view-cube commands, and exact-record focus remain authoritative.
+- Added a counted Favorites library tab and empty state, plus immediate star feedback, reload persistence, storage-failure fallback, and a focused browser regression.
+- Updated public README, architecture, roadmap, testing, submission, licensing, attribution, and judge/video materials for the safe release path.
+- Passed the complete release gate: zero-warning ESLint, strict TypeScript, all 96 asset definitions, 148 authored and 44 procedural catalog renders, 115 Vitest cases across 23 files, 21 browser workflows, and the production build.
+
 ## 0.1.11 — 2026-07-18
 
 - Registered the July 18 modular asset sheets as composition/variant references and made `Lab Bench Shimadzu Ref2.png` the primary supplied reference for the double-sided island family. Generated sheets remain subordinate to official manufacturer dimensions and anatomy for equipment.

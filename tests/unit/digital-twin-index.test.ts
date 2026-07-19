@@ -47,7 +47,7 @@ function createMultiLaboratoryProject() {
   return { project, annex };
 }
 
-describe("project-wide Digital Twin index", () => {
+describe("project-wide Spatial Index Finder", () => {
   it("restores catalog photography for legacy consumable records", () => {
     expect(
       inferInventoryRecordImage({
@@ -103,7 +103,22 @@ describe("project-wide Digital Twin index", () => {
     expect(roomMatches).toEqual([]);
   });
 
-  it("carries record photography into the searchable Digital Twin index", () => {
+  it("matches unordered search terms without invoking an assistant", () => {
+    const project = activateRoom809();
+    const records = buildDigitalTwinIndex(project, Date.parse("2026-07-17T00:00:00Z"));
+    const matches = filterDigitalTwinIndex(records, {
+      query: "evaporator rotary",
+      mode: "browse",
+      scope: "project",
+      activeRoomId: project.activeRoomId,
+    });
+
+    expect(matches.map((record) => record.name)).toEqual(
+      expect.arrayContaining(["BÜCHI rotary evaporator R-300", "Rotary evaporator flask set"]),
+    );
+  });
+
+  it("carries record photography into the searchable Spatial Index", () => {
     const project = activateRoom809();
     const records = buildDigitalTwinIndex(project, Date.parse("2026-07-17T00:00:00Z"));
     const matches = filterDigitalTwinIndex(records, {
@@ -144,7 +159,9 @@ describe("project-wide Digital Twin index", () => {
     const records = buildDigitalTwinIndex(project, Date.parse("2026-07-17T00:00:00Z"));
     const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
     const preferred = preferredDigitalTwinRecord(records, room.id, room.scene.storageLocations);
-    const location = room.scene.storageLocations.find((entry) => entry.id === preferred?.locationId);
+    const location = room.scene.storageLocations.find(
+      (entry) => entry.id === preferred?.locationId,
+    );
 
     expect(preferred?.roomId).toBe(room.id);
     expect(location?.type === "drawer" || location?.type === "bin").toBe(true);

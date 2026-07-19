@@ -14,17 +14,13 @@ import {
   MagnifyingGlass,
   MapPin,
   Package,
-  PaperPlaneTilt,
   PlugsConnected,
-  ShieldCheck,
-  Sparkle,
   SquaresFour,
   WarningCircle,
   Wrench,
   X,
 } from "@phosphor-icons/react";
 import { getAssetDefinition } from "../domain/assets";
-import { BUILD_WEEK_SAMPLE_PROMPTS } from "../domain/build-week-demo";
 import {
   buildDigitalTwinIndex,
   filterDigitalTwinIndex,
@@ -34,8 +30,6 @@ import {
   type DigitalTwinScope,
 } from "../domain/digital-twin-index";
 import { hasLaboratoryEnvironmentProfile } from "../domain/laboratory-environment";
-import type { Project } from "../domain/schema";
-import { answerSpatialQuestion, type SpatialAssistantAnswer } from "../domain/spatial-assistant";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { AssetThumbnail } from "./AssetThumbnail";
 import { Dialogs, Toasts } from "./Dialogs";
@@ -156,9 +150,6 @@ export function DigitalTwinPage() {
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [focusObjectId, setFocusObjectId] = useState<string | null>(null);
   const [qrCode, setQrCode] = useState("");
-  const [assistantQuestion, setAssistantQuestion] = useState("");
-  const [assistantAnswer, setAssistantAnswer] = useState<SpatialAssistantAnswer | null>(null);
-  const [assistantExpanded, setAssistantExpanded] = useState(false);
   const hydrate = useEditorStore((state) => state.hydrate);
   const hydrated = useEditorStore((state) => state.hydrated);
   const project = useEditorStore((state) => state.project);
@@ -170,7 +161,6 @@ export function DigitalTwinPage() {
   const setSelectedLocation = useEditorStore((state) => state.setSelectedLocation);
   const switchRoom = useEditorStore((state) => state.switchRoom);
   const setPreset = useEditorStore((state) => state.setCameraPreset);
-  const updateObject = useEditorStore((state) => state.updateObject);
   const environmentContextVisible = useEditorStore((state) => state.environmentContextVisible);
   const toggleEnvironmentContext = useEditorStore((state) => state.toggleEnvironmentContext);
 
@@ -186,21 +176,17 @@ export function DigitalTwinPage() {
     [allRecords, room.id, scope],
   );
 
-  const filteredRecords = useMemo(() => {
-    if (assistantAnswer) {
-      const byId = new Map(allRecords.map((record) => [record.id, record]));
-      return assistantAnswer.evidence
-        .map((evidence) => byId.get(evidence.id))
-        .filter((record): record is TwinRecord => Boolean(record));
-    }
-    return filterDigitalTwinIndex(allRecords, {
-      query,
-      mode,
-      scope,
-      activeRoomId: room.id,
-    });
-  }, [allRecords, assistantAnswer, mode, query, room.id, scope]);
-  const showResultStrip = Boolean(assistantAnswer || query.trim() || mode !== "browse");
+  const filteredRecords = useMemo(
+    () =>
+      filterDigitalTwinIndex(allRecords, {
+        query,
+        mode,
+        scope,
+        activeRoomId: room.id,
+      }),
+    [allRecords, mode, query, room.id, scope],
+  );
+  const showResultStrip = Boolean(query.trim() || mode !== "browse");
 
   const effectiveSelectedRecordId = filteredRecords.some((record) => record.id === selectedRecordId)
     ? selectedRecordId
@@ -219,7 +205,7 @@ export function DigitalTwinPage() {
     }
     setSelected(selectedRecord.objectId ? [selectedRecord.objectId] : []);
     setSelectedLocation(selectedRecord.locationId);
-  }, [assistantAnswer, room.id, selectedRecord, setSelected, setSelectedLocation, switchRoom]);
+  }, [room.id, selectedRecord, setSelected, setSelectedLocation, switchRoom]);
 
   useEffect(() => {
     if (!shouldAutoFocusDigitalTwinResult(query, selectedRecord)) return;
@@ -282,40 +268,10 @@ export function DigitalTwinPage() {
     if (record.objectId && spatialMode === "3d") setPreset("isometric");
   };
 
-  const askLabSpace = (question = assistantQuestion, sourceProject: Project = project) => {
-    const trimmed = question.trim();
-    if (!trimmed) return;
-    const answer = answerSpatialQuestion(sourceProject, trimmed, {
-      roomId: room.id,
-      objectId: selectedRecord?.objectId,
-    });
-    setAssistantQuestion(trimmed);
-    setAssistantAnswer(answer);
-    setAssistantExpanded(true);
+  const submitIndexSearch = () => {
+    const trimmed = query.trim();
     setQuery(trimmed);
-    setMode("browse");
-    setScope("project");
-    if (answer.focus.roomId && answer.focus.roomId !== room.id) switchRoom(answer.focus.roomId);
-    const firstEvidence = answer.evidence[0];
-    if (firstEvidence) {
-      setSelectedRecordId(firstEvidence.id);
-      setStorageAccessOpen(false);
-    }
-    setSelected(answer.focus.objectIds);
-    setSelectedLocation(answer.focus.locationIds[0] ?? null);
-    setFocusObjectId(answer.focus.objectIds[0] ?? null);
-    if (answer.focus.objectIds.length && spatialMode === "3d") setPreset("isometric");
-  };
-
-  const applyAssistantSuggestion = () => {
-    const suggestion = assistantAnswer?.placementReview?.suggestion;
-    if (!suggestion) return;
-    updateObject(
-      suggestion.objectId,
-      { position: suggestion.position },
-      "Apply Ask LabSpace placement",
-    );
-    window.setTimeout(() => askLabSpace(assistantQuestion, useEditorStore.getState().project), 0);
+    if (trimmed && filteredRecords.length === 1) selectRecord(filteredRecords[0]);
   };
 
   const navigateToRecord = () => {
@@ -349,12 +305,12 @@ export function DigitalTwinPage() {
 
   return (
     <div className="digital-twin-shell" data-testid="digital-twin-page">
-      <TopBar activeArea="digital-twin" contextLabel="Live Spatial Index" />
-      <section className="twin-command-bar" aria-label="Digital Twin command bar">
+      <TopBar activeArea="digital-twin" contextLabel="Indexed Room Evidence" />
+      <section className="twin-command-bar" aria-label="Spatial Index Finder command bar">
         <div className="twin-brand">
           <img src="/labspace-mark.svg" alt="" />
           <span>
-            <b>LabSpace Digital Twin</b>
+            <b>Spatial Index Finder</b>
             <small>{project.name}</small>
           </span>
         </div>
@@ -362,21 +318,16 @@ export function DigitalTwinPage() {
           className="twin-search"
           onSubmit={(event) => {
             event.preventDefault();
-            askLabSpace(query);
+            submitIndexSearch();
           }}
         >
-          <Sparkle size={20} weight="duotone" />
+          <Database size={20} weight="duotone" />
           <input
             id="digital-twin-search"
-            aria-label="Ask LabSpace or search indexed records"
+            aria-label="Search spatial index"
             value={query}
-            onChange={(event) => {
-              const nextValue = event.target.value;
-              setQuery(nextValue);
-              setAssistantQuestion(nextValue);
-              if (!nextValue.trim()) setAssistantAnswer(null);
-            }}
-            placeholder="Ask LabSpace or search inventory, equipment, and locations…"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search equipment, inventory, rooms, cabinets, drawers, shelves, or codes…"
             autoComplete="off"
           />
           {query.trim() ? (
@@ -386,8 +337,6 @@ export function DigitalTwinPage() {
               aria-label="Clear command"
               onClick={() => {
                 setQuery("");
-                setAssistantQuestion("");
-                setAssistantAnswer(null);
               }}
             >
               <X size={15} />
@@ -398,11 +347,11 @@ export function DigitalTwinPage() {
           <button
             className="twin-search-submit"
             type="submit"
-            aria-label="Ask LabSpace"
+            aria-label="Find indexed records"
             disabled={!query.trim()}
           >
-            Ask
-            <PaperPlaneTilt size={16} weight="fill" />
+            Find
+            <MagnifyingGlass size={16} weight="bold" />
           </button>
         </form>
         <div className="twin-top-actions">
@@ -526,7 +475,7 @@ export function DigitalTwinPage() {
               {spatialMode === "3d" ? "Live spatial model" : "Canonical 2D fallback"}
             </div>
             {spatialMode === "3d" ? (
-              <TwinRendererBoundary label="3D digital twin">
+              <TwinRendererBoundary label="3D spatial index">
                 <ThreeDView
                   quality={quality}
                   focusObjectId={focusedObjectId}
@@ -545,104 +494,6 @@ export function DigitalTwinPage() {
                 </div>
               </TwinRendererBoundary>
             )}
-            <section
-              className={`twin-assistant ${assistantExpanded ? "expanded" : "collapsed"}`}
-              aria-label="Ask LabSpace spatial assistant"
-              data-testid="ask-labspace"
-            >
-              <header className="twin-assistant-heading">
-                <span className="twin-assistant-mark">
-                  <Sparkle size={18} weight="fill" />
-                </span>
-                <span>
-                  <b>Ask LabSpace</b>
-                  <small>Grounded spatial evidence · local mode</small>
-                </span>
-                <span className="twin-assistant-provider">
-                  <ShieldCheck size={15} weight="fill" />
-                  No API billing
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setAssistantExpanded((current) => !current)}
-                  aria-expanded={assistantExpanded}
-                >
-                  {assistantExpanded ? "Minimize" : "Open"}
-                </button>
-              </header>
-              {assistantExpanded && (
-                <div className="twin-assistant-body">
-                  {!assistantAnswer ? (
-                    <div className="twin-assistant-prompts" aria-label="Sample questions">
-                      {BUILD_WEEK_SAMPLE_PROMPTS.map((prompt) => (
-                        <button key={prompt} type="button" onClick={() => askLabSpace(prompt)}>
-                          {prompt}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="twin-assistant-answer" aria-live="polite">
-                      <div className="twin-assistant-summary">
-                        <span
-                          className={
-                            assistantAnswer.placementReview?.safe === false ? "warning" : "ok"
-                          }
-                        >
-                          {assistantAnswer.placementReview?.safe === false ? (
-                            <WarningCircle size={19} weight="fill" />
-                          ) : (
-                            <CheckCircle size={19} weight="fill" />
-                          )}
-                        </span>
-                        <b data-testid="ask-labspace-summary">{assistantAnswer.summary}</b>
-                      </div>
-                      <div className="twin-assistant-evidence">
-                        {assistantAnswer.evidence.map((evidence) => {
-                          const record = allRecords.find((entry) => entry.id === evidence.id);
-                          if (!record) return null;
-                          return (
-                            <button
-                              key={evidence.id}
-                              type="button"
-                              data-testid="ask-labspace-evidence"
-                              className={selectedRecord?.id === evidence.id ? "active" : ""}
-                              onClick={() => selectRecord(record)}
-                            >
-                              <span>{evidence.kind}</span>
-                              <b>{evidence.name}</b>
-                              <small>{evidence.path.slice(-3).join(" / ")}</small>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {assistantAnswer.placementReview?.warnings.length ? (
-                        <ul className="twin-assistant-warnings">
-                          {assistantAnswer.placementReview.warnings.map((warning) => (
-                            <li key={warning.id}>
-                              <b>{warning.title}</b>
-                              <span>{warning.message}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                      {assistantAnswer.suggestions.length ? (
-                        <div className="twin-assistant-suggestion">
-                          <span>{assistantAnswer.suggestions[0]}</span>
-                          {assistantAnswer.placementReview?.suggestion && (
-                            <button type="button" onClick={applyAssistantSuggestion}>
-                              Apply valid placement
-                            </button>
-                          )}
-                        </div>
-                      ) : null}
-                      {assistantAnswer.caveats.length ? (
-                        <p className="twin-assistant-caveat">{assistantAnswer.caveats[0]}</p>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
             <div className="twin-scene-legend">
               <span>
                 <i /> Selected indexed asset
@@ -830,7 +681,7 @@ export function DigitalTwinPage() {
           )}
         </aside>
       </div>
-      <footer className="twin-footer-status" aria-label="Digital Twin status">
+      <footer className="twin-footer-status" aria-label="Spatial Index status">
         <span>
           Scope: <b>{scope === "project" ? "All laboratories" : room.name}</b>
         </span>
@@ -841,7 +692,7 @@ export function DigitalTwinPage() {
           Scene: <b>{spatialMode === "3d" ? "Live 3D" : "Canonical 2D"}</b>
         </span>
         <span className="twin-footer-grounding">
-          <ShieldCheck size={15} weight="fill" /> Grounded local mode
+          <Database size={15} weight="fill" /> Local spatial index
         </span>
       </footer>
       <Dialogs />

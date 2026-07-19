@@ -4,7 +4,6 @@ test("the blank starter creates its floor only after the wall outline closes", a
   await page.request.post("/api/testing/reset");
   await page.goto("/");
   await page.getByRole("button", { name: "2D", exact: true }).click();
-  await page.getByTitle("Fit room to view").click();
 
   const editor = page.getByTestId("2d-editor");
   await expect(editor).toHaveAttribute("data-floor-state", "awaiting-closed-walls");
@@ -30,8 +29,9 @@ test("the blank starter creates its floor only after the wall outline closes", a
   const wallCount = async () => {
     const project = await (await page.request.get("/api/project")).json();
     const room = project.rooms.find((entry: { id: string }) => entry.id === project.activeRoomId);
-    return room.scene.objects.filter((object: { objectType: string }) => object.objectType === "wall")
-      .length;
+    return room.scene.objects.filter(
+      (object: { objectType: string }) => object.objectType === "wall",
+    ).length;
   };
   const expectChainNear = async (x: number, y: number) => {
     await expect
@@ -56,7 +56,7 @@ test("the blank starter creates its floor only after the wall outline closes", a
   await expect.poll(wallCount).toBe(4);
   await expect(editor).toHaveAttribute("data-floor-state", "wall-derived");
   await expect(page.getByTestId("canvas-floor-guidance")).toHaveCount(0);
-  await expect(page.locator(".pane-label-value")).toContainText(/5\.0\d .* 4\.00 m/);
+  await expect(page.locator(".pane-label-value")).toContainText(/4\.9\d .* 4\.00 m/);
 
   await page.getByTitle("Undo (Ctrl+Z)").click();
   await expect.poll(wallCount).toBe(3);

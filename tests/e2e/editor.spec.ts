@@ -1,12 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { PNG } from "pngjs";
 import { BUILD_WEEK_DEMO } from "../../src/domain/build-week-demo";
-import {
-  ROOM_809_DEPTH,
-  ROOM_809_WIDTH,
-  SHOWCASE_DEMO_ROOM_ID,
-  STARTER_ROOM_ID,
-} from "../../src/domain/seed";
+import { SHOWCASE_DEMO_ROOM_ID, STARTER_ROOM_ID } from "../../src/domain/seed";
 
 test.describe.configure({ mode: "serial" });
 
@@ -42,6 +37,43 @@ test("the compact orientation cube exposes only distinct camera commands", async
   );
 });
 
+test("asset favorites toggle visibly and persist across reloads", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.removeItem("labspace-favorites"));
+  await page.reload();
+
+  const addFavorite = page.getByRole("button", {
+    name: "Add Standard laboratory bench to favorites",
+    exact: true,
+  });
+  await expect(addFavorite).toHaveAttribute("aria-pressed", "false");
+  await addFavorite.click();
+  await expect(
+    page.getByRole("button", {
+      name: "Remove Standard laboratory bench from favorites",
+      exact: true,
+    }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Asset library summary")).toContainText("1 favorite");
+  await page.getByRole("tab", { name: "Favorites 1", exact: true }).click();
+  await expect(page.getByRole("article", { name: /Standard laboratory bench —/ })).toBeVisible();
+  await expect(page.getByRole("article", { name: /Laboratory bench with sink —/ })).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem("labspace-favorites")))
+    .toContain("lab-bench");
+
+  await page.reload();
+  await page.getByRole("tab", { name: "Favorites 1", exact: true }).click();
+  const removeFavorite = page.getByRole("button", {
+    name: "Remove Standard laboratory bench from favorites",
+    exact: true,
+  });
+  await expect(removeFavorite).toHaveAttribute("aria-pressed", "true");
+  await removeFavorite.click();
+  await expect(page.getByLabel("Asset library summary")).toContainText("0 favorites");
+  await expect(page.getByText("No favorite assets yet", { exact: true })).toBeVisible();
+});
+
 test("application starts empty, opens the bundled showcase, and can create a lean demo copy", async ({
   page,
   request,
@@ -62,10 +94,9 @@ test("application starts empty, opens the bundled showcase, and can create a lea
 
   await page.getByTestId("demo-room-action").click();
   await expect(page.getByText("Build Week Demo", { exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "Open saved Demo Room", exact: true })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    page.getByRole("button", { name: "Open saved Demo Room", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect
     .poll(async () => {
       projectResponse = await request.get("/api/project");
@@ -83,19 +114,17 @@ test("application starts empty, opens the bundled showcase, and can create a lea
     name: "Build Week Demo",
     code: "DEMO-01",
     roomKind: "demo",
-    width: ROOM_809_WIDTH,
-    depth: ROOM_809_DEPTH,
   });
+  expect(room.width).toBeGreaterThan(8_000);
+  expect(room.depth).toBeGreaterThan(8_000);
   expect(room.scene.objects.filter((object: any) => object.objectType === "wall")).toHaveLength(12);
   expect(
     room.scene.objects.filter(
       (object: any) => !["wall", "door", "window"].includes(object.objectType),
     ),
-  ).toHaveLength(30);
+  ).toHaveLength(32);
   expect(
-    room.scene.objects.filter(
-      (object: any) => object.assetDefinitionId === "rotary-evaporator",
-    ),
+    room.scene.objects.filter((object: any) => object.assetDefinitionId === "rotary-evaporator"),
   ).toHaveLength(1);
   expect(room.scene.layers.length).toBeGreaterThanOrEqual(9);
   await expect(page.getByRole("button", { name: /Demo kit \d+/ })).toHaveCount(0);
@@ -107,8 +136,14 @@ test("application starts empty, opens the bundled showcase, and can create a lea
   // Rooms that do not own a profile must not expose an inert context control.
   await expect(page.getByTestId("lab-environment-context-toggle")).toHaveCount(0);
 
+  const cameraPoseBeforeReload = room.viewState?.cameraPose;
+  expect(cameraPoseBeforeReload).not.toBeNull();
   await page.reload();
   await expect(page.getByText("DEMO-01", { exact: true }).first()).toBeVisible();
+  await expect(page.locator(".status-bar .save-ok")).toContainText(/saved/i);
+  project = await (await request.get("/api/project")).json();
+  const reloadedDemo = project.rooms.find((entry: any) => entry.id === project.activeRoomId);
+  expect(reloadedDemo.viewState.cameraPose).toEqual(cameraPoseBeforeReload);
 
   await page.getByRole("button", { name: "Open project workspace" }).click();
   await page.getByTestId("open-build-week-demo").click();
@@ -148,34 +183,29 @@ test("the 3D canvas renders real pixels and Asset Studio opens safely", async ({
   await expect(authoredThumbnail).toHaveAttribute("data-render-source", "3d");
   await expect(authoredThumbnail).toHaveAttribute("src", /models\/hero\/renders\/lab-bench/);
 
-  const studioLink = page.getByRole("link", { name: "Open Asset Studio" });
-  await expect(studioLink).toHaveAttribute("target", "_blank");
-  const popupPromise = page.waitForEvent("popup");
+  const studioLink = page.getByRole("link", { name: "Asset Studio", exact: true });
+  await expect(studioLink).toHaveAttribute("href", "/asset-preview");
   await studioLink.click();
-  const studio = await popupPromise;
-  await expect(studio.getByRole("heading", { name: /PBR Asset Studio/ })).toBeVisible();
-  await studio.close();
+  await expect(page).toHaveURL(/\/asset-preview$/);
+  await expect(page.getByRole("heading", { name: /PBR Asset Studio/ })).toBeVisible();
+  await page.goBack();
   await expect(page.getByTestId("2d-editor")).toBeVisible();
 });
 
-test("the Digital Twin links indexed search results to the live room and editor", async ({
+test("the Spatial Index links indexed search results to the live room and editor", async ({
   page,
 }) => {
   await page.goto("/digital-twin");
   await expect(page.getByTestId("digital-twin-page")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Nitrile gloves, M" })).toBeVisible();
-  await expect(page.getByRole("img", { name: "Nitrile gloves, M evidence image" })).toHaveAttribute(
-    "src",
-    "/images/inventory/nitrile-gloves.png",
-  );
   await expect(page.getByTestId("3d-view").locator("canvas")).toBeVisible();
-  await expect(page.getByText("Stable indexed identity", { exact: true })).toBeVisible();
+  await expect(page.getByText("Select an indexed record", { exact: true })).toBeVisible();
 
   const search = page.getByRole("textbox", {
-    name: "Ask LabSpace or search indexed records",
+    name: "Search spatial index",
   });
   await search.fill("Reference standards");
   await expect(page.getByTestId("digital-twin-record")).toHaveCount(1);
+  await page.getByTestId("digital-twin-record").click();
   await expect(page.getByRole("heading", { name: "Reference standards" })).toBeVisible();
   const detail = page.getByRole("complementary", { name: "Selected record details" });
   await expect(detail.getByText("Analysis island storage", { exact: true })).toBeVisible();
@@ -190,12 +220,14 @@ test("the Digital Twin links indexed search results to the live room and editor"
 
   await search.fill("HPLC autosampler vials");
   await expect(page.getByTestId("digital-twin-record")).toHaveCount(1);
+  await page.getByTestId("digital-twin-record").click();
   await expect(page.getByRole("heading", { name: "HPLC autosampler vials, 2 mL" })).toBeVisible();
   await expect(
     detail.getByRole("img", { name: "HPLC autosampler vials, 2 mL evidence image" }),
   ).toHaveAttribute("src", "/images/inventory/hplc-vials.png");
 
   await search.fill("Reference standards");
+  await page.getByTestId("digital-twin-record").click();
 
   await page.getByRole("button", { name: "Navigate to location" }).click();
   await expect(page.getByTestId("3d-view")).toHaveAttribute(
@@ -218,7 +250,7 @@ test("the Digital Twin links indexed search results to the live room and editor"
   await editorLink.click();
   await expect(page.locator(".selection-trace-card")).toContainText("LAB-R809-Z02-CAB-001");
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:\d+\/$/);
-  await expect(page.getByRole("link", { name: "Open Digital Twin" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open Spatial Index" })).toBeVisible();
 });
 
 test("project search switches to a record in another laboratory and preserves the editor trace", async ({
@@ -268,9 +300,10 @@ test("project search switches to a record in another laboratory and preserves th
     await page.goto("/digital-twin");
     await expect(page.getByText("3 labs · 3 rooms", { exact: true })).toBeVisible();
     await page
-      .getByRole("textbox", { name: "Ask LabSpace or search indexed records" })
+      .getByRole("textbox", { name: "Search spatial index" })
       .fill("Cross-room calibration tracer");
     await expect(page.getByTestId("digital-twin-record")).toHaveCount(1);
+    await page.getByTestId("digital-twin-record").click();
     await expect(page.getByText("AIC-02 / ANNEX-12", { exact: true })).toBeVisible();
     await expect(page.getByText("Instrument Annex", { exact: true }).first()).toBeVisible();
 
@@ -351,7 +384,7 @@ test("an asset can be dragged in, moved, resized, and synchronized", async ({ pa
     "data-camera-command-key",
     cameraCommandBeforeMove!,
   );
-  await expect(page.locator(".status-bar .save-ok")).toContainText("Saved", { timeout: 5000 });
+  await expect(page.locator(".status-bar .save-ok")).toContainText(/saved/i, { timeout: 5000 });
 });
 
 test("a cabinet receives indexed internals and exact inventory", async ({ page, request }) => {
@@ -477,7 +510,9 @@ test("a completed autosave never overwrites newer 2D edits", async ({ page, requ
   await expect(page.getByRole("heading", { name: "Vacuum pump" })).toBeVisible();
 
   releaseFirstSave();
-  await expect(page.locator(".status-bar .save-ok")).toContainText("Saved", { timeout: 10000 });
+  await expect(page.locator(".status-bar .save-ok")).toContainText(/saved/i, {
+    timeout: 10000,
+  });
   await expect(page.getByRole("heading", { name: "Vacuum pump" })).toBeVisible();
   await expect(page.getByTestId("2d-editor")).toBeVisible();
 

@@ -1,5 +1,4 @@
 import { expect, test, type Page } from "@playwright/test";
-import { BUILD_WEEK_SAMPLE_PROMPTS } from "../../src/domain/build-week-demo";
 
 // The full DEMO-01 scene intentionally remains loaded for these release tests.
 // Software WebGL in CI can take materially longer than a hardware-backed judge browser.
@@ -17,7 +16,7 @@ async function createSavedDemo(page: Page) {
   await expect(page.locator(".status-bar .save-ok")).toContainText(/saved/i, { timeout: 10000 });
 }
 
-test("Ask LabSpace locates the BÜCHI evaporator and its indexed flask cabinet", async ({
+test("Spatial Index Finder locates the BÜCHI evaporator and its exact flask drawer", async ({
   page,
   request,
 }) => {
@@ -27,10 +26,6 @@ test("Ask LabSpace locates the BÜCHI evaporator and its indexed flask cabinet",
   const expectedVisibleAssetCount = room.scene.objects.filter(
     (object: any) => !["wall", "door", "window"].includes(object.objectType),
   ).length;
-  const equipmentRecord = room.scene.equipmentRecords.find(
-    (record: any) => record.name === "BÜCHI rotary evaporator R-300",
-  );
-
   const flaskItem = room.scene.inventoryItems.find(
     (item: any) => item.name === "Rotary evaporator flask set",
   );
@@ -39,40 +34,31 @@ test("Ask LabSpace locates the BÜCHI evaporator and its indexed flask cabinet",
   );
 
   await page.goto("/digital-twin");
-  const assistant = page.getByTestId("ask-labspace");
-  await expect(assistant).toBeVisible();
-  await expect(assistant).toContainText("Grounded spatial evidence");
-  await expect(assistant).toContainText("No API billing");
+  await expect(page.getByRole("link", { name: "Spatial Index" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(page.locator(".twin-assistant")).toHaveCount(0);
   const recordDetails = page.getByRole("complementary", {
     name: "Selected record details",
   });
   await expect(recordDetails).toContainText("Select an indexed record");
-  await expect(recordDetails).not.toContainText("Nitrile gloves");
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "false");
-  await assistant.getByRole("button", { name: "Open", exact: true }).click();
   await expect
     .poll(async () =>
       Number(await page.getByTestId("3d-view").getAttribute("data-visible-asset-count")),
     )
     .toBe(expectedVisibleAssetCount);
 
-  const locationPrompt = assistant.getByRole("button", {
-    name: BUILD_WEEK_SAMPLE_PROMPTS[0],
-    exact: true,
-  });
-  await locationPrompt.click();
+  const search = page.getByRole("textbox", { name: "Search spatial index" });
+  await search.fill("rotary evaporator");
+  const resultCards = page.getByTestId("digital-twin-record");
+  await expect(resultCards).toHaveCount(2);
+  await expect(resultCards.filter({ hasText: "BÜCHI rotary evaporator R-300" })).toHaveCount(1);
 
-  const evidenceCards = assistant.getByTestId("ask-labspace-evidence");
-  await expect(evidenceCards).toHaveCount(2);
-  await expect(assistant.getByTestId("ask-labspace-summary")).toHaveText(
-    "Found 2 grounded records.",
-  );
-  const equipmentEvidence = evidenceCards.filter({ hasText: "BÜCHI rotary evaporator R-300" });
-  await expect(equipmentEvidence).toHaveCount(1);
-
-  const flaskEvidence = evidenceCards.filter({ hasText: "Rotary evaporator flask set" });
-  await expect(flaskEvidence).toHaveCount(1);
-  await flaskEvidence.click();
+  const flaskResult = resultCards.filter({ hasText: "Rotary evaporator flask set" });
+  await expect(flaskResult).toHaveCount(1);
+  await flaskResult.click();
   await expect(recordDetails).toContainText(flaskLocation.name);
   await expect(
     recordDetails.getByRole("img", {
@@ -89,13 +75,8 @@ test("Ask LabSpace locates the BÜCHI evaporator and its indexed flask cabinet",
     "data-focus-location-id",
     flaskLocation.id,
   );
-  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "false");
-  const accessPreview = recordDetails.getByRole("button", {
-    name: "Show access preview",
-  });
+  const accessPreview = recordDetails.getByRole("button", { name: "Show access preview" });
   await expect(accessPreview).toBeVisible();
-  // Software-rendered camera easing can keep the inspector button in a
-  // sub-pixel "moving" state even though it is visible and enabled.
   await accessPreview.evaluate((button: HTMLButtonElement) => button.click());
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "true");
   await recordDetails
@@ -103,11 +84,9 @@ test("Ask LabSpace locates the BÜCHI evaporator and its indexed flask cabinet",
     .evaluate((button: HTMLButtonElement) => button.click());
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "false");
   await expect(page.locator(".twin-scene-breadcrumb")).toHaveCount(0);
-  expect(equipmentRecord.objectId).toBeTruthy();
-  await page.close();
 });
 
-test("Digital Twin result cards keep long equipment identifiers inside their cards", async ({
+test("Spatial Index result cards keep long equipment identifiers inside their cards", async ({
   page,
 }) => {
   await createSavedDemo(page);
@@ -118,7 +97,6 @@ test("Digital Twin result cards keep long equipment identifiers inside their car
   await expect(cards.first()).toBeVisible();
   const overflow = await cards.evaluateAll((entries) =>
     entries.map((entry) => ({
-      name: entry.querySelector(".twin-result-copy > b")?.textContent,
       clientWidth: entry.clientWidth,
       scrollWidth: entry.scrollWidth,
       valueClientWidth: entry.querySelector<HTMLElement>(".twin-result-value")?.clientWidth ?? 0,
@@ -131,7 +109,7 @@ test("Digital Twin result cards keep long equipment identifiers inside their car
   );
 });
 
-test("Ask LabSpace explains an actual conflict and applies a validator-clean alternative", async ({
+test("Layout validation remains available after removing the conversational assistant", async ({
   page,
   request,
 }) => {
@@ -152,31 +130,22 @@ test("Ask LabSpace explains an actual conflict and applies a validator-clean alt
   const saved = await request.put(`/api/project/${project.id}`, { data: project });
   expect(saved.ok()).toBeTruthy();
 
-  await page.goto("/digital-twin");
-  const assistant = page.getByTestId("ask-labspace");
-  await assistant.getByRole("button", { name: "Open", exact: true }).click();
-  await page.getByRole("button", { name: "2D fallback", exact: true }).click();
+  await page.goto(
+    `/?room=${encodeURIComponent(room.id)}&object=${encodeURIComponent(evaporator.id)}&panel=validation&presentation=2d`,
+  );
   await expect(page.getByTestId("2d-editor")).toBeVisible();
-  await assistant.getByRole("button", { name: BUILD_WEEK_SAMPLE_PROMPTS[0], exact: true }).click();
-  const equipmentEvidence = assistant
-    .getByTestId("ask-labspace-evidence")
+  await expect(page.getByRole("tab", { name: /Issues/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".validation-panel")).toContainText("placement warnings");
+  await expect(page.locator(".warning-list button").first()).toBeVisible();
+  await expect(page.getByTestId("canvas-placement-status")).not.toContainText("Placement clear");
+
+  await page.goto("/digital-twin");
+  const search = page.getByRole("textbox", { name: "Search spatial index" });
+  await search.fill("BÜCHI rotary evaporator");
+  const result = page
+    .getByTestId("digital-twin-record")
     .filter({ hasText: "BÜCHI rotary evaporator R-300" });
-  await expect(equipmentEvidence).toHaveCount(1);
-  await equipmentEvidence.click();
-
-  const question = page.getByRole("textbox", {
-    name: "Ask LabSpace or search indexed records",
-  });
-  await question.fill(BUILD_WEEK_SAMPLE_PROMPTS[1]);
-  await page.getByRole("button", { name: "Ask LabSpace", exact: true }).click();
-
-  await expect(assistant.getByTestId("ask-labspace-summary")).toContainText(
-    "deterministic placement conflict",
-  );
-  await expect(assistant.getByRole("button", { name: "Apply valid placement" })).toBeVisible();
-  await assistant.getByRole("button", { name: "Apply valid placement" }).click();
-  await expect(assistant.getByTestId("ask-labspace-summary")).toContainText(
-    "no deterministic placement conflict",
-  );
-  await page.close();
+  await expect(result).toHaveCount(1);
+  await result.click();
+  await expect(page.getByRole("heading", { name: "BÜCHI rotary evaporator R-300" })).toBeVisible();
 });

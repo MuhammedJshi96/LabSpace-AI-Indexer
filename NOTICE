@@ -8,6 +8,10 @@ Visual assets, 3D models, renders, photographs, reference material, and brand
 artwork are not licensed under Apache 2.0 unless explicitly stated otherwise.
 See LICENSE-ASSETS.md and ASSET_LICENSES.md.
 
+Application screenshots and competition media show the deterministic local
+Layout Editor and Spatial Index Finder. A future LabSpace AI API is not included
+in the current software distribution.
+
 LabSpace assets are original, logo-free planning representations and are not
 manufacturer-certified CAD/BIM models. Third-party product names and trademarks
 belong to their respective owners. Their use for identification or research

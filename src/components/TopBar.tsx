@@ -77,7 +77,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
           aria-current={activeArea === "digital-twin" ? "page" : undefined}
         >
           <Database size={19} weight="duotone" />
-          <span>Digital Twin</span>
+          <span>Spatial Index</span>
         </a>
         <a
           className={activeArea === "asset-studio" ? "active" : ""}

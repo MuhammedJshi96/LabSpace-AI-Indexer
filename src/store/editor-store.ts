@@ -47,21 +47,9 @@ import {
 
 export type EditorTool = "select" | "pan" | "wall" | "door" | "window" | "measure";
 export type InspectorPanel =
-  | "room"
-  | "layers"
-  | "index"
-  | "inventory"
-  | "properties"
-  | "validation";
+  "room" | "layers" | "index" | "inventory" | "properties" | "validation";
 export type CameraPreset =
-  | "perspective"
-  | "orthographic"
-  | "top"
-  | "isometric"
-  | "front"
-  | "right"
-  | "left"
-  | "back";
+  "perspective" | "orthographic" | "top" | "isometric" | "front" | "right" | "left" | "back";
 export type SaveStatus = "loading" | "unsaved" | "saving" | "saved" | "error";
 export const LAB_ENVIRONMENT_CONTEXT_VISIBILITY_KEY = "labspace-environment-context-visible";
 export type AppDialog =
@@ -215,9 +203,21 @@ function readStoredStringArray(key: string) {
   if (typeof localStorage === "undefined") return [];
   try {
     const value = JSON.parse(localStorage.getItem(key) ?? "[]");
-    return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
+    return Array.isArray(value)
+      ? value.filter((entry): entry is string => typeof entry === "string")
+      : [];
   } catch {
     return [];
+  }
+}
+
+function writeStoredStringArray(key: string, value: string[]) {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Favorites remain usable for the current session when browser storage is
+    // blocked or full; persistence is a progressive enhancement here.
   }
 }
 
@@ -294,10 +294,7 @@ function roomWithScene(room: Room, scene: Scene): Room {
   return { ...room, scene, updatedAt: now };
 }
 
-function projectWithRoomViewState(
-  project: Project,
-  patch: Partial<RoomViewState>,
-): Project {
+function projectWithRoomViewState(project: Project, patch: Partial<RoomViewState>): Project {
   const room = activeRoom(project);
   const now = new Date().toISOString();
   return replaceRoom(project, {
@@ -1728,9 +1725,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       state.pushToast("That protected room cannot be deleted.", "error");
       return false;
     }
-    const editableRooms = state.project.rooms.filter(
-      (entry) => entry.roomKind !== "demo-template",
-    );
+    const editableRooms = state.project.rooms.filter((entry) => entry.roomKind !== "demo-template");
     if (editableRooms.length <= 1) {
       state.pushToast("Create another room before deleting the final editable room.", "info");
       return false;
@@ -1754,9 +1749,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ),
     };
     set({
-      ...(state.project.activeRoomId === roomId
-        ? roomSwitchState(project)
-        : { project }),
+      ...(state.project.activeRoomId === roomId ? roomSwitchState(project) : { project }),
       selectedIds: [],
       selectedLocationId: null,
       history: [],
@@ -1798,7 +1791,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const currentRoom = activeRoom(state.project);
     const now = new Date().toISOString();
     const existingDemos = state.project.rooms.filter((room) => room.roomKind === "demo");
-    const name = existingDemos.length ? `Build Week Demo ${existingDemos.length + 1}` : "Build Week Demo";
+    const name = existingDemos.length
+      ? `Build Week Demo ${existingDemos.length + 1}`
+      : "Build Week Demo";
     const code = nextAvailableCode(
       state.project.rooms.map((room) => room.code),
       "DEMO-",
@@ -1918,7 +1913,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const favorites = state.favorites.includes(id)
         ? state.favorites.filter((entry) => entry !== id)
         : [...state.favorites, id];
-      localStorage.setItem("labspace-favorites", JSON.stringify(favorites));
+      writeStoredStringArray("labspace-favorites", favorites);
       return { favorites };
     }),
   toggleCuratedAsset: (id) =>
@@ -1926,7 +1921,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const curatedAssetIds = state.curatedAssetIds.includes(id)
         ? state.curatedAssetIds.filter((entry) => entry !== id)
         : [...state.curatedAssetIds, id];
-      localStorage.setItem("labspace-curated-assets", JSON.stringify(curatedAssetIds));
+      writeStoredStringArray("labspace-curated-assets", curatedAssetIds);
       return { curatedAssetIds };
     }),
   setIndexFilter: (indexFilter) => set({ indexFilter }),

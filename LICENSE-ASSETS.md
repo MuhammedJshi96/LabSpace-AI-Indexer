@@ -44,6 +44,19 @@ not be used as certified engineering, construction, safety, or installation
 data. Their provenance is documented in `ASSET_LICENSES.md` and
 `docs/ASSET_REFERENCE_CATALOG.md`.
 
+## Application screenshots and submission media
+
+The repository's Layout Editor, Spatial Index Finder, Asset Studio, evidence
+inspector, and room screenshots are protected LabSpace promotional media under
+this file. The Apache License applies to the source code that renders those
+interfaces, but not to the captured images, the submission banner, or other
+competition artwork unless a specific file states otherwise.
+
+The current screenshots document deterministic local software. They do not
+contain or license model-generated runtime answers, an OpenAI Platform service,
+or a deployed LabSpace AI API. Any future API integration will require its own
+service terms, privacy disclosure, and provider configuration.
+
 ## Permission requests
 
 To request permission to reuse a protected LabSpace asset, contact the

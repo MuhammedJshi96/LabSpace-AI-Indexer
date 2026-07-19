@@ -60,8 +60,8 @@ const inventoryImageRules: Array<{ terms: string[]; src: string }> = [
 export function inferInventoryRecordImage(item: Pick<InventoryItem, "name" | "notes">) {
   const searchable = `${item.name} ${item.notes}`.toLocaleLowerCase();
   return (
-    inventoryImageRules.find((rule) => rule.terms.every((term) => searchable.includes(term)))?.src ??
-    null
+    inventoryImageRules.find((rule) => rule.terms.every((term) => searchable.includes(term)))
+      ?.src ?? null
   );
 }
 
@@ -282,9 +282,9 @@ export function buildDigitalTwinIndex(project: Project, now = Date.now()): Digit
   const rooms = project.rooms
     .filter((room) => room.roomKind !== "demo-template")
     .sort((left, right) => {
-    if (left.id === project.activeRoomId) return -1;
-    if (right.id === project.activeRoomId) return 1;
-    return left.name.localeCompare(right.name);
+      if (left.id === project.activeRoomId) return -1;
+      if (right.id === project.activeRoomId) return 1;
+      return left.name.localeCompare(right.name);
     });
 
   return rooms.flatMap((room) => {
@@ -302,13 +302,14 @@ export function filterDigitalTwinIndex(
   { query, mode, scope, activeRoomId }: DigitalTwinFilter,
 ) {
   const normalized = query.trim().toLocaleLowerCase();
+  const queryTerms = normalized.split(/\s+/).filter(Boolean);
   return records.filter((record) => {
     if (scope === "room" && record.roomId !== activeRoomId) return false;
     if (mode === "inventory" && record.kind !== "inventory") return false;
     if (mode === "equipment" && record.kind !== "equipment") return false;
     if (mode === "locations" && record.kind !== "location") return false;
     if (mode === "alerts" && record.statusTone !== "warning") return false;
-    return !normalized || record.searchText.includes(normalized);
+    return !normalized || queryTerms.every((term) => record.searchText.includes(term));
   });
 }
 
@@ -344,9 +345,7 @@ export function preferredDigitalTwinRecord(
   }
 
   return (
-    focusableRecords[0] ??
-    records.find((record) => record.roomId === activeRoomId) ??
-    records[0]
+    focusableRecords[0] ?? records.find((record) => record.roomId === activeRoomId) ?? records[0]
   );
 }
 

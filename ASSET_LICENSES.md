@@ -74,6 +74,17 @@ tool is not required by or included in the production web application bundle.
 `public/labspace-mark.svg` is original temporary geometric artwork created for
 this prototype at the user's request.
 
+The README submission banner at
+`docs/submission/labspace-ai-indexer-thumbnail-3x2-source-v1.png` was supplied
+by the project owner for this competition entry. It remains protected
+promotional artwork under `LICENSE-ASSETS.md` and is not included in the Apache
+2.0 software grant.
+
+Finalized Layout Editor, Spatial Index Finder, exact-location evidence, and
+Asset Studio screenshots are original captures of the LabSpace application.
+They remain protected submission media rather than reusable UI or catalog
+assets.
+
 ## Interface icons
 
 Phosphor Icons are used through `@phosphor-icons/react` under the MIT Licence.
@@ -87,4 +98,6 @@ under their respective open-source licences. `package-lock.json` records exact
 packages and versions.
 
 No downloaded third-party 3D models, catalog textures, online fonts, paid APIs,
-or proprietary asset catalogs are included.
+live model output, or proprietary asset catalogs are included. The possible
+future LabSpace AI API described in product documentation is not part of the
+current runtime or asset bundle.

@@ -27,26 +27,23 @@ The room identity workspace also exposes **Create demo from template** as an opt
 ## Recommended evaluation flow
 
 1. Inspect the synchronized 2D/3D room in **Layout Editor**.
-2. Open **Digital Twin** from the centered product navigation.
-3. Open **Ask LabSpace** and choose:
+2. Open **Spatial Index** from the centered product navigation.
+3. In **Spatial Index Finder**, search:
 
-   > Where is the BÜCHI rotary evaporator and which cabinet contains its flasks?
+   > rotary evaporator
 
-4. Confirm the two grounded records: **BÜCHI rotary evaporator R-300** and **Rotary evaporator flask set**.
-5. Select the flask evidence. The right inspector should show **North reagent cabinet / Drawer 02**, its canonical location code, evidence photograph, and a controllable access preview.
+4. Select **BÜCHI rotary evaporator R-300** and confirm that the live room focuses the exact equipment record.
+5. Select **Rotary evaporator flask set** from the same results. The right inspector should show **North reagent cabinet / Drawer 02**, its canonical location code, evidence photograph, and a controllable access preview.
 6. Return to **Layout Editor**, move the rotary evaporator in 2D, and confirm the synchronized 3D camera keeps the user's orbit while the object updates.
-7. Move it into a visibly conflicting position or use the automated competition test fixture.
-8. Return to **Digital Twin**, focus the evaporator, and ask:
-
-   > Can I safely place it here?
-
-9. Confirm that Ask LabSpace reports the deterministic spatial conflict, identifies the actual rule, offers a geometry-derived alternative, and becomes validator-clean after **Apply valid placement**.
+7. In a temporary room copy, move it into a visibly conflicting position or use the automated competition test fixture.
+8. Confirm that the 2D selection status and **Warnings** tab report the deterministic spatial conflict and identify the affected object. Placement warnings are planning guidance, not safety certification.
+9. Return to **Spatial Index**, search `BÜCHI rotary evaporator`, select the result, and confirm that its exact record and scene focus remain coherent with the moved room object.
 
 ## Additional evidence scenarios
 
-- **Which equipment needs maintenance soon?** resolves the service-due vacuum cold-trap station.
-- **Which inventory item is still missing a physical location?** resolves the deliberately unassigned buffer stock without fabricating a cabinet.
-- Inventory, Equipment, and Locations in the left rail expose the same canonical project index used by Ask LabSpace.
+- Choose **Alerts** to inspect the service-due vacuum cold-trap station.
+- Search `unassigned` or use the Inventory view to inspect the deliberately unassigned buffer stock without fabricating a cabinet.
+- Inventory, Equipment, Locations, and Alerts in the left rail expose the same canonical project index used by the Finder.
 
 ## Verification
 
@@ -65,4 +62,4 @@ The primary automated competition flow is in `tests/e2e/build-week-demo.spec.ts`
 
 ## Data and privacy
 
-Runtime edits are stored only in `data/labspace-indexer.sqlite`, which is created locally and excluded from Git. The sanitized DEMO-01 fixture is intentionally source-controlled so a clean clone includes the video room; unrelated local project state is not published. The bundled no-billing Ask LabSpace mode performs deterministic, grounded orchestration over the current project records; it is not represented as a live GPT response. JSON export is the portable backup format.
+Runtime edits are stored only in `data/labspace-indexer.sqlite`, which is created locally and excluded from Git. The sanitized DEMO-01 fixture is intentionally source-controlled so a clean clone includes the video room; unrelated local project state is not published. Spatial Index search is deterministic local software, and no live model provider is included. A possible LabSpace AI API is documented only as future architecture. JSON export is the portable backup format.

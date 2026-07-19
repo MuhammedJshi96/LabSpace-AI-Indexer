@@ -37,7 +37,7 @@ function wall(id: string, start: [number, number], end: [number, number]): Scene
   };
 }
 
-describe("camera-aware Digital Twin cutaway", () => {
+describe("camera-aware Spatial Index cutaway", () => {
   it("removes only perimeter walls between the camera and room centre", () => {
     const east = wall("east", [8000, 0], [8000, 8000]);
     const west = wall("west", [0, 0], [0, 8000]);

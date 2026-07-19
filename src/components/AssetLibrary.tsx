@@ -18,7 +18,7 @@ type AssetLibraryProps = {
   onCollapsedChange?: (collapsed: boolean) => void;
 };
 
-type CategoryScope = "all" | "furniture" | "storage" | "equipment" | "fixtures";
+type CategoryScope = "all" | "favorites" | "furniture" | "storage" | "equipment" | "fixtures";
 
 const LIBRARY_HIDDEN_ASSET_IDS = new Set(["straight-wall", "half-height-wall"]);
 const BROWSABLE_ASSET_COUNT = ASSET_CATALOG.filter(
@@ -27,6 +27,7 @@ const BROWSABLE_ASSET_COUNT = ASSET_CATALOG.filter(
 
 const categoryTabs: Array<{ id: CategoryScope; label: string; categories: AssetCategory[] }> = [
   { id: "all", label: "All", categories: [] },
+  { id: "favorites", label: "Favorites", categories: [] },
   { id: "furniture", label: "Furniture", categories: ["Furniture"] },
   { id: "storage", label: "Storage", categories: ["Storage"] },
   { id: "equipment", label: "Equip.", categories: ["Laboratory equipment"] },
@@ -58,13 +59,14 @@ export function AssetLibrary({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const favoriteIdSet = useMemo(() => new Set(favorites), [favorites]);
   const activeCategory = categoryTabs.find((tab) => tab.id === categoryScope) ?? categoryTabs[0];
-  const results = useMemo(
-    () =>
-      searchAssets(search, activeCategory.categories).filter(
-        (asset) => !LIBRARY_HIDDEN_ASSET_IDS.has(asset.id),
-      ),
-    [activeCategory.categories, search],
-  );
+  const results = useMemo(() => {
+    const matchingAssets = searchAssets(search, activeCategory.categories).filter(
+      (asset) => !LIBRARY_HIDDEN_ASSET_IDS.has(asset.id),
+    );
+    return categoryScope === "favorites"
+      ? matchingAssets.filter((asset) => favoriteIdSet.has(asset.id))
+      : matchingAssets;
+  }, [activeCategory.categories, categoryScope, favoriteIdSet, search]);
   const grouped = useMemo(
     () =>
       new Map(
@@ -154,7 +156,7 @@ export function AssetLibrary({
             className={categoryScope === tab.id ? "active" : ""}
             onClick={() => setCategoryScope(tab.id)}
           >
-            {tab.label}
+            {tab.id === "favorites" ? `${tab.label} ${favorites.length}` : tab.label}
           </button>
         ))}
       </div>
@@ -207,7 +209,10 @@ export function AssetLibrary({
                       >
                         <AssetThumbnail asset={asset} />
                         <button
+                          type="button"
                           className={`curate-asset-button${isFavorite ? " active" : ""}`}
+                          draggable={false}
+                          onPointerDown={(event) => event.stopPropagation()}
                           onClick={(event) => {
                             event.stopPropagation();
                             toggleFavorite(asset.id);
@@ -218,6 +223,7 @@ export function AssetLibrary({
                               "success",
                             );
                           }}
+                          aria-pressed={isFavorite}
                           aria-label={`${isFavorite ? "Remove" : "Add"} ${asset.name} ${isFavorite ? "from" : "to"} favorites`}
                           title={`${isFavorite ? "Remove from" : "Add to"} favorites`}
                         >
@@ -236,7 +242,16 @@ export function AssetLibrary({
           );
         })}
 
-        {!results.length && (
+        {!results.length && categoryScope === "favorites" && (
+          <div className="empty-state compact">
+            <Star size={24} />
+            <b>No favorite assets yet</b>
+            <span>Use the star on any asset card to keep it in this quick-access list.</span>
+            <button onClick={() => setCategoryScope("all")}>Browse all assets</button>
+          </div>
+        )}
+
+        {!results.length && categoryScope !== "favorites" && (
           <div className="empty-state compact">
             <MagnifyingGlass size={24} />
             <b>No assets found</b>
@@ -248,7 +263,8 @@ export function AssetLibrary({
 
       <div className="asset-library-footer" aria-label="Asset library summary">
         <ListBullets size={17} />
-        {BROWSABLE_ASSET_COUNT} assets · {favorites.length} favorite{favorites.length === 1 ? "" : "s"}
+        {BROWSABLE_ASSET_COUNT} assets · {favorites.length} favorite
+        {favorites.length === 1 ? "" : "s"}
       </div>
     </aside>
   );

@@ -122,9 +122,7 @@ export function App() {
       state.setSelectedLocation(locationId);
     }
     if (
-      ["room", "layers", "index", "inventory", "properties", "validation"].includes(
-        panel ?? "",
-      )
+      ["room", "layers", "index", "inventory", "properties", "validation"].includes(panel ?? "")
     ) {
       state.setPanel(
         panel as "room" | "layers" | "index" | "inventory" | "properties" | "validation",
@@ -269,7 +267,7 @@ export function App() {
             className={`spatial-pane${inspectorCollapsed ? " inspector-collapsed" : ""}`}
             aria-label="3D view and inspector"
           >
-            {presentation !== "2d" && (
+            {hydrated && presentation !== "2d" && (
               <RendererBoundary label="3D room">
                 <ThreeDView />
               </RendererBoundary>

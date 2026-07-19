@@ -39,7 +39,7 @@ Generic factories create a project, laboratory, or room without copying Room 809
 
 `Room.floorFinish` resolves through the laboratory-material registry. Light-gray epoxy, sealed concrete, and welded vinyl provide one synchronized definition for 2D plan treatment and 3D PBR appearance.
 
-`Room.environmentProfileId` is nullable presentation metadata. It selects non-indexed ceiling/service context independently of walls, floors, and equipment. Only the optional Room 809 demonstration profile is currently registered.
+`Room.environmentProfileId` is nullable presentation metadata. It selects non-indexed ceiling/service context independently of walls, floors, and equipment. Only the optional DEMO-01 showcase profile is currently registered.
 
 ## Migration handling
 

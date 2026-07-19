@@ -30,7 +30,7 @@
   "wallHeight": 3000,
   "floorFinish": "sealed-concrete",
   "wallFinish": "cool-gray-resin-panel",
-  "notes": "Storage-first Build Week demonstration based on Room 809, staged as a simple equipment-to-cabinet Digital Twin workflow. New rooms remain blank.",
+  "notes": "Storage-first DEMO-01 competition showcase, informed by selected references from the author's Room 809 laboratory and staged as a simple equipment-to-cabinet Spatial Index workflow. New rooms remain blank.",
   "scene": {
     "schemaVersion": 2,
     "id": "04f480f5-2355-43e1-b550-bcce9cf405cd",

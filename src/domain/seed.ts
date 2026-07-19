@@ -1549,7 +1549,7 @@ export function createSeedProject(): Project {
     floorFinish: "light-gray-epoxy",
     wallFinish: "clean-white-panel",
     notes:
-      "Clean professional starting canvas. Use Demo room to open the curated Room 809 Build Week case study.",
+      "Clean professional starting canvas. Use Demo room to open the curated DEMO-01 competition showcase.",
     scene: {
       schemaVersion: SCENE_SCHEMA_VERSION,
       id: STARTER_SCENE_ID,
@@ -1625,7 +1625,7 @@ export function createSeedProject(): Project {
       {
         id: ROOM_ID,
         laboratoryId: LAB_ID,
-        name: "Room 809 demo template",
+        name: "DEMO-01 factory template",
         code: "R809",
         roomKind: "demo-template",
         demoSavedAt: null,
@@ -1644,7 +1644,7 @@ export function createSeedProject(): Project {
         floorFinish: "warm-welded-vinyl",
         wallFinish: "clean-white-panel",
         notes:
-          "Storage-first Build Week demonstration based on Room 809, staged as a simple equipment-to-cabinet Spatial Index workflow. New rooms remain blank.",
+          "Storage-first DEMO-01 factory template, informed by selected references from the author's Room 809 laboratory and staged as a simple equipment-to-cabinet Spatial Index workflow. New rooms remain blank.",
         scene: competitionScene,
         createdAt: CREATED,
         updatedAt: CREATED,

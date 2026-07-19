@@ -16,7 +16,7 @@ Examples from independent facilities:
 - `CHEMISTRY-WEST-B-214-WET-PREP-CAB-001-DR-02-BIN-03`
 - `GENOMICS-CORE-C-317-CELL-CULTURE-EQ-001`
 
-The supplied Room 809 demonstration continues to use codes such as `LAB-R809-Z01-CAB-001`, but `LAB` and `R809` are data values rather than defaults imposed by the indexing domain.
+Some DEMO-01 records retain provenance-derived codes such as `LAB-R809-Z01-CAB-001`, but `LAB` and `R809` are data values rather than defaults imposed by the indexing domain or the showcase identity.
 
 Object codes are allocated from an explicit laboratory code, room code, optional zone code, and object-type suffix. Child suffixes are allocated among siblings. Movement never changes a stable code. Manual edits and controlled reindexing use normalized case-insensitive uniqueness checks.
 

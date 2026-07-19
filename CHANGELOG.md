@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.13 — 2026-07-20
+
+- Standardized the competition showcase identity as **DEMO-01** across the README, current architecture/submission documentation, seed-facing labels, and future design guidance. Room 809 is now described only as provenance from the author's laboratory where that reference history is relevant.
+
 ## 0.1.12 — 2026-07-19
 
 - Reframed the second competition workspace as **Spatial Index Finder** and removed the floating conversational assistant, sample prompts, generated-answer UI, and runtime-provider claims without changing the canonical index, exact-location evidence, QR identity, camera focus, or opt-in storage access preview.

@@ -19,14 +19,14 @@ No manufacturer mesh, CAD drawing, logo, label, catalog photograph, or catalog
 texture is redistributed. The resulting models are original, editable planning
 representations and are not manufacturer-certified digital twins.
 
-## Room 809 demonstration layout reference
+## Room 809 provenance for DEMO-01
 
-The five supplied Floorplanner captures dated 2026-07-15 are the required spatial reference for the optional Room 809 demo:
+The five supplied Floorplanner captures dated 2026-07-15 are reference provenance for selected spatial cues in DEMO-01:
 
 - `Screenshot 2026-07-15 152427.png` is the canonical top-plan reference for the measured footprint, entrance recess, wall openings, circulation, two island benches, perimeter benching, sinks, cold storage, racks, and the rotary-evaporator row.
 - `Screenshot 2026-07-15 152631.png`, `152658.png`, `152715.png`, and `152729.png` are the four complementary orbit references for orientation, relative placement, and clearance checking.
 - Their simple Floorplanner furniture and equipment are geometry placeholders, not the visual-quality target. LabSpace should preserve their placement intent while substituting the detailed, material-aware authored assets documented below.
-- These captures govern the Room 809 demonstration only. New rooms remain blank and the professional editor remains reusable across unrelated laboratories.
+- These captures informed DEMO-01 only. New rooms remain blank and the professional editor remains reusable across unrelated laboratories.
 
 Implementation status (2026-07-18): the demonstration now uses an eight-segment concave shell with an 8.71 × 8.69 m outer envelope, 68.611 m² floor, 34.8 m perimeter, projected main entrance, hosted 2.20 m double door, hosted 0.90 m service door, and five hosted 0.95 m north windows. Its 63 scene objects include two long authored service-bridge islands, six authored rotary evaporators on the north run, and the referenced perimeter casework, sinks, cold storage, racks, equipment, seating, and circulation. These dimensions are carefully inferred from the screenshots and remain planning values until checked against a measured survey.
 

@@ -50,7 +50,7 @@ A future optional LabSpace AI API may select these index and validator tools and
 
 ## Human and Codex/GPT-5.6 collaboration
 
-The user selected the laboratory problem, authentic Room 809 case study, product requirements, visual direction, reference priority, asset anatomy, competition narrative, and acceptance decisions. Codex/GPT-5.6 accelerated architecture, implementation, asset-generation tooling, debugging, regression tests, browser verification, release audits, and submission documentation. The primary build-session ID retained for required `/feedback` evidence is:
+The user selected the laboratory problem, authored the DEMO-01 competition showcase, supplied Room 809 laboratory references, and made the product requirements, visual direction, reference priority, asset anatomy, competition narrative, and acceptance decisions. Codex/GPT-5.6 accelerated architecture, implementation, asset-generation tooling, debugging, regression tests, browser verification, release audits, and submission documentation. The primary build-session ID retained for required `/feedback` evidence is:
 
 `019f6a4d-25a9-7812-804c-88b695589b2a`
 

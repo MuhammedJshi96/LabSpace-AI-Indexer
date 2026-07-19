@@ -79,7 +79,7 @@ Floorplanner is used here as a behavior reference. LabSpace retains its own bran
 
 | Floorplanner interaction contract                          | LabSpace status                                                                                               |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Blank new room                                             | Implemented. New rooms contain no seeded perimeter or content; Room 809 remains the demonstration room.       |
+| Blank new room                                             | Implemented. New rooms contain no seeded perimeter or content; DEMO-01 remains the separate showcase.         |
 | Collapsible side workspace                                 | Implemented for both Asset Library and Inspector with labeled, keyboard-accessible restore rails.             |
 | Direct object movement                                     | Implemented and corrected to preserve room-coordinate drop positions rather than snapping to the origin.      |
 | Whole-wall selection and dragging                          | Implemented in Select mode.                                                                                   |

@@ -10,7 +10,7 @@ Last updated: 2026-07-18 JST
 - **Positioning:** A spatial operating system connecting laboratory design, physical inventory, and exact-location navigation, engineered with GPT-5.6/Codex and ready for a future optional LabSpace AI API.
 - **Primary Codex build-session ID:** `019f6a4d-25a9-7812-804c-88b695589b2a`
 
-This master goal supersedes broad asset expansion as the active product priority while preserving every durable LabSpace requirement. Room 809 is the authentic competition case study, not the product boundary.
+This master goal supersedes broad asset expansion as the active product priority while preserving every durable LabSpace requirement. DEMO-01 is the authentic competition showcase; selected spatial and equipment references came from the author's Room 809 laboratory, which is provenance rather than the demo identity or product boundary.
 
 ## Winning objective
 
@@ -56,7 +56,7 @@ Results never infer or invent missing inventory. Placement checks remain a separ
 
 ## Curated demo contract
 
-- A visible **Build Week Demo** entry point opens a controlled Room 809 case study.
+- A visible **Demo room** entry point opens the controlled DEMO-01 showcase.
 - Show roughly 15–25 best authored assets rather than the entire unfinished catalog.
 - Include exact cabinet/drawer/sample/equipment records, a deliberate placement conflict, and a missing-item or maintenance scenario.
 - Provide a controlled initial camera, useful example search terms, explicit loading state, and a fast reset path.

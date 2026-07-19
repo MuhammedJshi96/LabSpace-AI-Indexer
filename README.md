@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Design the lab. Index every location. Find anything instantly.</strong></p>
 
-LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexing system with synchronized 2D and 3D views, millimetre-accurate scene data, physical storage indexing, inventory assignment, equipment records, versioning, labels, reports, and validation. It stores projects in a local SQLite database. Room 809 is included as an optional demonstration and visual reference, not as a feature boundary.
+LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexing system with synchronized 2D and 3D views, millimetre-accurate scene data, physical storage indexing, inventory assignment, equipment records, versioning, labels, reports, and validation. It stores projects in a local SQLite database. The included competition showcase is **DEMO-01**; its laboratory character and selected spatial references were informed by the author's Room 809 laboratory, but Room 809 is not the demo's identity or a feature boundary.
 
 ## Finalized product tour
 
@@ -53,8 +53,8 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - The 22 non-authored entries are captured deterministically from `ProceduralAssetModel` rather than drawn as unrelated geometric icons; they remain performant planning geometry while the authored library expands.
 - A visible Asset Studio provides an orbitable PBR preview plus front, back, left, right, top, and isometric camera presets.
 - Interactive select, marquee, pan, wall, door, window, measure, move, resize, rotate, copy, paste, duplicate, delete, lock, hide, and z-order actions.
-- Newly created laboratories and rooms open with genuinely blank planning canvases; the supplied Room 809 scene remains available separately as a demonstration.
-- The Room 809 demonstration follows the supplied Floorplanner layout references while remaining separate from the blank planning canvas. The factory room is an immutable template; creating or saving a demo produces a normal persisted room and never rewrites the template.
+- Newly created laboratories and rooms open with genuinely blank planning canvases; **DEMO-01** remains available separately as the competition showcase.
+- DEMO-01 uses a user-authored, storage-first workflow informed by selected layout and equipment references from the author's Room 809 laboratory. It remains separate from the blank planning canvas. The factory demo source is immutable; creating or saving a demo produces a normal persisted room and never rewrites the template.
 - Selected wall segments can be translated directly or reshaped from endpoint handles while joined corners and hosted openings remain attached.
 - One simple closed straight-wall loop defines the floor: rectangles, concave L-shapes, split edges, and skewed loops share one clipped 2D floor, triangulated 3D floor, area/perimeter result, placement boundary, and normalized undoable resize.
 - Placed objects keep a reliable hit area and pointer-relative drag offset, and Select mode pans with middle-mouse drag, Space+drag, Arrow keys, or WASD.
@@ -64,7 +64,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - Rooms without a saved camera pose open with the user-approved relaxed split-view isometric framing; manual orbit poses persist per room, and ordinary 2D object moves never reset the 3D camera.
 - The Asset Library and Inspector collapse into narrow, labeled, keyboard-accessible rails when more canvas space is needed.
 - A dedicated Favorites tab gives quick access to starred assets; stars update immediately, persist safely across reloads, and remain usable for the current session even when browser storage is unavailable.
-- Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The Room 809 reference-services profile is the first bundled example and remains independently hideable.
+- Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The DEMO-01 reference-services profile is the first bundled example and remains independently hideable.
 - Visual predefined libraries synchronize six laboratory floor finishes and six professional wall finishes between the 2D plan and 3D PBR room, with per-wall overrides in the Inspector.
 - Cabinet, shelf, drawer, compartment, and bin hierarchies with stable codes and exact inventory locations.
 - Equipment identity, service, ownership, and utility requirements.
@@ -145,7 +145,7 @@ Before Build Week, the project had a local laboratory layout/indexing prototype,
 - exact cabinet, shelf, drawer, compartment, and bin indexing;
 - project-wide Spatial Index search, photographic result evidence, and exact-location camera navigation;
 - direct Layout Editor placement warnings backed by deterministic geometry validation;
-- a restrained 12-object Room 809 competition template with one BÜCHI station and assigned flask evidence;
+- a restrained 12-object DEMO-01 factory template with one BÜCHI station and assigned flask evidence;
 - the user's full DEMO-01 video-showcase room as a sanitized source-controlled fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
 - authored GLB asset delivery, offline Draco decoding, regression tests, release checks, and submission documentation.
 
@@ -193,7 +193,7 @@ media.
 - All 96 entries now have same-geometry top/isometric imagery, but procedural equipment captures are not substitutes for manufacturer-informed, all-sided authored GLBs at the `references/ref1.png` and `references/ref2.png` detail level.
 - Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
 - Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.
-- Only the optional Room 809 demonstration environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
+- Only the optional DEMO-01 environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
 - Light-gray epoxy has photographic material maps. Sealed concrete and welded vinyl currently use synchronized procedural treatments and still need authored photographic maps.
 - Labels use browser print-to-PDF rather than a bundled PDF engine.
 - The database stores validated project JSON behind a repository adapter; normalized multi-user relational tables are a future migration.

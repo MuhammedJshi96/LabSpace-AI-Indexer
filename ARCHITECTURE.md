@@ -13,7 +13,7 @@ React editor shell
             └─ SQLite implementation
 ```
 
-The canonical `Project → Laboratory → Room → Scene` object graph is the only layout state. A project may contain multiple laboratories and rooms, while each room owns one independent scene. Both renderers consume the active scene directly. Positions and dimensions remain in millimetres; only the 3D renderer converts millimetres to metres at its boundary. Room 809 is seeded demonstration data, not an architectural singleton.
+The canonical `Project → Laboratory → Room → Scene` object graph is the only layout state. A project may contain multiple laboratories and rooms, while each room owns one independent scene. Both renderers consume the active scene directly. Positions and dimensions remain in millimetres; only the 3D renderer converts millimetres to metres at its boundary. DEMO-01 is seeded showcase data, not an architectural singleton; Room 809 appears only as reference provenance.
 
 Spatial Index Finder reads the same canonical object graph and derives searchable equipment, inventory, room, and nested storage records. Explicit result selection drives scene focus and the evidence inspector; it does not maintain a competing copy of room state. Placement findings come directly from deterministic geometry services in the Layout Editor. No live model provider is present in the shipped runtime.
 
@@ -56,7 +56,7 @@ Index generation requires the active laboratory code along with room and optiona
 
 The floor-material registry is the shared source for 2D plan patterns and 3D PBR parameters. It currently includes light-gray epoxy, sealed concrete, and welded vinyl; epoxy has photographic maps, while concrete and vinyl are procedural.
 
-Environmental context is assigned with nullable `Room.environmentProfileId`. It is presentation-only and remains outside the selectable/indexed scene. The Room 809 reference-services profile is the only registered example today; the registry accepts additional room templates without identity checks.
+Environmental context is assigned with nullable `Room.environmentProfileId`. It is presentation-only and remains outside the selectable/indexed scene. The DEMO-01 reference-services profile is the only registered example today; the registry accepts additional room templates without identity checks.
 
 ### Camera command boundary
 

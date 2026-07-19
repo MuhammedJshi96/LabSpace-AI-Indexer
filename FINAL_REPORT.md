@@ -4,7 +4,7 @@ Date: 2026-07-18 (Asia/Tokyo)
 
 ## Outcome
 
-The current implementation runs locally at `http://127.0.0.1:3004/` as a professional multi-laboratory editor and indexing prototype. Room 809 is retained as an optional demonstration, visual reference, and future template candidate; it is no longer the runtime boundary for project navigation, room creation, layers, indexing, materials, or 3D environment behavior.
+The current implementation runs locally at `http://127.0.0.1:3004/` as a professional multi-laboratory editor and indexing prototype. DEMO-01 is the optional competition showcase. Room 809 is retained only as reference provenance and is not the runtime boundary for project navigation, room creation, layers, indexing, materials, or 3D environment behavior.
 
 A project can contain multiple laboratories and multiple blank rooms. The project workspace shows their hierarchy, creates new laboratories or rooms, and switches the active room. Every room owns its scene, semantic layers, floor finish, optional environment profile, indexed objects, storage hierarchy, inventory, and equipment records.
 
@@ -12,7 +12,7 @@ This milestone establishes the generalized product foundation and expands the re
 
 The Spatial Index Finder now implements the reference's core interaction contract—project-wide deterministic search, cross-laboratory room switching, selected spatial trace, exact location hierarchy, record detail, camera navigation, and room-aware editor handoff—using canonical LabSpace data. Its current room image remains a real-time planning renderer, not a photogrammetric or scan-derived facility twin. No live model provider ships in the runtime; an optional LabSpace AI API remains future architecture.
 
-The optional Room 809 demonstration now also implements the five supplied Floorplanner views as its spatial contract. The former generic rectangle has been replaced by an eight-wall concave footprint with the entrance projection, hosted openings, two long islands, north rotary row, perimeter functions, and clear circulation shown in the references. This remains reusable demonstration content, not a dependency of blank rooms or the general editor.
+DEMO-01 uses selected spatial cues informed by the five supplied Room 809 Floorplanner views. The former generic rectangle was replaced by an eight-wall concave footprint with an entrance projection, hosted openings, two long islands, perimeter functions, and clear circulation. This remains reusable showcase content, not a dependency of blank rooms or the general editor.
 
 ## Delivered in this pass
 
@@ -122,7 +122,7 @@ See `TESTING.md` for commands and the manual regression checklist.
 - Scene-local semantic layer resolution: implemented.
 - Laboratory-aware indexes and equipment IDs: implemented.
 - Reusable material registry synchronized in 2D/3D: implemented for three finishes; photographic maps remain open for concrete and vinyl.
-- Optional per-room environment profiles: implemented; only the Room 809 demo profile is currently registered.
+- Optional per-room environment profiles: implemented; only the DEMO-01 showcase profile is currently registered.
 - Reference-style searchable Spatial Index interaction contract: implemented against canonical project-wide laboratory and room data; item-specific photography and scan-level room rendering remain open.
 - Blank rooms with no inherited demo state: implemented.
 - Reliable wall, object, viewport, split-view, and renderer interactions: implemented for the documented workflows.

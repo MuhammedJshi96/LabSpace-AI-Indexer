@@ -112,13 +112,14 @@ export const ANALYTICAL_CORE_ENVIRONMENT_PROFILE_ID = "analytical-core-standard"
  * not participate in the selectable/indexed scene, so a laboratory can reuse
  * a profile without inheriting another room's equipment or identity.
  *
- * Room 809 is the first bundled example, not a feature boundary. Additional
+ * DEMO-01 is the first bundled example, informed by Room 809 reference material
+ * rather than acting as a feature boundary. Additional
  * laboratory templates can be registered here and assigned independently by
  * `Room.environmentProfileId`.
  */
 export const ROOM_809_DEMO_ENVIRONMENT_PROFILE: LaboratoryEnvironmentProfile = {
   id: ROOM_809_DEMO_ENVIRONMENT_PROFILE_ID,
-  name: "Room 809 reference services",
+  name: "DEMO-01 reference services",
   ceilingHeight: 3,
   lightFixtures: [
     [-2.7, 2.91, -2.45],

@@ -4,9 +4,9 @@
 
 `/digital-twin` is the stable compatibility route for the user-facing **Spatial Index Finder** used by laboratory managers, technicians, facilities teams, and inventory owners. Its job is to find a canonical record and reveal its physical context without changing the editor data model.
 
-The workspace is general to every LabSpace project. Room 809 supplies the current demonstration data and visual reference, but the route builds one index from every laboratory, room, zone, scene object, storage hierarchy, inventory item, and equipment record in the active project at runtime.
+The workspace is general to every LabSpace project. DEMO-01 supplies the current competition showcase data; selected laboratory character and spatial cues were informed by the author's Room 809 laboratory. The route builds one index from every laboratory, room, zone, scene object, storage hierarchy, inventory item, and equipment record in the active project at runtime.
 
-The Room 809 demonstration scene follows the supplied Floorplanner layout references while remaining only an optional case study. Spatial Index builds from the active project at runtime and never depends on Room 809-specific identifiers.
+DEMO-01 remains an optional showcase, separate from blank rooms. Spatial Index builds from the active project at runtime and never depends on Room 809-specific identifiers.
 
 ## Record and trace contract
 

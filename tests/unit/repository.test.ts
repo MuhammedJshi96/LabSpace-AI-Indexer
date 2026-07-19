@@ -16,7 +16,7 @@ describe("SQLite project repository", () => {
   it("seeds the blank starter, saves, reopens, and versions its active room", () => {
     const repository = new SqliteProjectRepository(databasePath);
     const project = repository.getActiveProject();
-    expect(project.rooms[0].name).toBe("Room 809 demo template");
+    expect(project.rooms[0].name).toBe("DEMO-01 factory template");
     expect(project.rooms[0].roomKind).toBe("demo-template");
     project.name = "Repository test project";
     repository.saveProject(project);

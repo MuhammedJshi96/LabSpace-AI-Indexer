@@ -39,7 +39,7 @@ The browser executable is installed project-locally by `package.json` configurat
 - A new laboratory receives its own code and first blank room; another room can be created under the selected laboratory and activated from the project navigator.
 - A new room has no scene objects, zones, storage locations, inventory items, or equipment records.
 - Semantic scene-local layer and label-template defaults remain available so the blank canvas is immediately usable.
-- Creating a blank room does not mutate the Room 809 demonstration scene.
+- Creating a blank room does not mutate the DEMO-01 showcase scene.
 
 ### Layers, indexing, and materials
 
@@ -66,7 +66,7 @@ The browser executable is installed project-locally by `package.json` configurat
 ### Optional environment profiles
 
 - A room with no profile receives no environmental dressing.
-- The currently registered Room 809 demonstration profile stays inside its spatial envelope and includes lights, vents, ductwork, power drops, service rails/posts, and bottles.
+- The currently registered DEMO-01 showcase profile stays inside its spatial envelope and includes lights, vents, ductwork, power drops, service rails/posts, and bottles.
 - Profile assignment is driven by `environmentProfileId`, not room ID or name.
 - The 3D toolbar toggle defaults visible, persists across reloads, and does not change walls, floors, or equipment.
 
@@ -104,7 +104,7 @@ Principal editor, Spatial Index, 3D-room, Asset Studio, and Floorplanner-audit s
 
 1. Open the project navigator, create a laboratory with a non-demo code, and confirm its first room is blank and active.
 2. Add another room under that laboratory, switch between both rooms, and confirm their scenes remain independent.
-3. Return to Room 809 and confirm the concave entrance projection, two islands, six-unit north rotary row, perimeter functions, and circulation remain intact.
+3. Return to DEMO-01 and confirm the authored shell, islands, perimeter functions, storage workflow, and circulation remain intact.
 4. Collapse and restore the Asset Library and Inspector separately; confirm each rail is labeled, keyboard reachable, and returns width to the canvas.
 5. Change a blank room among epoxy, sealed concrete, and vinyl; confirm both 2D and 3D update to the selected finish.
 6. Add a furniture asset from the catalog.
@@ -118,7 +118,7 @@ Principal editor, Spatial Index, 3D-room, Asset Studio, and Floorplanner-audit s
 14. Leave a wall chain open or add a branch and confirm the editor safely retains the rectangular floor fallback.
 15. In Select mode, pan with middle-mouse drag, Space+drag, Arrow keys, WASD, and Shift-modified keyboard steps.
 16. Focus Asset Search, type `wasd`, and confirm the viewport does not move.
-17. Assign the Room 809 demonstration environment profile to a blank test room, toggle it independently, then remove the profile and confirm indexed scene content is unchanged.
+17. Assign the DEMO-01 showcase environment profile to a blank test room, toggle it independently, then remove the profile and confirm indexed scene content is unchanged.
 18. Browse authored and non-authored catalog entries; confirm no built-in card appears as an unrecognizable generic box.
 19. Add a cabinet, then add a shelf, drawer, and bin.
 20. Select the drawer in Index Navigator and assign inventory.

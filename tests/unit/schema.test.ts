@@ -9,7 +9,7 @@ import { ProjectSchema, SceneSchema } from "../../src/domain/schema";
 describe("scene validation and persistence", () => {
   it("validates the complete seeded project", () => {
     const project = createSeedProject();
-    expect(ProjectSchema.parse(project).rooms[0].name).toBe("Room 809 demo template");
+    expect(ProjectSchema.parse(project).rooms[0].name).toBe("DEMO-01 factory template");
     expect(project.rooms[0].roomKind).toBe("demo-template");
     expect(project.rooms).toHaveLength(4);
     expect(SceneSchema.parse(project.rooms[0].scene).schemaVersion).toBe(2);

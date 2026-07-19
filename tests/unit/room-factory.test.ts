@@ -78,7 +78,7 @@ describe("blank room creation", () => {
 
     createBlankRoom(seededRoom, { name: "Blank room", code: "R002" });
 
-    expect(seededProject.rooms[0].name).toBe("Room 809 demo template");
+    expect(seededProject.rooms[0].name).toBe("DEMO-01 factory template");
     expect(seededProject.rooms[0].scene.objects.map((object) => object.id)).toEqual(
       seededObjectIds,
     );

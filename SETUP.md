@@ -50,6 +50,6 @@ npm run start
 - **SQLite module error:** confirm `node --version` reports Node 22.5 or newer; Node 24 LTS is recommended.
 - **A blank or stale page appears:** press `Ctrl+F5` once.
 - **Browser tests cannot find Chromium:** run `npx playwright install chromium`, then retry `npm run test:e2e`.
-- **Reset demonstration data:** rename the database while the app is stopped; the next start creates the Room 809 seed. Keep the renamed copy as a backup.
+- **Reset demonstration data:** rename the database while the app is stopped; the next start creates the blank starter room, DEMO-01 showcase, and optional DEMO-01 factory template. Keep the renamed copy as a backup.
 
 No administrator access, cloud account, API key, or paid service is required after Node.js is installed.

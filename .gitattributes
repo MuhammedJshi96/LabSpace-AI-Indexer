@@ -1,0 +1,8 @@
+* text=auto
+
+*.glb binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.sqlite binary

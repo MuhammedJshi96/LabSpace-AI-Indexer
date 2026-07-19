@@ -1,0 +1,2649 @@
+{
+  "id": "93f219ff-c437-4168-90d4-ddac2c100b38",
+  "laboratoryId": "c411c6a9-e14c-475e-90dd-e99fd3f00f19",
+  "name": "Build Week Demo",
+  "code": "DEMO-01",
+  "roomKind": "demo",
+  "demoSavedAt": "2026-07-19T02:37:32.319Z",
+  "viewState": {
+    "cameraPreset": "isometric",
+    "presentation": "split",
+    "floorVisible": true,
+    "wallTransparent": false,
+    "environmentContextVisible": false,
+    "cameraPose": {
+      "position": {
+        "x": 10.392159025806732,
+        "y": 10.942159025806735,
+        "z": 10.392159025806734
+      },
+      "target": {
+        "x": 0,
+        "y": 0.55,
+        "z": 0
+      }
+    }
+  },
+  "environmentProfileId": null,
+  "width": 8635.088565005668,
+  "depth": 8705.013412784381,
+  "wallHeight": 3000,
+  "floorFinish": "sealed-concrete",
+  "wallFinish": "cool-gray-resin-panel",
+  "notes": "Storage-first Build Week demonstration based on Room 809, staged as a simple equipment-to-cabinet Digital Twin workflow. New rooms remain blank.",
+  "scene": {
+    "schemaVersion": 2,
+    "id": "04f480f5-2355-43e1-b550-bcce9cf405cd",
+    "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+    "objects": [
+      {
+        "id": "c6aeeab3-0f00-4919-9459-b3f2f5b7a3e4",
+        "indexCode": "LAB-R809-WALL-01",
+        "name": "Room wall 1",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 4317.544282502835,
+          "y": 7.506706392190608,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 8635.101616544827,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0.09961731317337497
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 101,
+        "wall": {
+          "start": {
+            "x": 0,
+            "y": 0
+          },
+          "end": {
+            "x": 8635.088565005668,
+            "y": 15.013412784381217
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "133cfd34-e17d-4d57-8599-f08f5e7838b9",
+        "indexCode": "LAB-R809-WALL-02",
+        "name": "Room wall 2",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 8635.088565005668,
+          "y": 3841.4853064503163,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 7652.94378733187,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T04:03:26.165Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 102,
+        "wall": {
+          "start": {
+            "x": 8635.088565005668,
+            "y": 15.013412784381217
+          },
+          "end": {
+            "x": 8635.088565005668,
+            "y": 7667.957200116251
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "91381e7e-8fb2-42ec-bbf7-b35bdef6bf83",
+        "indexCode": "LAB-R809-WALL-03",
+        "name": "Room wall 3",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 4676.744725157414,
+          "y": 8697.93616610732,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 3103.344600109623,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 179.73867048403227
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T07:15:04.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 103,
+        "wall": {
+          "start": {
+            "x": 6228.40088530916,
+            "y": 8690.85891943026
+          },
+          "end": {
+            "x": 3125.0885650056675,
+            "y": 8705.013412784381
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "e83f1afa-f199-44d0-8d87-7df0480c84a0",
+        "indexCode": "LAB-R809-WALL-04",
+        "name": "Room wall 4",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 0,
+          "y": 3800,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 7600,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 104,
+        "wall": {
+          "start": {
+            "x": 0,
+            "y": 7600
+          },
+          "end": {
+            "x": 0,
+            "y": 0
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "a5f15314-841c-4176-9b05-f99690063520",
+        "indexCode": "LAB-R809-WALL-05",
+        "name": "Room wall 5",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 7890.109599014599,
+          "y": 7675.034446793312,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1490.025163800466,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 179.45571058265824
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T04:03:38.928Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 105,
+        "wall": {
+          "start": {
+            "x": 8635.088565005668,
+            "y": 7667.957200116251
+          },
+          "end": {
+            "x": 7145.130633023528,
+            "y": 7682.111693470372
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "d4ca68d8-0a8e-4ffa-ab7e-7eb3bde809e8",
+        "indexCode": "LAB-R809-WALL-08",
+        "name": "Room wall 8",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 1562.5442825028338,
+          "y": 7607.506706392191,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 3125.124628185669,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -179.7247442582792
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 108,
+        "wall": {
+          "start": {
+            "x": 3125.0885650056675,
+            "y": 7615.013412784381
+          },
+          "end": {
+            "x": 0,
+            "y": 7600
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "77b841fa-aac1-43b5-9623-303face96982",
+        "indexCode": "LAB-R809-DOOR-01",
+        "name": "West service entrance",
+        "assetDefinitionId": "single-door",
+        "objectType": "door",
+        "position": {
+          "x": 0,
+          "y": 6500,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 900,
+          "depth": 120,
+          "height": 2100
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90
+        },
+        "layerId": "layer-openings-002",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": null,
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 110,
+        "opening": {
+          "wallId": "e83f1afa-f199-44d0-8d87-7df0480c84a0",
+          "offset": 1100,
+          "width": 900,
+          "sillHeight": 0,
+          "height": 2100,
+          "handing": "left",
+          "swing": "outward"
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "7498ce28-a6aa-44df-a866-cdd0b0d0e857",
+        "indexCode": "LAB-R809-Z01-CAB-001",
+        "name": "North reagent cabinet",
+        "assetDefinitionId": "base-cabinet",
+        "objectType": "storage",
+        "position": {
+          "x": 3000,
+          "y": 696.129044420011,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 812.7952259856435,
+          "depth": 879.9529226884956,
+          "height": 900
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-storage-004",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {
+          "overlapExemptObjectIds": [
+            "7ea9aa7b-2a4d-4b52-adcb-3fd9a6193d4e"
+          ]
+        },
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T08:29:23.936Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "2708aabb-200e-41a5-ab70-4c71816e4936"
+        ],
+        "zIndex": 1,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "7ea9aa7b-2a4d-4b52-adcb-3fd9a6193d4e",
+        "indexCode": "LAB-R809-Z01-OBJ-001",
+        "name": "North evaporator bench A",
+        "assetDefinitionId": "lab-bench",
+        "objectType": "furniture",
+        "position": {
+          "x": 4534.761403240946,
+          "y": 481.62904442001087,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 2400,
+          "depth": 750,
+          "height": 900
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:51:25.162Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 2,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "fcc58784-63a4-4b59-9d49-1a2c2d697a6f",
+        "indexCode": "LAB-R809-Z01-CAB-002",
+        "name": "East glazed reagent cabinet",
+        "assetDefinitionId": "glazed-sliding-cabinet",
+        "objectType": "storage",
+        "position": {
+          "x": 8325.088565005668,
+          "y": 2415.013412784381,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 900,
+          "depth": 500,
+          "height": 2000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-storage-004",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "18fb9f73-1d41-41db-a38f-1a490f3a8a84"
+        ],
+        "zIndex": 5,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "180c7b43-f55c-4038-8186-8eadc7e994b6",
+        "indexCode": "LAB-R809-Z01-CAB-003",
+        "name": "East media cabinet",
+        "assetDefinitionId": "tall-cabinet",
+        "objectType": "storage",
+        "position": {
+          "x": 8271.143443054449,
+          "y": 3353.194307093324,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1000,
+          "depth": 600,
+          "height": 2100
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-storage-004",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "af6bb3ae-1d75-4d27-b20a-bf1fabe03a02",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "6aaba37c-1b82-48de-b961-ffd673277bc2"
+        ],
+        "zIndex": 9,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "f514d847-dc56-42fc-a3c4-80f52c73cc6e",
+        "indexCode": "LAB-R809-Z02-EQ-001",
+        "name": "PHCbi-style biomedical freezer",
+        "assetDefinitionId": "lab-freezer",
+        "objectType": "equipment",
+        "position": {
+          "x": 8154.288558090853,
+          "y": 5781.481875428743,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 749.999999999994,
+          "depth": 799.9999999999959,
+          "height": 2000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T05:18:40.980Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 12,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "500bd8fe-302c-476a-9184-b88292296cea",
+        "indexCode": "LAB-R809-Z02-OBJ-004",
+        "name": "Analysis island",
+        "assetDefinitionId": "island-bench-service-bridge",
+        "objectType": "furniture",
+        "position": {
+          "x": 5325.088565005668,
+          "y": 4115.013412784381,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 3600,
+          "depth": 1200,
+          "height": 2100
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "af6bb3ae-1d75-4d27-b20a-bf1fabe03a02",
+        "locked": false,
+        "visible": true,
+        "metadata": {
+          "supportSurfaceHeight": 900
+        },
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "0d15f66a-fd31-4370-8b22-e81454948948"
+        ],
+        "zIndex": 14,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "a793e7dd-5fb5-4ff7-93bb-f0f2b246d598",
+        "indexCode": "LAB-R809-Z02-EQ-002",
+        "name": "Analytical balance AB-04",
+        "assetDefinitionId": "analytical-balance",
+        "objectType": "equipment",
+        "position": {
+          "x": 5643.080642965853,
+          "y": 3343.2632997110222,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 211.99999999999957,
+          "depth": 410.9999999999995,
+          "height": 345
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90.00000000000001
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "af6bb3ae-1d75-4d27-b20a-bf1fabe03a02",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:49:42.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 17,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "3958525c-903f-4243-9c38-960d94450df5",
+        "indexCode": "LAB-R809-Z01-EQ-003",
+        "name": "North rotary evaporator 1",
+        "assetDefinitionId": "rotary-evaporator",
+        "objectType": "equipment",
+        "position": {
+          "x": 4186.0891002162,
+          "y": 481.6290444200111,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 607,
+          "depth": 429,
+          "height": 947
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:51:34.842Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 26,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "a5db2f79-97be-4bbd-b5b7-bcee74c304ee",
+        "indexCode": "LAB-R809-Z02-EQ-004",
+        "name": "North vacuum cold-trap station",
+        "assetDefinitionId": "vacuum-cold-trap-system",
+        "objectType": "equipment",
+        "position": {
+          "x": 5339.550021127125,
+          "y": 474.3983163592825,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 500,
+          "depth": 550,
+          "height": 1150
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:51:29.534Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 27,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "f5629432-4516-4973-84bd-6f9fd26630b4",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-001",
+        "name": "Wide three-pane observation window",
+        "assetDefinitionId": "wide-window",
+        "objectType": "window",
+        "position": {
+          "x": 4529.8957711689745,
+          "y": 7.875911702677255,
+          "z": 950
+        },
+        "dimensions": {
+          "width": 2300,
+          "depth": 120,
+          "height": 1500
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0.09961731317337497
+        },
+        "layerId": "layer-openings-002",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:43:23.417Z",
+        "updatedAt": "2026-07-19T05:15:00.924Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 125,
+        "opening": {
+          "wallId": "c6aeeab3-0f00-4919-9459-b3f2f5b7a3e4",
+          "offset": 4529.902617898061,
+          "width": 2300,
+          "sillHeight": 950,
+          "height": 1500,
+          "handing": "left",
+          "swing": "inward"
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "74c2efda-7b2c-4ab2-858f-7ae373a17f66",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-003",
+        "name": "Laboratory bench with overhead cabinets",
+        "assetDefinitionId": "lab-bench-overhead",
+        "objectType": "furniture",
+        "position": {
+          "x": 1682.8659311761248,
+          "y": 450.2685845143291,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1727.6496836582405,
+          "depth": 749.991643138517,
+          "height": 2100
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:47:50.318Z",
+        "updatedAt": "2026-07-19T05:26:14.629Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 127,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "2451be34-4597-46bc-a3d7-3261dd66464d",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-002",
+        "name": "Round stool",
+        "assetDefinitionId": "round-stool",
+        "objectType": "furniture",
+        "position": {
+          "x": 6168.170066173301,
+          "y": 3357.641593623628,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 440,
+          "depth": 440,
+          "height": 520
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:50:03.395Z",
+        "updatedAt": "2026-07-19T02:50:06.515Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 128,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "e4d611f7-1ca5-49e7-8005-37f987da3d80",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-004",
+        "name": "Wire-basket laboratory trolley",
+        "assetDefinitionId": "wire-basket-trolley",
+        "objectType": "furniture",
+        "position": {
+          "x": 3687.1070645541604,
+          "y": 8006.071467021127,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 787.4361563641335,
+          "depth": 1179.676390587943,
+          "height": 1050
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -180
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:50:16.134Z",
+        "updatedAt": "2026-07-19T05:19:42.900Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 129,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "6a308db7-04c3-4146-8e38-c3b4acd495e5",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-001",
+        "name": "Heavy-duty rack",
+        "assetDefinitionId": "heavy-duty-rack",
+        "objectType": "storage",
+        "position": {
+          "x": 1633.8624969092693,
+          "y": 7262.412706357272,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 3165.157907886636,
+          "depth": 494.04710699809436,
+          "height": 2200
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-storage-004",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:52:42.549Z",
+        "updatedAt": "2026-07-19T02:52:56.594Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "6989761f-81f6-465c-a851-2fa4c1ea1d58"
+        ],
+        "zIndex": 130,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "1be320be-d3e9-4ff8-8591-cf8c8a58ddfa",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-005",
+        "name": "Half-height wall",
+        "assetDefinitionId": "half-height-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 1519.7975137839214,
+          "y": 6077.128751272179,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 2400,
+          "depth": 150,
+          "height": 1200
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:53:09.555Z",
+        "updatedAt": "2026-07-19T02:53:09.555Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 131,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "85e0f67a-28b3-4d08-96d9-db988ad75da1",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-006",
+        "name": "Half-height wall",
+        "assetDefinitionId": "half-height-wall",
+        "objectType": "wall",
+        "position": {
+          "x": -57.274861601276505,
+          "y": 5819.242702467052,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 2400,
+          "depth": 150,
+          "height": 1200
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:53:12.007Z",
+        "updatedAt": "2026-07-19T02:53:12.007Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 132,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "7cbb0802-457d-4653-9f66-f1e9b17b9c61",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-007",
+        "name": "Half-height wall",
+        "assetDefinitionId": "half-height-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 2.2373035075988867,
+          "y": 3597.4552050690377,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 2400,
+          "depth": 150,
+          "height": 1200
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:53:15.529Z",
+        "updatedAt": "2026-07-19T02:53:15.529Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 133,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "67c00fa5-f474-4b9f-b844-6ef3f503826f",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-008",
+        "name": "Half-height wall",
+        "assetDefinitionId": "half-height-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 2075.244388133425,
+          "y": 5273.714522302361,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 2400,
+          "depth": 150,
+          "height": 1200
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:53:17.382Z",
+        "updatedAt": "2026-07-19T02:53:17.382Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 134,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "6e271bb0-8439-4f0c-8a89-a04954ac044c",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-009",
+        "name": "Structural column",
+        "assetDefinitionId": "structural-column",
+        "objectType": "architecture",
+        "position": {
+          "x": 1574.3503318003943,
+          "y": 5987.8605036088575,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 3091.233801588311,
+          "depth": 100,
+          "height": 1000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:53:21.990Z",
+        "updatedAt": "2026-07-19T02:54:25.390Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 135,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "b4ba1cd2-9b6c-4711-b7fb-02897b7def94",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-010",
+        "name": "Office desk",
+        "assetDefinitionId": "office-desk",
+        "objectType": "furniture",
+        "position": {
+          "x": 1467.3916199895605,
+          "y": 5592.319524934714,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1400,
+          "depth": 700,
+          "height": 850
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:55:15.765Z",
+        "updatedAt": "2026-07-19T02:57:43.755Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 136,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "97b7bc78-c097-48c8-8551-3361873b4c2c",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-011",
+        "name": "Office desk",
+        "assetDefinitionId": "office-desk",
+        "objectType": "furniture",
+        "position": {
+          "x": 428.4218175079302,
+          "y": 4546.742107729388,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1399.9999999999914,
+          "depth": 699.9999999999962,
+          "height": 850
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:55:23.963Z",
+        "updatedAt": "2026-07-19T02:57:39.455Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 137,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "f542acf6-c35e-47f9-ac8b-1f4bb1176acb",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-012",
+        "name": "Office chair",
+        "assetDefinitionId": "office-chair",
+        "objectType": "furniture",
+        "position": {
+          "x": 1151.840917616699,
+          "y": 4876.660133316371,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 619.9999999999958,
+          "depth": 619.999999999997,
+          "height": 980
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 58.414916259593824
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {
+          "overlapExemptObjectIds": [
+            "b4ba1cd2-9b6c-4711-b7fb-02897b7def94",
+            "97b7bc78-c097-48c8-8551-3361873b4c2c"
+          ]
+        },
+        "createdAt": "2026-07-19T02:56:10.941Z",
+        "updatedAt": "2026-07-19T02:56:47.219Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 138,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "3532607c-2675-480c-90a9-5b57e022c2f7",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-002",
+        "name": "Base drawer cabinet",
+        "assetDefinitionId": "base-drawer-cabinet",
+        "objectType": "storage",
+        "position": {
+          "x": 418.3956832893175,
+          "y": 3545.2257664968092,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 606.4791789686154,
+          "depth": 664.791789686188,
+          "height": 850
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90.00000000000001
+        },
+        "layerId": "layer-storage-004",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:56:55.694Z",
+        "updatedAt": "2026-07-19T02:57:18.573Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "75fdb619-983d-45fc-befc-697c29e28b38"
+        ],
+        "zIndex": 139,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "85aea6f2-3af0-43a8-9ebc-7939de1ccb38",
+        "indexCode": "LAB-01-DEMO-01-Z01-EQ-001",
+        "name": "Compound microscope",
+        "assetDefinitionId": "compound-microscope",
+        "objectType": "equipment",
+        "position": {
+          "x": 4984.518297493742,
+          "y": 3825.5367758994835,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 299.99999999999983,
+          "depth": 420.00000000000233,
+          "height": 480
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 89.99999999999989
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:58:42.122Z",
+        "updatedAt": "2026-07-19T02:58:50.374Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 140,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "d5ea438b-11f0-4a9a-a824-fd7c164c6f4c",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-013",
+        "name": "Round stool",
+        "assetDefinitionId": "round-stool",
+        "objectType": "furniture",
+        "position": {
+          "x": 4501.107983919346,
+          "y": 3845.6788722984,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 440,
+          "depth": 440,
+          "height": 520
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:58:57.259Z",
+        "updatedAt": "2026-07-19T02:59:00.329Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 141,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "b30c11d8-a49a-43da-a3c4-f87802d8147f",
+        "indexCode": "LAB-01-DEMO-01-Z01-EQ-002",
+        "name": "Biosafety cabinet",
+        "assetDefinitionId": "biosafety-cabinet",
+        "objectType": "equipment",
+        "position": {
+          "x": 445.49948347161893,
+          "y": 2455.1957566195424,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1499.9999999999932,
+          "depth": 800.0000000000026,
+          "height": 2250
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90.00000000000031
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T02:59:34.117Z",
+        "updatedAt": "2026-07-19T03:00:45.877Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 142,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "39ae74b2-ec82-4d1e-8a41-a5fff8888002",
+        "indexCode": "LAB-01-DEMO-01-Z01-EQ-003",
+        "name": "Fume hood",
+        "assetDefinitionId": "fume-hood",
+        "objectType": "equipment",
+        "position": {
+          "x": 8148.9794835781395,
+          "y": 1195.917170112714,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1499.9999999999898,
+          "depth": 849.999999999995,
+          "height": 2400
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T03:00:39.119Z",
+        "updatedAt": "2026-07-19T03:01:06.268Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 143,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "8e4d4658-ac5e-4f11-855c-66771e165072",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-003",
+        "name": "Wall cabinet",
+        "assetDefinitionId": "wall-cabinet",
+        "objectType": "storage",
+        "position": {
+          "x": 277.3340337215586,
+          "y": 4532.587614375268,
+          "z": 1600
+        },
+        "dimensions": {
+          "width": 1312.9447530969667,
+          "depth": 310.4178819075396,
+          "height": 850
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90.00000000000021
+        },
+        "layerId": "layer-storage-004",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T03:57:25.397Z",
+        "updatedAt": "2026-07-19T03:58:09.216Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "9d322327-48b4-4b00-beda-ada935ebab4e"
+        ],
+        "zIndex": 144,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "db867c03-e3ca-4bc6-9ccb-b50f31dc3ef1",
+        "indexCode": "LAB-01-DEMO-01-Z01-SAFE-001",
+        "name": "Waste bin",
+        "assetDefinitionId": "waste-bin",
+        "objectType": "safety",
+        "position": {
+          "x": 2593.602387007178,
+          "y": 5592.319524934714,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 449.9999999999987,
+          "depth": 449.999999999999,
+          "height": 700
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -180
+        },
+        "layerId": "layer-safety-007",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T03:59:46.690Z",
+        "updatedAt": "2026-07-19T08:31:17.020Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 146,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "9c010b86-01f6-4681-bd79-368cddcd2a75",
+        "indexCode": "LAB-01-DEMO-01-Z01-SAFE-002",
+        "name": "Biological waste bin",
+        "assetDefinitionId": "biological-waste-bin",
+        "objectType": "safety",
+        "position": {
+          "x": 5350.822297353663,
+          "y": 6157.204609042611,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 450,
+          "depth": 450,
+          "height": 700
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-safety-007",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T03:59:59.806Z",
+        "updatedAt": "2026-07-19T04:00:02.207Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 147,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "86a4d5ce-2f6b-463e-8b10-7e542aad3870",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-014",
+        "name": "Double glazed sliding door",
+        "assetDefinitionId": "double-sliding-door",
+        "objectType": "door",
+        "position": {
+          "x": 5078.035348803072,
+          "y": 8696.105842608038,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1800,
+          "depth": 100,
+          "height": 2100
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 179.73867048403227
+        },
+        "layerId": "layer-openings-002",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T04:01:30.496Z",
+        "updatedAt": "2026-07-19T07:15:04.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 148,
+        "opening": {
+          "wallId": "91381e7e-8fb2-42ec-bbf7-b35bdef6bf83",
+          "offset": 1150.3775022938219,
+          "width": 1800,
+          "sillHeight": 0,
+          "height": 2100,
+          "handing": "left",
+          "swing": "sliding"
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "27936b5f-ef01-419d-b7a3-cac355dc831f",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-015",
+        "name": "Straight wall",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 6667.19017928691,
+          "y": 8195.451652036027,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1323.5775838182105,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 131.5317707410829
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T04:03:45.132Z",
+        "updatedAt": "2026-07-19T07:15:04.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 149,
+        "wall": {
+          "start": {
+            "x": 7105.97947326466,
+            "y": 7700.044384641795
+          },
+          "end": {
+            "x": 6228.40088530916,
+            "y": 8690.85891943026
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "339ba40d-65d4-40ea-86fc-d8dc713cf215",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-016",
+        "name": "Straight wall",
+        "assetDefinitionId": "straight-wall",
+        "objectType": "wall",
+        "position": {
+          "x": 3149.798580787856,
+          "y": 8181.297158681906,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1047.5281423077017,
+          "depth": 150,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90.77422016492808
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T04:03:56.351Z",
+        "updatedAt": "2026-07-19T04:03:56.351Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 150,
+        "wall": {
+          "start": {
+            "x": 3156.8758274649163,
+            "y": 7657.580904579431
+          },
+          "end": {
+            "x": 3142.721334110795,
+            "y": 8705.013412784381
+          },
+          "thickness": 150,
+          "height": 3000,
+          "halfHeight": false
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "be913597-eae0-4c62-b06a-1274a7adfac5",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-017",
+        "name": "Fixed observation window",
+        "assetDefinitionId": "standard-window",
+        "objectType": "window",
+        "position": {
+          "x": 0,
+          "y": 3547.027072519383,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 600,
+          "depth": 120,
+          "height": 1600
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90
+        },
+        "layerId": "layer-openings-002",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:13:07.129Z",
+        "updatedAt": "2026-07-19T05:14:04.130Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 151,
+        "opening": {
+          "wallId": "e83f1afa-f199-44d0-8d87-7df0480c84a0",
+          "offset": 4052.972927480617,
+          "width": 600,
+          "sillHeight": 900,
+          "height": 1600,
+          "handing": "left",
+          "swing": "inward"
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "f5ef6cc5-8bf7-45d2-9713-1baf68a9754a",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-018",
+        "name": "Fixed observation window",
+        "assetDefinitionId": "standard-window",
+        "objectType": "window",
+        "position": {
+          "x": 6667.362520678817,
+          "y": 8195.257073045164,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 1000,
+          "depth": 120,
+          "height": 1500
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 131.5317707410829
+        },
+        "layerId": "layer-openings-002",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:15:23.183Z",
+        "updatedAt": "2026-07-19T07:15:04.524Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 152,
+        "opening": {
+          "wallId": "27936b5f-ef01-419d-b7a3-cac355dc831f",
+          "offset": 661.5288639593767,
+          "width": 1000,
+          "sillHeight": 900,
+          "height": 1500,
+          "handing": "left",
+          "swing": "inward"
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "2f788246-1b97-4fdb-963c-340f31ead856",
+        "indexCode": "LAB-01-DEMO-01-Z01-EQ-005",
+        "name": "Benchtop centrifuge",
+        "assetDefinitionId": "benchtop-centrifuge",
+        "objectType": "equipment",
+        "position": {
+          "x": 1682.8659311761248,
+          "y": 445.9171701127192,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 600,
+          "depth": 650,
+          "height": 420
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:16:43.393Z",
+        "updatedAt": "2026-07-19T05:26:24.657Z",
+        "parentObjectId": "74c2efda-7b2c-4ab2-858f-7ae373a17f66",
+        "childLocationIds": [],
+        "zIndex": 153,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "1f0be4ac-97f1-4d76-a0bd-3422b8e78ed5",
+        "indexCode": "LAB-01-DEMO-01-Z01-EQ-006",
+        "name": "Vortex mixer",
+        "assetDefinitionId": "vortex-mixer",
+        "objectType": "equipment",
+        "position": {
+          "x": 2252.4601464671114,
+          "y": 546.4103546291724,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 122,
+          "depth": 165,
+          "height": 165
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:17:21.873Z",
+        "updatedAt": "2026-07-19T05:26:20.021Z",
+        "parentObjectId": "74c2efda-7b2c-4ab2-858f-7ae373a17f66",
+        "childLocationIds": [],
+        "zIndex": 154,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "634fbffa-02d9-4974-98dc-351b8ea70001",
+        "indexCode": "LAB-01-DEMO-01-Z01-EQ-007",
+        "name": "Autoclave",
+        "assetDefinitionId": "autoclave",
+        "objectType": "equipment",
+        "position": {
+          "x": 6168.170066173301,
+          "y": 530.8441302374451,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 799.9999999999989,
+          "depth": 900.0000000000097,
+          "height": 1500
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-equipment-005",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:17:37.788Z",
+        "updatedAt": "2026-07-19T05:28:25.635Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 155,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "afc51889-0c64-4d5c-91dc-1addf3e8b9b8",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-019",
+        "name": "Structural column",
+        "assetDefinitionId": "structural-column",
+        "objectType": "architecture",
+        "position": {
+          "x": 439.6202213523928,
+          "y": 530.8441302374451,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 745.9778590827267,
+          "depth": 909.7470440572557,
+          "height": 3000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-walls-001",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:25:03.099Z",
+        "updatedAt": "2026-07-19T05:25:52.856Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 156,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "b2ada2cc-caca-4793-b7fd-cd4e8ce718b0",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-020",
+        "name": "Fixed observation window",
+        "assetDefinitionId": "standard-window",
+        "objectType": "window",
+        "position": {
+          "x": 0,
+          "y": 1387.1403487038524,
+          "z": 900
+        },
+        "dimensions": {
+          "width": 600,
+          "depth": 120,
+          "height": 1600
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -90
+        },
+        "layerId": "layer-openings-002",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:26:59.327Z",
+        "updatedAt": "2026-07-19T05:27:10.274Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 157,
+        "opening": {
+          "wallId": "e83f1afa-f199-44d0-8d87-7df0480c84a0",
+          "offset": 6212.859651296148,
+          "width": 600,
+          "sillHeight": 900,
+          "height": 1600,
+          "handing": "left",
+          "swing": "inward"
+        },
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "1f434ef3-34cc-4db5-9a1d-5290e6c328a6",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-021",
+        "name": "Laboratory bench with sink",
+        "assetDefinitionId": "lab-bench-sink",
+        "objectType": "furniture",
+        "position": {
+          "x": 8271.143443054449,
+          "y": 4600,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 1479.195111289033,
+          "depth": 596.6764894427369,
+          "height": 1200
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 90.00000000000006
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:27:42.110Z",
+        "updatedAt": "2026-07-19T05:27:56.699Z",
+        "parentObjectId": null,
+        "childLocationIds": [
+          "c9d84e6f-fe75-49b4-912c-b58e71cd689c"
+        ],
+        "zIndex": 158,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "d252991a-76c6-4171-a007-126743f9c69f",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-022",
+        "name": "Round stool",
+        "assetDefinitionId": "round-stool",
+        "objectType": "furniture",
+        "position": {
+          "x": 7494.436169512161,
+          "y": 1195.917170112714,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 440,
+          "depth": 440,
+          "height": 520
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:28:54.229Z",
+        "updatedAt": "2026-07-19T05:28:56.882Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 159,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "id": "5bdcacf4-bf3f-48d9-9185-5a07101a6025",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-023",
+        "name": "Rolling bottle cart",
+        "assetDefinitionId": "rolling-bottle-cart",
+        "objectType": "furniture",
+        "position": {
+          "x": 5325.088565005668,
+          "y": 2000,
+          "z": 0
+        },
+        "dimensions": {
+          "width": 650.0000000000011,
+          "depth": 450.0000000000025,
+          "height": 1000
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": -180
+        },
+        "layerId": "layer-furniture-003",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "locked": false,
+        "visible": true,
+        "metadata": {},
+        "createdAt": "2026-07-19T05:29:19.074Z",
+        "updatedAt": "2026-07-19T08:29:21.451Z",
+        "parentObjectId": null,
+        "childLocationIds": [],
+        "zIndex": 160,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "layers": [
+      {
+        "id": "layer-walls-001",
+        "name": "Walls",
+        "role": "walls",
+        "visible": true,
+        "locked": false,
+        "order": 0,
+        "color": "#3a4244",
+        "system": true
+      },
+      {
+        "id": "layer-openings-002",
+        "name": "Doors and windows",
+        "role": "openings",
+        "visible": true,
+        "locked": false,
+        "order": 1,
+        "color": "#6f8a8c",
+        "system": true
+      },
+      {
+        "id": "layer-furniture-003",
+        "name": "Furniture",
+        "role": "furniture",
+        "visible": true,
+        "locked": false,
+        "order": 2,
+        "color": "#7b8585",
+        "system": true
+      },
+      {
+        "id": "layer-storage-004",
+        "name": "Storage",
+        "role": "storage",
+        "visible": true,
+        "locked": false,
+        "order": 3,
+        "color": "#99a29f",
+        "system": true
+      },
+      {
+        "id": "layer-equipment-005",
+        "name": "Laboratory equipment",
+        "role": "equipment",
+        "visible": true,
+        "locked": false,
+        "order": 4,
+        "color": "#3f7584",
+        "system": true
+      },
+      {
+        "id": "layer-utilities-006",
+        "name": "Utilities",
+        "role": "utilities",
+        "visible": true,
+        "locked": false,
+        "order": 5,
+        "color": "#887a5e",
+        "system": true
+      },
+      {
+        "id": "layer-safety-007",
+        "name": "Safety",
+        "role": "safety",
+        "visible": true,
+        "locked": false,
+        "order": 6,
+        "color": "#c35d52",
+        "system": true
+      },
+      {
+        "id": "layer-labels-008",
+        "name": "Labels",
+        "role": "labels",
+        "visible": true,
+        "locked": false,
+        "order": 7,
+        "color": "#675f7d",
+        "system": true
+      },
+      {
+        "id": "layer-measurements-009",
+        "name": "Measurements",
+        "role": "measurements",
+        "visible": true,
+        "locked": false,
+        "order": 8,
+        "color": "#6f7778",
+        "system": true
+      }
+    ],
+    "zones": [
+      {
+        "id": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "code": "Z01",
+        "name": "Preparation",
+        "color": "#079987"
+      },
+      {
+        "id": "af6bb3ae-1d75-4d27-b20a-bf1fabe03a02",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "code": "Z02",
+        "name": "Analysis",
+        "color": "#4e7792"
+      }
+    ],
+    "storageLocations": [
+      {
+        "id": "2708aabb-200e-41a5-ab70-4c71816e4936",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "7498ce28-a6aa-44df-a866-cdd0b0d0e857",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "North reagent cabinet",
+        "indexCode": "LAB-R809-Z01-CAB-001",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [
+          "75e98d00-6ff7-4ea7-ae15-33e273748b79",
+          "baa280d4-1b5f-413e-a341-e48241513212",
+          "f9eafabe-4cd1-42a4-bf88-56484d7418ff"
+        ],
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T07:04:02.151Z"
+      },
+      {
+        "id": "18fb9f73-1d41-41db-a38f-1a490f3a8a84",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "fcc58784-63a4-4b59-9d49-1a2c2d697a6f",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "East glazed reagent cabinet",
+        "indexCode": "LAB-R809-Z01-CAB-002",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [
+          "37902dd4-adfe-4c3a-8828-605b897b52ea",
+          "6ca91048-2f33-4a01-97bc-39098487d207"
+        ],
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T05:57:17.840Z"
+      },
+      {
+        "id": "6aaba37c-1b82-48de-b961-ffd673277bc2",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "180c7b43-f55c-4038-8186-8eadc7e994b6",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "East media cabinet",
+        "indexCode": "LAB-R809-Z01-CAB-003",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:37:32.319Z"
+      },
+      {
+        "id": "0d15f66a-fd31-4370-8b22-e81454948948",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "500bd8fe-302c-476a-9184-b88292296cea",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "Analysis island storage",
+        "indexCode": "LAB-R809-Z02-OBJ-004-ST",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T02:37:32.319Z"
+      },
+      {
+        "id": "6989761f-81f6-465c-a851-2fa4c1ea1d58",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "6a308db7-04c3-4146-8e38-c3b4acd495e5",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "Heavy-duty rack",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-001",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T02:52:42.549Z",
+        "updatedAt": "2026-07-19T02:52:42.549Z"
+      },
+      {
+        "id": "75fdb619-983d-45fc-befc-697c29e28b38",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "3532607c-2675-480c-90a9-5b57e022c2f7",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "Base drawer cabinet",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-002",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [
+          "e849be6e-f85f-4187-98bf-4abd8e15f542"
+        ],
+        "createdAt": "2026-07-19T02:56:55.694Z",
+        "updatedAt": "2026-07-19T06:17:22.662Z"
+      },
+      {
+        "id": "9d322327-48b4-4b00-beda-ada935ebab4e",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "8e4d4658-ac5e-4f11-855c-66771e165072",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "Wall cabinet",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-003",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [
+          "b47f7edb-ae99-4751-bfbb-ed27e535bfda"
+        ],
+        "createdAt": "2026-07-19T03:57:25.397Z",
+        "updatedAt": "2026-07-19T06:16:38.058Z"
+      },
+      {
+        "id": "c9d84e6f-fe75-49b4-912c-b58e71cd689c",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "1f434ef3-34cc-4db5-9a1d-5290e6c328a6",
+        "parentId": null,
+        "type": "cabinet",
+        "name": "Laboratory bench with sink",
+        "indexCode": "LAB-01-DEMO-01-Z01-OBJ-021",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T05:27:42.110Z",
+        "updatedAt": "2026-07-19T05:27:42.110Z"
+      },
+      {
+        "id": "37902dd4-adfe-4c3a-8828-605b897b52ea",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "fcc58784-63a4-4b59-9d49-1a2c2d697a6f",
+        "parentId": "18fb9f73-1d41-41db-a38f-1a490f3a8a84",
+        "type": "compartment",
+        "name": "Upper Compartment",
+        "indexCode": "RCAB-01",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T05:56:53.058Z",
+        "updatedAt": "2026-07-19T05:58:04.587Z"
+      },
+      {
+        "id": "6ca91048-2f33-4a01-97bc-39098487d207",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "fcc58784-63a4-4b59-9d49-1a2c2d697a6f",
+        "parentId": "18fb9f73-1d41-41db-a38f-1a490f3a8a84",
+        "type": "compartment",
+        "name": "Lower Compartment",
+        "indexCode": "RCAB-02",
+        "order": 1,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T05:57:17.840Z",
+        "updatedAt": "2026-07-19T05:58:18.960Z"
+      },
+      {
+        "id": "b47f7edb-ae99-4751-bfbb-ed27e535bfda",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "8e4d4658-ac5e-4f11-855c-66771e165072",
+        "parentId": "9d322327-48b4-4b00-beda-ada935ebab4e",
+        "type": "shelf",
+        "name": "Shelf 01",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-003-SH-01",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T06:16:38.058Z",
+        "updatedAt": "2026-07-19T06:16:38.058Z"
+      },
+      {
+        "id": "e849be6e-f85f-4187-98bf-4abd8e15f542",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "3532607c-2675-480c-90a9-5b57e022c2f7",
+        "parentId": "75fdb619-983d-45fc-befc-697c29e28b38",
+        "type": "drawer",
+        "name": "Drawer 01",
+        "indexCode": "LAB-01-DEMO-01-Z01-CAB-002-DR-01",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T06:17:22.662Z",
+        "updatedAt": "2026-07-19T06:17:22.662Z"
+      },
+      {
+        "id": "75e98d00-6ff7-4ea7-ae15-33e273748b79",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "7498ce28-a6aa-44df-a866-cdd0b0d0e857",
+        "parentId": "2708aabb-200e-41a5-ab70-4c71816e4936",
+        "type": "drawer",
+        "name": "Drawer 01",
+        "indexCode": "LAB-R809-Z01-CAB-001-DR-01",
+        "order": 0,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T07:04:01.365Z",
+        "updatedAt": "2026-07-19T07:04:01.365Z"
+      },
+      {
+        "id": "baa280d4-1b5f-413e-a341-e48241513212",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "7498ce28-a6aa-44df-a866-cdd0b0d0e857",
+        "parentId": "2708aabb-200e-41a5-ab70-4c71816e4936",
+        "type": "drawer",
+        "name": "Drawer 02",
+        "indexCode": "LAB-R809-Z01-CAB-001-DR-02",
+        "order": 1,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T07:04:01.803Z",
+        "updatedAt": "2026-07-19T07:04:01.803Z"
+      },
+      {
+        "id": "f9eafabe-4cd1-42a4-bf88-56484d7418ff",
+        "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+        "objectId": "7498ce28-a6aa-44df-a866-cdd0b0d0e857",
+        "parentId": "2708aabb-200e-41a5-ab70-4c71816e4936",
+        "type": "drawer",
+        "name": "Drawer 03",
+        "indexCode": "LAB-R809-Z01-CAB-001-DR-03",
+        "order": 2,
+        "capacityNotes": "",
+        "childIds": [],
+        "createdAt": "2026-07-19T07:04:02.151Z",
+        "updatedAt": "2026-07-19T07:04:02.151Z"
+      }
+    ],
+    "inventoryItems": [
+      {
+        "id": "a0486ea0-faf8-4b04-a065-b959a7274ca7",
+        "name": "Nitrile gloves, M",
+        "imageSrc": "/images/inventory/nitrile-gloves.png",
+        "quantity": 8,
+        "unit": "boxes",
+        "notes": "Powder-free",
+        "owner": "Shared",
+        "expiryDate": null,
+        "storageLocationId": "37902dd4-adfe-4c3a-8828-605b897b52ea",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T05:58:42.460Z"
+      },
+      {
+        "id": "73210f9c-cd53-4335-989e-bd772eb584b0",
+        "name": "Pipette tips, 200 µL",
+        "imageSrc": "/images/inventory/pipette-tips-200ul.png",
+        "quantity": 24,
+        "unit": "racks",
+        "notes": "Sterile",
+        "owner": "Molecular team",
+        "expiryDate": "2027-06-30",
+        "storageLocationId": "6ca91048-2f33-4a01-97bc-39098487d207",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T05:58:49.593Z"
+      },
+      {
+        "id": "f15f66e6-880f-41f0-b9b7-52f179b785bc",
+        "name": "Reference standards",
+        "imageSrc": "/images/inventory/reference-standards.png",
+        "quantity": 12,
+        "unit": "vials",
+        "notes": "Store dry",
+        "owner": "Analytics",
+        "expiryDate": "2026-12-20",
+        "storageLocationId": "b47f7edb-ae99-4751-bfbb-ed27e535bfda",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T06:16:50.052Z"
+      },
+      {
+        "id": "2933210f-2d73-479b-9d63-abc578f7b82e",
+        "name": "Unassigned buffer stock",
+        "imageSrc": "/images/inventory/buffer-stock.png",
+        "quantity": 6,
+        "unit": "bottles",
+        "notes": "Awaiting location",
+        "owner": "Shared",
+        "expiryDate": null,
+        "storageLocationId": "e849be6e-f85f-4187-98bf-4abd8e15f542",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T06:17:40.921Z"
+      },
+      {
+        "id": "d48ac4d8-8c87-4134-962d-6e323c9096a4",
+        "name": "HPLC autosampler vials, 2 mL",
+        "imageSrc": "/images/inventory/hplc-vials.png",
+        "quantity": 12,
+        "unit": "boxes",
+        "notes": "Clear borosilicate vials with blue screw caps; staged for analytical runs.",
+        "owner": "Analytical chemistry",
+        "expiryDate": null,
+        "storageLocationId": "baa280d4-1b5f-413e-a341-e48241513212",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T07:04:37.484Z"
+      },
+      {
+        "id": "89206f39-09e9-48e1-b4c8-7ee055eeb3d7",
+        "name": "Rotary evaporator flask set",
+        "imageSrc": "/images/inventory/rotary-evaporator-flask-set.png",
+        "quantity": 6,
+        "unit": "flasks",
+        "notes": "Three evaporation flasks and three receiving flasks reserved for the BÜCHI R-300 demonstration station.",
+        "owner": "Organic synthesis",
+        "expiryDate": null,
+        "storageLocationId": "baa280d4-1b5f-413e-a341-e48241513212",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T07:54:49.326Z"
+      },
+      {
+        "id": "06e1d5aa-225a-4da2-a8bf-708a95956dfa",
+        "name": "Balance calibration weight set",
+        "imageSrc": "/images/inventory/reference-standards.png",
+        "quantity": 1,
+        "unit": "set",
+        "notes": "Traceable calibration weights assigned to AB-809-04.",
+        "owner": "Analytical chemistry",
+        "expiryDate": null,
+        "storageLocationId": "75e98d00-6ff7-4ea7-ae15-33e273748b79",
+        "createdAt": "2026-07-19T02:37:32.319Z",
+        "updatedAt": "2026-07-19T07:04:22.602Z"
+      },
+      {
+        "id": "2d81cc24-e455-4c8a-b8f4-8c155102aeb0",
+        "name": "New inventory item",
+        "quantity": 1,
+        "unit": "each",
+        "notes": "",
+        "owner": "",
+        "expiryDate": null,
+        "storageLocationId": null,
+        "createdAt": "2026-07-19T03:26:47.066Z",
+        "updatedAt": "2026-07-19T03:26:47.066Z"
+      },
+      {
+        "id": "66c92c99-9ed9-48ab-a03e-b4e3f9579db1",
+        "name": "New inventory item",
+        "quantity": 1,
+        "unit": "each",
+        "notes": "",
+        "owner": "",
+        "expiryDate": null,
+        "storageLocationId": null,
+        "createdAt": "2026-07-19T03:56:30.701Z",
+        "updatedAt": "2026-07-19T03:56:30.701Z"
+      },
+      {
+        "id": "0e44f4e0-b284-42ef-b5e0-27b13f540533",
+        "name": "DMEM-Media",
+        "quantity": 1,
+        "unit": "each",
+        "notes": "",
+        "owner": "",
+        "expiryDate": null,
+        "storageLocationId": "b47f7edb-ae99-4751-bfbb-ed27e535bfda",
+        "createdAt": "2026-07-19T06:16:46.271Z",
+        "updatedAt": "2026-07-19T06:17:05.106Z"
+      }
+    ],
+    "equipmentRecords": [
+      {
+        "id": "02524f9e-d377-4282-b37a-ceec5252410c",
+        "objectId": "a793e7dd-5fb5-4ff7-93bb-f0f2b246d598",
+        "equipmentId": "AB-809-04",
+        "name": "Analytical balance",
+        "manufacturer": "LabSpace Demo",
+        "model": "Mass 220",
+        "serialNumber": "DEMO-AB-2204",
+        "status": "active",
+        "responsiblePerson": "Analytical team",
+        "lastServiceDate": "2026-04-15",
+        "nextServiceDate": "2026-10-15",
+        "powerRequirements": "100–240 V",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": "Keep isolated from vibration."
+      },
+      {
+        "id": "9ec140a6-fec1-435f-9c93-6d644b8a748e",
+        "objectId": "3958525c-903f-4243-9c38-960d94450df5",
+        "equipmentId": "RE-809-01",
+        "name": "BÜCHI rotary evaporator R-300",
+        "manufacturer": "BÜCHI Labortechnik AG",
+        "model": "Rotavapor R-300 class",
+        "serialNumber": "DEMO-RE-3001",
+        "status": "active",
+        "responsiblePerson": "Organic synthesis",
+        "lastServiceDate": "2026-05-12",
+        "nextServiceDate": "2027-05-12",
+        "powerRequirements": "100–240 V",
+        "waterRequirements": "Recirculating coolant loop",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": true,
+        "notes": "Build Week demonstration record. Operate with local exhaust and the indexed flask set from the north reagent cabinet."
+      },
+      {
+        "id": "45385d55-d5d5-42d9-a83a-1d82f54e7aef",
+        "objectId": "f514d847-dc56-42fc-a3c4-80f52c73cc6e",
+        "equipmentId": "FR-809-01",
+        "name": "Biomedical freezer",
+        "manufacturer": "PHCbi reference class",
+        "model": "MDF-U731M-class",
+        "serialNumber": "DEMO-FR-7311",
+        "status": "active",
+        "responsiblePerson": "Shared facilities",
+        "lastServiceDate": "2026-03-08",
+        "nextServiceDate": "2027-03-08",
+        "powerRequirements": "100–240 V",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": true,
+        "notes": "Maintain rear ventilation clearance and record temperature excursions."
+      },
+      {
+        "id": "7ab32b5f-a996-40c1-8111-53aad3ed3cb2",
+        "objectId": "a5db2f79-97be-4bbd-b5b7-bcee74c304ee",
+        "equipmentId": "VC-809-01",
+        "name": "Vacuum cold-trap station",
+        "manufacturer": "Laboratory reference class",
+        "model": "Recirculating trap station",
+        "serialNumber": "DEMO-VC-8091",
+        "status": "service-due",
+        "responsiblePerson": "Organic synthesis",
+        "lastServiceDate": "2026-06-02",
+        "nextServiceDate": "2026-08-02",
+        "powerRequirements": "100–240 V",
+        "waterRequirements": "Closed recirculating loop",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": true,
+        "notes": "Paired with the rotary evaporator workflow; coolant-loop service is due."
+      },
+      {
+        "id": "26c4f908-cac0-4e7a-bd8c-42d1c23a85bf",
+        "objectId": "85aea6f2-3af0-43a8-9ebc-7939de1ccb38",
+        "equipmentId": "LAB-01-DEMO-01-Z01-EQ-001",
+        "name": "Compound microscope",
+        "manufacturer": "",
+        "model": "",
+        "serialNumber": "",
+        "status": "active",
+        "responsiblePerson": "",
+        "lastServiceDate": null,
+        "nextServiceDate": null,
+        "powerRequirements": "",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": ""
+      },
+      {
+        "id": "34bfcf79-2ded-4127-8e3d-e443e1b16cc3",
+        "objectId": "b30c11d8-a49a-43da-a3c4-f87802d8147f",
+        "equipmentId": "LAB-01-DEMO-01-Z01-EQ-002",
+        "name": "Biosafety cabinet",
+        "manufacturer": "",
+        "model": "",
+        "serialNumber": "",
+        "status": "active",
+        "responsiblePerson": "",
+        "lastServiceDate": null,
+        "nextServiceDate": null,
+        "powerRequirements": "",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": ""
+      },
+      {
+        "id": "c6a40f74-69e9-4d68-88f8-7feebccf97e9",
+        "objectId": "39ae74b2-ec82-4d1e-8a41-a5fff8888002",
+        "equipmentId": "LAB-01-DEMO-01-Z01-EQ-003",
+        "name": "Fume hood",
+        "manufacturer": "",
+        "model": "",
+        "serialNumber": "",
+        "status": "active",
+        "responsiblePerson": "",
+        "lastServiceDate": null,
+        "nextServiceDate": null,
+        "powerRequirements": "",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": ""
+      },
+      {
+        "id": "90f2b8b1-555b-463a-8a34-1d4f5df036d4",
+        "objectId": "2f788246-1b97-4fdb-963c-340f31ead856",
+        "equipmentId": "LAB-01-DEMO-01-Z01-EQ-005",
+        "name": "Benchtop centrifuge",
+        "manufacturer": "",
+        "model": "",
+        "serialNumber": "",
+        "status": "active",
+        "responsiblePerson": "",
+        "lastServiceDate": null,
+        "nextServiceDate": null,
+        "powerRequirements": "",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": ""
+      },
+      {
+        "id": "5a2773da-d164-42af-959a-36087123a3c0",
+        "objectId": "1f0be4ac-97f1-4d76-a0bd-3422b8e78ed5",
+        "equipmentId": "LAB-01-DEMO-01-Z01-EQ-006",
+        "name": "Vortex mixer",
+        "manufacturer": "",
+        "model": "",
+        "serialNumber": "",
+        "status": "active",
+        "responsiblePerson": "",
+        "lastServiceDate": null,
+        "nextServiceDate": null,
+        "powerRequirements": "",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": ""
+      },
+      {
+        "id": "7f7b5591-8002-458d-ac66-781afdce35e2",
+        "objectId": "634fbffa-02d9-4974-98dc-351b8ea70001",
+        "equipmentId": "LAB-01-DEMO-01-Z01-EQ-007",
+        "name": "Autoclave",
+        "manufacturer": "",
+        "model": "",
+        "serialNumber": "",
+        "status": "active",
+        "responsiblePerson": "",
+        "lastServiceDate": null,
+        "nextServiceDate": null,
+        "powerRequirements": "",
+        "waterRequirements": "None",
+        "gasRequirements": "None",
+        "drainRequired": false,
+        "ventilationRequired": false,
+        "notes": ""
+      }
+    ],
+    "labelTemplates": [
+      {
+        "id": "c7f5153e-e13f-4283-987f-99fa60c4f741",
+        "name": "Standard location label",
+        "widthMm": 70,
+        "heightMm": 36,
+        "showBarcode": false,
+        "showDescription": true
+      },
+      {
+        "id": "f3a9f63b-ab0b-4c9f-b5ac-6edc7fac171a",
+        "name": "Compact drawer label",
+        "widthMm": 50,
+        "heightMm": 25,
+        "showBarcode": false,
+        "showDescription": false
+      }
+    ],
+    "updatedAt": "2026-07-19T08:31:17.020Z"
+  },
+  "createdAt": "2026-07-19T02:37:32.319Z",
+  "updatedAt": "2026-07-19T08:31:21.727Z"
+}

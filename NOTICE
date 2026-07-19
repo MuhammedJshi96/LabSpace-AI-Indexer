@@ -1,0 +1,19 @@
+LabSpace AI Indexer
+Copyright 2026 LabSpace AI Indexer contributors
+
+The application source code is licensed under the Apache License, Version 2.0.
+See LICENSE.
+
+Visual assets, 3D models, renders, photographs, reference material, and brand
+artwork are not licensed under Apache 2.0 unless explicitly stated otherwise.
+See LICENSE-ASSETS.md and ASSET_LICENSES.md.
+
+LabSpace assets are original, logo-free planning representations and are not
+manufacturer-certified CAD/BIM models. Third-party product names and trademarks
+belong to their respective owners. Their use for identification or research
+does not imply affiliation or endorsement.
+
+The application uses open-source dependencies under their respective licences.
+Exact package names and versions are recorded in package-lock.json. Notable
+components include React, Three.js, React Three Fiber, Drei, Konva, Zustand,
+Zod, Express, Vite, Vitest, Playwright, and Phosphor Icons.

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">LabSpace Indexer</title>
+  <desc id="desc">An isometric laboratory room with an indexed location marker.</desc>
+  <path fill="#11191d" d="M8 16.5 31.5 3 56 16.5v29L32 60 8 46z"/>
+  <path fill="#f5f8f7" d="m15 20 16.5-9.5L49 20v20.8L32 51 15 41z"/>
+  <path fill="#cbd5d2" d="M15 20v21l17 10V30z"/>
+  <path fill="#e6ecea" d="m32 30 17-10v20.8L32 51z"/>
+  <path fill="#079987" d="M24 23.8 31.5 19l8 4.8-7.8 4.6zM27.3 33h8.9v8.9h-8.9z"/>
+  <circle cx="48.5" cy="47.5" r="8.5" fill="#079987" stroke="#fff" stroke-width="2"/>
+  <circle cx="48.5" cy="47.5" r="2.3" fill="#fff"/>
+  <path stroke="#fff" stroke-width="2.2" stroke-linecap="round" d="M48.5 42v3.2m0 4.6V53m-5.5-5.5h3.2m4.6 0H54"/>
+</svg>

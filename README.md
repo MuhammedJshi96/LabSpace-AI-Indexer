@@ -1,0 +1,170 @@
+# LabSpace AI Indexer
+
+**Design the lab. Index every location.**
+
+LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexing system with synchronized 2D and 3D views, millimetre-accurate scene data, physical storage indexing, inventory assignment, equipment records, versioning, labels, reports, and validation. It stores projects in a local SQLite database. Room 809 is included as an optional demonstration and visual reference, not as a feature boundary.
+
+![LabSpace Indexer editor](docs/screenshots/editor-1920x1080.png)
+
+![LabSpace Digital Twin project-wide spatial index](docs/screenshots/digital-twin-project-scope-3004.jpg)
+
+## Highlights
+
+- One canonical, versioned scene model drives React Konva 2D and React Three Fiber 3D.
+- A project navigator creates and switches among multiple laboratories and rooms; generic project/laboratory/room factories never clone demonstration content into a blank workspace.
+- A dedicated project-wide Digital Twin workspace searches inventory, equipment, and nested storage locations across every laboratory and room, switches the live spatial scene to a selected result, highlights the related 3D asset or drawer/shelf/bin region, and deep-links back to the same room and editor record.
+- Every room owns semantic scene-local layers for walls, openings, furniture, storage, equipment, utilities, safety, labels, and measurements, so placement never depends on seed-owned layer IDs.
+- Laboratory-aware object indexes and equipment IDs use the active laboratory, room, and optional zone codes with normalized, case-insensitive uniqueness checks.
+- 96 original planning assets across architecture, furniture, storage, equipment, utilities, and safety.
+- 74 reference-informed hero assets use authored, genuinely orbitable GLB geometry with front, back, side, and top construction; the other 22 assets retain dimension-driven procedural representations while the authored library expands.
+- The authored set now includes detailed benches and wash stations, core casework/storage, professional openings, a raised-service-bridge island, a fully rebuilt BÜCHI R-300-class touchscreen rotary evaporator, and manufacturer-class analytical, thermal, cold-storage, imaging, washing, and clean-air equipment.
+- All 96 assets supply material-aware isometric library images and top-view plan images derived from the same authored GLB or procedural geometry used by the 3D view.
+- The 22 non-authored entries are captured deterministically from `ProceduralAssetModel` rather than drawn as unrelated geometric icons; they remain performant planning geometry while the authored library expands.
+- A visible Asset Studio provides an orbitable PBR preview plus front, back, left, right, top, and isometric camera presets.
+- Interactive select, marquee, pan, wall, door, window, measure, move, resize, rotate, copy, paste, duplicate, delete, lock, hide, and z-order actions.
+- Newly created laboratories and rooms open with genuinely blank planning canvases; the supplied Room 809 scene remains available separately as a demonstration.
+- The Room 809 demonstration follows the supplied Floorplanner layout references while remaining separate from the blank planning canvas. The factory room is an immutable template; creating or saving a demo produces a normal persisted room and never rewrites the template.
+- Selected wall segments can be translated directly or reshaped from endpoint handles while joined corners and hosted openings remain attached.
+- One simple closed straight-wall loop defines the floor: rectangles, concave L-shapes, split edges, and skewed loops share one clipped 2D floor, triangulated 3D floor, area/perimeter result, placement boundary, and normalized undoable resize.
+- Placed objects keep a reliable hit area and pointer-relative drag offset, and Select mode pans with middle-mouse drag, Space+drag, Arrow keys, or WASD.
+- Continuous wall drawing carries each committed endpoint into the next segment; Enter or double-click finishes a chain, while Escape returns to Select.
+- Grid, multi-surface snapping, alignment guides, pointer-centred zoom, fit-to-room, camera presets, wall transparency, and floor visibility.
+- Split presentation has a draggable, keyboard-accessible, persistent divider with protected minimum pane widths.
+- The Asset Library and Inspector collapse into narrow, labeled, keyboard-accessible rails when more canvas space is needed.
+- Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The Room 809 reference-services profile is the first bundled example and remains independently hideable.
+- Visual predefined libraries synchronize six laboratory floor finishes and six professional wall finishes between the 2D plan and 3D PBR room, with per-wall overrides in the Inspector.
+- Cabinet, shelf, drawer, compartment, and bin hierarchies with stable codes and exact inventory locations.
+- Equipment identity, service, ownership, and utility requirements.
+- Readable desktop typography uses a 12px visible minimum, 13px labels, and 14px controls/body text without shrinking the CAD workspace.
+- Revision-aware autosave, presentation-safe renderer mounting, contained pane errors, and guarded Konva drag handling protect live edits from stale saves, blank views, and upper-corner snapping.
+- Named room versions, restore, version-to-room duplication, and portable JSON import/export.
+- QR labels, A4 print layouts, and CSV reports.
+- Collision, boundary, door-swing, hierarchy, duplicate code, equipment ID, and serial-number warnings.
+
+## Ask LabSpace and the no-billing demo path
+
+The competition workflow is fully testable without an OpenAI Platform API key or usage billing. **Ask LabSpace** runs in clearly labeled `grounded local mode`: it resolves a bounded set of spatial intents against the canonical project index, selects exact room/equipment/storage records, and explains results from LabSpace's deterministic placement validator. Unknown or missing evidence is reported as missing rather than completed with invented data.
+
+This local mode is deliberately not described as a live GPT response. The genuine GPT-5.6/Codex contribution is the documented Build Week implementation work—product architecture, spatial-assistant/tool design, UI iteration, debugging, asset workflows, and automated testing—captured by primary Codex session `019f6a4d-25a9-7812-804c-88b695589b2a`. A future hosted model adapter can be added as an optional intent-selection layer without changing the trusted room, inventory, or validation services; it is not required to run the judge demo.
+
+The competition presentation is performance-bounded: the Digital Twin renders at most 25 presentation instances while the canonical scene retains every object for editing, search, validation, persistence, and export. The Layout Editor always exposes the single complete searchable 96-asset library. Asset Studio loads one orbitable model at a time and releases the previous preview cache.
+
+## Start locally
+
+Requirements: Node.js 22.5 or newer (Node.js 24 LTS is recommended). The built-in SQLite module is the only platform-sensitive runtime requirement.
+
+```powershell
+git clone https://github.com/MuhammedJshi96/LabSpace-AI-Indexer.git
+cd LabSpace-AI-Indexer
+npm ci
+npm run dev
+```
+
+Open [http://127.0.0.1:3004/](http://127.0.0.1:3004/). The searchable spatial index is available at [http://127.0.0.1:3004/digital-twin](http://127.0.0.1:3004/digital-twin), and the asset pipeline preview is available at [http://127.0.0.1:3004/asset-preview](http://127.0.0.1:3004/asset-preview).
+
+For a non-technical Windows walkthrough, see [SETUP.md](SETUP.md).
+
+## Clean clone and judge setup
+
+The repository is self-contained: authored GLBs, plan/library renders, inventory evidence images, material textures, and offline Draco decoder files live under `public/` and are copied into the production bundle by Vite. Judges do **not** need Blender, the private reference photographs, an OpenAI API key, or an asset-rebuild step.
+
+```powershell
+git clone https://github.com/MuhammedJshi96/LabSpace-AI-Indexer.git
+cd LabSpace-AI-Indexer
+npm ci
+npm run release:check
+npm run dev
+```
+
+The server creates a new local SQLite database from the source-controlled seed on first launch. SQLite files, local reference photographs, browser-test output, generated caches, and bulk QA captures are intentionally excluded from Git. The seed opens on an empty planning canvas and includes the user's complete sanitized **DEMO-01** video-showcase room. Choose **Demo room** in the header to open that full room immediately. An immutable 12-object factory template is also retained only as an optional copy/reset utility; it is not a reduced build and does not replace any website code or DEMO-01 content. Copying the developer SQLite database is neither required nor recommended.
+
+See [docs/submission/JUDGE_GUIDE.md](docs/submission/JUDGE_GUIDE.md) for the exact three-minute evaluation workflow and expected evidence.
+
+## Commands
+
+| Command                            | Purpose                                                   |
+| ---------------------------------- | --------------------------------------------------------- |
+| `npm run dev`                      | Start the local API and Vite development server           |
+| `npm run build`                    | Create the production frontend bundle                     |
+| `npm run start`                    | Start the API and serve the production bundle             |
+| `npm run assets:build`             | Rebuild the 74 hero GLBs and their 148 catalog renders    |
+| `npm run assets:render-procedural` | Rebuild 44 same-geometry procedural catalog renders       |
+| `npm run lint`                     | Run ESLint                                                |
+| `npm run typecheck`                | Run strict TypeScript checks                              |
+| `npm run test`                     | Run the 117 Vitest unit/integration cases                 |
+| `npm run test:e2e`                 | Run the Playwright competition and editor workflows       |
+| `npm run validate:assets`          | Validate manifests, authored GLBs, and static PNG renders |
+| `npm run release:check`            | Run lint, types, asset validation, tests, and build       |
+| `npm run format`                   | Format source and documentation                           |
+
+`npm run assets:build` uses Blender 4.5 LTS. It resolves the project-local portable build by default, or a compatible executable supplied through `BLENDER_PATH`.
+
+## Local data
+
+The active database is `<repository>/data/labspace-indexer.sqlite`. No project data, analytics, or telemetry leaves the computer. JSON export is the portable backup format.
+
+## Build Week scope and authorship
+
+Before Build Week, the project had a local laboratory layout/indexing prototype, a canonical scene schema, and an early procedural asset catalog. During the competition period, the work concentrated on the judgeable spatial-digital-twin workflow:
+
+- immutable demo-template ownership plus user-owned Demo Room persistence;
+- synchronized, material-aware 2D/3D editing with camera-preserving object movement;
+- exact cabinet, shelf, drawer, compartment, and bin indexing;
+- project-wide Digital Twin search, photographic result evidence, and exact-location camera navigation;
+- the no-billing grounded Ask LabSpace orchestration layer over canonical records and deterministic placement validation;
+- a restrained 12-object Room 809 competition template with one BÜCHI station and assigned flask evidence;
+- the user's full DEMO-01 video-showcase room as a sanitized source-controlled fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
+- authored GLB asset delivery, offline Draco decoding, regression tests, release checks, and submission documentation.
+
+The user made the product, laboratory-workflow, visual-reference, asset-priority, and competition-story decisions. Codex/GPT-5.6 accelerated implementation, debugging, test authoring, asset-pipeline scripting, UI iteration, release audits, and documentation. Ask LabSpace's included runtime path is deterministic local software and is explicitly labeled as such; it does not pretend to be a live GPT response. The primary Codex build-session ID retained for `/feedback` evidence is `019f6a4d-25a9-7812-804c-88b695589b2a`.
+
+See [docs/submission/BUILD_WEEK_IMPLEMENTATION.md](docs/submission/BUILD_WEEK_IMPLEMENTATION.md) for the architecture, originality boundary, human/AI collaboration record, and measured demo facts.
+
+## Technology
+
+React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, Zod, React Konva, Three.js, React Three Fiber, Drei, Phosphor Icons, QRCode, Vitest, and Playwright. See [ARCHITECTURE.md](ARCHITECTURE.md) for tradeoffs.
+
+## Documentation
+
+- [SETUP.md](SETUP.md) — Windows installation and daily use
+- [ARCHITECTURE.md](ARCHITECTURE.md) — system boundaries and technical decisions
+- [DATA_MODEL.md](DATA_MODEL.md) — versioned domain schema
+- [ASSET_GUIDE.md](ASSET_GUIDE.md) — manifest and asset authoring pipeline
+- [docs/EQUIPMENT_REFERENCE_MATRIX.md](docs/EQUIPMENT_REFERENCE_MATRIX.md) — official manufacturer references for reusable laboratory-equipment GLBs
+- [docs/DIGITAL_TWIN_WORKSPACE.md](docs/DIGITAL_TWIN_WORKSPACE.md) — searchable spatial-index behavior, record trace contract, and fidelity boundary
+- [ASSET_LICENSES.md](ASSET_LICENSES.md) — asset provenance
+- [LICENSE](LICENSE) — Apache License 2.0 for application source code
+- [LICENSE-ASSETS.md](LICENSE-ASSETS.md) — separate terms for models, renders, media, references, and branding
+- [NOTICE](NOTICE) — attribution and trademark boundary
+- [INDEXING_SYSTEM.md](INDEXING_SYSTEM.md) — code rules and storage hierarchy
+- [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md) — editor controls
+- [TESTING.md](TESTING.md) — automated and manual validation
+- [ROADMAP.md](ROADMAP.md) — limitations and recommended next phase
+- [SECURITY_NOTES.md](SECURITY_NOTES.md) — local security model
+
+## Licensing
+
+The application source code is licensed under the Apache License 2.0. Visual
+assets, 3D models, renders, photographs, reference material, and LabSpace brand
+artwork are excluded from that software licence and remain All Rights Reserved
+unless explicitly stated otherwise. See [LICENSE-ASSETS.md](LICENSE-ASSETS.md)
+and [ASSET_LICENSES.md](ASSET_LICENSES.md) before redistributing repository
+media.
+
+## Known prototype limitations
+
+- This is a single-user local prototype; it has no authentication, organizations, permissions, or concurrent editing.
+- Project navigation supports multiple laboratories and rooms, but laboratory/room rename, delete, and reorder workflows are not yet implemented.
+- The photoreal target is an active authoring phase: 74 of 96 catalog assets currently have authored hero GLBs, while 22 use procedural planning geometry.
+- The Digital Twin workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
+- All 96 entries now have same-geometry top/isometric imagery, but procedural equipment captures are not substitutes for manufacturer-informed, all-sided authored GLBs at the `references/ref1.png` and `references/ref2.png` detail level.
+- Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
+- Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.
+- Only the optional Room 809 demonstration environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
+- Light-gray epoxy has photographic material maps. Sealed concrete and welded vinyl currently use synchronized procedural treatments and still need authored photographic maps.
+- Labels use browser print-to-PDF rather than a bundled PDF engine.
+- The database stores validated project JSON behind a repository adapter; normalized multi-user relational tables are a future migration.
+
+## Future SaaS migration
+
+Keep the domain schemas and renderer contract, replace the repository with PostgreSQL, add organization-scoped IDs and row-level authorization, store immutable versions separately, add authenticated APIs and collaboration events, and move large exports to background jobs. The browser editor can remain substantially unchanged.

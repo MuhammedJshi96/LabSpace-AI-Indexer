@@ -86,6 +86,12 @@ The Spatial Index renders every visible object in the active room so evidence al
 
 Requirements: Node.js 22.5 or newer (Node.js 24 LTS is recommended). The built-in SQLite module is the only platform-sensitive runtime requirement.
 
+### One-click Windows launcher
+
+After installing Node.js, Windows users can double-click **[`Start LabSpace.cmd`](Start%20LabSpace.cmd)** in the repository root. The launcher installs missing npm dependencies, keeps the required port `3004`, avoids starting a duplicate server, waits until LabSpace is reachable, and opens the application in the default browser. Keep the minimized **LabSpace AI Server** terminal open while using the application.
+
+### Terminal launch
+
 ```powershell
 git clone https://github.com/MuhammedJshi96/LabSpace-AI-Indexer.git
 cd LabSpace-AI-Indexer

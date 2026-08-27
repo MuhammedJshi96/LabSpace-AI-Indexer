@@ -1,38 +1,78 @@
-# LabSpace WebMCP Architecture
+# LabSpace Agent Twin architecture
 
-Phase 1 exposes a read-only browser-agent boundary over the same state and index used by the LabSpace interface:
+LabSpace exposes a semantic laboratory digital twin through the browser-native WebMCP Imperative API. WebMCP is an adapter over the same canonical actions used by the interface; it does not contain a second copy of search, camera, validation, history, or persistence logic.
 
 ```text
 Browser agent
-    ↓
-document.modelContext (WebMCP)
-    ↓
-LabSpace WebMCP adapter
-    ↓
-LabSpace read actions
-    ↓
-Digital Twin index
-    ↓
-canonical Zustand project state
+    |
+    v
+document.modelContext (six small WebMCP tools)
+    |
+    v
+LabSpace schema/error adapter
+    |
+    +--> canonical read actions --> Spatial Index --> project state
+    +--> shared focus action -----> room/selection/camera state
+    +--> placement action --------> deterministic geometry validator
+    +--> staging action ----------> reversible in-memory preview
+                                      |
+                                      v
+                              researcher Approve / Cancel
+                                      |
+                                      v
+                         normal history + autosave (Approve only)
 ```
 
-## Boundaries
+## Public tool surface
 
-- `src/agent/labspace-read-actions.ts` expresses LabSpace capabilities and has no WebMCP dependency.
-- Every action calls a state reader at execution time. It never retains a project snapshot from registration time.
-- Search and inspection rebuild the current canonical index with `buildDigitalTwinIndex()` and reuse `filterDigitalTwinIndex()` for query and scope behavior.
-- `src/webmcp/register-labspace-tools.ts` owns only schemas, annotations, controlled errors, delegation, and registration lifecycle.
-- `src/components/WebMCPBridge.tsx` feature-detects through `document.modelContext`. Unsupported browsers keep the complete normal LabSpace experience.
-- The bridge mounts only on the Layout Editor and Digital Twin routes, not internal asset-preview or capture routes.
+| Tool | Role | Mutates saved project? |
+| --- | --- | --- |
+| `labspace_get_context` | Active project, laboratory, room, selection, and index counts | No |
+| `labspace_search_records` | Canonical equipment, inventory, and exact-location search | No |
+| `labspace_inspect_record` | Current evidence for one record returned by search | No |
+| `labspace_focus_record` | Reveal that record in the normal room, evidence inspector, and camera | No; presentation state only |
+| `labspace_validate_object_move` | Test a hypothetical move using current room geometry | No |
+| `labspace_stage_object_move` | Apply a reversible visual preview after successful validation | No; human approval is required before history or autosave |
 
-## Lifecycle
+There is deliberately no agent-accessible approve, save, delete, reset, import, or project-write tool.
 
-Each bridge mount registers exactly three tools using one `AbortController`. Cleanup aborts the registration signal, unregistering that mount's tools. A React StrictMode unmount/remount therefore removes the first set before activating the replacement set.
+## Code boundaries
 
-## Security and data handling
+- `src/agent/labspace-read-actions.ts` reads current canonical state and reuses `buildDigitalTwinIndex()` and `filterDigitalTwinIndex()`.
+- `src/agent/labspace-navigation-actions.ts` owns exact record focus. The Digital Twin UI and WebMCP call the same action.
+- `src/agent/labspace-spatial-actions.ts` builds a hypothetical candidate and delegates to the existing `validatePlacement()` geometry rules. It does not duplicate collision math.
+- `src/agent/labspace-staging-actions.ts` creates one reversible preview only after validation. It never writes directly to SQLite.
+- `src/components/AgentReviewPanel.tsx` is the human trust boundary. Approve creates one normal undoable history entry and schedules the existing autosave; Cancel restores the exact prior object.
+- `src/agent/agent-activity-store.ts` keeps a bounded, sanitized evidence trail. It records actions and outcomes, not hidden reasoning or chain-of-thought.
+- `src/webmcp/register-labspace-tools.ts` owns schemas, annotations, controlled errors, and registration lifecycle only.
+- `src/components/WebMCPBridge.tsx` feature-detects `document.modelContext`. Unsupported browsers retain the complete LabSpace experience.
 
-All Phase 1 tools use `readOnlyHint: true`. They also use `untrustedContentHint: true` because project names, owners, notes, equipment details, and inventory content may be user-authored or externally sourced.
+## Registration lifecycle
 
-No tool changes project data, selection, camera state, history, storage, or persistence. No tool is exposed cross-origin. The existing top-level same-origin page uses the default `tools` permissions policy (`self`), and the server does not opt out of origin isolation with `Origin-Agent-Cluster: ?0`; no HTTP headers were changed for Phase 1.
+The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly six tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview` and `/procedural-asset-capture` routes receive no tools.
 
-Search results are progressively disclosed and kept near the current 1.5K-character output guidance. Exact identifiers are retained; descriptive user text is compacted. Inspection returns recorded values or `null` and never invents missing laboratory data.
+## Grounding and safety
+
+- Each call reads current project state at execution time; registration never captures a stale scene snapshot.
+- Search excludes immutable `demo-template` rooms, just like the visible Spatial Index.
+- User-authored names, notes, owners, and records are returned as untrusted data, never interpreted as instructions.
+- Tool schemas reject unexpected fields, empty identifiers, non-finite coordinates, and excessive values.
+- Validation permits only movable furniture, storage, and equipment. Structural, safety-critical, or locked objects are rejected.
+- Placement evidence is limited to rules the existing geometry engine actually proves: room boundary, collisions, floor elevation, room height, and restrictions. LabSpace does not invent utility or safety certification.
+- An invalid move returns conflicts and causes no project, preview, history, or persistence mutation.
+- A valid staged move is visibly labeled **Preview · not saved** and blocks competing edits until the researcher approves or cancels it.
+- Approval is available only through deliberate LabSpace UI interaction. It records one ordinary history entry, preserves Undo/Redo, and uses normal autosave.
+- Tool-facing failures omit stack traces, local paths, SQL, and caught internal causes.
+- Outputs are compact and bounded; the staging response remains below 1,500 characters in the contract tests.
+- No tool is exposed cross-origin. LabSpace does not opt out of origin isolation and does not weaken the `tools` Permissions Policy.
+
+## Testing strategy
+
+Deterministic unit/integration tests cover schemas, actions, safety invariants, lifecycle cleanup, output budgets, and 12 expected-call evaluation cases. Independent Playwright coverage injects the browser API boundary and proves the full search → focus → reject invalid move → stage → cancel/approve → persistence → undo/redo flow without depending on historical editor tests.
+
+Official references:
+
+- [Chrome WebMCP Imperative API](https://developer.chrome.com/docs/ai/webmcp/imperative-api)
+- [Chrome WebMCP evaluation guidance](https://developer.chrome.com/docs/ai/webmcp/evals)
+- [Chrome WebMCP tool security](https://developer.chrome.com/docs/ai/webmcp/secure-tools)
+- [WebMCP specification draft](https://github.com/webmachinelearning/webmcp/blob/main/index.bs)

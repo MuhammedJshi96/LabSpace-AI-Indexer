@@ -3,6 +3,7 @@ import {
   MAX_ACTIVITY_EVENTS,
   agentActivityActions,
   recordControlledToolError,
+  recordWebMCPToolSuccess,
   useAgentActivityStore,
 } from "../../src/agent/agent-activity-store";
 import { registerLabSpaceTools } from "../../src/webmcp/register-labspace-tools";
@@ -46,6 +47,42 @@ describe("Agent Activity evidence", () => {
     expect(event.evidence).toContain("[local path hidden]");
     expect(event.evidence).not.toContain("Researcher");
     expect(event.evidence!.length).toBeLessThanOrEqual(220);
+  });
+
+  it("records the visible WebMCP tool name and bounded structured input and result", () => {
+    recordWebMCPToolSuccess(
+      "labspace_search_records",
+      "Spatial search",
+      "“Reference standards”",
+      "found",
+      { query: "Reference standards", privatePath: "C:\\Users\\Researcher\\secret.json" },
+      { totalMatches: 1, results: [{ name: "Reference standards" }] },
+    );
+
+    const event = useAgentActivityStore.getState().events[0];
+    expect(event).toMatchObject({
+      actor: "WebMCP",
+      toolName: "labspace_search_records",
+      action: "Spatial search",
+      status: "found",
+    });
+    expect(event.request).toContain("Reference standards");
+    expect(event.request).toContain("[local path hidden]");
+    expect(event.request).not.toContain("Researcher");
+    expect(event.response).toContain('"totalMatches":1');
+  });
+
+  it("publishes the browser registration state without creating a fake tool event", () => {
+    agentActivityActions.setBridgeState("ready", [
+      "labspace_get_context",
+      "labspace_search_records",
+    ]);
+
+    expect(useAgentActivityStore.getState()).toMatchObject({
+      bridgeStatus: "ready",
+      registeredTools: ["labspace_get_context", "labspace_search_records"],
+      events: [],
+    });
   });
 
   it("does not create events merely by mounting and unmounting the bridge", async () => {

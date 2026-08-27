@@ -16,6 +16,16 @@ LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexin
 
 The researcher remains in control: a staged move is labeled **Preview · not saved**, and only the human-facing **Approve move** action can create the ordinary undoable history entry and trigger autosave. Invalid moves return compact conflict evidence and do not mutate the project. There is no agent-accessible approve, save, reset, delete, import, or unrestricted write tool.
 
+### See WebMCP working
+
+Open the **WebMCP** status control in the LabSpace header. Its inspector makes the browser integration visible without DevTools:
+
+1. **Registered tools** shows the six live browser tools and their Read, View, Simulate, or Review boundary.
+2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
+3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
+
+The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity, and staged changes still require the separate human **Approve move** or **Cancel** decision.
+
 ### Six browser-native tools
 
 | Tool | Capability | Saved-data behavior |

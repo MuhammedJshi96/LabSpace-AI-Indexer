@@ -136,13 +136,6 @@ export function stageObjectMove(input: unknown): StageObjectMoveResult {
     },
   };
   useEditorStore.setState({ pendingAgentChange: change });
-  agentActivityActions.record({
-    actor: "Agent",
-    action: "Move staged",
-    subject: change.objectName,
-    status: "pending",
-    evidence: `Awaiting approval · X ${(validation.target.xMm / 1000).toFixed(2)} m · Y ${(validation.target.yMm / 1000).toFixed(2)} m`,
-  });
   return stagedResult(change);
 }
 

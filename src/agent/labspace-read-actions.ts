@@ -7,7 +7,6 @@ import {
 } from "../domain/digital-twin-index";
 import type { Project, Room } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
-import { agentActivityActions } from "./agent-activity-store";
 import type {
   InspectLabRecordInput,
   LabContext,
@@ -231,13 +230,6 @@ export function getLabContext(readState: LabSpaceStateReader = readCurrentEditor
       alerts: records.filter((record) => record.statusTone === "warning").length,
     },
   };
-  agentActivityActions.record({
-    actor: "Agent",
-    action: "Context read",
-    subject: `${context.laboratory.code} · ${context.room.name}`,
-    status: "read",
-    evidence: `${context.counts.equipment} equipment · ${context.counts.inventory} inventory · ${context.counts.locations} locations`,
-  });
   return context;
 }
 
@@ -272,13 +264,6 @@ export function searchLabRecords(
     returnedMatches: results.length,
     results,
   };
-  agentActivityActions.record({
-    actor: "Agent",
-    action: "Spatial search",
-    subject: `“${normalized.query}”`,
-    status: "found",
-    evidence: `${result.totalMatches} match${result.totalMatches === 1 ? "" : "es"} · ${normalized.scope} scope`,
-  });
   return result;
 }
 
@@ -311,13 +296,6 @@ export function inspectLabRecord(
       ...workspace,
       notes: nullableText(item.notes),
     };
-    agentActivityActions.record({
-      actor: "Agent",
-      action: "Record inspected",
-      subject: inspection.name,
-      status: "read",
-      evidence: inspection.path.join(" / "),
-    });
     return inspection;
   }
 
@@ -350,13 +328,6 @@ export function inspectLabRecord(
       ...workspace,
       notes: nullableText(equipment.notes),
     };
-    agentActivityActions.record({
-      actor: "Agent",
-      action: "Record inspected",
-      subject: inspection.name,
-      status: "read",
-      evidence: inspection.path.join(" / "),
-    });
     return inspection;
   }
 
@@ -384,13 +355,6 @@ export function inspectLabRecord(
       })),
     },
   };
-  agentActivityActions.record({
-    actor: "Agent",
-    action: "Record inspected",
-    subject: inspection.name,
-    status: "read",
-    evidence: inspection.path.join(" / "),
-  });
   return inspection;
 }
 

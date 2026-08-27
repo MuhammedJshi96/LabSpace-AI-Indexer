@@ -9,6 +9,15 @@
 - Browser: ChatGPT's WebMCP-capable in-app browser, or Chrome with `chrome://flags/#enable-webmcp-testing` enabled and relaunched.
 - Select **Demo room** if DEMO-01 is not already active.
 
+## Make WebMCP visible first
+
+1. Open the **WebMCP** status control in the LabSpace header.
+2. Select **Registered tools** to see all six live tools and their safety modes.
+3. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
+4. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
+
+This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
+
 ## Best judge prompt
 
 > In LabSpace, find the BÜCHI rotary evaporator and the exact storage location of its flask set, then focus the room on that evidence. Next, check whether moving the wire-basket laboratory trolley to X 4.318 m, Y 0.008 m at −180° is valid. If it is blocked, explain the recorded conflicts, validate X 3.887 m, Y 8.006 m instead, and stage that valid move for my review. Do not approve anything for me.
@@ -22,7 +31,7 @@
 5. The second target validates and appears as a **Preview · not saved** move.
 6. LabSpace shows the researcher the current and proposed position with **Cancel** and **Approve move**.
 7. Choose **Cancel** to prove exact reversal, or stage again and choose **Approve move** to create one normal undoable history entry and autosave.
-8. Open **Agent Activity** to see compact action/evidence records without hidden reasoning.
+8. Open the **WebMCP** inspector to see the exact tool names, bounded inputs, and structured results without hidden reasoning.
 
 ## Tool sequence
 

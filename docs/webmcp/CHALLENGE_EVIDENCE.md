@@ -30,7 +30,9 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - Reversible move staging with a strict one-pending-change rule.
 - Human-only Approve/Cancel UI; no agent commit tool or persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- Bounded Agent Activity evidence with no chain-of-thought or local-path disclosure.
+- A visible in-product WebMCP inspector that lists the six browser registrations and their Read/View/Simulate/Review modes.
+- A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
+- Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
 - Twelve expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration and the complete human-reviewed workflow.

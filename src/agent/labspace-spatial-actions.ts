@@ -8,7 +8,6 @@ import type {
   ValidateObjectMoveResult,
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
-import { agentActivityActions } from "./agent-activity-store";
 
 const MAX_OBJECT_ID_LENGTH = 200;
 const MAX_COORDINATE_MM = 100_000;
@@ -148,15 +147,6 @@ function placementConflicts(
 }
 
 function recordValidation(result: ValidateObjectMoveResult) {
-  agentActivityActions.record({
-    actor: "Agent",
-    action: "Placement checked",
-    subject: result.objectName,
-    status: result.valid ? "valid" : "blocked",
-    evidence: result.valid
-      ? `Valid at X ${(result.target.xMm / 1000).toFixed(2)} m · Y ${(result.target.yMm / 1000).toFixed(2)} m`
-      : result.conflicts.map((conflict) => conflict.message).join(" · "),
-  });
   return result;
 }
 

@@ -31,7 +31,7 @@
 - [ ] `npx playwright test tests/e2e/webmcp-actions.spec.ts` passes 3/3.
 - [ ] Production `/api/health`, `/`, and `/digital-twin` smoke checks pass.
 - [ ] `pre-webmcp-2026-08-27` points to the baseline evidence commit.
-- [ ] `webmcp-submission-v1` points to the verified final branch commit.
+- [ ] `webmcp-submission-v1.1` points to the verified deployed branch commit.
 - [ ] Apache-2.0 `LICENSE` is visible; separate asset terms remain linked.
 
 ## Submission
@@ -39,5 +39,8 @@
 - [ ] Public repository points to `webmcp-challenge-2026` or final tag.
 - [ ] Live URL inserted into README, judge guide, and Devpost.
 - [ ] Public YouTube video is under 3:00 and has audio.
+- [ ] Video clearly shows the real WebMCP workflow and explains how WebMCP was implemented.
+- [ ] Video is public on YouTube, in English, and contains no unauthorized music or third-party trademarks.
+- [ ] Repository license is detected in GitHub's About panel and the pre-existing/new-work boundary is linked.
 - [ ] Devpost copy is pasted and links are tested in a signed-out window.
 - [ ] Final submit action is performed by the user.

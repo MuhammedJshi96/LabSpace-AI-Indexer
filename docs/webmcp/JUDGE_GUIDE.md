@@ -4,7 +4,7 @@
 
 ## Open
 
-- Live URL: **pending one-time Render account connection**; see [DEPLOYMENT.md](DEPLOYMENT.md).
+- Live URL: [https://labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com). The free instance can take up to about a minute to wake after inactivity.
 - Local fallback: `npm ci`, `npm run dev`, then open `http://127.0.0.1:3004/`.
 - Browser: ChatGPT's WebMCP-capable in-app browser, or Chrome with `chrome://flags/#enable-webmcp-testing` enabled and relaunched.
 - Select **Demo room** if DEMO-01 is not already active.
@@ -50,6 +50,6 @@ Expected: exactly six unique `labspace_*` tools on `/` and `/digital-twin`, and 
 
 ## What changed during the challenge
 
-The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, human-reviewed staging, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The final evidence tag is `webmcp-submission-v1`.
+The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, human-reviewed staging, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The corrected deployed evidence tag is `webmcp-submission-v1.1`; `webmcp-submission-v1` preserves the first pre-deployment candidate.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md), [CHALLENGE_EVIDENCE.md](CHALLENGE_EVIDENCE.md), and [LOCAL_TESTING.md](LOCAL_TESTING.md).

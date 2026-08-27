@@ -95,5 +95,5 @@ npm run dev
 - Repository: https://github.com/MuhammedJshi96/LabSpace-AI-Indexer
 - Challenge branch: `webmcp-challenge-2026`
 - Baseline tag: `pre-webmcp-2026-08-27`
-- Final tag: `webmcp-submission-v1`
-- Live URL: pending one-time Render account connection
+- Final tag: `webmcp-submission-v1.1`
+- Live URL: https://labspace-agent-twin.onrender.com

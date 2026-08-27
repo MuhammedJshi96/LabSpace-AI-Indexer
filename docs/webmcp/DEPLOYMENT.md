@@ -2,6 +2,8 @@
 
 LabSpace is a stateful Node/Express application with a Vite frontend and local SQLite repository. The challenge deployment keeps that architecture intact and uses the root `render.yaml` Blueprint.
 
+Live judge service: [https://labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com)
+
 ## Render Blueprint
 
 The Blueprint creates one free Node web service from `webmcp-challenge-2026`:

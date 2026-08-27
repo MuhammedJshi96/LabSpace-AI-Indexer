@@ -8,7 +8,7 @@
 | Application/source baseline behavior | `b4d8471483472a42901d5fbb20b781666c0a8d3b` |
 | Baseline documentation tag target | `1d8caa07cc1dbc4b80fc015f9e325dec7973d70a` |
 | Challenge branch | `webmcp-challenge-2026` |
-| Final challenge evidence | Annotated tag `webmcp-submission-v1` |
+| Final challenge evidence | Annotated tag `webmcp-submission-v1.1` |
 
 The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states the green pre-existing release checks and the known historical E2E issue. It contains no WebMCP implementation.
 
@@ -53,7 +53,7 @@ be108ba fix: support Chrome WebMCP execution context
 a364121 test: cover WebMCP human-reviewed workflow
 ```
 
-Deployment and submission-document commits follow this list. Use `git log --reverse pre-webmcp-2026-08-27..webmcp-submission-v1` for the authoritative complete history.
+Deployment and submission-document commits follow this list. Use `git log --reverse pre-webmcp-2026-08-27..webmcp-submission-v1.1` for the authoritative complete history. The earlier `webmcp-submission-v1` tag remains as an immutable pre-deployment candidate.
 
 ## Before and after
 

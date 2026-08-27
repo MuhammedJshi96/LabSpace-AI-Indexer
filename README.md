@@ -12,6 +12,8 @@ LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexin
 
 **WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can search exact physical records, inspect evidence, focus the real 2D/3D workspace, evaluate a hypothetical equipment move with LabSpace's deterministic geometry rules, and stage a safe move for visible researcher review.
 
+**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — open **Demo room** for the preserved DEMO-01 showcase. The free instance can take up to about a minute to wake after inactivity.
+
 The researcher remains in control: a staged move is labeled **Preview · not saved**, and only the human-facing **Approve move** action can create the ordinary undoable history entry and trigger autosave. Invalid moves return compact conflict evidence and do not mutate the project. There is no agent-accessible approve, save, reset, delete, import, or unrestricted write tool.
 
 ### Six browser-native tools

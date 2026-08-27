@@ -9,6 +9,7 @@ import type {
 import { createLabSpaceReadActions } from "../../src/agent/labspace-read-actions";
 import { createSeedProject } from "../../src/domain/seed";
 import {
+  createLabSpaceToolDefinitions,
   LABSPACE_WEBMCP_TOOL_NAMES,
   registerLabSpaceTools,
 } from "../../src/webmcp/register-labspace-tools";
@@ -85,6 +86,33 @@ function executeLikeChrome151(tool: WebMCP.ModelContextTool): ChromeCompatibleEx
 }
 
 describe("LabSpace WebMCP registration", () => {
+  it("keeps tool metadata within the competition quality budget", () => {
+    const tools = createLabSpaceToolDefinitions(
+      fakeActions(),
+      fakeNavigationActions(),
+      fakeSpatialActions(),
+      fakeStagingActions(),
+    );
+    const schemaDescriptions = (value: unknown): string[] => {
+      if (!value || typeof value !== "object") return [];
+      const record = value as Record<string, unknown>;
+      return [
+        ...(typeof record.description === "string" ? [record.description] : []),
+        ...Object.values(record).flatMap(schemaDescriptions),
+      ];
+    };
+
+    for (const tool of tools) {
+      expect(tool.name).toMatch(/^[A-Za-z0-9_.-]+$/);
+      expect(tool.name.length).toBeLessThanOrEqual(30);
+      expect(tool.description.length).toBeLessThanOrEqual(500);
+      expect(tool.title?.length ?? 0).toBeLessThanOrEqual(80);
+      for (const description of schemaDescriptions(tool.inputSchema)) {
+        expect(description.length).toBeLessThanOrEqual(150);
+      }
+    }
+  });
+
   it("is a no-op when document.modelContext is unavailable", async () => {
     const registration = registerLabSpaceTools({ modelContext: undefined });
 
@@ -249,6 +277,31 @@ describe("LabSpace WebMCP registration", () => {
       source: "validate",
       input: { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
     });
+  });
+
+  it("contains unexpected internal failures behind a concise tool-facing error", async () => {
+    const actions = fakeActions();
+    vi.mocked(actions.inspectLabRecord).mockImplementation(() => {
+      throw new Error("SQLITE_ERROR at C:\\private\\lab.sqlite\ninternal stack");
+    });
+    const inspect = createLabSpaceToolDefinitions(
+      actions,
+      fakeNavigationActions(),
+      fakeSpatialActions(),
+      fakeStagingActions(),
+    ).find((tool) => tool.name === "labspace_inspect_record")!;
+
+    let captured: Error | null = null;
+    try {
+      await executeLikeChrome151(inspect)({ recordId: "record-1" });
+    } catch (error) {
+      captured = error as Error;
+    }
+
+    expect(captured?.message).toBe("LabSpace could not complete this tool request.");
+    expect(captured?.message).not.toContain("SQLITE");
+    expect(captured?.message).not.toContain("private");
+    expect(captured?.cause).toBeUndefined();
   });
 
   it("unregisters with AbortSignal and remounts without duplicate active tools", async () => {

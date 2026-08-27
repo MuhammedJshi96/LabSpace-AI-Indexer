@@ -115,6 +115,7 @@ describe("human-reviewed LabSpace move staging", () => {
     expect(state.dirtyRevision).toBe(7);
     expect(state.saveStatus).toBe("saved");
     expect(fetchSpy).not.toHaveBeenCalled();
+    expect(JSON.stringify(result).length).toBeLessThan(1500);
   });
 
   it("returns real conflicts and creates no preview for an invalid move", () => {

@@ -1,4 +1,5 @@
 import { LabSpaceActionError, labSpaceReadActions } from "../agent/labspace-read-actions";
+import { recordControlledToolError } from "../agent/agent-activity-store";
 import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions";
 import { labSpaceSpatialActions } from "../agent/labspace-spatial-actions";
 import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
@@ -27,16 +28,26 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_validate_object_move",
 ] as const;
 
-function controlledExecution(signal: AbortSignal | undefined, read: () => unknown) {
+function controlledExecution(
+  signal: AbortSignal | undefined,
+  action: string,
+  execute: () => unknown,
+) {
   signal?.throwIfAborted();
   try {
-    const result = read();
+    const result = execute();
     signal?.throwIfAborted();
     return result;
   } catch (error) {
     signal?.throwIfAborted();
-    if (error instanceof LabSpaceActionError) throw new Error(error.message, { cause: error });
-    throw new Error("LabSpace could not complete this read request.", { cause: error });
+    recordControlledToolError(action, error);
+    if (error instanceof LabSpaceActionError) {
+      // Tool-facing errors intentionally omit internal causes, stacks, and filesystem details.
+      // eslint-disable-next-line preserve-caught-error
+      throw new Error(error.message);
+    }
+    // eslint-disable-next-line preserve-caught-error
+    throw new Error("LabSpace could not complete this tool request.");
   }
 }
 
@@ -55,7 +66,7 @@ export function createLabSpaceToolDefinitions(
       inputSchema: emptyObjectSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (_input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, () => actions.getLabContext()),
+        controlledExecution(executionContext?.signal, "Context read", () => actions.getLabContext()),
     },
     {
       name: "labspace_focus_record",
@@ -65,7 +76,7 @@ export function createLabSpaceToolDefinitions(
       inputSchema: focusRecordSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, () =>
+        controlledExecution(executionContext?.signal, "Record focus", () =>
           navigationActions.focusLabRecord(input),
         ),
     },
@@ -77,7 +88,9 @@ export function createLabSpaceToolDefinitions(
       inputSchema: searchRecordsSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, () => actions.searchLabRecords(input)),
+        controlledExecution(executionContext?.signal, "Spatial search", () =>
+          actions.searchLabRecords(input),
+        ),
     },
     {
       name: "labspace_inspect_record",
@@ -87,7 +100,9 @@ export function createLabSpaceToolDefinitions(
       inputSchema: inspectRecordSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, () => actions.inspectLabRecord(input)),
+        controlledExecution(executionContext?.signal, "Record inspection", () =>
+          actions.inspectLabRecord(input),
+        ),
     },
     {
       name: "labspace_stage_object_move",
@@ -97,7 +112,7 @@ export function createLabSpaceToolDefinitions(
       inputSchema: stageObjectMoveSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, () =>
+        controlledExecution(executionContext?.signal, "Move staging", () =>
           stagingActions.stageObjectMove(input),
         ),
     },
@@ -109,7 +124,7 @@ export function createLabSpaceToolDefinitions(
       inputSchema: validateObjectMoveSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, () =>
+        controlledExecution(executionContext?.signal, "Move validation", () =>
           spatialActions.validateObjectMove(input),
         ),
     },

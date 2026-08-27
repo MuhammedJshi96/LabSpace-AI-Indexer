@@ -201,6 +201,218 @@ body {
   box-shadow: 0 5px 14px rgba(6, 105, 94, 0.18);
 }
 
+.agent-activity-trigger {
+  position: fixed;
+  right: 16px;
+  bottom: 48px;
+  z-index: 3200;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 10px;
+  color: #165a52;
+  background: rgba(250, 253, 252, 0.96);
+  border: 1px solid rgba(8, 127, 112, 0.32);
+  border-radius: 6px;
+  box-shadow: 0 7px 20px rgba(18, 44, 40, 0.12);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.agent-activity-trigger b {
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  color: #f2fffc;
+  background: #087f70;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.agent-activity-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 48px;
+  z-index: 3200;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 340px;
+  max-height: min(540px, calc(100vh - 120px));
+  color: var(--ink);
+  background: rgba(251, 252, 252, 0.98);
+  border: 1px solid #c4cfcc;
+  border-top: 3px solid #087f70;
+  border-radius: 8px;
+  box-shadow: 0 18px 52px rgba(14, 37, 34, 0.22);
+  overflow: hidden;
+  animation: agent-review-rise 160ms ease-out both;
+}
+
+.agent-activity-panel > header {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto auto;
+  gap: 7px;
+  align-items: center;
+  min-height: 56px;
+  padding: 9px 10px;
+  border-bottom: 1px solid #dbe2e0;
+}
+
+.agent-activity-panel > header > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+}
+
+.agent-activity-panel > header b {
+  font-size: 14px;
+}
+
+.agent-activity-panel > header small {
+  color: #6b7875;
+  font-size: 11px;
+}
+
+.agent-activity-panel > header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: #53615f;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+}
+
+.agent-activity-panel > header button:hover {
+  background: #edf3f1;
+  border-color: #d2ddda;
+}
+
+.agent-activity-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: #e4fffa;
+  background: #0b5149;
+  border-radius: 6px;
+}
+
+.agent-activity-list {
+  min-height: 120px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.agent-activity-list article {
+  position: relative;
+  padding: 11px 13px 12px 16px;
+  border-bottom: 1px solid #e3e8e7;
+}
+
+.agent-activity-list article::before {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 7px;
+  width: 3px;
+  content: "";
+  background: #79a9a2;
+  border-radius: 2px;
+}
+
+.agent-activity-list article.activity-status-valid::before,
+.agent-activity-list article.activity-status-approved::before,
+.agent-activity-list article.activity-status-committed::before {
+  background: #079987;
+}
+
+.agent-activity-list article.activity-status-blocked::before,
+.agent-activity-list article.activity-status-error::before,
+.agent-activity-list article.activity-status-rejected::before {
+  background: #c8585f;
+}
+
+.agent-activity-list article.activity-status-pending::before {
+  background: #c4892f;
+}
+
+.agent-activity-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #71807d;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.agent-activity-meta b {
+  color: #18675d;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.agent-activity-meta span {
+  margin-left: auto;
+  padding: 2px 5px;
+  color: #596965;
+  background: #edf2f1;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.agent-activity-list article strong,
+.agent-activity-list article p,
+.agent-activity-list article small {
+  display: block;
+}
+
+.agent-activity-list article strong {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.agent-activity-list article p {
+  margin: 1px 0 0;
+  color: #384744;
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.agent-activity-list article small {
+  margin-top: 3px;
+  color: #687673;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.agent-activity-empty {
+  display: grid;
+  justify-items: center;
+  padding: 34px 24px;
+  color: #70807d;
+  text-align: center;
+}
+
+.agent-activity-empty b {
+  margin-top: 8px;
+  color: #354440;
+  font-size: 13px;
+}
+
+.agent-activity-empty span {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .agent-review-actions button:hover {
   filter: brightness(0.98);
   transform: translateY(-1px);
@@ -218,7 +430,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .agent-review-scrim,
-  .agent-review-panel {
+  .agent-review-panel,
+  .agent-activity-panel {
     animation: none;
   }
 

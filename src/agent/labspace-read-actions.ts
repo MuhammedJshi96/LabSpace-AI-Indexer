@@ -7,6 +7,7 @@ import {
 } from "../domain/digital-twin-index";
 import type { Project, Room } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
+import { agentActivityActions } from "./agent-activity-store";
 import type {
   InspectLabRecordInput,
   LabContext,
@@ -206,7 +207,7 @@ export function getLabContext(readState: LabSpaceStateReader = readCurrentEditor
   const state = readState();
   const { project, laboratory, room } = requireWorkspace(state);
   const records = buildDigitalTwinIndex(project);
-  return {
+  const context: LabContext = {
     project: { id: project.id, name: compactText(project.name, 120) },
     laboratory: {
       id: laboratory.id,
@@ -230,6 +231,14 @@ export function getLabContext(readState: LabSpaceStateReader = readCurrentEditor
       alerts: records.filter((record) => record.statusTone === "warning").length,
     },
   };
+  agentActivityActions.record({
+    actor: "Agent",
+    action: "Context read",
+    subject: `${context.laboratory.code} · ${context.room.name}`,
+    status: "read",
+    evidence: `${context.counts.equipment} equipment · ${context.counts.inventory} inventory · ${context.counts.locations} locations`,
+  });
+  return context;
 }
 
 export function searchLabRecords(
@@ -256,13 +265,21 @@ export function searchLabRecords(
     kindFiltered.length,
     candidates,
   );
-  return {
+  const result: SearchLabRecordsResult = {
     query: normalized.query,
     scope: normalized.scope,
     totalMatches: kindFiltered.length,
     returnedMatches: results.length,
     results,
   };
+  agentActivityActions.record({
+    actor: "Agent",
+    action: "Spatial search",
+    subject: `“${normalized.query}”`,
+    status: "found",
+    evidence: `${result.totalMatches} match${result.totalMatches === 1 ? "" : "es"} · ${normalized.scope} scope`,
+  });
+  return result;
 }
 
 export function inspectLabRecord(
@@ -283,7 +300,7 @@ export function inspectLabRecord(
   if (record.kind === "inventory") {
     const item = room.scene.inventoryItems.find((entry) => entry.id === id);
     if (!item) throw new LabSpaceActionError("Record not found in the current LabSpace project.");
-    return {
+    const inspection: LabRecordInspection = {
       kind: "inventory",
       recordId: record.id,
       name: compactText(item.name, 120),
@@ -294,6 +311,14 @@ export function inspectLabRecord(
       ...workspace,
       notes: nullableText(item.notes),
     };
+    agentActivityActions.record({
+      actor: "Agent",
+      action: "Record inspected",
+      subject: inspection.name,
+      status: "read",
+      evidence: inspection.path.join(" / "),
+    });
+    return inspection;
   }
 
   if (record.kind === "equipment") {
@@ -301,7 +326,7 @@ export function inspectLabRecord(
     if (!equipment) {
       throw new LabSpaceActionError("Record not found in the current LabSpace project.");
     }
-    return {
+    const inspection: LabRecordInspection = {
       kind: "equipment",
       recordId: record.id,
       name: compactText(equipment.name, 120),
@@ -325,6 +350,14 @@ export function inspectLabRecord(
       ...workspace,
       notes: nullableText(equipment.notes),
     };
+    agentActivityActions.record({
+      actor: "Agent",
+      action: "Record inspected",
+      subject: inspection.name,
+      status: "read",
+      evidence: inspection.path.join(" / "),
+    });
+    return inspection;
   }
 
   const location = room.scene.storageLocations.find((entry) => entry.id === id);
@@ -334,7 +367,7 @@ export function inspectLabRecord(
   const contents = room.scene.inventoryItems.filter(
     (item) => item.storageLocationId === location.id,
   );
-  return {
+  const inspection: LabRecordInspection = {
     kind: "location",
     recordId: record.id,
     name: compactText(location.name, 120),
@@ -351,6 +384,14 @@ export function inspectLabRecord(
       })),
     },
   };
+  agentActivityActions.record({
+    actor: "Agent",
+    action: "Record inspected",
+    subject: inspection.name,
+    status: "read",
+    evidence: inspection.path.join(" / "),
+  });
+  return inspection;
 }
 
 export function createLabSpaceReadActions(readState: LabSpaceStateReader): LabSpaceReadActions {

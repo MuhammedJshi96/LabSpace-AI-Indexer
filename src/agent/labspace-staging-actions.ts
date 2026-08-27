@@ -9,6 +9,7 @@ import type {
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
 import { validateObjectMove } from "./labspace-spatial-actions";
+import { agentActivityActions } from "./agent-activity-store";
 
 function resolveObject(project: Project, objectId: string): { room: Room; object: SceneObject } {
   for (const room of project.rooms) {
@@ -135,6 +136,13 @@ export function stageObjectMove(input: unknown): StageObjectMoveResult {
     },
   };
   useEditorStore.setState({ pendingAgentChange: change });
+  agentActivityActions.record({
+    actor: "Agent",
+    action: "Move staged",
+    subject: change.objectName,
+    status: "pending",
+    evidence: `Awaiting approval · X ${(validation.target.xMm / 1000).toFixed(2)} m · Y ${(validation.target.yMm / 1000).toFixed(2)} m`,
+  });
   return stagedResult(change);
 }
 
@@ -179,6 +187,13 @@ export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {
     useEditorStore.setState({ pendingAgentChange: null });
   }
   useEditorStore.getState().pushToast("Agent move cancelled. The layout was not saved.", "info");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Move rejected",
+    subject: pending.objectName,
+    status: "rejected",
+    evidence: "Preview removed · project data unchanged",
+  });
   return {
     stageId,
     objectId: pending.objectId,
@@ -205,6 +220,20 @@ export function approveStagedObjectMove(stageId: string): AgentMoveReviewResult 
   useEditorStore.setState({ pendingAgentChange: null });
   useEditorStore.getState().commitPreview(pending.before, "Approve agent move");
   useEditorStore.getState().pushToast("Agent move approved. LabSpace is saving the change.", "success");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Move approved",
+    subject: pending.objectName,
+    status: "approved",
+    evidence: "Explicit researcher approval",
+  });
+  agentActivityActions.record({
+    actor: "LabSpace",
+    action: "Change committed",
+    subject: pending.objectName,
+    status: "committed",
+    evidence: "One history entry · Undo available",
+  });
   return {
     stageId,
     objectId: pending.objectId,

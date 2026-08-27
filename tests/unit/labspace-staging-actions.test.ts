@@ -7,8 +7,10 @@ import {
 import { createSeedProject } from "../../src/domain/seed";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
 import { useEditorStore } from "../../src/store/editor-store";
+import { useAgentActivityStore } from "../../src/agent/agent-activity-store";
 
 function stagingFixture() {
+  useAgentActivityStore.setState({ events: [], open: false });
   const project = createSeedProject();
   const room = project.rooms.find((entry) => entry.roomKind === "demo")!;
   const movable = room.scene.objects.filter((entry) =>
@@ -147,6 +149,10 @@ describe("human-reviewed LabSpace move staging", () => {
     expect(useEditorStore.getState().pendingAgentChange).toBeNull();
     expect(useEditorStore.getState().history).toEqual([]);
     expect(useEditorStore.getState().dirtyRevision).toBe(7);
+    expect(useAgentActivityStore.getState().events[0]).toMatchObject({
+      actor: "Human",
+      status: "rejected",
+    });
   });
 
   it("requires the human action, creates one history entry, and supports undo and redo", () => {
@@ -165,6 +171,10 @@ describe("human-reviewed LabSpace move staging", () => {
     expect(useEditorStore.getState().dirtyRevision).toBe(8);
     expect(useEditorStore.getState().saveStatus).toBe("unsaved");
     expect(currentObject(first.id).position).toMatchObject({ x: 2200, y: 3000 });
+    expect(useAgentActivityStore.getState().events.slice(0, 2)).toEqual([
+      expect.objectContaining({ actor: "LabSpace", status: "committed" }),
+      expect.objectContaining({ actor: "Human", status: "approved" }),
+    ]);
 
     useEditorStore.getState().undo();
     expect(currentObject(first.id).position).toEqual(first.position);

@@ -8,6 +8,7 @@ import type {
   LabSpaceNavigationActions,
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
+import { agentActivityActions } from "./agent-activity-store";
 
 const MAX_RECORD_ID_LENGTH = 300;
 
@@ -91,7 +92,7 @@ export function focusLabRecord(
     throw new LabSpaceActionError("LabSpace could not focus the current physical record.");
   }
 
-  return {
+  const result: FocusLabRecordResult = {
     recordId: record.id,
     kind: record.kind,
     name: compactText(record.name, 120),
@@ -102,6 +103,14 @@ export function focusLabRecord(
     path: record.path.map((part) => compactText(part, 80)),
     focused: true,
   };
+  agentActivityActions.record({
+    actor: "Agent",
+    action: "Record focused",
+    subject: result.name,
+    status: "focused",
+    evidence: result.path.join(" / "),
+  });
+  return result;
 }
 
 export function createLabSpaceNavigationActions(

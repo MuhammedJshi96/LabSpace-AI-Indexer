@@ -192,7 +192,7 @@ tools.map((tool) => tool.name);
 
 The result should contain exactly the six tools listed above. Full commands and the deterministic demo coordinates are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
-The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci && npm run build`, starts the existing Express production server, and checks `/api/health`. A free Render instance uses ephemeral storage, so the public judge demo starts from the deterministic source-controlled seed after a service restart; use JSON export for work that must persist. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
+The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. A free Render instance uses ephemeral storage, so the public judge demo starts from the deterministic source-controlled seed after a service restart; use JSON export for work that must persist. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 
 ## Build Week scope and authorship
 

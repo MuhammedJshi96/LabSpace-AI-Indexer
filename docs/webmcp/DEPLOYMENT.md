@@ -6,7 +6,8 @@ LabSpace is a stateful Node/Express application with a Vite frontend and local S
 
 The Blueprint creates one free Node web service from `webmcp-challenge-2026`:
 
-- build: `npm ci && npm run build`
+- build: `npm ci --include=dev && npm run build` (the TypeScript build uses
+  development-only type packages even though the deployed runtime is production)
 - start: `npm run start`
 - health check: `/api/health`
 - production database: `/tmp/labspace-agent-twin.sqlite`

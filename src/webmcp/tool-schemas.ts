@@ -51,3 +51,5 @@ export const inspectRecordSchema = {
   required: ["recordId"],
   additionalProperties: false,
 } as const;
+
+export const focusRecordSchema = inspectRecordSchema;

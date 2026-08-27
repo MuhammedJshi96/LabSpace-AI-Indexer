@@ -1,4 +1,7 @@
-import type { LabSpaceReadActions } from "../agent/labspace-action-types";
+import type {
+  LabSpaceNavigationActions,
+  LabSpaceReadActions,
+} from "../agent/labspace-action-types";
 
 export type LabSpaceToolRegistration = {
   tools: WebMCP.ModelContextTool[];
@@ -10,4 +13,5 @@ export type LabSpaceToolRegistration = {
 export type RegisterLabSpaceToolsOptions = {
   modelContext?: WebMCP.ModelContext;
   actions?: LabSpaceReadActions;
+  navigationActions?: LabSpaceNavigationActions;
 };

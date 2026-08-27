@@ -66,6 +66,15 @@ export type AppDialog =
 
 export type AlignmentGuide = { axis: "x" | "y"; value: number; kind: string };
 
+export type SpatialFocusRequest = {
+  requestId: string;
+  recordId: string;
+  roomId: string;
+  objectId: string;
+  locationId: string | null;
+  showStorageAccess: boolean;
+};
+
 type Toast = { id: string; tone: "success" | "error" | "info"; message: string };
 
 type AssetTransformOverrides = Partial<
@@ -111,6 +120,9 @@ type EditorState = {
   floorVisible: boolean;
   wallTransparent: boolean;
   environmentContextVisible: boolean;
+  spatialFocus: SpatialFocusRequest | null;
+  digitalTwinSelectedRecordId: string | null;
+  digitalTwinSpatialMode: "3d" | "2d";
   history: SceneCommand[];
   future: SceneCommand[];
   clipboard: SceneObject[];
@@ -140,6 +152,10 @@ type EditorState = {
   setSnapTolerance: (value: number) => void;
   setCameraPreset: (preset: CameraPreset) => void;
   setCameraPose: (pose: RoomViewState["cameraPose"]) => void;
+  applySpatialFocus: (focus: SpatialFocusRequest) => boolean;
+  setSpatialStorageAccess: (open: boolean) => void;
+  setDigitalTwinSelectedRecord: (recordId: string | null) => void;
+  setDigitalTwinSpatialMode: (mode: "3d" | "2d") => void;
   setPresentation: (mode: EditorState["presentation"]) => void;
   toggleFloor: () => void;
   toggleWalls: () => void;
@@ -278,6 +294,9 @@ function roomSwitchState(project: Project) {
     floorVisible: viewState.floorVisible,
     wallTransparent: viewState.wallTransparent,
     environmentContextVisible: viewState.environmentContextVisible,
+    spatialFocus: null,
+    digitalTwinSelectedRecordId: null,
+    digitalTwinSpatialMode: "3d" as const,
   };
 }
 
@@ -562,6 +581,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   floorVisible: true,
   wallTransparent: false,
   environmentContextVisible: false,
+  spatialFocus: null,
+  digitalTwinSelectedRecordId: null,
+  digitalTwinSpatialMode: "3d",
   history: [],
   future: [],
   clipboard: [],
@@ -660,6 +682,47 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     })),
+  applySpatialFocus: (focus) => {
+    const state = get();
+    const room = state.project.rooms.find(
+      (entry) => entry.id === focus.roomId && entry.roomKind !== "demo-template",
+    );
+    const object = room?.scene.objects.find((entry) => entry.id === focus.objectId);
+    const location = focus.locationId
+      ? room?.scene.storageLocations.find(
+          (entry) => entry.id === focus.locationId && entry.objectId === focus.objectId,
+        )
+      : null;
+    if (!room || !object || (focus.locationId && !location)) return false;
+
+    const project =
+      state.project.activeRoomId === room.id
+        ? state.project
+        : { ...state.project, activeRoomId: room.id };
+    const switched = state.project.activeRoomId !== room.id;
+    set({
+      ...(switched ? roomSwitchState(project) : {}),
+      project,
+      selectedIds: [object.id],
+      selectedLocationId: location?.id ?? null,
+      panel: location ? "index" : "properties",
+      cameraPreset: "isometric",
+      presentation: state.presentation === "2d" ? "split" : state.presentation,
+      spatialFocus: focus,
+      digitalTwinSelectedRecordId: focus.recordId,
+      digitalTwinSpatialMode: "3d",
+    });
+    return true;
+  },
+  setSpatialStorageAccess: (open) =>
+    set((state) => ({
+      spatialFocus: state.spatialFocus
+        ? { ...state.spatialFocus, showStorageAccess: open }
+        : null,
+    })),
+  setDigitalTwinSelectedRecord: (digitalTwinSelectedRecordId) =>
+    set({ digitalTwinSelectedRecordId }),
+  setDigitalTwinSpatialMode: (digitalTwinSpatialMode) => set({ digitalTwinSpatialMode }),
   setPresentation: (presentation) =>
     set((state) => ({
       project: projectWithRoomViewState(state.project, { presentation }),

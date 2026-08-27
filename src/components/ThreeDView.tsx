@@ -1352,11 +1352,11 @@ function ViewCube({
 
 export function ThreeDView({
   quality = "balanced",
-  focusObjectId = null,
-  focusLocationId = null,
+  focusObjectId: focusObjectIdOverride,
+  focusLocationId: focusLocationIdOverride,
   presentation = "editor",
   wallTransparentOverride,
-  showStorageAccess = false,
+  showStorageAccess: showStorageAccessOverride,
 }: {
   quality?: RenderQuality;
   focusObjectId?: string | null;
@@ -1371,6 +1371,23 @@ export function ThreeDView({
   const sceneReadyFrame = useRef<number | null>(null);
   const modelProgress = useProgress();
   const room = useEditorStore(selectActiveRoom);
+  const spatialFocus = useEditorStore((state) => state.spatialFocus);
+  const focusObjectId =
+    focusObjectIdOverride === undefined
+      ? spatialFocus?.roomId === room.id
+        ? spatialFocus.objectId
+        : null
+      : focusObjectIdOverride;
+  const focusLocationId =
+    focusLocationIdOverride === undefined
+      ? spatialFocus?.roomId === room.id
+        ? spatialFocus.locationId
+        : null
+      : focusLocationIdOverride;
+  const showStorageAccess =
+    showStorageAccessOverride === undefined
+      ? Boolean(spatialFocus?.roomId === room.id && spatialFocus.showStorageAccess)
+      : showStorageAccessOverride;
   const preset = useEditorStore((state) => state.cameraPreset);
   const setPreset = useEditorStore((state) => state.setCameraPreset);
   const floorVisible = useEditorStore((state) => state.floorVisible);

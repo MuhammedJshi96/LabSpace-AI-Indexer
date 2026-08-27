@@ -1,9 +1,19 @@
 import { LabSpaceActionError, labSpaceReadActions } from "../agent/labspace-read-actions";
-import type { LabSpaceReadActions } from "../agent/labspace-action-types";
-import { emptyObjectSchema, inspectRecordSchema, searchRecordsSchema } from "./tool-schemas";
+import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions";
+import type {
+  LabSpaceNavigationActions,
+  LabSpaceReadActions,
+} from "../agent/labspace-action-types";
+import {
+  emptyObjectSchema,
+  focusRecordSchema,
+  inspectRecordSchema,
+  searchRecordsSchema,
+} from "./tool-schemas";
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
 export const LABSPACE_WEBMCP_TOOL_NAMES = [
+  "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
   "labspace_search_records",
@@ -24,6 +34,7 @@ function controlledExecution(signal: AbortSignal | undefined, read: () => unknow
 
 export function createLabSpaceToolDefinitions(
   actions: LabSpaceReadActions = labSpaceReadActions,
+  navigationActions: LabSpaceNavigationActions = labSpaceNavigationActions,
 ): WebMCP.ModelContextTool[] {
   return [
     {
@@ -35,6 +46,18 @@ export function createLabSpaceToolDefinitions(
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (_input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
         controlledExecution(executionContext?.signal, () => actions.getLabContext()),
+    },
+    {
+      name: "labspace_focus_record",
+      title: "Focus LabSpace record",
+      description:
+        "Reveal one canonical Spatial Index record in the correct LabSpace room, selection, storage evidence, and 3D camera.",
+      inputSchema: focusRecordSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(executionContext?.signal, () =>
+          navigationActions.focusLabRecord(input),
+        ),
     },
     {
       name: "labspace_search_records",
@@ -62,9 +85,10 @@ export function createLabSpaceToolDefinitions(
 export function registerLabSpaceTools({
   modelContext,
   actions = labSpaceReadActions,
+  navigationActions = labSpaceNavigationActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
   const controller = new AbortController();
-  const tools = modelContext ? createLabSpaceToolDefinitions(actions) : [];
+  const tools = modelContext ? createLabSpaceToolDefinitions(actions, navigationActions) : [];
   const ready = modelContext
     ? Promise.all(
         tools.map((tool) => modelContext.registerTool(tool, { signal: controller.signal })),

@@ -30,6 +30,7 @@ import {
   type DigitalTwinScope,
 } from "../domain/digital-twin-index";
 import { hasLaboratoryEnvironmentProfile } from "../domain/laboratory-environment";
+import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { AssetThumbnail } from "./AssetThumbnail";
 import { Dialogs, Toasts } from "./Dialogs";
@@ -141,14 +142,7 @@ export function DigitalTwinPage() {
   const [mode, setMode] = useState<TwinMode>("browse");
   const [scope, setScope] = useState<DigitalTwinScope>("project");
   const [quality, setQuality] = useState<RenderQuality>("balanced");
-  const [spatialMode, setSpatialMode] = useState<"3d" | "2d">("3d");
   const [wallCutaway, setWallCutaway] = useState(false);
-  // Access previews are intentionally opt-in. Opening a drawer or shelf is a
-  // useful evidence view, but showing it during ordinary browsing makes the
-  // presentation geometry look displaced or broken.
-  const [storageAccessOpen, setStorageAccessOpen] = useState(false);
-  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
-  const [focusObjectId, setFocusObjectId] = useState<string | null>(null);
   const [qrCode, setQrCode] = useState("");
   const hydrate = useEditorStore((state) => state.hydrate);
   const hydrated = useEditorStore((state) => state.hydrated);
@@ -157,10 +151,15 @@ export function DigitalTwinPage() {
     (entry) => entry.roomKind !== "demo-template",
   ).length;
   const room = useEditorStore(selectActiveRoom);
+  const spatialFocus = useEditorStore((state) => state.spatialFocus);
+  const setSpatialStorageAccess = useEditorStore((state) => state.setSpatialStorageAccess);
+  const selectedRecordId = useEditorStore((state) => state.digitalTwinSelectedRecordId);
+  const setSelectedRecordId = useEditorStore((state) => state.setDigitalTwinSelectedRecord);
+  const spatialMode = useEditorStore((state) => state.digitalTwinSpatialMode);
+  const setSpatialMode = useEditorStore((state) => state.setDigitalTwinSpatialMode);
   const setSelected = useEditorStore((state) => state.setSelected);
   const setSelectedLocation = useEditorStore((state) => state.setSelectedLocation);
-  const switchRoom = useEditorStore((state) => state.switchRoom);
-  const setPreset = useEditorStore((state) => state.setCameraPreset);
+  const pushToast = useEditorStore((state) => state.pushToast);
   const environmentContextVisible = useEditorStore((state) => state.environmentContextVisible);
   const toggleEnvironmentContext = useEditorStore((state) => state.toggleEnvironmentContext);
 
@@ -188,34 +187,33 @@ export function DigitalTwinPage() {
   );
   const showResultStrip = Boolean(query.trim() || mode !== "browse");
 
-  const effectiveSelectedRecordId = filteredRecords.some((record) => record.id === selectedRecordId)
+  const effectiveSelectedRecordId = allRecords.some((record) => record.id === selectedRecordId)
     ? selectedRecordId
     : null;
-  const selectedRecord = filteredRecords.find((record) => record.id === effectiveSelectedRecordId);
-  const focusedObjectId = focusObjectId === selectedRecord?.objectId ? focusObjectId : null;
-  useEffect(() => {
-    if (!selectedRecord) {
-      setSelected([]);
-      setSelectedLocation(null);
-      return;
-    }
-    if (selectedRecord.roomId !== room.id) {
-      switchRoom(selectedRecord.roomId);
-      return;
-    }
-    setSelected(selectedRecord.objectId ? [selectedRecord.objectId] : []);
-    setSelectedLocation(selectedRecord.locationId);
-  }, [room.id, selectedRecord, setSelected, setSelectedLocation, switchRoom]);
+  const selectedRecord = allRecords.find((record) => record.id === effectiveSelectedRecordId);
+  const focusMatchesSelectedRecord = Boolean(
+    selectedRecord &&
+      spatialFocus?.recordId === selectedRecord.id &&
+      spatialFocus.roomId === room.id,
+  );
+  const focusedObjectId = focusMatchesSelectedRecord ? spatialFocus?.objectId ?? null : null;
+  const storageAccessOpen = Boolean(
+    focusMatchesSelectedRecord && spatialFocus?.showStorageAccess,
+  );
 
   useEffect(() => {
     if (!shouldAutoFocusDigitalTwinResult(query, selectedRecord)) return;
     const handle = window.setTimeout(() => {
       setSpatialMode("3d");
-      setFocusObjectId(selectedRecord?.objectId ?? null);
-      setPreset("isometric");
+      if (selectedRecord) {
+        labSpaceNavigationActions.focusLabRecord(
+          { recordId: selectedRecord.id },
+          { revealStorage: false },
+        );
+      }
     }, 320);
     return () => window.clearTimeout(handle);
-  }, [query, selectedRecord, setPreset]);
+  }, [query, selectedRecord, setSpatialMode]);
 
   useEffect(() => {
     let active = true;
@@ -261,11 +259,20 @@ export function DigitalTwinPage() {
   }, []);
 
   const selectRecord = (record: TwinRecord) => {
-    if (record.roomId !== room.id) switchRoom(record.roomId);
     setSelectedRecordId(record.id);
-    setStorageAccessOpen(false);
-    setFocusObjectId(record.objectId);
-    if (record.objectId && spatialMode === "3d") setPreset("isometric");
+    if (!record.objectId) {
+      setSelected([]);
+      setSelectedLocation(null);
+      return;
+    }
+    try {
+      labSpaceNavigationActions.focusLabRecord(
+        { recordId: record.id },
+        { revealStorage: false },
+      );
+    } catch (error) {
+      pushToast(error instanceof Error ? error.message : "Record could not be focused.", "error");
+    }
   };
 
   const submitIndexSearch = () => {
@@ -277,9 +284,14 @@ export function DigitalTwinPage() {
   const navigateToRecord = () => {
     if (!selectedRecord?.objectId) return;
     setSpatialMode("3d");
-    setStorageAccessOpen(Boolean(selectedRecord.locationId));
-    setFocusObjectId(selectedRecord.objectId);
-    setPreset("isometric");
+    try {
+      labSpaceNavigationActions.focusLabRecord(
+        { recordId: selectedRecord.id },
+        { revealStorage: true },
+      );
+    } catch (error) {
+      pushToast(error instanceof Error ? error.message : "Record could not be focused.", "error");
+    }
   };
 
   const counts = {
@@ -369,7 +381,7 @@ export function DigitalTwinPage() {
           </label>
           <button
             className={spatialMode === "2d" ? "active" : ""}
-            onClick={() => setSpatialMode((current) => (current === "3d" ? "2d" : "3d"))}
+            onClick={() => setSpatialMode(spatialMode === "3d" ? "2d" : "3d")}
           >
             {spatialMode === "3d" ? <ListBullets size={18} /> : <Cube size={18} />}
             {spatialMode === "3d" ? "2D fallback" : "Return to 3D"}
@@ -479,7 +491,7 @@ export function DigitalTwinPage() {
                 <ThreeDView
                   quality={quality}
                   focusObjectId={focusedObjectId}
-                  focusLocationId={focusedObjectId ? selectedRecord?.locationId : null}
+                  focusLocationId={focusedObjectId ? spatialFocus?.locationId : null}
                   presentation="digital-twin"
                   wallTransparentOverride={wallCutaway}
                   showStorageAccess={Boolean(
@@ -656,7 +668,7 @@ export function DigitalTwinPage() {
                   <button
                     className="storage-preview-toggle"
                     type="button"
-                    onClick={() => setStorageAccessOpen((current) => !current)}
+                    onClick={() => setSpatialStorageAccess(!storageAccessOpen)}
                     aria-pressed={storageAccessOpen}
                   >
                     <Cube size={17} weight="duotone" />

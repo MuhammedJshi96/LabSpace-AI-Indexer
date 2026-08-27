@@ -100,6 +100,31 @@ export type LabRecordInspection =
 
 export type InspectLabRecordInput = { recordId: string };
 
+export type FocusLabRecordInput = { recordId: string };
+
+export type FocusLabRecordResult = {
+  recordId: string;
+  kind: DigitalTwinRecordKind;
+  name: string;
+  laboratoryCode: string;
+  roomCode: string;
+  objectId: string;
+  locationId: string | null;
+  path: string[];
+  focused: true;
+};
+
+export type FocusLabRecordOptions = {
+  revealStorage?: boolean;
+};
+
+export type LabSpaceNavigationActions = {
+  focusLabRecord: (
+    input: unknown,
+    options?: FocusLabRecordOptions,
+  ) => FocusLabRecordResult;
+};
+
 export type LabSpaceReadActions = {
   getLabContext: () => LabContext;
   searchLabRecords: (input: unknown) => SearchLabRecordsResult;

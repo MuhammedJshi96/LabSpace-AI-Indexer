@@ -1,5 +1,5 @@
 import type { DigitalTwinRecordKind, DigitalTwinScope } from "../domain/digital-twin-index";
-import type { Project } from "../domain/schema";
+import type { Project, SceneObject } from "../domain/schema";
 
 export type LabSpaceReadState = {
   project: Project;
@@ -156,6 +156,51 @@ export type ValidateObjectMoveResult = {
 
 export type LabSpaceSpatialActions = {
   validateObjectMove: (input: unknown) => ValidateObjectMoveResult;
+};
+
+export type PendingAgentMoveChange = {
+  stageId: string;
+  tool: "move";
+  roomId: string;
+  objectId: string;
+  objectName: string;
+  objectIndexCode: string;
+  before: SceneObject;
+  proposed: SceneObject;
+  validation: ValidateObjectMoveResult;
+  baselineDirtyRevision: number;
+  createdAt: string;
+  status: "pending";
+  timestamps: {
+    projectUpdatedAt: string;
+    roomUpdatedAt: string;
+    sceneUpdatedAt: string;
+  };
+};
+
+export type StageObjectMoveResult = {
+  staged: boolean;
+  stageId: string | null;
+  objectId: string;
+  objectName: string;
+  proposed: { xMm: number; yMm: number; rotationDeg: number };
+  valid: boolean;
+  persisted: false;
+  requiresHumanApproval: boolean;
+  conflicts: PlacementConflict[];
+};
+
+export type AgentMoveReviewResult = {
+  stageId: string;
+  objectId: string;
+  status: "approved" | "cancelled";
+  persisted: boolean;
+};
+
+export type LabSpaceStagingActions = {
+  stageObjectMove: (input: unknown) => StageObjectMoveResult;
+  approveStagedObjectMove: (stageId: string) => AgentMoveReviewResult;
+  cancelStagedObjectMove: (stageId: string) => AgentMoveReviewResult;
 };
 
 export type LabSpaceReadActions = {

@@ -1,16 +1,19 @@
 import { LabSpaceActionError, labSpaceReadActions } from "../agent/labspace-read-actions";
 import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions";
 import { labSpaceSpatialActions } from "../agent/labspace-spatial-actions";
+import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
 import type {
   LabSpaceNavigationActions,
   LabSpaceReadActions,
   LabSpaceSpatialActions,
+  LabSpaceStagingActions,
 } from "../agent/labspace-action-types";
 import {
   emptyObjectSchema,
   focusRecordSchema,
   inspectRecordSchema,
   searchRecordsSchema,
+  stageObjectMoveSchema,
   validateObjectMoveSchema,
 } from "./tool-schemas";
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
@@ -20,6 +23,7 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_get_context",
   "labspace_inspect_record",
   "labspace_search_records",
+  "labspace_stage_object_move",
   "labspace_validate_object_move",
 ] as const;
 
@@ -40,6 +44,7 @@ export function createLabSpaceToolDefinitions(
   actions: LabSpaceReadActions = labSpaceReadActions,
   navigationActions: LabSpaceNavigationActions = labSpaceNavigationActions,
   spatialActions: LabSpaceSpatialActions = labSpaceSpatialActions,
+  stagingActions: LabSpaceStagingActions = labSpaceStagingActions,
 ): WebMCP.ModelContextTool[] {
   return [
     {
@@ -85,6 +90,18 @@ export function createLabSpaceToolDefinitions(
         controlledExecution(executionContext?.signal, () => actions.inspectLabRecord(input)),
     },
     {
+      name: "labspace_stage_object_move",
+      title: "Stage LabSpace object move",
+      description:
+        "Validate and display a reversible object-move preview for explicit human approval. The preview is not saved and creates no history entry until a researcher approves it in LabSpace.",
+      inputSchema: stageObjectMoveSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(executionContext?.signal, () =>
+          stagingActions.stageObjectMove(input),
+        ),
+    },
+    {
       name: "labspace_validate_object_move",
       title: "Validate LabSpace object move",
       description:
@@ -104,10 +121,11 @@ export function registerLabSpaceTools({
   actions = labSpaceReadActions,
   navigationActions = labSpaceNavigationActions,
   spatialActions = labSpaceSpatialActions,
+  stagingActions = labSpaceStagingActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
   const controller = new AbortController();
   const tools = modelContext
-    ? createLabSpaceToolDefinitions(actions, navigationActions, spatialActions)
+    ? createLabSpaceToolDefinitions(actions, navigationActions, spatialActions, stagingActions)
     : [];
   const ready = modelContext
     ? Promise.all(

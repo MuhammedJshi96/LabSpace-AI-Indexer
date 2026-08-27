@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { PendingAgentMoveChange } from "../agent/labspace-action-types";
 import { getAssetDefinition } from "../domain/assets";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
 import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/layers";
@@ -123,6 +124,7 @@ type EditorState = {
   spatialFocus: SpatialFocusRequest | null;
   digitalTwinSelectedRecordId: string | null;
   digitalTwinSpatialMode: "3d" | "2d";
+  pendingAgentChange: PendingAgentMoveChange | null;
   history: SceneCommand[];
   future: SceneCommand[];
   clipboard: SceneObject[];
@@ -584,6 +586,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   spatialFocus: null,
   digitalTwinSelectedRecordId: null,
   digitalTwinSpatialMode: "3d",
+  pendingAgentChange: null,
   history: [],
   future: [],
   clipboard: [],
@@ -1044,6 +1047,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   updateObject: (id, patch, label = "Edit object") => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before editing the layout.", "info");
+      return;
+    }
     const room = activeRoom(state.project);
     const before = room.scene.objects.find((object) => object.id === id);
     if (!before) return;
@@ -1095,6 +1102,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   deleteSelected: () => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before editing the layout.", "info");
+      return;
+    }
     const room = activeRoom(state.project);
     const selected = new Set(state.selectedIds);
     const selectedWallIds = new Set(
@@ -1156,6 +1167,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   duplicateSelected: () => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before editing the layout.", "info");
+      return;
+    }
     const originals = activeRoom(state.project).scene.objects.filter((object) =>
       state.selectedIds.includes(object.id),
     );
@@ -1192,6 +1207,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   pasteClipboard: () => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before editing the layout.", "info");
+      return;
+    }
     const ids = state.clipboard.map((object) =>
       state.addAsset(
         object.assetDefinitionId,
@@ -1213,6 +1232,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   undo: () => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before using history.", "info");
+      return;
+    }
     const command = state.history.at(-1);
     if (!command) return;
     set({
@@ -1225,6 +1248,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   redo: () => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before using history.", "info");
+      return;
+    }
     const command = state.future[0];
     if (!command) return;
     set({
@@ -1537,6 +1564,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     })),
 
   saveNow: async () => {
+    if (get().pendingAgentChange) {
+      get().pushToast("Agent preview is not saved. Approve or cancel it first.", "info");
+      return;
+    }
     if (pendingProjectSave) {
       saveRequestedWhilePending = true;
       await pendingProjectSave;
@@ -1669,6 +1700,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     })),
   switchRoom: (roomId) => {
     const state = get();
+    if (state.pendingAgentChange && state.project.activeRoomId !== roomId) {
+      state.pushToast("Approve or cancel the agent preview before changing rooms.", "info");
+      return;
+    }
     const room = state.project.rooms.find((entry) => entry.id === roomId);
     if (!room) {
       state.pushToast("That room is no longer available in this project.", "error");

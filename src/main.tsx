@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { AgentReviewPanel } from "./components/AgentReviewPanel";
 import { AssetPreviewPage } from "./components/AssetPreviewPage";
 import { DigitalTwinPage } from "./components/DigitalTwinPage";
 import { ProceduralAssetCapturePage } from "./components/ProceduralAssetCapturePage";
@@ -23,6 +24,7 @@ const applicationWithBridge = webMCPRoute ? (
   <>
     <WebMCPBridge />
     {application}
+    <AgentReviewPanel />
   </>
 ) : (
   application

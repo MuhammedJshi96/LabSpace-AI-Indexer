@@ -2,6 +2,7 @@ import type {
   LabSpaceNavigationActions,
   LabSpaceReadActions,
   LabSpaceSpatialActions,
+  LabSpaceStagingActions,
 } from "../agent/labspace-action-types";
 
 export type LabSpaceToolRegistration = {
@@ -16,4 +17,5 @@ export type RegisterLabSpaceToolsOptions = {
   actions?: LabSpaceReadActions;
   navigationActions?: LabSpaceNavigationActions;
   spatialActions?: LabSpaceSpatialActions;
+  stagingActions?: LabSpaceStagingActions;
 };

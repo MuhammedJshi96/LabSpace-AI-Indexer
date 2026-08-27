@@ -92,3 +92,5 @@ export const validateObjectMoveSchema = {
   required: ["objectId", "target"],
   additionalProperties: false,
 } as const;
+
+export const stageObjectMoveSchema = validateObjectMoveSchema;

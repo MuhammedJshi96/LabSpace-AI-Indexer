@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: labspace-agent-twin
+    runtime: node
+    plan: free
+    branch: webmcp-challenge-2026
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: NODE_ENV
+        value: production
+      - key: LABSPACE_DB_PATH
+        value: /tmp/labspace-agent-twin.sqlite

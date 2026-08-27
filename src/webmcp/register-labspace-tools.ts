@@ -9,14 +9,14 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_search_records",
 ] as const;
 
-function controlledExecution(signal: AbortSignal, read: () => unknown) {
-  signal.throwIfAborted();
+function controlledExecution(signal: AbortSignal | undefined, read: () => unknown) {
+  signal?.throwIfAborted();
   try {
     const result = read();
-    signal.throwIfAborted();
+    signal?.throwIfAborted();
     return result;
   } catch (error) {
-    if (signal.aborted) throw signal.reason;
+    signal?.throwIfAborted();
     if (error instanceof LabSpaceActionError) throw new Error(error.message, { cause: error });
     throw new Error("LabSpace could not complete this read request.", { cause: error });
   }
@@ -33,7 +33,8 @@ export function createLabSpaceToolDefinitions(
         "Return the active LabSpace project, laboratory, room, selection, and compact Spatial Index counts.",
       inputSchema: emptyObjectSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
-      execute: (_input, { signal }) => controlledExecution(signal, () => actions.getLabContext()),
+      execute: (_input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(executionContext?.signal, () => actions.getLabContext()),
     },
     {
       name: "labspace_search_records",
@@ -42,8 +43,8 @@ export function createLabSpaceToolDefinitions(
         "Search the canonical LabSpace Spatial Index for equipment, inventory, and exact storage locations.",
       inputSchema: searchRecordsSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
-      execute: (input, { signal }) =>
-        controlledExecution(signal, () => actions.searchLabRecords(input)),
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(executionContext?.signal, () => actions.searchLabRecords(input)),
     },
     {
       name: "labspace_inspect_record",
@@ -52,8 +53,8 @@ export function createLabSpaceToolDefinitions(
         "Retrieve current canonical details for one exact Spatial Index record discovered in LabSpace.",
       inputSchema: inspectRecordSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
-      execute: (input, { signal }) =>
-        controlledExecution(signal, () => actions.inspectLabRecord(input)),
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(executionContext?.signal, () => actions.inspectLabRecord(input)),
     },
   ];
 }

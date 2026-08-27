@@ -49,6 +49,15 @@ function fakeActions(): LabSpaceReadActions {
   };
 }
 
+type ChromeCompatibleExecute = (
+  input: Record<string, unknown>,
+  executionContext?: WebMCP.ToolExecuteCallbackOptions,
+) => WebMCP.MaybePromise<unknown>;
+
+function executeLikeChrome151(tool: WebMCP.ModelContextTool): ChromeCompatibleExecute {
+  return tool.execute as ChromeCompatibleExecute;
+}
+
 describe("LabSpace WebMCP registration", () => {
   it("is a no-op when document.modelContext is unavailable", async () => {
     const registration = registerLabSpaceTools({ modelContext: undefined });
@@ -112,6 +121,28 @@ describe("LabSpace WebMCP registration", () => {
     const cancelled = new AbortController();
     cancelled.abort(new Error("Cancelled"));
     expect(() => context.execute({}, { signal: cancelled.signal })).toThrow(/Cancelled/);
+  });
+
+  it("executes every tool when Chrome omits the execution context", async () => {
+    const modelContext = new MockModelContext();
+    const actions = fakeActions();
+    const registration = registerLabSpaceTools({ modelContext, actions });
+    await registration.ready;
+    const context = modelContext.activeTools.get("labspace_get_context")!;
+    const search = modelContext.activeTools.get("labspace_search_records")!;
+    const inspect = modelContext.activeTools.get("labspace_inspect_record")!;
+
+    expect(await executeLikeChrome151(context)({})).toEqual({ source: "context" });
+    expect(await executeLikeChrome151(search)({ query: "Reference standards" })).toEqual({
+      source: "search",
+      input: { query: "Reference standards" },
+    });
+    expect(
+      await executeLikeChrome151(inspect)({ recordId: "inventory:reference-standards" }),
+    ).toEqual({
+      source: "inspect",
+      input: { recordId: "inventory:reference-standards" },
+    });
   });
 
   it("unregisters with AbortSignal and remounts without duplicate active tools", async () => {

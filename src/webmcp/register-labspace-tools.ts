@@ -1,14 +1,17 @@
 import { LabSpaceActionError, labSpaceReadActions } from "../agent/labspace-read-actions";
 import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions";
+import { labSpaceSpatialActions } from "../agent/labspace-spatial-actions";
 import type {
   LabSpaceNavigationActions,
   LabSpaceReadActions,
+  LabSpaceSpatialActions,
 } from "../agent/labspace-action-types";
 import {
   emptyObjectSchema,
   focusRecordSchema,
   inspectRecordSchema,
   searchRecordsSchema,
+  validateObjectMoveSchema,
 } from "./tool-schemas";
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
@@ -17,6 +20,7 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_get_context",
   "labspace_inspect_record",
   "labspace_search_records",
+  "labspace_validate_object_move",
 ] as const;
 
 function controlledExecution(signal: AbortSignal | undefined, read: () => unknown) {
@@ -35,6 +39,7 @@ function controlledExecution(signal: AbortSignal | undefined, read: () => unknow
 export function createLabSpaceToolDefinitions(
   actions: LabSpaceReadActions = labSpaceReadActions,
   navigationActions: LabSpaceNavigationActions = labSpaceNavigationActions,
+  spatialActions: LabSpaceSpatialActions = labSpaceSpatialActions,
 ): WebMCP.ModelContextTool[] {
   return [
     {
@@ -79,6 +84,18 @@ export function createLabSpaceToolDefinitions(
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
         controlledExecution(executionContext?.signal, () => actions.inspectLabRecord(input)),
     },
+    {
+      name: "labspace_validate_object_move",
+      title: "Validate LabSpace object move",
+      description:
+        "Evaluate a hypothetical object position with current LabSpace room geometry without changing project, preview, or history state.",
+      inputSchema: validateObjectMoveSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(executionContext?.signal, () =>
+          spatialActions.validateObjectMove(input),
+        ),
+    },
   ];
 }
 
@@ -86,9 +103,12 @@ export function registerLabSpaceTools({
   modelContext,
   actions = labSpaceReadActions,
   navigationActions = labSpaceNavigationActions,
+  spatialActions = labSpaceSpatialActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
   const controller = new AbortController();
-  const tools = modelContext ? createLabSpaceToolDefinitions(actions, navigationActions) : [];
+  const tools = modelContext
+    ? createLabSpaceToolDefinitions(actions, navigationActions, spatialActions)
+    : [];
   const ready = modelContext
     ? Promise.all(
         tools.map((tool) => modelContext.registerTool(tool, { signal: controller.signal })),

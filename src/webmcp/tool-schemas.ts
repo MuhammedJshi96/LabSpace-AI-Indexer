@@ -53,3 +53,42 @@ export const inspectRecordSchema = {
 } as const;
 
 export const focusRecordSchema = inspectRecordSchema;
+
+export const validateObjectMoveSchema = {
+  type: "object",
+  properties: {
+    objectId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description: "Canonical LabSpace scene-object ID to evaluate.",
+    },
+    target: {
+      type: "object",
+      properties: {
+        xMm: {
+          type: "number",
+          minimum: -100000,
+          maximum: 100000,
+          description: "Proposed object-center X position in millimetres.",
+        },
+        yMm: {
+          type: "number",
+          minimum: -100000,
+          maximum: 100000,
+          description: "Proposed object-center Y position in millimetres.",
+        },
+      },
+      required: ["xMm", "yMm"],
+      additionalProperties: false,
+    },
+    rotationDeg: {
+      type: "number",
+      minimum: -360,
+      maximum: 360,
+      description: "Optional proposed Z-axis rotation in degrees.",
+    },
+  },
+  required: ["objectId", "target"],
+  additionalProperties: false,
+} as const;

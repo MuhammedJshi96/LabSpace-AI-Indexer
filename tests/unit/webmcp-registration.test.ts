@@ -3,6 +3,7 @@ import type {
   LabSpaceNavigationActions,
   LabSpaceReadActions,
   LabSpaceReadState,
+  LabSpaceSpatialActions,
 } from "../../src/agent/labspace-action-types";
 import { createLabSpaceReadActions } from "../../src/agent/labspace-read-actions";
 import { createSeedProject } from "../../src/domain/seed";
@@ -59,6 +60,12 @@ function fakeNavigationActions(): LabSpaceNavigationActions {
   };
 }
 
+function fakeSpatialActions(): LabSpaceSpatialActions {
+  return {
+    validateObjectMove: vi.fn((input) => ({ source: "validate", input }) as never),
+  };
+}
+
 type ChromeCompatibleExecute = (
   input: Record<string, unknown>,
   executionContext?: WebMCP.ToolExecuteCallbackOptions,
@@ -86,7 +93,7 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(4);
+    expect(tools).toHaveLength(5);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(tool.name !== "labspace_focus_record");
@@ -110,13 +117,20 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const actions = fakeActions();
     const navigationActions = fakeNavigationActions();
-    const registration = registerLabSpaceTools({ modelContext, actions, navigationActions });
+    const spatialActions = fakeSpatialActions();
+    const registration = registerLabSpaceTools({
+      modelContext,
+      actions,
+      navigationActions,
+      spatialActions,
+    });
     await registration.ready;
     const signal = new AbortController().signal;
     const context = modelContext.activeTools.get("labspace_get_context")!;
     const focus = modelContext.activeTools.get("labspace_focus_record")!;
     const search = modelContext.activeTools.get("labspace_search_records")!;
     const inspect = modelContext.activeTools.get("labspace_inspect_record")!;
+    const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
 
     expect(await context.execute({}, { signal })).toEqual({ source: "context" });
     expect(await focus.execute({ recordId: "record-1" }, { signal })).toEqual({
@@ -131,10 +145,23 @@ describe("LabSpace WebMCP registration", () => {
       source: "inspect",
       input: { recordId: "record-1" },
     });
+    expect(
+      await validate.execute(
+        { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
+        { signal },
+      ),
+    ).toEqual({
+      source: "validate",
+      input: { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
+    });
     expect(actions.getLabContext).toHaveBeenCalledOnce();
     expect(navigationActions.focusLabRecord).toHaveBeenCalledWith({ recordId: "record-1" });
     expect(actions.searchLabRecords).toHaveBeenCalledWith({ query: "evaporator" });
     expect(actions.inspectLabRecord).toHaveBeenCalledWith({ recordId: "record-1" });
+    expect(spatialActions.validateObjectMove).toHaveBeenCalledWith({
+      objectId: "object-1",
+      target: { xMm: 1000, yMm: 2000 },
+    });
 
     const cancelled = new AbortController();
     cancelled.abort(new Error("Cancelled"));
@@ -145,12 +172,19 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const actions = fakeActions();
     const navigationActions = fakeNavigationActions();
-    const registration = registerLabSpaceTools({ modelContext, actions, navigationActions });
+    const spatialActions = fakeSpatialActions();
+    const registration = registerLabSpaceTools({
+      modelContext,
+      actions,
+      navigationActions,
+      spatialActions,
+    });
     await registration.ready;
     const context = modelContext.activeTools.get("labspace_get_context")!;
     const focus = modelContext.activeTools.get("labspace_focus_record")!;
     const search = modelContext.activeTools.get("labspace_search_records")!;
     const inspect = modelContext.activeTools.get("labspace_inspect_record")!;
+    const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
 
     expect(await executeLikeChrome151(context)({})).toEqual({ source: "context" });
     expect(await executeLikeChrome151(focus)({ recordId: "record-1" })).toEqual({
@@ -167,21 +201,30 @@ describe("LabSpace WebMCP registration", () => {
       source: "inspect",
       input: { recordId: "inventory:reference-standards" },
     });
+    expect(
+      await executeLikeChrome151(validate)({
+        objectId: "object-1",
+        target: { xMm: 1000, yMm: 2000 },
+      }),
+    ).toEqual({
+      source: "validate",
+      input: { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
+    });
   });
 
   it("unregisters with AbortSignal and remounts without duplicate active tools", async () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(4);
+    expect(modelContext.activeTools.size).toBe(5);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(4);
-    expect([...modelContext.activeTools]).toHaveLength(4);
+    expect(modelContext.activeTools.size).toBe(5);
+    expect([...modelContext.activeTools]).toHaveLength(5);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

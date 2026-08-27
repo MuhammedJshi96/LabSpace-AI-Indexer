@@ -125,6 +125,39 @@ export type LabSpaceNavigationActions = {
   ) => FocusLabRecordResult;
 };
 
+export type ValidateObjectMoveInput = {
+  objectId: string;
+  target: { xMm: number; yMm: number };
+  rotationDeg?: number;
+};
+
+export type PlacementConflict = {
+  type:
+    | "outside-room-boundary"
+    | "object-collision"
+    | "below-floor"
+    | "above-room-height"
+    | "restricted-object";
+  objectId?: string;
+  indexCode?: string;
+  name?: string;
+  message: string;
+};
+
+export type ValidateObjectMoveResult = {
+  valid: boolean;
+  objectId: string;
+  objectName: string;
+  objectIndexCode: string;
+  roomCode: string;
+  target: { xMm: number; yMm: number; rotationDeg: number };
+  conflicts: PlacementConflict[];
+};
+
+export type LabSpaceSpatialActions = {
+  validateObjectMove: (input: unknown) => ValidateObjectMoveResult;
+};
+
 export type LabSpaceReadActions = {
   getLabContext: () => LabContext;
   searchLabRecords: (input: unknown) => SearchLabRecordsResult;

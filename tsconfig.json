@@ -15,7 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "node", "vitest/globals"]
+    "types": ["vite/client", "node", "vitest/globals", "webmcp-types"]
   },
   "include": ["src", "server", "scripts", "tests", "vite.config.mjs", "playwright.config.ts"],
   "exclude": ["dist", "node_modules"]

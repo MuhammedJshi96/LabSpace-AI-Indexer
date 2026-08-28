@@ -3,6 +3,7 @@ import {
   CheckCircle,
   Robot,
   Ruler,
+  Square,
   Stack,
   WarningCircle,
   X,
@@ -33,6 +34,14 @@ export function AgentReviewPanel() {
   }, [pending]);
 
   if (!pending) return null;
+  const proposedWalls =
+    pending.tool === "layout"
+      ? pending.proposedObjects.filter((object) => object.kind === "wall")
+      : [];
+  const proposedAssets =
+    pending.tool === "layout"
+      ? pending.proposedObjects.filter((object) => object.kind === "asset")
+      : [];
 
   const approve = () => {
     try {
@@ -76,16 +85,33 @@ export function AgentReviewPanel() {
             </span>
           </div>
           <h2 id="agent-review-title">
-            {pending.tool === "layout" ? "Review room blueprint" : "Review agent move"}
+            {pending.tool === "layout" ? "Review room shell and layout" : "Review agent move"}
           </h2>
           {pending.tool === "layout" ? (
             <>
               <p id="agent-review-summary">
-                <b>{pending.proposedObjects.length} catalog assets</b> proposed for {pending.roomName}
+                {proposedWalls.length > 0 && (
+                  <>
+                    <b>
+                      {metres(pending.proposedRoomSize.width)} ×{" "}
+                      {metres(pending.proposedRoomSize.depth)} room
+                    </b>
+                    {" · "}
+                    {proposedWalls.length} connected walls{" · "}
+                  </>
+                )}
+                <b>{proposedAssets.length} catalog assets</b> proposed for {pending.roomName}
                 {pending.brief ? ` · ${pending.brief}` : ""}
               </p>
               <div className="agent-review-manifest" aria-label="Proposed room assets">
-                {pending.proposedObjects.slice(0, 6).map((object) => (
+                {proposedWalls.length > 0 && (
+                  <span className="agent-review-shell-item">
+                    <Square size={14} weight="duotone" />
+                    <b>Closed room shell</b>
+                    <small>Walls generate the floor automatically</small>
+                  </span>
+                )}
+                {proposedAssets.slice(0, proposedWalls.length > 0 ? 5 : 6).map((object) => (
                   <span key={object.objectId}>
                     <Stack size={14} weight="duotone" />
                     <b>{object.name}</b>
@@ -94,21 +120,21 @@ export function AgentReviewPanel() {
                     </small>
                   </span>
                 ))}
-                {pending.proposedObjects.length > 6 && (
+                {proposedAssets.length > (proposedWalls.length > 0 ? 5 : 6) && (
                   <span className="agent-review-manifest-more">
-                    +{pending.proposedObjects.length - 6} more
+                    +{proposedAssets.length - (proposedWalls.length > 0 ? 5 : 6)} more
                   </span>
                 )}
               </div>
               <div className="agent-review-route" aria-label="Room plan evidence">
                 <span>
                   <small>Blueprint layer</small>
-                  Exact catalog dimensions
+                  Connected walls → derived floor
                 </span>
                 <Ruler size={18} aria-hidden="true" />
                 <span>
                   <small>Commit</small>
-                  One undoable room update
+                  Shell + assets in one undoable update
                 </span>
               </div>
             </>
@@ -119,13 +145,13 @@ export function AgentReviewPanel() {
               </p>
               <div className="agent-review-route" aria-label="Proposed position change">
                 <span>
-                  <small>Current</small>
-                  X {metres(pending.before.position.x)} · Y {metres(pending.before.position.y)}
+                  <small>Current</small>X {metres(pending.before.position.x)} · Y{" "}
+                  {metres(pending.before.position.y)}
                 </span>
                 <ArrowRight size={18} aria-hidden="true" />
                 <span>
-                  <small>Proposed</small>
-                  X {metres(pending.proposed.position.x)} · Y {metres(pending.proposed.position.y)}
+                  <small>Proposed</small>X {metres(pending.proposed.position.x)} · Y{" "}
+                  {metres(pending.proposed.position.y)}
                 </span>
               </div>
             </>

@@ -13,7 +13,7 @@ LabSpace schema/error adapter
     |
     +--> canonical read actions --> Spatial Index --> project state
     +--> shared focus action -----> room/selection/camera state
-    +--> catalog + room planner --> geometry-checked layout proposal
+    +--> catalog + wall/floor planner --> geometry-checked room proposal
     +--> placement action --------> deterministic geometry validator
     +--> staging action ----------> reversible move / blueprint preview
                                       |
@@ -26,17 +26,17 @@ LabSpace schema/error adapter
 
 ## Public tool surface
 
-| Tool                             | Role                                                                    | Mutates saved project?                                    |
-| -------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| `labspace_get_context`           | Active project, laboratory, room, selection, and index counts           | No                                                        |
-| `labspace_search_records`        | Canonical equipment, inventory, and exact-location search               | No                                                        |
-| `labspace_inspect_record`        | Current evidence for one record returned by search                      | No                                                        |
-| `labspace_focus_record`          | Reveal that record in the normal room, evidence inspector, and camera   | No; presentation state only                               |
-| `labspace_search_assets`         | Find canonical planning assets, dimensions, and connection behavior     | No                                                        |
-| `labspace_plan_room`             | Calculate a bounded multi-object plan against current room geometry      | No                                                        |
-| `labspace_find_valid_placements` | Search and rank diverse candidates that pass the current geometry rules | No                                                        |
-| `labspace_validate_object_move`  | Test a hypothetical move using current room geometry                    | No                                                        |
-| `labspace_stage_object_move`     | Apply a reversible visual preview after successful validation           | No; human approval is required before history or autosave |
+| Tool                             | Role                                                                     | Mutates saved project?                                    |
+| -------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| `labspace_get_context`           | Active project, laboratory, room, selection, and index counts            | No                                                        |
+| `labspace_search_records`        | Canonical equipment, inventory, and exact-location search                | No                                                        |
+| `labspace_inspect_record`        | Current evidence for one record returned by search                       | No                                                        |
+| `labspace_focus_record`          | Reveal that record in the normal room, evidence inspector, and camera    | No; presentation state only                               |
+| `labspace_search_assets`         | Find canonical planning assets, dimensions, and connection behavior      | No                                                        |
+| `labspace_plan_room`             | Propose a closed shell and assets, or plan within existing room geometry | No                                                        |
+| `labspace_find_valid_placements` | Search and rank diverse candidates that pass the current geometry rules  | No                                                        |
+| `labspace_validate_object_move`  | Test a hypothetical move using current room geometry                     | No                                                        |
+| `labspace_stage_object_move`     | Apply a reversible visual preview after successful validation            | No; human approval is required before history or autosave |
 | `labspace_stage_room_plan`       | Apply one reversible multi-object room blueprint for review              | No; human approval is required before history or autosave |
 
 There is deliberately no agent-accessible approve, save, delete, reset, import, or project-write tool.
@@ -67,7 +67,8 @@ The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly 
 - Placement evidence is limited to rules the existing geometry engine actually proves: room boundary, collisions, floor elevation, room height, and restrictions. LabSpace does not invent utility or safety certification.
 - Ranked alternatives remain planning recommendations: each one passes those deterministic rules, reports its distance and approximate plan gap, and still requires separate staging plus human approval before persistence.
 - Room plans are capped at 12 objects, use only supported floor/free-connected planning assets, and report unplaced requests rather than inventing wall hosts or certified safety clearances.
-- Staged room plans create canonical scene objects and their applicable storage/equipment records together. Approval commits that complete scene change as one undoable history entry.
+- On a blank canvas, room planning creates a closed chain of canonical wall objects first; LabSpace derives the 2D/3D floor from that same loop and validates assets inside it. Existing walls are preserved and cannot be replaced by an agent plan.
+- Staged room plans create shell walls, assets, updated room dimensions, and applicable storage/equipment records together. Approval commits the complete change as one undoable history entry.
 - An invalid move returns conflicts and causes no project, preview, history, or persistence mutation.
 - A valid staged move is visibly labeled **Preview · not saved** and blocks competing edits until the researcher approves or cancels it.
 - Approval is available only through deliberate LabSpace UI interaction. It records one ordinary history entry, preserves Undo/Redo, and uses normal autosave.

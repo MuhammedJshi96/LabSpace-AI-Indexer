@@ -23,6 +23,7 @@ import type {
   PendingAgentChange,
   PendingAgentLayoutChange,
   PendingAgentMoveChange,
+  PlannedWallSegment,
   StageRoomLayoutResult,
   StageObjectMoveResult,
 } from "./labspace-action-types";
@@ -58,7 +59,9 @@ function sameProposal(
 }
 
 function activeLaboratoryCode(project: Project, room: Room) {
-  return project.laboratories.find((laboratory) => laboratory.id === room.laboratoryId)?.code ?? "LAB";
+  return (
+    project.laboratories.find((laboratory) => laboratory.id === room.laboratoryId)?.code ?? "LAB"
+  );
 }
 
 function createEquipmentRecord(object: SceneObject, existing: EquipmentRecord[]): EquipmentRecord {
@@ -141,7 +144,8 @@ function instantiatePlanObject(
   proposal: ReturnType<typeof getStoredRoomPlan>["result"]["proposals"][number],
 ) {
   const definition = ASSET_BY_ID.get(proposal.assetId);
-  if (!definition) throw new LabSpaceActionError(`Catalog asset is unavailable: ${proposal.assetId}.`);
+  if (!definition)
+    throw new LabSpaceActionError(`Catalog asset is unavailable: ${proposal.assetId}.`);
   const now = new Date().toISOString();
   const object: SceneObject = {
     id: crypto.randomUUID(),
@@ -183,6 +187,73 @@ function instantiatePlanObject(
   return { definition, object, now };
 }
 
+function instantiatePlanWall(
+  project: Project,
+  room: Room,
+  scene: Scene,
+  planId: string,
+  segment: PlannedWallSegment,
+) {
+  const definition = ASSET_BY_ID.get("straight-wall");
+  if (!definition) throw new LabSpaceActionError("The canonical wall definition is unavailable.");
+  const now = new Date().toISOString();
+  const start = { x: segment.start.xMm, y: segment.start.yMm };
+  const end = { x: segment.end.xMm, y: segment.end.yMm };
+  const object: SceneObject = {
+    id: crypto.randomUUID(),
+    indexCode: generateObjectIndexCode(
+      room,
+      scene,
+      "wall",
+      null,
+      activeLaboratoryCode(project, room),
+    ),
+    name: segment.name,
+    assetDefinitionId: definition.id,
+    objectType: "wall",
+    position: {
+      x: (start.x + end.x) / 2,
+      y: (start.y + end.y) / 2,
+      z: 0,
+    },
+    dimensions: {
+      width: segment.lengthMm,
+      depth: segment.thicknessMm,
+      height: segment.heightMm,
+    },
+    rotation: {
+      x: 0,
+      y: 0,
+      z: (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
+    },
+    flipHorizontal: false,
+    flipVertical: false,
+    layerId: resolveLayerIdForObjectType(scene.layers, "wall"),
+    roomId: room.id,
+    zoneId: null,
+    locked: true,
+    visible: true,
+    metadata: {
+      agentPlanPreview: true,
+      agentPlanId: planId,
+      agentPlanShell: true,
+    },
+    createdAt: now,
+    updatedAt: now,
+    parentObjectId: null,
+    childLocationIds: [],
+    zIndex: Math.max(0, ...scene.objects.map((entry) => entry.zIndex)) + 1,
+    wall: {
+      start,
+      end,
+      thickness: segment.thicknessMm,
+      height: segment.heightMm,
+      halfHeight: false,
+    },
+  };
+  return object;
+}
+
 function stagedResult(change: PendingAgentMoveChange): StageObjectMoveResult {
   return {
     staged: true,
@@ -197,9 +268,7 @@ function stagedResult(change: PendingAgentMoveChange): StageObjectMoveResult {
   };
 }
 
-function invalidResult(
-  validation: ReturnType<typeof validateObjectMove>,
-): StageObjectMoveResult {
+function invalidResult(validation: ReturnType<typeof validateObjectMove>): StageObjectMoveResult {
   return {
     staged: false,
     stageId: null,
@@ -304,6 +373,7 @@ function normalizeStageRoomLayoutInput(input: unknown) {
 }
 
 function layoutStageResult(change: PendingAgentLayoutChange): StageRoomLayoutResult {
+  const wallCount = change.proposedObjects.filter((object) => object.kind === "wall").length;
   return {
     staged: true,
     stageId: change.stageId,
@@ -311,6 +381,9 @@ function layoutStageResult(change: PendingAgentLayoutChange): StageRoomLayoutRes
     roomId: change.roomId,
     roomName: change.roomName,
     objectCount: change.proposedObjects.length,
+    wallCount,
+    assetCount: change.proposedObjects.length - wallCount,
+    floorGenerated: wallCount > 0,
     objects: change.proposedObjects,
     persisted: false,
     requiresHumanApproval: true,
@@ -320,13 +393,14 @@ function layoutStageResult(change: PendingAgentLayoutChange): StageRoomLayoutRes
 export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
   const { planId } = normalizeStageRoomLayoutInput(input);
   const stored = getStoredRoomPlan(planId);
-  if (!stored.result.proposals.length) {
-    throw new LabSpaceActionError("That room plan contains no placeable objects.");
+  if (!stored.result.proposals.length && stored.result.shell.mode !== "proposed") {
+    throw new LabSpaceActionError("That room plan contains no placeable objects or room shell.");
   }
   const state = useEditorStore.getState();
   const existing = state.pendingAgentChange;
   if (existing) {
-    if (existing.tool === "layout" && existing.planId === planId) return layoutStageResult(existing);
+    if (existing.tool === "layout" && existing.planId === planId)
+      return layoutStageResult(existing);
     throw new LabSpaceActionError(
       "Another agent change is awaiting human review. Approve or cancel it before staging a room plan.",
     );
@@ -343,7 +417,9 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
   const currentObjectIds = room.scene.objects.map((object) => object.id).sort();
   if (
     room.scene.updatedAt !== stored.baseline.sceneUpdatedAt ||
-    JSON.stringify(currentObjectIds) !== JSON.stringify(stored.baseline.objectIds)
+    JSON.stringify(currentObjectIds) !== JSON.stringify(stored.baseline.objectIds) ||
+    JSON.stringify({ width: room.width, depth: room.depth, wallHeight: room.wallHeight }) !==
+      JSON.stringify(stored.baseline.roomSize)
   ) {
     throw new LabSpaceActionError(
       "The room changed after this plan was calculated. Create a fresh plan before staging.",
@@ -355,6 +431,24 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
   const proposedScene = structuredClone(room.scene);
   const proposedObjects: PendingAgentLayoutChange["proposedObjects"] = [];
   const proposedObjectIds: string[] = [];
+  if (stored.result.shell.mode === "proposed") {
+    for (const segment of stored.result.shell.segments) {
+      const wall = instantiatePlanWall(state.project, room, proposedScene, planId, segment);
+      proposedScene.objects.push(wall);
+      proposedObjectIds.push(wall.id);
+      proposedObjects.push({
+        objectId: wall.id,
+        name: wall.name,
+        indexCode: wall.indexCode,
+        kind: "wall",
+        position: {
+          xMm: wall.position.x,
+          yMm: wall.position.y,
+          rotationDeg: wall.rotation.z,
+        },
+      });
+    }
+  }
   for (const proposal of stored.result.proposals) {
     const { definition, object, now } = instantiatePlanObject(
       state.project,
@@ -379,6 +473,7 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
       objectId: object.id,
       name: object.name,
       indexCode: object.indexCode,
+      kind: "asset",
       position: {
         xMm: object.position.x,
         yMm: object.position.y,
@@ -398,6 +493,12 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     proposedScene: structuredClone(proposedScene),
     proposedObjectIds,
     proposedObjects,
+    beforeRoomSize: { width: room.width, depth: room.depth, wallHeight: room.wallHeight },
+    proposedRoomSize: {
+      width: stored.result.shell.widthMm,
+      depth: stored.result.shell.depthMm,
+      wallHeight: stored.result.shell.wallHeightMm,
+    },
     baselineDirtyRevision: state.dirtyRevision,
     createdAt: new Date().toISOString(),
     status: "pending",
@@ -413,7 +514,16 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
       ...state.project,
       updatedAt: now,
       rooms: state.project.rooms.map((entry) =>
-        entry.id === room.id ? { ...entry, updatedAt: now, scene: proposedScene } : entry,
+        entry.id === room.id
+          ? {
+              ...entry,
+              width: stored.result.shell.widthMm,
+              depth: stored.result.shell.depthMm,
+              wallHeight: stored.result.shell.wallHeightMm,
+              updatedAt: now,
+              scene: proposedScene,
+            }
+          : entry,
       ),
     },
     selectedIds: proposedObjectIds,
@@ -495,7 +605,9 @@ function approveMove(pending: PendingAgentMoveChange): AgentMoveReviewResult {
 
   useEditorStore.setState({ pendingAgentChange: null });
   useEditorStore.getState().commitPreview(pending.before, "Approve agent move");
-  useEditorStore.getState().pushToast("Agent move approved. LabSpace is saving the change.", "success");
+  useEditorStore
+    .getState()
+    .pushToast("Agent move approved. LabSpace is saving the change.", "success");
   agentActivityActions.record({
     actor: "Human",
     action: "Move approved",
@@ -521,7 +633,13 @@ function approveMove(pending: PendingAgentMoveChange): AgentMoveReviewResult {
 function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
   const state = useEditorStore.getState();
   const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
-  if (room && JSON.stringify(room.scene) === JSON.stringify(pending.proposedScene)) {
+  if (
+    room &&
+    JSON.stringify(room.scene) === JSON.stringify(pending.proposedScene) &&
+    room.width === pending.proposedRoomSize.width &&
+    room.depth === pending.proposedRoomSize.depth &&
+    room.wallHeight === pending.proposedRoomSize.wallHeight
+  ) {
     useEditorStore.setState({
       project: {
         ...state.project,
@@ -530,6 +648,7 @@ function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult 
           entry.id === pending.roomId
             ? {
                 ...entry,
+                ...pending.beforeRoomSize,
                 updatedAt: pending.timestamps.roomUpdatedAt,
                 scene: pending.beforeScene,
               }
@@ -542,14 +661,13 @@ function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult 
   } else {
     useEditorStore.setState({ pendingAgentChange: null });
   }
-  useEditorStore.getState().pushToast(
-    "Agent room plan cancelled. The room was not changed.",
-    "info",
-  );
+  useEditorStore
+    .getState()
+    .pushToast("Agent room plan cancelled. The room was not changed.", "info");
   agentActivityActions.record({
     actor: "Human",
     action: "Room plan rejected",
-    subject: `${pending.proposedObjects.length} proposed assets`,
+    subject: `${pending.proposedObjects.length} proposed room elements`,
     status: "rejected",
     evidence: "Blueprint preview removed · project data unchanged",
   });
@@ -573,6 +691,7 @@ function committedLayoutScene(pending: PendingAgentLayoutChange, scene: Scene) {
       delete metadata.agentPlanPreview;
       delete metadata.agentPlanId;
       delete metadata.agentPlanPlacement;
+      delete metadata.agentPlanShell;
       return { ...object, locked: false, metadata, updatedAt: new Date().toISOString() };
     }),
   };
@@ -584,7 +703,10 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
   if (
     !room ||
     state.dirtyRevision !== pending.baselineDirtyRevision ||
-    JSON.stringify(room.scene) !== JSON.stringify(pending.proposedScene)
+    JSON.stringify(room.scene) !== JSON.stringify(pending.proposedScene) ||
+    room.width !== pending.proposedRoomSize.width ||
+    room.depth !== pending.proposedRoomSize.depth ||
+    room.wallHeight !== pending.proposedRoomSize.wallHeight
   ) {
     cancelLayout(pending);
     throw new LabSpaceActionError(
@@ -594,10 +716,12 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
   const after = committedLayoutScene(pending, room.scene);
   const command: SceneCommand = {
     id: crypto.randomUUID(),
-    label: `Approve agent room plan (${pending.proposedObjects.length} assets)`,
+    label: `Approve agent room plan (${pending.proposedObjects.length} elements)`,
     kind: "scene",
     before: pending.beforeScene,
     after,
+    roomBefore: pending.beforeRoomSize,
+    roomAfter: pending.proposedRoomSize,
   };
   const now = new Date().toISOString();
   useEditorStore.setState({
@@ -605,7 +729,9 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
       ...state.project,
       updatedAt: now,
       rooms: state.project.rooms.map((entry) =>
-        entry.id === pending.roomId ? { ...entry, updatedAt: now, scene: after } : entry,
+        entry.id === pending.roomId
+          ? { ...entry, ...pending.proposedRoomSize, updatedAt: now, scene: after }
+          : entry,
       ),
     },
     selectedIds: pending.proposedObjectIds,
@@ -615,14 +741,16 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
     saveStatus: "unsaved",
     dirtyRevision: state.dirtyRevision + 1,
   });
-  useEditorStore.getState().pushToast(
-    `Room plan approved. LabSpace is saving ${pending.proposedObjects.length} assets.`,
-    "success",
-  );
+  useEditorStore
+    .getState()
+    .pushToast(
+      `Room plan approved. LabSpace is saving the room shell and ${pending.proposedObjects.filter((object) => object.kind === "asset").length} assets.`,
+      "success",
+    );
   agentActivityActions.record({
     actor: "Human",
     action: "Room plan approved",
-    subject: `${pending.proposedObjects.length} assets in ${pending.roomName}`,
+    subject: `${pending.proposedObjects.length} planned elements in ${pending.roomName}`,
     status: "approved",
     evidence: "Explicit researcher approval",
   });

@@ -215,6 +215,31 @@ export type PlanRoomLayoutInput = {
   brief?: string;
   assets: RoomAssetRequest[];
   aisleMm?: number;
+  roomShell?: {
+    widthMm: number;
+    depthMm: number;
+    wallHeightMm?: number;
+    wallThicknessMm?: number;
+  };
+};
+
+export type PlannedWallSegment = {
+  proposalId: string;
+  name: string;
+  start: { xMm: number; yMm: number };
+  end: { xMm: number; yMm: number };
+  thicknessMm: number;
+  heightMm: number;
+  lengthMm: number;
+};
+
+export type PlannedRoomShell = {
+  mode: "existing" | "proposed";
+  widthMm: number;
+  depthMm: number;
+  wallHeightMm: number;
+  wallThicknessMm: number;
+  segments: PlannedWallSegment[];
 };
 
 export type PlannedRoomObject = {
@@ -238,6 +263,7 @@ export type PlanRoomLayoutResult = {
   plannedObjects: number;
   unplaced: Array<{ assetId: string; assetName: string; reason: string }>;
   aisleMm: number;
+  shell: PlannedRoomShell;
   proposals: PlannedRoomObject[];
   basis: string[];
   requiresHumanApproval: true;
@@ -259,8 +285,11 @@ export type PendingAgentLayoutChange = {
     objectId: string;
     name: string;
     indexCode: string;
+    kind: "wall" | "asset";
     position: { xMm: number; yMm: number; rotationDeg: number };
   }>;
+  beforeRoomSize: { width: number; depth: number; wallHeight: number };
+  proposedRoomSize: { width: number; depth: number; wallHeight: number };
   baselineDirtyRevision: number;
   createdAt: string;
   status: "pending";
@@ -280,6 +309,9 @@ export type StageRoomLayoutResult = {
   roomId: string;
   roomName: string;
   objectCount: number;
+  wallCount: number;
+  assetCount: number;
+  floorGenerated: boolean;
   objects: PendingAgentLayoutChange["proposedObjects"];
   persisted: false;
   requiresHumanApproval: true;

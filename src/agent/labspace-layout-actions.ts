@@ -8,6 +8,7 @@ import type {
   LabSpaceLayoutActions,
   PlanRoomLayoutInput,
   PlanRoomLayoutResult,
+  PlannedRoomShell,
   PlannedRoomObject,
   RoomAssetRequest,
   SearchLabAssetsInput,
@@ -31,6 +32,7 @@ type StoredRoomPlan = {
     roomId: string;
     sceneUpdatedAt: string;
     objectIds: string[];
+    roomSize: { width: number; depth: number; wallHeight: number };
   };
 };
 
@@ -75,7 +77,9 @@ function normalizeAssetSearch(input: unknown): SearchLabAssetsInput {
   }
   const query = record.query.trim();
   if (query.length > MAX_QUERY_LENGTH) {
-    throw new LabSpaceActionError(`Asset search query must be ${MAX_QUERY_LENGTH} characters or fewer.`);
+    throw new LabSpaceActionError(
+      `Asset search query must be ${MAX_QUERY_LENGTH} characters or fewer.`,
+    );
   }
   let categories: string[] | undefined;
   if (record.categories !== undefined) {
@@ -98,7 +102,7 @@ function normalizeAssetSearch(input: unknown): SearchLabAssetsInput {
 
 function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
   const record = plainObject(input, "Tool input");
-  rejectUnexpected(record, ["brief", "assets", "aisleMm"]);
+  rejectUnexpected(record, ["brief", "assets", "aisleMm", "roomShell"]);
   let brief: string | undefined;
   if (record.brief !== undefined) {
     if (typeof record.brief !== "string" || !record.brief.trim()) {
@@ -107,11 +111,13 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
     brief = record.brief.trim();
     if (brief.length > 240) throw new LabSpaceActionError("Brief must be 240 characters or fewer.");
   }
-  if (!Array.isArray(record.assets) || record.assets.length === 0) {
-    throw new LabSpaceActionError("assets must contain at least one catalog request.");
+  if (!Array.isArray(record.assets)) {
+    throw new LabSpaceActionError("assets must be an array of catalog requests.");
   }
   if (record.assets.length > MAX_REQUEST_GROUPS) {
-    throw new LabSpaceActionError(`assets can contain at most ${MAX_REQUEST_GROUPS} request groups.`);
+    throw new LabSpaceActionError(
+      `assets can contain at most ${MAX_REQUEST_GROUPS} request groups.`,
+    );
   }
   const assets: RoomAssetRequest[] = record.assets.map((entry, index) => {
     const request = plainObject(entry, `Asset request ${index + 1}`);
@@ -131,11 +137,34 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
   });
   const requested = assets.reduce((total, entry) => total + entry.quantity, 0);
   if (requested > MAX_PLANNED_OBJECTS) {
-    throw new LabSpaceActionError(`A room plan can contain at most ${MAX_PLANNED_OBJECTS} objects.`);
+    throw new LabSpaceActionError(
+      `A room plan can contain at most ${MAX_PLANNED_OBJECTS} objects.`,
+    );
   }
-  const aisleMm =
-    record.aisleMm === undefined ? 900 : integer(record.aisleMm, "Aisle", 600, 2000);
-  return { brief, assets, aisleMm };
+  const aisleMm = record.aisleMm === undefined ? 900 : integer(record.aisleMm, "Aisle", 600, 2000);
+  let roomShell: PlanRoomLayoutInput["roomShell"];
+  if (record.roomShell !== undefined) {
+    const shell = plainObject(record.roomShell, "roomShell");
+    rejectUnexpected(shell, ["widthMm", "depthMm", "wallHeightMm", "wallThicknessMm"]);
+    roomShell = {
+      widthMm: integer(shell.widthMm, "Room width", 3000, 20_000),
+      depthMm: integer(shell.depthMm, "Room depth", 3000, 20_000),
+      wallHeightMm:
+        shell.wallHeightMm === undefined
+          ? undefined
+          : integer(shell.wallHeightMm, "Wall height", 2400, 6000),
+      wallThicknessMm:
+        shell.wallThicknessMm === undefined
+          ? undefined
+          : integer(shell.wallThicknessMm, "Wall thickness", 100, 300),
+    };
+  }
+  if (assets.length === 0 && !roomShell) {
+    throw new LabSpaceActionError(
+      "A room plan needs at least one catalog request or an explicit roomShell.",
+    );
+  }
+  return { brief, assets, aisleMm, roomShell };
 }
 
 function assetSearchText(asset: AssetDefinition) {
@@ -175,7 +204,10 @@ export function searchLabAssets(input: unknown): SearchLabAssetsResult {
   };
 }
 
-function resolvedPlacement(asset: AssetDefinition, requested: RoomAssetRequest["placement"]): ResolvedPlacement {
+function resolvedPlacement(
+  asset: AssetDefinition,
+  requested: RoomAssetRequest["placement"],
+): ResolvedPlacement {
   if (requested && requested !== "auto") return requested;
   const identity = `${asset.id} ${asset.name}`.toLowerCase();
   if (identity.includes("island")) return "island";
@@ -189,7 +221,11 @@ function nearestGap(candidate: SceneObject, objects: SceneObject[]) {
   const a = objectBounds(candidate);
   let closest = Number.POSITIVE_INFINITY;
   for (const object of objects) {
-    if (!object.visible || ["wall", "door", "window", "label", "measurement"].includes(object.objectType)) continue;
+    if (
+      !object.visible ||
+      ["wall", "door", "window", "label", "measurement"].includes(object.objectType)
+    )
+      continue;
     const b = objectBounds(object);
     const gapX = Math.max(0, b.left - a.right, a.left - b.right);
     const gapY = Math.max(0, b.top - a.bottom, a.top - b.bottom);
@@ -301,6 +337,116 @@ function proposalObject(
   };
 }
 
+function wallObject(
+  room: Room,
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  thickness: number,
+  height: number,
+) {
+  const now = new Date().toISOString();
+  const length = Math.hypot(end.x - start.x, end.y - start.y);
+  const id = `plan-wall-${crypto.randomUUID()}`;
+  const object: SceneObject = {
+    id,
+    indexCode: `PLAN-WALL-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
+    name: "Straight wall",
+    assetDefinitionId: "straight-wall",
+    objectType: "wall",
+    position: {
+      x: (start.x + end.x) / 2,
+      y: (start.y + end.y) / 2,
+      z: 0,
+    },
+    dimensions: { width: length, depth: thickness, height },
+    rotation: {
+      x: 0,
+      y: 0,
+      z: (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
+    },
+    flipHorizontal: false,
+    flipVertical: false,
+    layerId: resolveLayerIdForObjectType(room.scene.layers, "wall"),
+    roomId: room.id,
+    zoneId: null,
+    locked: false,
+    visible: true,
+    metadata: { agentPlanShell: true },
+    createdAt: now,
+    updatedAt: now,
+    parentObjectId: null,
+    childLocationIds: [],
+    zIndex: Math.max(0, ...room.scene.objects.map((entry) => entry.zIndex)) + 1,
+    wall: {
+      start: { ...start },
+      end: { ...end },
+      thickness,
+      height,
+      halfHeight: false,
+    },
+  };
+  return object;
+}
+
+function planRoomShell(room: Room, requested: PlanRoomLayoutInput["roomShell"]): PlannedRoomShell {
+  const existingFloor = getClosedWallFloorPolygon(room.scene.objects);
+  const existingWalls = room.scene.objects.filter(
+    (object) => object.objectType === "wall" && object.visible,
+  );
+  if (existingWalls.length) {
+    if (requested) {
+      throw new LabSpaceActionError(
+        "This room already has walls. Omit roomShell to plan within them; LabSpace will not replace an existing room automatically.",
+      );
+    }
+    if (!existingFloor) {
+      throw new LabSpaceActionError(
+        "The active room has an open or invalid wall outline. Close it before planning furniture, or use a blank room for an agent-built shell.",
+      );
+    }
+    return {
+      mode: "existing",
+      widthMm: room.width,
+      depthMm: room.depth,
+      wallHeightMm: room.wallHeight,
+      wallThicknessMm: existingWalls[0]?.wall?.thickness ?? 150,
+      segments: [],
+    };
+  }
+
+  const widthMm = requested?.widthMm ?? room.width;
+  const depthMm = requested?.depthMm ?? room.depth;
+  const wallHeightMm = requested?.wallHeightMm ?? room.wallHeight;
+  const wallThicknessMm = requested?.wallThicknessMm ?? 150;
+  const points = [
+    { x: 0, y: 0 },
+    { x: widthMm, y: 0 },
+    { x: widthMm, y: depthMm },
+    { x: 0, y: depthMm },
+  ];
+  const segments = points.map((start, index) => {
+    const end = points[(index + 1) % points.length];
+    const object = wallObject(room, start, end, wallThicknessMm, wallHeightMm);
+    return {
+      proposalId: object.id,
+      name: `Wall ${index + 1}`,
+      start: { xMm: start.x, yMm: start.y },
+      end: { xMm: end.x, yMm: end.y },
+      thicknessMm: wallThicknessMm,
+      heightMm: wallHeightMm,
+      lengthMm: Math.round(Math.hypot(end.x - start.x, end.y - start.y)),
+    };
+  });
+  return {
+    mode: "proposed",
+    widthMm,
+    depthMm,
+    wallHeightMm,
+    wallThicknessMm,
+    segments,
+  };
+}
+
 function storePlan(plan: StoredRoomPlan) {
   roomPlans.set(plan.result.planId, plan);
   while (roomPlans.size > MAX_PLAN_REGISTRY) {
@@ -316,6 +462,23 @@ export function planRoomLayout(
   const project = readProject();
   const room = activeEditableRoom(project);
   const workingRoom = structuredClone(room);
+  const shell = planRoomShell(room, normalized.roomShell);
+  if (shell.mode === "proposed") {
+    workingRoom.width = shell.widthMm;
+    workingRoom.depth = shell.depthMm;
+    workingRoom.wallHeight = shell.wallHeightMm;
+    for (const segment of shell.segments) {
+      workingRoom.scene.objects.push(
+        wallObject(
+          workingRoom,
+          { x: segment.start.xMm, y: segment.start.yMm },
+          { x: segment.end.xMm, y: segment.end.yMm },
+          segment.thicknessMm,
+          segment.heightMm,
+        ),
+      );
+    }
+  }
   const proposals: PlannedRoomObject[] = [];
   const unplaced: PlanRoomLayoutResult["unplaced"] = [];
 
@@ -342,7 +505,7 @@ export function planRoomLayout(
         const candidate = proposalObject(workingRoom, asset, placement, position);
         if (!spatiallyValid(workingRoom, candidate)) continue;
         const gap = nearestGap(candidate, workingRoom.scene.objects);
-        const minimumGap = placement === "perimeter" ? 80 : normalized.aisleMm ?? 900;
+        const minimumGap = placement === "perimeter" ? 80 : (normalized.aisleMm ?? 900);
         if (gap !== null && gap < minimumGap) continue;
         accepted = candidate;
         acceptedGap = gap;
@@ -384,8 +547,12 @@ export function planRoomLayout(
     plannedObjects: proposals.length,
     unplaced,
     aisleMm: normalized.aisleMm ?? 900,
+    shell,
     proposals,
     basis: [
+      shell.mode === "proposed"
+        ? "Builds a closed rectangular wall outline first; the floor is derived from that validated loop."
+        : "Uses the active room's existing closed wall and floor geometry without replacing it.",
       "Uses canonical catalog dimensions and the active room's current wall/floor geometry.",
       "Rejects boundary, overlap, elevation, and room-height conflicts with LabSpace's deterministic validator.",
       "Aisle spacing is a planning preference, not a regulatory or manufacturer-certified clearance.",
@@ -399,6 +566,7 @@ export function planRoomLayout(
       roomId: room.id,
       sceneUpdatedAt: room.scene.updatedAt,
       objectIds: room.scene.objects.map((object) => object.id).sort(),
+      roomSize: { width: room.width, depth: room.depth, wallHeight: room.wallHeight },
     },
   });
   return result;

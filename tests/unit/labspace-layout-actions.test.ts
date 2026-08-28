@@ -9,6 +9,7 @@ import {
   cancelStagedChange,
   stageRoomLayout,
 } from "../../src/agent/labspace-staging-actions";
+import { getClosedWallFloorPolygon } from "../../src/domain/room-geometry";
 import { createBlankProject } from "../../src/domain/room-factory";
 import { useEditorStore } from "../../src/store/editor-store";
 
@@ -72,7 +73,14 @@ describe("LabSpace browser-agent room planning", () => {
       plannedObjects: 2,
       requiresHumanApproval: true,
       unplaced: [],
+      shell: {
+        mode: "proposed",
+        widthMm: 10_000,
+        depthMm: 8_000,
+        segments: expect.any(Array),
+      },
     });
+    expect(plan.shell.segments).toHaveLength(4);
     expect(plan.proposals.map((proposal) => proposal.assetId)).toEqual([
       "lab-bench",
       "center-island-bench",
@@ -97,12 +105,17 @@ describe("LabSpace browser-agent room planning", () => {
 
     expect(staged).toMatchObject({
       staged: true,
-      objectCount: 1,
+      objectCount: 5,
+      wallCount: 4,
+      assetCount: 1,
+      floorGenerated: true,
       persisted: false,
       requiresHumanApproval: true,
     });
-    expect(proposed).toHaveLength(1);
-    expect(proposed[0].locked).toBe(true);
+    expect(proposed).toHaveLength(5);
+    expect(proposed.every((object) => object.locked)).toBe(true);
+    expect(proposed.filter((object) => object.objectType === "wall")).toHaveLength(4);
+    expect(getClosedWallFloorPolygon(preview.project.rooms[0].scene.objects)).not.toBeNull();
     expect(preview.history).toEqual([]);
     expect(preview.dirtyRevision).toBe(4);
     expect(preview.saveStatus).toBe("saved");
@@ -118,6 +131,7 @@ describe("LabSpace browser-agent room planning", () => {
     const plan = planRoomLayout({
       brief: "Storage and analytical equipment",
       aisleMm: 700,
+      roomShell: { widthMm: 7200, depthMm: 5400, wallHeightMm: 3200 },
       assets: [
         { assetId: "lab-bench", quantity: 1, placement: "perimeter" },
         { assetId: "floor-centrifuge", quantity: 1, placement: "open" },
@@ -130,7 +144,10 @@ describe("LabSpace browser-agent room planning", () => {
     const scene = state.project.rooms[0].scene;
 
     expect(approved).toMatchObject({ status: "approved", persisted: false });
-    expect(scene.objects).toHaveLength(2);
+    expect(scene.objects).toHaveLength(6);
+    expect(scene.objects.filter((object) => object.objectType === "wall")).toHaveLength(4);
+    expect(getClosedWallFloorPolygon(scene.objects)).not.toBeNull();
+    expect(state.project.rooms[0]).toMatchObject({ width: 7200, depth: 5400, wallHeight: 3200 });
     expect(scene.objects.every((object) => object.metadata.agentPlanPreview !== true)).toBe(true);
     expect(scene.objects.every((object) => object.locked === false)).toBe(true);
     expect(scene.storageLocations.length).toBeGreaterThan(1);
@@ -148,11 +165,53 @@ describe("LabSpace browser-agent room planning", () => {
     expect(useEditorStore.getState().project.rooms[0].scene.objects).toEqual([]);
     expect(useEditorStore.getState().project.rooms[0].scene.storageLocations).toEqual([]);
     expect(useEditorStore.getState().project.rooms[0].scene.equipmentRecords).toEqual([]);
+    expect(useEditorStore.getState().project.rooms[0]).toMatchObject({
+      width: 10_000,
+      depth: 8_000,
+    });
 
     useEditorStore.getState().redo();
-    expect(useEditorStore.getState().project.rooms[0].scene.objects).toHaveLength(2);
-    expect(useEditorStore.getState().project.rooms[0].scene.storageLocations.length).toBeGreaterThan(1);
+    expect(useEditorStore.getState().project.rooms[0].scene.objects).toHaveLength(6);
+    expect(useEditorStore.getState().project.rooms[0]).toMatchObject({
+      width: 7200,
+      depth: 5400,
+      wallHeight: 3200,
+    });
+    expect(
+      useEditorStore.getState().project.rooms[0].scene.storageLocations.length,
+    ).toBeGreaterThan(1);
     expect(useEditorStore.getState().project.rooms[0].scene.equipmentRecords).toHaveLength(1);
+  });
+
+  it("builds a wall-only shell and refuses to replace an existing enclosure", () => {
+    blankLayoutFixture();
+    const shellPlan = planRoomLayout({
+      brief: "Create the room enclosure before furnishing it.",
+      roomShell: { widthMm: 6000, depthMm: 5000, wallThicknessMm: 180 },
+      assets: [],
+    });
+
+    expect(shellPlan).toMatchObject({
+      requestedObjects: 0,
+      plannedObjects: 0,
+      shell: { mode: "proposed", widthMm: 6000, depthMm: 5000, wallThicknessMm: 180 },
+    });
+    const staged = stageRoomLayout({ planId: shellPlan.planId });
+    expect(staged).toMatchObject({ objectCount: 4, wallCount: 4, assetCount: 0 });
+    approveStagedChange(staged.stageId);
+    useEditorStore.setState({ saveStatus: "saved" });
+
+    expect(() =>
+      planRoomLayout({
+        roomShell: { widthMm: 7000, depthMm: 5500 },
+        assets: [],
+      }),
+    ).toThrow("already has walls");
+
+    const furnishingPlan = planRoomLayout({
+      assets: [{ assetId: "round-stool", quantity: 1, placement: "open" }],
+    });
+    expect(furnishingPlan.shell).toMatchObject({ mode: "existing", segments: [] });
   });
 
   it("rejects stale or unsaved plans before changing the room", () => {

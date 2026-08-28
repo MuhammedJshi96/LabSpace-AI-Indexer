@@ -198,6 +198,18 @@ body {
   white-space: nowrap;
 }
 
+.agent-review-manifest > .agent-review-shell-item {
+  background:
+    linear-gradient(90deg, rgba(8, 127, 112, 0.09), rgba(240, 248, 246, 0.72)),
+    repeating-linear-gradient(0deg, transparent 0 9px, rgba(8, 127, 112, 0.05) 9px 10px);
+  border-color: #86c8bd;
+  box-shadow: inset 3px 0 0 #079987;
+}
+
+.agent-review-manifest > .agent-review-shell-item svg {
+  color: #087f70;
+}
+
 .agent-review-manifest small {
   grid-column: 2;
   color: #6a7b77;
@@ -280,7 +292,9 @@ body {
 
 .webmcp-status-ready .webmcp-status-dot {
   background: #10a991;
-  box-shadow: 0 0 0 1px #10a991, 0 0 0 4px rgba(16, 169, 145, 0.1);
+  box-shadow:
+    0 0 0 1px #10a991,
+    0 0 0 4px rgba(16, 169, 145, 0.1);
 }
 
 .webmcp-status-registering .webmcp-status-dot {
@@ -796,13 +810,23 @@ body {
 }
 
 @keyframes agent-review-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes agent-review-rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

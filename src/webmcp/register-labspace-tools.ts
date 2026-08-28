@@ -66,25 +66,25 @@ function controlledExecution(
             ? Number(resultRecord.plannedObjects) > 0
               ? "found"
               : "blocked"
-          : toolName === "labspace_validate_object_move"
-            ? resultRecord.valid === false
-              ? "blocked"
-              : "valid"
-            : toolName === "labspace_focus_record"
-              ? "focused"
-              : toolName === "labspace_search_records"
-                ? "found"
-                : "read";
+            : toolName === "labspace_validate_object_move"
+              ? resultRecord.valid === false
+                ? "blocked"
+                : "valid"
+              : toolName === "labspace_focus_record"
+                ? "focused"
+                : toolName === "labspace_search_records"
+                  ? "found"
+                  : "read";
     const subject =
       typeof resultRecord.objectName === "string"
         ? resultRecord.objectName
         : typeof resultRecord.roomName === "string"
           ? resultRecord.roomName
-        : typeof resultRecord.name === "string"
-          ? resultRecord.name
-          : typeof (input as Record<string, unknown> | null)?.query === "string"
-            ? `“${String((input as Record<string, unknown>).query)}”`
-            : action;
+          : typeof resultRecord.name === "string"
+            ? resultRecord.name
+            : typeof (input as Record<string, unknown> | null)?.query === "string"
+              ? `“${String((input as Record<string, unknown>).query)}”`
+              : action;
     recordWebMCPToolSuccess(toolName, action, subject, status, input, result);
     return result;
   } catch (error) {
@@ -160,7 +160,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_plan_room",
       title: "Plan a LabSpace room",
       description:
-        "Calculate a compact furniture/equipment layout from exact catalog assets using current room geometry. Returns a read-only proposal for separate staging and human approval.",
+        "Calculate a closed wall-and-floor room shell when the canvas is blank, then arrange exact catalog assets inside it. Existing walls are preserved. Returns a read-only proposal for separate staging and human approval.",
       inputSchema: planRoomLayoutSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -224,7 +224,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_stage_room_plan",
       title: "Stage LabSpace room plan",
       description:
-        "Display one calculated room plan as a reversible blueprint preview. It is not saved and creates no history entry until a researcher approves it in LabSpace.",
+        "Display a calculated wall, floor, and asset plan as one reversible blueprint. It remains unsaved until a researcher approves it in LabSpace.",
       inputSchema: stageRoomLayoutSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>

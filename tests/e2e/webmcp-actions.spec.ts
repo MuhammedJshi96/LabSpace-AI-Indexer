@@ -200,9 +200,11 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
     unplaced: unknown[];
     proposals: Array<{ assetId: string }>;
     requiresHumanApproval: boolean;
+    shell: { mode: string; segments: unknown[] };
   }>(page, "labspace_plan_room", {
     brief: "A compact equipment-preparation room with a clear central aisle.",
     aisleMm: 900,
+    roomShell: { widthMm: 8000, depthMm: 6000, wallHeightMm: 3000 },
     assets: [
       { assetId: "lab-bench", quantity: 1, placement: "perimeter" },
       { assetId: "floor-centrifuge", quantity: 1, placement: "open" },
@@ -213,38 +215,48 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
     plannedObjects: 2,
     unplaced: [],
     requiresHumanApproval: true,
+    shell: { mode: "proposed" },
   });
+  expect(plan.shell.segments).toHaveLength(4);
   expect(plan.proposals.map((proposal) => proposal.assetId)).toEqual([
     "lab-bench",
     "floor-centrifuge",
   ]);
-  expect((await readProject(page)).rooms.find((entry) => entry.id === room.id)!.scene.objects).toEqual(
-    [],
-  );
+  expect(
+    (await readProject(page)).rooms.find((entry) => entry.id === room.id)!.scene.objects,
+  ).toEqual([]);
 
   const staged = await executeTool<{
     staged: boolean;
     stageId: string;
     objectCount: number;
+    wallCount: number;
+    assetCount: number;
+    floorGenerated: boolean;
     persisted: boolean;
     requiresHumanApproval: boolean;
   }>(page, "labspace_stage_room_plan", { planId: plan.planId });
   expect(staged).toMatchObject({
     staged: true,
-    objectCount: 2,
+    objectCount: 6,
+    wallCount: 4,
+    assetCount: 2,
+    floorGenerated: true,
     persisted: false,
     requiresHumanApproval: true,
   });
   const review = page.getByTestId("agent-change-review");
   await expect(review).toBeVisible();
-  await expect(review).toContainText("Review room blueprint");
+  await expect(review).toContainText("Review room shell and layout");
+  await expect(review).toContainText("Closed room shell");
+  await expect(review).toContainText("Walls generate the floor automatically");
   await expect(review).toContainText("Standard laboratory bench");
   await expect(review).toContainText("Floor centrifuge");
   await review.getByRole("button", { name: "Cancel preview" }).click();
   await expect(review).toHaveCount(0);
-  expect((await readProject(page)).rooms.find((entry) => entry.id === room.id)!.scene.objects).toEqual(
-    [],
-  );
+  expect(
+    (await readProject(page)).rooms.find((entry) => entry.id === room.id)!.scene.objects,
+  ).toEqual([]);
 
   await executeTool(page, "labspace_stage_room_plan", { planId: plan.planId });
   await expect(review).toBeVisible();
@@ -255,7 +267,7 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
       const persisted = await readProject(page);
       return persisted.rooms.find((entry) => entry.id === room.id)!.scene.objects.length;
     })
-    .toBe(2);
+    .toBe(6);
 
   await page.getByTitle("Undo (Ctrl+Z)").click();
   await expect
@@ -270,7 +282,7 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
       const persisted = await readProject(page);
       return persisted.rooms.find((entry) => entry.id === room.id)!.scene.objects.length;
     })
-    .toBe(2);
+    .toBe(6);
 });
 
 test("searches and focuses canonical indexed evidence across rooms", async ({ page }) => {

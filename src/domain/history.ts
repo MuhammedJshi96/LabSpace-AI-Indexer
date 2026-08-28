@@ -27,6 +27,8 @@ export type SceneCommand =
       kind: "scene";
       before: Scene;
       after: Scene;
+      roomBefore?: RoomPlanSize & { wallHeight?: number };
+      roomAfter?: RoomPlanSize & { wallHeight?: number };
     };
 
 function replaceObject(scene: Scene, object: SceneObject): Scene {

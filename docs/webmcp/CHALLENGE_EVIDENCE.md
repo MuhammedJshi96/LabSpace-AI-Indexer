@@ -28,7 +28,7 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - Shared focus action used by both the visible UI and `labspace_focus_record`.
 - Deterministic hypothetical move validation reusing the existing geometry engine.
 - Read-only ranked placement search that turns a blocked preferred target into diverse valid alternatives using that same geometry engine.
-- Canonical asset discovery plus read-only multi-object room planning against current walls, floor geometry, existing objects, and requested aisle spacing.
+- Canonical asset discovery plus read-only room planning that can propose a connected wall shell, derive its floor, and arrange assets against current geometry and requested aisle spacing.
 - One coherent cyan room-blueprint preview in 2D/3D, with a manifest and deterministic evidence before a researcher decides.
 - Reversible move staging with a strict one-pending-change rule.
 - Reversible multi-object staging that creates scene objects and applicable equipment/storage index records as one undoable approval.

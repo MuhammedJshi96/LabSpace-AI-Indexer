@@ -187,8 +187,8 @@ export function AgentActivityPanel() {
           <p className="webmcp-example-prompt">
             <b>Try with your browser agent</b>
             <span>
-              “Find a laboratory bench and floor centrifuge, calculate a plan with a 900 mm aisle,
-              then stage the blueprint for my approval.”
+              “Build an 8 × 6 m laboratory with 3 m walls, add a laboratory bench and floor
+              centrifuge with a 900 mm aisle, then stage the blueprint for my approval.”
             </span>
           </p>
         )}
@@ -220,9 +220,9 @@ export function AgentActivityPanel() {
               <Robot size={24} weight="duotone" />
               <b>No WebMCP calls yet</b>
               <span>
-                Ask a compatible browser agent to search the catalog, calculate a room plan,
-                inspect spatial evidence, or stage a reviewed change. Every structured call appears
-                here.
+                Ask a compatible browser agent to build a connected room shell, derive its floor,
+                arrange catalog assets, inspect spatial evidence, or stage a reviewed change. Every
+                structured call appears here.
               </span>
             </div>
           ) : (

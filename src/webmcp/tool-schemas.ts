@@ -185,7 +185,7 @@ export const planRoomLayoutSchema = {
     },
     assets: {
       type: "array",
-      minItems: 1,
+      minItems: 0,
       maxItems: 8,
       items: {
         type: "object",
@@ -207,7 +207,8 @@ export const planRoomLayoutSchema = {
         required: ["assetId", "quantity"],
         additionalProperties: false,
       },
-      description: "Up to 12 total furniture, storage, equipment, or safety instances.",
+      description:
+        "Catalog assets to arrange; may be empty only when roomShell builds the enclosure.",
     },
     aisleMm: {
       type: "integer",
@@ -215,6 +216,29 @@ export const planRoomLayoutSchema = {
       maximum: 2000,
       default: 900,
       description: "Preferred planning aisle around island/open assets in millimetres.",
+    },
+    roomShell: {
+      type: "object",
+      properties: {
+        widthMm: {
+          type: "integer",
+          minimum: 3000,
+          maximum: 20000,
+          description: "Inside room width in millimetres for a new rectangular wall shell.",
+        },
+        depthMm: {
+          type: "integer",
+          minimum: 3000,
+          maximum: 20000,
+          description: "Inside room depth in millimetres for a new rectangular wall shell.",
+        },
+        wallHeightMm: { type: "integer", minimum: 2400, maximum: 6000, default: 3000 },
+        wallThicknessMm: { type: "integer", minimum: 100, maximum: 300, default: 150 },
+      },
+      required: ["widthMm", "depthMm"],
+      additionalProperties: false,
+      description:
+        "Closed rectangular shell for a blank room. When omitted on a blank canvas, current room dimensions generate real walls.",
     },
   },
   required: ["assets"],

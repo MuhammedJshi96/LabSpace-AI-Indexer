@@ -23,23 +23,19 @@
     },
     {
       "id": "calculate-empty-room-layout",
-      "prompt": "Calculate a compact preparation-room layout using one laboratory bench and one floor centrifuge with a 900 millimetre aisle, but do not stage it.",
+      "prompt": "Calculate an 8 by 6 metre preparation room with connected walls, one laboratory bench, one floor centrifuge, and a 900 millimetre aisle, but do not stage it.",
       "expectedTools": ["labspace_search_assets", "labspace_plan_room"],
       "forbiddenTools": ["labspace_stage_object_move", "labspace_stage_room_plan"],
       "requiresHumanApproval": false,
-      "expectedOutcome": "Return a bounded geometry-checked plan using current room boundaries and canonical asset dimensions while leaving project, history, selection, and persistence unchanged."
+      "expectedOutcome": "Return a closed four-wall shell, derived floor, and bounded geometry-checked asset plan while leaving project, history, selection, and persistence unchanged."
     },
     {
       "id": "stage-reviewed-room-blueprint",
-      "prompt": "Plan a laboratory bench and floor centrifuge with a clear 900 millimetre aisle, then stage the complete blueprint for my review without approving it.",
-      "expectedTools": [
-        "labspace_search_assets",
-        "labspace_plan_room",
-        "labspace_stage_room_plan"
-      ],
+      "prompt": "Build an 8 by 6 metre room, then plan a laboratory bench and floor centrifuge with a clear 900 millimetre aisle and stage the complete blueprint for my review without approving it.",
+      "expectedTools": ["labspace_search_assets", "labspace_plan_room", "labspace_stage_room_plan"],
       "forbiddenTools": [],
       "requiresHumanApproval": true,
-      "expectedOutcome": "Show one reversible blueprint preview containing canonical objects and indexing records; persistence and history remain unchanged until the researcher explicitly approves it in LabSpace."
+      "expectedOutcome": "Show one reversible blueprint with connected walls, derived floor, canonical assets, and index records; persistence and history remain unchanged until the researcher explicitly approves it in LabSpace."
     },
     {
       "id": "locate-reference-standards",

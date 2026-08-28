@@ -87,6 +87,12 @@ const planJson = await document.modelContext.executeTool(
   JSON.stringify({
     brief: "Compact equipment preparation room with a clear central aisle",
     aisleMm: 900,
+    roomShell: {
+      widthMm: 8000,
+      depthMm: 6000,
+      wallHeightMm: 3000,
+      wallThicknessMm: 150,
+    },
     assets: [
       { assetId: "lab-bench", quantity: 1, placement: "perimeter" },
       { assetId: "floor-centrifuge", quantity: 1, placement: "open" },
@@ -101,7 +107,7 @@ await document.modelContext.executeTool(
 );
 ```
 
-The final call creates a cyan in-memory blueprint and opens the human review panel. **Cancel preview** restores the exact room; **Approve room plan** commits all proposed objects and applicable storage/equipment index records as one undoable history entry. The browser agent cannot approve its own plan.
+The final call creates a cyan in-memory blueprint with four connected walls, a floor derived from that closed outline, and the proposed assets. **Cancel preview** restores the exact blank room; **Approve room plan** commits the shell, room dimensions, assets, and applicable index records as one undoable history entry. Existing room walls are never replaced by the planner. The browser agent cannot approve its own plan.
 
 For the deterministic move demo, search for `Wire-basket laboratory trolley`, inspect the returned object identity, then call:
 

@@ -29,7 +29,7 @@ LabSpace registers ten focused browser-native tools:
 3. inspect one canonical record;
 4. focus the real room, selection, evidence inspector, and 3D camera;
 5. discover canonical furniture, storage, equipment, and safety assets with real dimensions;
-6. calculate a bounded multi-object room plan against current walls, floors, and objects;
+6. build a connected wall shell on a blank canvas, derive its floor, and calculate a bounded multi-object plan against the resulting geometry;
 7. stage that complete room blueprint as one reversible review;
 8. validate a hypothetical object move without mutation;
 9. turn a blocked target into ranked, geometry-valid alternatives;
@@ -65,7 +65,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the ten-tool WebMCP surface, shared browser-agent action layer, canonical asset discovery, deterministic room planning, focus integration, placement validation and ranked alternatives, reversible human-reviewed move and room-blueprint staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 17 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the ten-tool WebMCP surface, shared browser-agent action layer, canonical asset discovery, deterministic wall/floor and asset planning, focus integration, placement validation and ranked alternatives, reversible human-reviewed move and room-blueprint staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 17 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 

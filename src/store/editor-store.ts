@@ -551,7 +551,7 @@ function applyHistoryCommandToProject(
 ) {
   const room = activeRoom(project);
   const roomSize =
-    command.kind === "batch"
+    command.kind === "batch" || command.kind === "scene"
       ? direction === "apply"
         ? command.roomAfter
         : command.roomBefore
@@ -719,9 +719,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   setSpatialStorageAccess: (open) =>
     set((state) => ({
-      spatialFocus: state.spatialFocus
-        ? { ...state.spatialFocus, showStorageAccess: open }
-        : null,
+      spatialFocus: state.spatialFocus ? { ...state.spatialFocus, showStorageAccess: open } : null,
     })),
   setDigitalTwinSelectedRecord: (digitalTwinSelectedRecordId) =>
     set({ digitalTwinSelectedRecordId }),

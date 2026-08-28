@@ -13,7 +13,8 @@
 
 ## Canonical story
 
-- [ ] Open Empty lab plan; ask the agent to discover a bench and floor centrifuge and calculate a 900 mm-aisle plan.
+- [ ] Open Empty lab plan; ask the agent to build an 8 × 6 m room with connected walls, then add a bench and floor centrifuge with a 900 mm aisle.
+- [ ] Confirm the staged blueprint shows four walls, the derived floor, room dimensions, and the two requested assets in both 2D and 3D.
 - [ ] Confirm planning alone does not change the room.
 - [ ] Stage the complete blueprint; show the cyan 2D/3D proposal and manifest.
 - [ ] Demonstrate Cancel once, then stage again and use the human **Approve room plan** control.

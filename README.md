@@ -10,7 +10,7 @@ LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexin
 
 ## WebMCP Challenge — LabSpace Agent Twin
 
-**WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can discover dimensioned laboratory assets, calculate a multi-object room plan against real room geometry, stage one complete blueprint for review, search exact physical records, focus the real 2D/3D workspace, and validate individual equipment moves.
+**WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. From a blank canvas, the agent can propose a real connected wall shell, derive its floor, arrange dimensioned assets inside the enclosure, and stage the complete blueprint for human review. It can also search exact physical records, focus the real 2D/3D workspace, and validate individual equipment moves.
 
 **Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — open **Demo room** for the preserved DEMO-01 showcase. The free instance can take up to about a minute to wake after inactivity.
 
@@ -35,7 +35,7 @@ The trace is intentionally evidence, not hidden model reasoning. Ordinary resear
 | `labspace_inspect_record`        | Inspect current canonical evidence                                           | Read-only                              |
 | `labspace_focus_record`          | Reveal a record in the normal room, evidence panel, and camera               | Presentation state only                |
 | `labspace_search_assets`         | Discover planning assets with canonical dimensions and connection behavior   | Read-only                              |
-| `labspace_plan_room`             | Calculate a bounded multi-object plan using current room geometry             | Read-only                              |
+| `labspace_plan_room`             | Propose a closed room shell and arrange assets, or use existing walls        | Read-only                              |
 | `labspace_find_valid_placements` | Rank diverse valid alternatives near a preferred area using current geometry | Read-only                              |
 | `labspace_validate_object_move`  | Test a hypothetical position with current geometry                           | Read-only                              |
 | `labspace_stage_object_move`     | Show a reversible valid-move preview                                         | Not persisted; human approval required |
@@ -43,8 +43,8 @@ The trace is intentionally evidence, not hidden model reasoning. Ordinary resear
 
 ```text
 browser agent → document.modelContext → LabSpace tool adapter
-                                      → shared catalog / planner / index / validator actions
-                                      → reversible move or room-blueprint preview
+                                      → shared catalog / wall-floor planner / index / validator
+                                      → reversible room-shell, asset, or move preview
                                       → researcher Approve or Cancel
                                       → normal history + autosave (Approve only)
 ```

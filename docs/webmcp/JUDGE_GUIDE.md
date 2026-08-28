@@ -22,9 +22,9 @@ This is the quickest judge-visible proof that WebMCP is active. The panel report
 
 Open **Empty lab plan**, then ask:
 
-> Use LabSpace to find a standard laboratory bench and a floor centrifuge. Calculate a compact preparation-room plan with a 900 mm aisle, then stage the complete blueprint for my approval. Do not approve it for me.
+> Build an 8 × 6 metre preparation room with 3 metre walls. Add a standard laboratory bench and a floor centrifuge with a 900 mm aisle, then stage the complete blueprint for my approval. Do not approve it for me.
 
-Expected: the agent discovers canonical catalog IDs and dimensions, calculates a geometry-checked plan without mutation, then LabSpace shows one cyan 2D/3D blueprint and a readable asset manifest. **Cancel preview** restores the empty room exactly. Stage it again and choose **Approve room plan** yourself to create one undoable scene update containing the objects and their applicable index records.
+Expected: the agent discovers canonical catalog IDs and dimensions, proposes four connected walls and a derived floor, then arranges the assets against that real geometry without mutation. LabSpace shows one cyan 2D/3D blueprint and a readable shell/asset manifest. **Cancel preview** restores the empty room exactly. Stage it again and choose **Approve room plan** yourself to create one undoable update containing the room dimensions, shell, assets, and applicable index records.
 
 ## Exact-evidence and move prompt
 

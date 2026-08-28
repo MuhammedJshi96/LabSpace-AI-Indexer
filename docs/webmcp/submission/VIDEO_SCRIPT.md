@@ -20,7 +20,7 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 ## Take 3 — build from the empty room (0:29–1:12)
 
-**Screen:** Ask for a bench and floor centrifuge with a 900 mm aisle. Show catalog results, read-only plan, cyan blueprint in 2D/3D, review manifest, Cancel once, then restage and approve yourself.
+**Screen:** Start on the empty canvas. Ask for an 8 × 6 m room with 3 m walls, a bench, and a floor centrifuge with a 900 mm aisle. Show the connected shell, automatically derived floor, read-only plan, cyan 2D/3D blueprint, review manifest, Cancel once, then restage and approve yourself.
 
 **Voice-over:**
 

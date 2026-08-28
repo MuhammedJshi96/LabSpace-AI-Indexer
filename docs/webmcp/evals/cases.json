@@ -3,13 +3,44 @@
   "toolSet": [
     "labspace_find_valid_placements",
     "labspace_get_context",
+    "labspace_plan_room",
+    "labspace_search_assets",
     "labspace_search_records",
     "labspace_inspect_record",
     "labspace_focus_record",
+    "labspace_stage_room_plan",
     "labspace_validate_object_move",
     "labspace_stage_object_move"
   ],
   "cases": [
+    {
+      "id": "discover-planning-assets",
+      "prompt": "Find a standard laboratory bench and a floor centrifuge that can be used in this room.",
+      "expectedTools": ["labspace_search_assets"],
+      "forbiddenTools": ["labspace_stage_object_move", "labspace_stage_room_plan"],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Return compact canonical catalog matches with stable asset IDs, dimensions, categories, and connection behavior without changing the room."
+    },
+    {
+      "id": "calculate-empty-room-layout",
+      "prompt": "Calculate a compact preparation-room layout using one laboratory bench and one floor centrifuge with a 900 millimetre aisle, but do not stage it.",
+      "expectedTools": ["labspace_search_assets", "labspace_plan_room"],
+      "forbiddenTools": ["labspace_stage_object_move", "labspace_stage_room_plan"],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Return a bounded geometry-checked plan using current room boundaries and canonical asset dimensions while leaving project, history, selection, and persistence unchanged."
+    },
+    {
+      "id": "stage-reviewed-room-blueprint",
+      "prompt": "Plan a laboratory bench and floor centrifuge with a clear 900 millimetre aisle, then stage the complete blueprint for my review without approving it.",
+      "expectedTools": [
+        "labspace_search_assets",
+        "labspace_plan_room",
+        "labspace_stage_room_plan"
+      ],
+      "forbiddenTools": [],
+      "requiresHumanApproval": true,
+      "expectedOutcome": "Show one reversible blueprint preview containing canonical objects and indexing records; persistence and history remain unchanged until the researcher explicitly approves it in LabSpace."
+    },
     {
       "id": "locate-reference-standards",
       "prompt": "Where are the Reference standards?",

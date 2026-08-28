@@ -10,23 +10,23 @@ LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexin
 
 ## WebMCP Challenge — LabSpace Agent Twin
 
-**WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can search exact physical records, inspect evidence, focus the real 2D/3D workspace, evaluate a hypothetical equipment move with LabSpace's deterministic geometry rules, and stage a safe move for visible researcher review.
+**WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can discover dimensioned laboratory assets, calculate a multi-object room plan against real room geometry, stage one complete blueprint for review, search exact physical records, focus the real 2D/3D workspace, and validate individual equipment moves.
 
 **Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — open **Demo room** for the preserved DEMO-01 showcase. The free instance can take up to about a minute to wake after inactivity.
 
-The researcher remains in control: a staged move is labeled **Preview · not saved**, and only the human-facing **Approve move** action can create the ordinary undoable history entry and trigger autosave. Invalid moves return compact conflict evidence and do not mutate the project. There is no agent-accessible approve, save, reset, delete, import, or unrestricted write tool.
+The researcher remains in control: staged moves and room blueprints are labeled **Preview · not saved**, and only a human-facing approval can create an ordinary undoable history entry and trigger autosave. Invalid proposals return compact conflict evidence and do not mutate the project. There is no agent-accessible approve, save, reset, delete, import, or unrestricted write tool.
 
 ### See WebMCP working
 
 Open the **WebMCP** status control in the LabSpace header. Its inspector makes the browser integration visible without DevTools:
 
-1. **Registered tools** shows the seven live browser tools and their Read, View, Simulate, or Review boundary.
+1. **Registered tools** shows the ten live browser tools and their Read, View, Simulate, or Review boundary.
 2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
 3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
 
-The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity, and staged changes still require the separate human **Approve move** or **Cancel** decision.
+The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity, and staged changes still require a separate human approval or cancellation.
 
-### Seven browser-native tools
+### Ten browser-native tools
 
 | Tool                             | Capability                                                                   | Saved-data behavior                    |
 | -------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------- |
@@ -34,14 +34,17 @@ The trace is intentionally evidence, not hidden model reasoning. Ordinary resear
 | `labspace_search_records`        | Search equipment, inventory, and exact storage                               | Read-only                              |
 | `labspace_inspect_record`        | Inspect current canonical evidence                                           | Read-only                              |
 | `labspace_focus_record`          | Reveal a record in the normal room, evidence panel, and camera               | Presentation state only                |
+| `labspace_search_assets`         | Discover planning assets with canonical dimensions and connection behavior   | Read-only                              |
+| `labspace_plan_room`             | Calculate a bounded multi-object plan using current room geometry             | Read-only                              |
 | `labspace_find_valid_placements` | Rank diverse valid alternatives near a preferred area using current geometry | Read-only                              |
 | `labspace_validate_object_move`  | Test a hypothetical position with current geometry                           | Read-only                              |
 | `labspace_stage_object_move`     | Show a reversible valid-move preview                                         | Not persisted; human approval required |
+| `labspace_stage_room_plan`       | Show a complete reversible room blueprint                                    | Not persisted; human approval required |
 
 ```text
 browser agent → document.modelContext → LabSpace tool adapter
-                                      → shared index / focus / validator actions
-                                      → reversible preview
+                                      → shared catalog / planner / index / validator actions
+                                      → reversible move or room-blueprint preview
                                       → researcher Approve or Cancel
                                       → normal history + autosave (Approve only)
 ```
@@ -120,7 +123,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
 
-There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's seven structured tools, while the canonical index, geometry validator, and human approval UI remain deterministic application behavior.
+There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's ten structured tools, while the canonical catalog, room planner, index, geometry validator, and human approval UI remain deterministic application behavior.
 
 The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 96-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
 
@@ -172,7 +175,7 @@ For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUI
 | `npm run assets:render-procedural` | Rebuild 44 same-geometry procedural catalog renders       |
 | `npm run lint`                     | Run ESLint                                                |
 | `npm run typecheck`                | Run strict TypeScript checks                              |
-| `npm run test`                     | Run the 165 Vitest unit/integration cases                 |
+| `npm run test`                     | Run the 170 Vitest unit/integration cases                 |
 | `npm run test:e2e`                 | Run the Playwright competition and editor workflows       |
 | `npm run validate:assets`          | Validate manifests, authored GLBs, and static PNG renders |
 | `npm run release:check`            | Run lint, types, asset validation, tests, and build       |
@@ -203,7 +206,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-The result should contain exactly the seven tools listed above. Full commands and the deterministic demo workflow are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
+The result should contain exactly the ten tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
 The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. A free Render instance uses ephemeral storage, so the public judge demo starts from the deterministic source-controlled seed after a service restart; use JSON export for work that must persist. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 

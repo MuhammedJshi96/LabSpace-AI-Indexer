@@ -6,8 +6,11 @@ const WEBMCP_TOOL_NAMES = [
   "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
+  "labspace_plan_room",
+  "labspace_search_assets",
   "labspace_search_records",
   "labspace_stage_object_move",
+  "labspace_stage_room_plan",
   "labspace_validate_object_move",
 ];
 
@@ -149,7 +152,7 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly seven tools on product routes and excludes internal asset routes", async ({
+test("registers exactly ten tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin"]) {
@@ -164,6 +167,110 @@ test("registers exactly seven tools on product routes and excludes internal asse
 
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+});
+
+test("searches, plans, previews, approves, persists, and reverses a reviewed room blueprint", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByText("Empty lab plan", { exact: true })).toBeVisible();
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+
+  const before = await readProject(page);
+  const room = before.rooms.find((entry) => entry.id === before.activeRoomId)!;
+  expect(room.scene.objects).toHaveLength(0);
+
+  const search = await executeTool<{
+    results: Array<{ assetId: string; name: string; dimensionsMm: Record<string, number> }>;
+  }>(page, "labspace_search_assets", { query: "standard laboratory bench" });
+  expect(search.results).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        assetId: "lab-bench",
+        name: "Standard laboratory bench",
+        dimensionsMm: { width: 1800, depth: 750, height: 900 },
+      }),
+    ]),
+  );
+
+  const plan = await executeTool<{
+    planId: string;
+    roomId: string;
+    plannedObjects: number;
+    unplaced: unknown[];
+    proposals: Array<{ assetId: string }>;
+    requiresHumanApproval: boolean;
+  }>(page, "labspace_plan_room", {
+    brief: "A compact equipment-preparation room with a clear central aisle.",
+    aisleMm: 900,
+    assets: [
+      { assetId: "lab-bench", quantity: 1, placement: "perimeter" },
+      { assetId: "floor-centrifuge", quantity: 1, placement: "open" },
+    ],
+  });
+  expect(plan).toMatchObject({
+    roomId: room.id,
+    plannedObjects: 2,
+    unplaced: [],
+    requiresHumanApproval: true,
+  });
+  expect(plan.proposals.map((proposal) => proposal.assetId)).toEqual([
+    "lab-bench",
+    "floor-centrifuge",
+  ]);
+  expect((await readProject(page)).rooms.find((entry) => entry.id === room.id)!.scene.objects).toEqual(
+    [],
+  );
+
+  const staged = await executeTool<{
+    staged: boolean;
+    stageId: string;
+    objectCount: number;
+    persisted: boolean;
+    requiresHumanApproval: boolean;
+  }>(page, "labspace_stage_room_plan", { planId: plan.planId });
+  expect(staged).toMatchObject({
+    staged: true,
+    objectCount: 2,
+    persisted: false,
+    requiresHumanApproval: true,
+  });
+  const review = page.getByTestId("agent-change-review");
+  await expect(review).toBeVisible();
+  await expect(review).toContainText("Review room blueprint");
+  await expect(review).toContainText("Standard laboratory bench");
+  await expect(review).toContainText("Floor centrifuge");
+  await review.getByRole("button", { name: "Cancel preview" }).click();
+  await expect(review).toHaveCount(0);
+  expect((await readProject(page)).rooms.find((entry) => entry.id === room.id)!.scene.objects).toEqual(
+    [],
+  );
+
+  await executeTool(page, "labspace_stage_room_plan", { planId: plan.planId });
+  await expect(review).toBeVisible();
+  await review.getByRole("button", { name: "Approve room plan" }).click();
+  await expect(review).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const persisted = await readProject(page);
+      return persisted.rooms.find((entry) => entry.id === room.id)!.scene.objects.length;
+    })
+    .toBe(2);
+
+  await page.getByTitle("Undo (Ctrl+Z)").click();
+  await expect
+    .poll(async () => {
+      const persisted = await readProject(page);
+      return persisted.rooms.find((entry) => entry.id === room.id)!.scene.objects.length;
+    })
+    .toBe(0);
+  await page.getByTitle("Redo (Ctrl+Y)").click();
+  await expect
+    .poll(async () => {
+      const persisted = await readProject(page);
+      return persisted.rooms.find((entry) => entry.id === room.id)!.scene.objects.length;
+    })
+    .toBe(2);
 });
 
 test("searches and focuses canonical indexed evidence across rooms", async ({ page }) => {

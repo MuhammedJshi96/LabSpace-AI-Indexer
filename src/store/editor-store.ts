@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PendingAgentMoveChange } from "../agent/labspace-action-types";
+import type { PendingAgentChange } from "../agent/labspace-action-types";
 import { getAssetDefinition } from "../domain/assets";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
 import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/layers";
@@ -124,7 +124,7 @@ type EditorState = {
   spatialFocus: SpatialFocusRequest | null;
   digitalTwinSelectedRecordId: string | null;
   digitalTwinSpatialMode: "3d" | "2d";
-  pendingAgentChange: PendingAgentMoveChange | null;
+  pendingAgentChange: PendingAgentChange | null;
   history: SceneCommand[];
   future: SceneCommand[];
   clipboard: SceneObject[];

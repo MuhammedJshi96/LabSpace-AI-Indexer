@@ -20,6 +20,13 @@ export type SceneCommand =
       after: SceneObject[];
       roomBefore?: RoomPlanSize;
       roomAfter?: RoomPlanSize;
+    }
+  | {
+      id: string;
+      label: string;
+      kind: "scene";
+      before: Scene;
+      after: Scene;
     };
 
 function replaceObject(scene: Scene, object: SceneObject): Scene {
@@ -52,6 +59,7 @@ function replaceAffectedObjects(
 }
 
 export function applyCommand(scene: Scene, command: SceneCommand): Scene {
+  if (command.kind === "scene") return { ...command.after, updatedAt: new Date().toISOString() };
   if (command.kind === "add")
     return {
       ...scene,
@@ -73,6 +81,7 @@ export function applyCommand(scene: Scene, command: SceneCommand): Scene {
 }
 
 export function revertCommand(scene: Scene, command: SceneCommand): Scene {
+  if (command.kind === "scene") return { ...command.before, updatedAt: new Date().toISOString() };
   if (command.kind === "add")
     return {
       ...scene,

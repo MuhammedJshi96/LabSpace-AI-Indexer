@@ -43,6 +43,24 @@ const WEBMCP_TOOL_CATALOG = [
       "Ranks diverse geometry-valid alternatives near a preferred area without changing the room.",
   },
   {
+    name: "labspace_search_assets",
+    label: "Search planning assets",
+    mode: "Read",
+    description: "Furniture, storage, equipment, and safety assets with canonical dimensions.",
+  },
+  {
+    name: "labspace_plan_room",
+    label: "Calculate a room plan",
+    mode: "Simulate",
+    description: "Builds a geometry-checked furniture proposal without changing the room.",
+  },
+  {
+    name: "labspace_stage_room_plan",
+    label: "Stage a room blueprint",
+    mode: "Review",
+    description: "Shows all proposed assets in 2D and 3D for explicit human approval.",
+  },
+  {
     name: "labspace_stage_object_move",
     label: "Stage a move for review",
     mode: "Review",
@@ -165,6 +183,15 @@ export function AgentActivityPanel() {
           </button>
         )}
         {connectionError && <em>{connectionError}</em>}
+        {bridgeStatus === "ready" && (
+          <p className="webmcp-example-prompt">
+            <b>Try with your browser agent</b>
+            <span>
+              “Find a laboratory bench and floor centrifuge, calculate a plan with a 900 mm aisle,
+              then stage the blueprint for my approval.”
+            </span>
+          </p>
+        )}
       </div>
 
       <div className="webmcp-flow" aria-label="WebMCP action flow">
@@ -193,8 +220,9 @@ export function AgentActivityPanel() {
               <Robot size={24} weight="duotone" />
               <b>No WebMCP calls yet</b>
               <span>
-                Ask a compatible browser agent to search, inspect, focus, find a valid placement,
-                validate, or stage a move. Every structured call will appear here.
+                Ask a compatible browser agent to search the catalog, calculate a room plan,
+                inspect spatial evidence, or stage a reviewed change. Every structured call appears
+                here.
               </span>
             </div>
           ) : (
@@ -249,7 +277,10 @@ export function AgentActivityPanel() {
           })}
           <footer>
             <b>Safety boundary</b>
-            <span>WebMCP can stage a move, but only the researcher can approve or cancel it.</span>
+            <span>
+              WebMCP can stage moves and complete room blueprints, but only the researcher can
+              approve or cancel them.
+            </span>
           </footer>
         </div>
       )}

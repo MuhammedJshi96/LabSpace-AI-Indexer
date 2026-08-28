@@ -1,5 +1,6 @@
 import type {
   LabSpaceNavigationActions,
+  LabSpaceLayoutActions,
   LabSpaceReadActions,
   LabSpaceSpatialActions,
   LabSpaceStagingActions,
@@ -16,6 +17,7 @@ export type RegisterLabSpaceToolsOptions = {
   modelContext?: WebMCP.ModelContext;
   actions?: LabSpaceReadActions;
   navigationActions?: LabSpaceNavigationActions;
+  layoutActions?: LabSpaceLayoutActions;
   spatialActions?: LabSpaceSpatialActions;
   stagingActions?: LabSpaceStagingActions;
 };

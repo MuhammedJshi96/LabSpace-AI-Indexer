@@ -1,5 +1,5 @@
 import type { DigitalTwinRecordKind, DigitalTwinScope } from "../domain/digital-twin-index";
-import type { Project, SceneObject } from "../domain/schema";
+import type { Project, Scene, SceneObject } from "../domain/schema";
 
 export type LabSpaceReadState = {
   project: Project;
@@ -182,6 +182,115 @@ export type LabSpaceSpatialActions = {
   recommendObjectPlacements: (input: unknown) => RecommendObjectPlacementsResult;
 };
 
+export type SearchLabAssetsInput = {
+  query: string;
+  categories?: string[];
+  limit?: number;
+};
+
+export type LabAssetSearchResult = {
+  assetId: string;
+  name: string;
+  category: string;
+  dimensionsMm: { width: number; depth: number; height: number };
+  connection: string;
+  indexingBehavior: string;
+  tags: string[];
+};
+
+export type SearchLabAssetsResult = {
+  query: string;
+  totalMatches: number;
+  returnedMatches: number;
+  results: LabAssetSearchResult[];
+};
+
+export type RoomAssetRequest = {
+  assetId: string;
+  quantity: number;
+  placement?: "auto" | "perimeter" | "island" | "open";
+};
+
+export type PlanRoomLayoutInput = {
+  brief?: string;
+  assets: RoomAssetRequest[];
+  aisleMm?: number;
+};
+
+export type PlannedRoomObject = {
+  proposalId: string;
+  assetId: string;
+  assetName: string;
+  position: { xMm: number; yMm: number; zMm: number };
+  rotationDeg: number;
+  dimensionsMm: { width: number; depth: number; height: number };
+  placement: "perimeter" | "island" | "open";
+  nearestObjectGapMm: number | null;
+};
+
+export type PlanRoomLayoutResult = {
+  planId: string;
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  brief: string | null;
+  requestedObjects: number;
+  plannedObjects: number;
+  unplaced: Array<{ assetId: string; assetName: string; reason: string }>;
+  aisleMm: number;
+  proposals: PlannedRoomObject[];
+  basis: string[];
+  requiresHumanApproval: true;
+};
+
+export type StageRoomLayoutInput = { planId: string };
+
+export type PendingAgentLayoutChange = {
+  stageId: string;
+  tool: "layout";
+  planId: string;
+  roomId: string;
+  roomName: string;
+  brief: string | null;
+  beforeScene: Scene;
+  proposedScene: Scene;
+  proposedObjectIds: string[];
+  proposedObjects: Array<{
+    objectId: string;
+    name: string;
+    indexCode: string;
+    position: { xMm: number; yMm: number; rotationDeg: number };
+  }>;
+  baselineDirtyRevision: number;
+  createdAt: string;
+  status: "pending";
+  timestamps: {
+    projectUpdatedAt: string;
+    roomUpdatedAt: string;
+    sceneUpdatedAt: string;
+  };
+};
+
+export type PendingAgentChange = PendingAgentMoveChange | PendingAgentLayoutChange;
+
+export type StageRoomLayoutResult = {
+  staged: boolean;
+  stageId: string;
+  planId: string;
+  roomId: string;
+  roomName: string;
+  objectCount: number;
+  objects: PendingAgentLayoutChange["proposedObjects"];
+  persisted: false;
+  requiresHumanApproval: true;
+};
+
+export type LabSpaceLayoutActions = {
+  searchLabAssets: (input: unknown) => SearchLabAssetsResult;
+  planRoomLayout: (input: unknown) => PlanRoomLayoutResult;
+  getRoomPlan: (planId: string) => PlanRoomLayoutResult;
+};
+
 export type PendingAgentMoveChange = {
   stageId: string;
   tool: "move";
@@ -217,14 +326,18 @@ export type StageObjectMoveResult = {
 export type AgentMoveReviewResult = {
   stageId: string;
   objectId: string;
+  objectIds?: string[];
   status: "approved" | "cancelled";
   persisted: boolean;
 };
 
 export type LabSpaceStagingActions = {
   stageObjectMove: (input: unknown) => StageObjectMoveResult;
+  stageRoomLayout: (input: unknown) => StageRoomLayoutResult;
   approveStagedObjectMove: (stageId: string) => AgentMoveReviewResult;
   cancelStagedObjectMove: (stageId: string) => AgentMoveReviewResult;
+  approveStagedChange: (stageId: string) => AgentMoveReviewResult;
+  cancelStagedChange: (stageId: string) => AgentMoveReviewResult;
 };
 
 export type LabSpaceReadActions = {

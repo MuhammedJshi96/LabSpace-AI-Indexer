@@ -2,61 +2,61 @@
 
 Target length: **2:35–2:45**. Record the real website and browser-agent interaction; do not fake tool calls. Keep the pointer still during camera transitions.
 
-## Take 1 — problem and product (0:00–0:18)
+## Take 1 — problem and product (0:00–0:16)
 
-**Screen:** Begin on the DEMO-01 Layout Editor hero view. Briefly show synchronized 2D and 3D.
-
-**Voice-over:**
-
-“A laboratory’s physical knowledge is often split between memory, labels, spreadsheets, and floor plans. LabSpace Agent Twin unifies design and exact inventory location—and WebMCP lets a browser agent work with that semantic laboratory directly.”
-
-## Take 2 — prove WebMCP discovery (0:18–0:32)
-
-**Screen:** Show the browser-agent request and a compact view of the seven discovered `labspace_*` tools; immediately return focus to LabSpace.
+**Screen:** Begin on the genuinely empty Layout Editor with synchronized 2D and 3D.
 
 **Voice-over:**
 
-“Instead of scraping pixels, the agent discovers seven structured LabSpace tools for context, search, inspection, focus, validation, ranked valid placement, and reversible staging.”
+“Laboratory planning and physical inventory usually live in separate tools. LabSpace joins them in one spatial digital twin—and WebMCP lets a browser agent work with the laboratory’s real structure, not guessed pixels.”
 
-## Take 3 — search exact evidence (0:32–1:02)
+## Take 2 — prove WebMCP discovery (0:16–0:29)
 
-**Screen:** Ask the agent to find the BÜCHI rotary evaporator and its flask set. Show the Digital Twin changing room/evidence state and focusing the exact record.
-
-**Voice-over:**
-
-“The agent searches the canonical Spatial Index, not a visual approximation. It resolves the BÜCHI equipment record and the flask inventory to real laboratory, room, cabinet, shelf, and index codes. Focusing the record drives the same evidence inspector and 3D camera used by a researcher.”
-
-## Take 4 — invalid spatial proposal (1:02–1:30)
-
-**Screen:** Request trolley move X 4.318 m, Y 0.008 m, rotation −180°. Show compact blocked result and Agent Activity; confirm the trolley did not move.
+**Screen:** Open the WebMCP Inspector, show ten registered tools and the ready-to-use planning prompt, then return to the room.
 
 **Voice-over:**
 
-“Next I ask about moving this trolley. The first target crosses the room boundary and collides with the north evaporator work zone. LabSpace reuses its deterministic geometry validator, returns those recorded conflicts, and makes no scene, history, or database change.”
+“The agent discovers ten structured tools: catalog and record search, room planning, exact focus, deterministic validation, and reversible staging. The activity inspector makes every bounded call visible.”
 
-## Take 5 — valid stage and human review (1:30–2:08)
+## Take 3 — build from the empty room (0:29–1:12)
 
-**Screen:** Validate X 3.887 m, Y 8.006 m, −180°, then stage it. Hold on the **Preview · not saved** panel, current/proposed coordinates, and Approve/Cancel.
+**Screen:** Ask for a bench and floor centrifuge with a 900 mm aisle. Show catalog results, read-only plan, cyan blueprint in 2D/3D, review manifest, Cancel once, then restage and approve yourself.
 
 **Voice-over:**
 
-“A corrected target validates. The agent may stage it, but cannot approve it. LabSpace shows a reversible preview labeled not saved, with the old and proposed coordinates. Other edits are guarded while I decide. This is the key trust boundary: the agent proposes; the researcher remains visibly in control.”
+“Starting from an empty room, I ask for a compact preparation layout. WebMCP resolves canonical assets and dimensions, then LabSpace calculates positions against the actual walls, floor, existing objects, and requested aisle. Planning changes nothing. Only when I ask to stage it does one cyan blueprint appear. I can cancel it exactly, or approve the complete plan myself as one undoable update.”
 
-## Take 6 — approve, history, evidence (2:08–2:32)
+## Take 4 — search exact evidence (1:12–1:40)
+
+**Screen:** Open DEMO-01. Ask the agent to find the BÜCHI rotary evaporator and its flask set. Show exact camera/evidence focus.
+
+**Voice-over:**
+
+“In the authored demo, the agent searches the canonical Spatial Index. It resolves the BÜCHI equipment and its flask inventory to real room, cabinet, shelf, and index codes. Focusing the record drives the same evidence inspector and 3D camera used by the researcher.”
+
+## Take 5 — blocked move and grounded alternative (1:40–2:15)
+
+**Screen:** Request the blocked trolley target, then ask for ranked valid alternatives and stage the best candidate. Hold on **Preview · not saved** and the evidence panel.
+
+**Voice-over:**
+
+“A proposed trolley target crosses the room boundary and collides, so LabSpace returns deterministic evidence and changes nothing. It then searches the real geometry for ranked valid alternatives. The agent may stage one, but cannot approve it. The researcher remains visibly in control.”
+
+## Take 6 — approve, history, evidence (2:15–2:33)
 
 **Screen:** Click **Approve move** yourself. Show save completion, Agent Activity, then Undo and Redo once.
 
 **Voice-over:**
 
-“I approve the move in LabSpace. It becomes one normal history entry, autosaves through the existing repository, and remains undoable and redoable. Agent Activity records the factual request, validation, preview, human decision, and commit—never hidden reasoning.”
+“I approve in LabSpace. The change becomes one normal history entry, autosaves, and remains undoable. Agent Activity records factual requests and results—never hidden reasoning.”
 
-## Take 7 — close (2:32–2:42)
+## Take 7 — close (2:33–2:42)
 
 **Screen:** Return to a clean synchronized hero composition with the selected trolley and evidence.
 
 **Voice-over:**
 
-“LabSpace turns the physical laboratory into safe, structured agent capability through WebMCP: grounded evidence, deterministic action, and human control.”
+“LabSpace makes the physical laboratory agent-ready through WebMCP: design, index, find—and always keep the human in control.”
 
 ## Recording notes
 

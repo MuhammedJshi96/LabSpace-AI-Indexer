@@ -1,15 +1,35 @@
 import { buildDigitalTwinIndex } from "../domain/digital-twin-index";
-import type { Project, Room, SceneObject } from "../domain/schema";
+import { ASSET_BY_ID } from "../domain/assets";
+import { resolveLayerIdForObjectType } from "../domain/layers";
+import {
+  deriveDefaultEquipmentId,
+  generateChildIndexCode,
+  generateObjectIndexCode,
+} from "../domain/indexing";
+import type {
+  AssetDefinition,
+  EquipmentRecord,
+  Project,
+  Room,
+  Scene,
+  SceneObject,
+  StorageLocation,
+} from "../domain/schema";
+import type { SceneCommand } from "../domain/history";
 import { useEditorStore } from "../store/editor-store";
 import type {
   AgentMoveReviewResult,
   LabSpaceStagingActions,
+  PendingAgentChange,
+  PendingAgentLayoutChange,
   PendingAgentMoveChange,
+  StageRoomLayoutResult,
   StageObjectMoveResult,
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
 import { validateObjectMove } from "./labspace-spatial-actions";
 import { agentActivityActions } from "./agent-activity-store";
+import { getStoredRoomPlan } from "./labspace-layout-actions";
 
 function resolveObject(project: Project, objectId: string): { room: Room; object: SceneObject } {
   for (const room of project.rooms) {
@@ -35,6 +55,132 @@ function sameProposal(
     pending.proposed.position.y === target.yMm &&
     pending.proposed.rotation.z === target.rotationDeg
   );
+}
+
+function activeLaboratoryCode(project: Project, room: Room) {
+  return project.laboratories.find((laboratory) => laboratory.id === room.laboratoryId)?.code ?? "LAB";
+}
+
+function createEquipmentRecord(object: SceneObject, existing: EquipmentRecord[]): EquipmentRecord {
+  return {
+    id: crypto.randomUUID(),
+    objectId: object.id,
+    equipmentId: deriveDefaultEquipmentId(object, existing),
+    name: object.name,
+    manufacturer: "",
+    model: "",
+    serialNumber: "",
+    status: "active",
+    responsiblePerson: "",
+    lastServiceDate: null,
+    nextServiceDate: null,
+    powerRequirements: "",
+    waterRequirements: "None",
+    gasRequirements: "None",
+    drainRequired: false,
+    ventilationRequired: false,
+    notes: "Added through an approved LabSpace room plan.",
+  };
+}
+
+function createStorageLocations(
+  definition: AssetDefinition,
+  object: SceneObject,
+  roomId: string,
+  now: string,
+) {
+  const root: StorageLocation = {
+    id: crypto.randomUUID(),
+    roomId,
+    objectId: object.id,
+    parentId: null,
+    type: "cabinet",
+    name: object.name,
+    indexCode: object.indexCode,
+    order: 0,
+    capacityNotes: "",
+    childIds: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const locations: StorageLocation[] = [root];
+  const byTemplateKey = new Map<string, StorageLocation>();
+  for (const entry of definition.storageTemplate ?? []) {
+    const parent = entry.parentKey ? byTemplateKey.get(entry.parentKey) : root;
+    if (!parent) continue;
+    const location: StorageLocation = {
+      id: crypto.randomUUID(),
+      roomId,
+      objectId: object.id,
+      parentId: parent.id,
+      type: entry.type,
+      name: entry.name,
+      indexCode: generateChildIndexCode(parent, entry.type, locations),
+      order: locations.filter(
+        (candidate) => candidate.parentId === parent.id && candidate.type === entry.type,
+      ).length,
+      capacityNotes: entry.capacityNotes ?? "",
+      childIds: [],
+      normalizedBounds: entry.normalizedBounds,
+      createdAt: now,
+      updatedAt: now,
+    };
+    parent.childIds.push(location.id);
+    locations.push(location);
+    byTemplateKey.set(entry.key, location);
+  }
+  object.childLocationIds = [root.id];
+  return locations;
+}
+
+function instantiatePlanObject(
+  project: Project,
+  room: Room,
+  scene: Scene,
+  planId: string,
+  proposal: ReturnType<typeof getStoredRoomPlan>["result"]["proposals"][number],
+) {
+  const definition = ASSET_BY_ID.get(proposal.assetId);
+  if (!definition) throw new LabSpaceActionError(`Catalog asset is unavailable: ${proposal.assetId}.`);
+  const now = new Date().toISOString();
+  const object: SceneObject = {
+    id: crypto.randomUUID(),
+    indexCode: generateObjectIndexCode(
+      room,
+      scene,
+      definition.objectType,
+      room.scene.zones[0]?.id ?? null,
+      activeLaboratoryCode(project, room),
+    ),
+    name: definition.name,
+    assetDefinitionId: definition.id,
+    objectType: definition.objectType,
+    position: {
+      x: proposal.position.xMm,
+      y: proposal.position.yMm,
+      z: proposal.position.zMm,
+    },
+    dimensions: proposal.dimensionsMm,
+    rotation: { x: 0, y: 0, z: proposal.rotationDeg },
+    flipHorizontal: false,
+    flipVertical: false,
+    layerId: resolveLayerIdForObjectType(scene.layers, definition.objectType),
+    roomId: room.id,
+    zoneId: room.scene.zones[0]?.id ?? null,
+    locked: true,
+    visible: true,
+    metadata: {
+      agentPlanPreview: true,
+      agentPlanId: planId,
+      agentPlanPlacement: proposal.placement,
+    },
+    createdAt: now,
+    updatedAt: now,
+    parentObjectId: null,
+    childLocationIds: [],
+    zIndex: Math.max(0, ...scene.objects.map((entry) => entry.zIndex)) + 1,
+  };
+  return { definition, object, now };
 }
 
 function stagedResult(change: PendingAgentMoveChange): StageObjectMoveResult {
@@ -74,7 +220,12 @@ export function stageObjectMove(input: unknown): StageObjectMoveResult {
   const state = useEditorStore.getState();
   const existing = state.pendingAgentChange;
   if (existing) {
-    if (sameProposal(existing, validation.objectId, validation.target)) return stagedResult(existing);
+    if (
+      existing.tool === "move" &&
+      sameProposal(existing, validation.objectId, validation.target)
+    ) {
+      return stagedResult(existing);
+    }
     throw new LabSpaceActionError(
       "Another agent change is awaiting human review. Approve or cancel it before staging a new move.",
     );
@@ -139,7 +290,139 @@ export function stageObjectMove(input: unknown): StageObjectMoveResult {
   return stagedResult(change);
 }
 
-function requirePending(stageId: string) {
+function normalizeStageRoomLayoutInput(input: unknown) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new LabSpaceActionError("Tool input must be a JSON object.");
+  }
+  const record = input as Record<string, unknown>;
+  const unexpected = Object.keys(record).find((key) => key !== "planId");
+  if (unexpected) throw new LabSpaceActionError(`Unexpected input field: ${unexpected}.`);
+  if (typeof record.planId !== "string" || !record.planId.trim()) {
+    throw new LabSpaceActionError("planId must be a non-empty string.");
+  }
+  return { planId: record.planId.trim() };
+}
+
+function layoutStageResult(change: PendingAgentLayoutChange): StageRoomLayoutResult {
+  return {
+    staged: true,
+    stageId: change.stageId,
+    planId: change.planId,
+    roomId: change.roomId,
+    roomName: change.roomName,
+    objectCount: change.proposedObjects.length,
+    objects: change.proposedObjects,
+    persisted: false,
+    requiresHumanApproval: true,
+  };
+}
+
+export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
+  const { planId } = normalizeStageRoomLayoutInput(input);
+  const stored = getStoredRoomPlan(planId);
+  if (!stored.result.proposals.length) {
+    throw new LabSpaceActionError("That room plan contains no placeable objects.");
+  }
+  const state = useEditorStore.getState();
+  const existing = state.pendingAgentChange;
+  if (existing) {
+    if (existing.tool === "layout" && existing.planId === planId) return layoutStageResult(existing);
+    throw new LabSpaceActionError(
+      "Another agent change is awaiting human review. Approve or cancel it before staging a room plan.",
+    );
+  }
+  if (state.saveStatus !== "saved") {
+    throw new LabSpaceActionError(
+      "LabSpace must finish saving current human edits before a room plan can be staged.",
+    );
+  }
+  const room = state.project.rooms.find((entry) => entry.id === stored.result.roomId);
+  if (!room || room.roomKind === "demo-template" || room.id !== state.project.activeRoomId) {
+    throw new LabSpaceActionError("Open the room used for this plan before staging it.");
+  }
+  const currentObjectIds = room.scene.objects.map((object) => object.id).sort();
+  if (
+    room.scene.updatedAt !== stored.baseline.sceneUpdatedAt ||
+    JSON.stringify(currentObjectIds) !== JSON.stringify(stored.baseline.objectIds)
+  ) {
+    throw new LabSpaceActionError(
+      "The room changed after this plan was calculated. Create a fresh plan before staging.",
+    );
+  }
+
+  const stageId = crypto.randomUUID();
+  const beforeScene = structuredClone(room.scene);
+  const proposedScene = structuredClone(room.scene);
+  const proposedObjects: PendingAgentLayoutChange["proposedObjects"] = [];
+  const proposedObjectIds: string[] = [];
+  for (const proposal of stored.result.proposals) {
+    const { definition, object, now } = instantiatePlanObject(
+      state.project,
+      room,
+      proposedScene,
+      planId,
+      proposal,
+    );
+    proposedScene.objects.push(object);
+    if (definition.indexingBehavior === "storage") {
+      proposedScene.storageLocations.push(
+        ...createStorageLocations(definition, object, room.id, now),
+      );
+    }
+    if (definition.objectType === "equipment") {
+      proposedScene.equipmentRecords.push(
+        createEquipmentRecord(object, proposedScene.equipmentRecords),
+      );
+    }
+    proposedObjectIds.push(object.id);
+    proposedObjects.push({
+      objectId: object.id,
+      name: object.name,
+      indexCode: object.indexCode,
+      position: {
+        xMm: object.position.x,
+        yMm: object.position.y,
+        rotationDeg: object.rotation.z,
+      },
+    });
+  }
+  proposedScene.updatedAt = new Date().toISOString();
+  const change: PendingAgentLayoutChange = {
+    stageId,
+    tool: "layout",
+    planId,
+    roomId: room.id,
+    roomName: room.name,
+    brief: stored.result.brief,
+    beforeScene,
+    proposedScene: structuredClone(proposedScene),
+    proposedObjectIds,
+    proposedObjects,
+    baselineDirtyRevision: state.dirtyRevision,
+    createdAt: new Date().toISOString(),
+    status: "pending",
+    timestamps: {
+      projectUpdatedAt: state.project.updatedAt,
+      roomUpdatedAt: room.updatedAt,
+      sceneUpdatedAt: room.scene.updatedAt,
+    },
+  };
+  const now = new Date().toISOString();
+  useEditorStore.setState({
+    project: {
+      ...state.project,
+      updatedAt: now,
+      rooms: state.project.rooms.map((entry) =>
+        entry.id === room.id ? { ...entry, updatedAt: now, scene: proposedScene } : entry,
+      ),
+    },
+    selectedIds: proposedObjectIds,
+    pendingAgentChange: change,
+  });
+  return layoutStageResult(change);
+}
+
+function requirePending(stageId: string): PendingAgentChange {
   const pending = useEditorStore.getState().pendingAgentChange;
   if (!pending || pending.stageId !== stageId) {
     throw new LabSpaceActionError("That staged change is no longer awaiting review.");
@@ -147,8 +430,8 @@ function requirePending(stageId: string) {
   return pending;
 }
 
-export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {
-  const pending = requirePending(stageId);
+function cancelMove(pending: PendingAgentMoveChange): AgentMoveReviewResult {
+  const stageId = pending.stageId;
   const state = useEditorStore.getState();
   const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
   const current = room?.scene.objects.find((entry) => entry.id === pending.objectId);
@@ -195,8 +478,8 @@ export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {
   };
 }
 
-export function approveStagedObjectMove(stageId: string): AgentMoveReviewResult {
-  const pending = requirePending(stageId);
+function approveMove(pending: PendingAgentMoveChange): AgentMoveReviewResult {
+  const stageId = pending.stageId;
   const state = useEditorStore.getState();
   const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
   const current = room?.scene.objects.find((entry) => entry.id === pending.objectId);
@@ -235,8 +518,157 @@ export function approveStagedObjectMove(stageId: string): AgentMoveReviewResult 
   };
 }
 
+function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
+  const state = useEditorStore.getState();
+  const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
+  if (room && JSON.stringify(room.scene) === JSON.stringify(pending.proposedScene)) {
+    useEditorStore.setState({
+      project: {
+        ...state.project,
+        updatedAt: pending.timestamps.projectUpdatedAt,
+        rooms: state.project.rooms.map((entry) =>
+          entry.id === pending.roomId
+            ? {
+                ...entry,
+                updatedAt: pending.timestamps.roomUpdatedAt,
+                scene: pending.beforeScene,
+              }
+            : entry,
+        ),
+      },
+      selectedIds: [],
+      pendingAgentChange: null,
+    });
+  } else {
+    useEditorStore.setState({ pendingAgentChange: null });
+  }
+  useEditorStore.getState().pushToast(
+    "Agent room plan cancelled. The room was not changed.",
+    "info",
+  );
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Room plan rejected",
+    subject: `${pending.proposedObjects.length} proposed assets`,
+    status: "rejected",
+    evidence: "Blueprint preview removed · project data unchanged",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.proposedObjectIds[0] ?? pending.planId,
+    objectIds: pending.proposedObjectIds,
+    status: "cancelled",
+    persisted: false,
+  };
+}
+
+function committedLayoutScene(pending: PendingAgentLayoutChange, scene: Scene) {
+  const proposedIds = new Set(pending.proposedObjectIds);
+  return {
+    ...scene,
+    updatedAt: new Date().toISOString(),
+    objects: scene.objects.map((object) => {
+      if (!proposedIds.has(object.id)) return object;
+      const metadata = { ...object.metadata };
+      delete metadata.agentPlanPreview;
+      delete metadata.agentPlanId;
+      delete metadata.agentPlanPlacement;
+      return { ...object, locked: false, metadata, updatedAt: new Date().toISOString() };
+    }),
+  };
+}
+
+function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
+  const state = useEditorStore.getState();
+  const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
+  if (
+    !room ||
+    state.dirtyRevision !== pending.baselineDirtyRevision ||
+    JSON.stringify(room.scene) !== JSON.stringify(pending.proposedScene)
+  ) {
+    cancelLayout(pending);
+    throw new LabSpaceActionError(
+      "The staged room plan became stale because the layout changed. It was not committed.",
+    );
+  }
+  const after = committedLayoutScene(pending, room.scene);
+  const command: SceneCommand = {
+    id: crypto.randomUUID(),
+    label: `Approve agent room plan (${pending.proposedObjects.length} assets)`,
+    kind: "scene",
+    before: pending.beforeScene,
+    after,
+  };
+  const now = new Date().toISOString();
+  useEditorStore.setState({
+    project: {
+      ...state.project,
+      updatedAt: now,
+      rooms: state.project.rooms.map((entry) =>
+        entry.id === pending.roomId ? { ...entry, updatedAt: now, scene: after } : entry,
+      ),
+    },
+    selectedIds: pending.proposedObjectIds,
+    pendingAgentChange: null,
+    history: [...state.history, command],
+    future: [],
+    saveStatus: "unsaved",
+    dirtyRevision: state.dirtyRevision + 1,
+  });
+  useEditorStore.getState().pushToast(
+    `Room plan approved. LabSpace is saving ${pending.proposedObjects.length} assets.`,
+    "success",
+  );
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Room plan approved",
+    subject: `${pending.proposedObjects.length} assets in ${pending.roomName}`,
+    status: "approved",
+    evidence: "Explicit researcher approval",
+  });
+  agentActivityActions.record({
+    actor: "LabSpace",
+    action: "Layout committed",
+    subject: pending.roomName,
+    status: "committed",
+    evidence: "Objects and index records committed as one history entry · Undo available",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.proposedObjectIds[0] ?? pending.planId,
+    objectIds: pending.proposedObjectIds,
+    status: "approved",
+    persisted: false,
+  };
+}
+
+export function cancelStagedChange(stageId: string): AgentMoveReviewResult {
+  const pending = requirePending(stageId);
+  return pending.tool === "layout" ? cancelLayout(pending) : cancelMove(pending);
+}
+
+export function approveStagedChange(stageId: string): AgentMoveReviewResult {
+  const pending = requirePending(stageId);
+  return pending.tool === "layout" ? approveLayout(pending) : approveMove(pending);
+}
+
+export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {
+  const pending = requirePending(stageId);
+  if (pending.tool !== "move") throw new LabSpaceActionError("That staged change is a room plan.");
+  return cancelMove(pending);
+}
+
+export function approveStagedObjectMove(stageId: string): AgentMoveReviewResult {
+  const pending = requirePending(stageId);
+  if (pending.tool !== "move") throw new LabSpaceActionError("That staged change is a room plan.");
+  return approveMove(pending);
+}
+
 export const labSpaceStagingActions: LabSpaceStagingActions = {
   stageObjectMove,
+  stageRoomLayout,
   approveStagedObjectMove,
   cancelStagedObjectMove,
+  approveStagedChange,
+  cancelStagedChange,
 };

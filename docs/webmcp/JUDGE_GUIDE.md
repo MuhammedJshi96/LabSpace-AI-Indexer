@@ -12,19 +12,27 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all seven live tools and their safety modes.
+2. Select **Registered tools** to see all ten live tools and their safety modes.
 3. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
 4. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
 This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
 
-## Best judge prompt
+## Signature empty-room builder prompt
+
+Open **Empty lab plan**, then ask:
+
+> Use LabSpace to find a standard laboratory bench and a floor centrifuge. Calculate a compact preparation-room plan with a 900 mm aisle, then stage the complete blueprint for my approval. Do not approve it for me.
+
+Expected: the agent discovers canonical catalog IDs and dimensions, calculates a geometry-checked plan without mutation, then LabSpace shows one cyan 2D/3D blueprint and a readable asset manifest. **Cancel preview** restores the empty room exactly. Stage it again and choose **Approve room plan** yourself to create one undoable scene update containing the objects and their applicable index records.
+
+## Exact-evidence and move prompt
 
 > In LabSpace, find the BÜCHI rotary evaporator and the exact storage location of its flask set, then focus the room on that evidence. Next, check whether moving the wire-basket laboratory trolley to X 4.318 m, Y 0.008 m at −180° is valid. If it is blocked, explain the recorded conflicts, find three valid alternatives near that target, choose the best grounded candidate, and stage it for my review. Do not approve anything for me.
 
 ## Expected visible workflow
 
-1. The agent discovers seven structured LabSpace tools.
+1. The agent discovers ten structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
@@ -37,6 +45,12 @@ This is the quickest judge-visible proof that WebMCP is active. The panel report
 ## Tool sequence
 
 ```text
+labspace_get_context
+labspace_search_assets
+labspace_plan_room
+labspace_stage_room_plan
+human: Approve room plan or Cancel preview
+
 labspace_get_context
 labspace_search_records
 labspace_inspect_record
@@ -56,7 +70,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly seven unique `labspace_*` tools on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
+Expected: exactly ten unique `labspace_*` tools on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 

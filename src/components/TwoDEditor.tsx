@@ -227,6 +227,7 @@ function PlanObject({
   const dragOffsetRef = useRef<{ x: number; y: number } | null>(null);
   const layer = room.scene.layers.find((entry) => entry.id === object.layerId);
   const locked = object.locked || layer?.locked;
+  const agentPlanPreview = object.metadata.agentPlanPreview === true;
   const width = object.dimensions.width;
   const depth = object.dimensions.depth;
   const profile = definition.profile;
@@ -253,6 +254,7 @@ function PlanObject({
         x={object.position.x}
         y={object.position.y}
         rotation={object.rotation.z}
+        opacity={agentPlanPreview ? 0.72 : 1}
         draggable={tool === "select" && !locked}
         onClick={selectObject}
         onTap={selectObject}
@@ -329,6 +331,20 @@ function PlanObject({
           beforeRef.current = null;
         }}
       >
+        {agentPlanPreview && (
+          <Rect
+            x={-width / 2 - 8 / scale}
+            y={-depth / 2 - 8 / scale}
+            width={width + 16 / scale}
+            height={depth + 16 / scale}
+            cornerRadius={7 / scale}
+            fill="rgba(0, 198, 178, 0.08)"
+            stroke="#00a995"
+            strokeWidth={1.5 / scale}
+            dash={[7 / scale, 5 / scale]}
+            listening={false}
+          />
+        )}
         {profile === "round" || profile === "cylinder" || profile === "seat" ? (
           <Circle
             name="scene-object-hit-area"

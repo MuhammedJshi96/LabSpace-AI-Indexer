@@ -47,7 +47,7 @@ Expected health response:
 { "ok": true, "database": "sqlite", "schemaVersion": 2 }
 ```
 
-Then use a WebMCP-capable top-level browser context to verify the seven registered tools on `/` and `/digital-twin`, and no tools on the internal preview/capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
+Then use a WebMCP-capable top-level browser context to verify the ten registered tools on `/` and `/digital-twin`, and no tools on the internal preview/capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
 
 Official hosting references:
 

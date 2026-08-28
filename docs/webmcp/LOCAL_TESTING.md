@@ -21,7 +21,7 @@ Open `http://127.0.0.1:3004/` or `http://127.0.0.1:3004/digital-twin`.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
 
-## Discover the seven tools
+## Discover the ten tools
 
 In Chrome DevTools Console:
 
@@ -38,12 +38,15 @@ labspace_find_valid_placements
 labspace_focus_record
 labspace_get_context
 labspace_inspect_record
+labspace_plan_room
+labspace_search_assets
 labspace_search_records
 labspace_stage_object_move
+labspace_stage_room_plan
 labspace_validate_object_move
 ```
 
-There should be seven unique registrations on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
+There should be ten unique registrations on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
 
 ## Manual tool calls
 
@@ -69,6 +72,36 @@ await document.modelContext.executeTool(
 
 await document.modelContext.executeTool(byName.labspace_focus_record, JSON.stringify({ recordId }));
 ```
+
+For the empty-room builder workflow, open **Empty lab plan**, then run:
+
+```js
+const assetJson = await document.modelContext.executeTool(
+  byName.labspace_search_assets,
+  JSON.stringify({ query: "laboratory bench" }),
+);
+JSON.parse(assetJson).results;
+
+const planJson = await document.modelContext.executeTool(
+  byName.labspace_plan_room,
+  JSON.stringify({
+    brief: "Compact equipment preparation room with a clear central aisle",
+    aisleMm: 900,
+    assets: [
+      { assetId: "lab-bench", quantity: 1, placement: "perimeter" },
+      { assetId: "floor-centrifuge", quantity: 1, placement: "open" },
+    ],
+  }),
+);
+const plan = JSON.parse(planJson);
+
+await document.modelContext.executeTool(
+  byName.labspace_stage_room_plan,
+  JSON.stringify({ planId: plan.planId }),
+);
+```
+
+The final call creates a cyan in-memory blueprint and opens the human review panel. **Cancel preview** restores the exact room; **Approve room plan** commits all proposed objects and applicable storage/equipment index records as one undoable history entry. The browser agent cannot approve its own plan.
 
 For the deterministic move demo, search for `Wire-basket laboratory trolley`, inspect the returned object identity, then call:
 
@@ -127,7 +160,7 @@ npx playwright test tests/e2e/webmcp-actions.spec.ts
 npm run test:e2e
 ```
 
-The 14 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
+The 17 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
 
 If `document.modelContext` is `undefined`, confirm the Chrome flag, browser relaunch, top-level route, and secure/same-origin context. LabSpace itself should continue to work normally.
 

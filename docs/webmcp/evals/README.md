@@ -1,15 +1,15 @@
 # LabSpace WebMCP evaluation cases
 
-This folder defines a deterministic competition eval set for the seven public LabSpace WebMCP tools. It is an expected-call suite, not a claim that a language model is embedded in LabSpace or that every model will choose an identical optional inspection step.
+This folder defines a deterministic competition eval set for the ten public LabSpace WebMCP tools. It is an expected-call suite, not a claim that a language model is embedded in LabSpace or that every model will choose an identical optional inspection step.
 
 ## What the automated check proves
 
-`tests/unit/webmcp-evals.test.ts` verifies that every case has a unique identifier, uses only the published seven-tool surface, declares forbidden mutations, and requires human approval whenever an object-move preview is staged. The underlying action tests separately verify canonical data reads, exact record focus, deterministic geometry validation, read-only ranked alternatives, reversible staging, approval, cancellation, persistence, bounded output, and controlled errors.
+`tests/unit/webmcp-evals.test.ts` verifies that every case has a unique identifier, uses only the published ten-tool surface, declares forbidden mutations, and requires human approval whenever an object-move or room-blueprint preview is staged. The underlying action tests separately verify canonical data reads, catalog search, exact record focus, deterministic geometry validation, read-only room plans and ranked alternatives, reversible staging, approval, cancellation, persistence, bounded output, and controlled errors.
 
 ## Manual model/tool inspection
 
 1. Start LabSpace locally and open the normal Layout Editor route in a Chrome build with WebMCP testing enabled.
-2. Inspect `await document.modelContext.getTools()` and confirm the exact seven tools in `cases.json` are registered once.
+2. Inspect `await document.modelContext.getTools()` and confirm the exact ten tools in `cases.json` are registered once.
 3. Run each prompt through the current WebMCP Model Context Tool Inspector or an agent host that supports the browser API.
 4. Record the actual tool sequence, inputs, compact outputs, forbidden-tool violations, and final visible application state.
 5. For staging cases, confirm the preview is marked **PREVIEW · NOT SAVED** and only the researcher-facing Approve/Cancel controls can commit or reject it.

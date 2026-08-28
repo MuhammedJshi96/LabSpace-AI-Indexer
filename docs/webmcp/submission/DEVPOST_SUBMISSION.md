@@ -22,17 +22,20 @@ This makes the application meaningfully better when a researcher and agent work 
 
 ## What it does
 
-LabSpace registers seven focused browser-native tools:
+LabSpace registers ten focused browser-native tools:
 
 1. read active laboratory context;
 2. search equipment, inventory, and exact storage;
 3. inspect one canonical record;
 4. focus the real room, selection, evidence inspector, and 3D camera;
-5. validate a hypothetical object move without mutation;
-6. turn a blocked target into ranked, geometry-valid alternatives;
-7. stage a chosen valid move as a reversible visual preview.
+5. discover canonical furniture, storage, equipment, and safety assets with real dimensions;
+6. calculate a bounded multi-object room plan against current walls, floors, and objects;
+7. stage that complete room blueprint as one reversible review;
+8. validate a hypothetical object move without mutation;
+9. turn a blocked target into ranked, geometry-valid alternatives;
+10. stage a chosen valid move as a reversible visual preview.
 
-An agent can locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, focus the evidence, reject a trolley target that crosses the room boundary or collides with equipment, and stage a corrected target. The final decision stays with the researcher through visible **Approve move** and **Cancel** controls.
+An agent can start from an empty laboratory, find dimensioned assets, calculate a layout with a requested aisle, and stage the entire blueprint visibly in the synchronized 2D/3D editor. It can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target. The final decision always stays with the researcher through visible approval and cancellation controls.
 
 ## Human + agent collaboration
 
@@ -62,7 +65,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the seven-tool WebMCP surface, shared browser-agent action layer, focus integration, deterministic validation and ranked-placement tools, reversible human-reviewed staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 14 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the ten-tool WebMCP surface, shared browser-agent action layer, canonical asset discovery, deterministic room planning, focus integration, placement validation and ranked alternatives, reversible human-reviewed move and room-blueprint staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 17 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 
@@ -80,7 +83,7 @@ The next product step is authenticated multi-user persistence with PostgreSQL, r
 
 ## Testing instructions
 
-Open LabSpace in a WebMCP-capable browser, select DEMO-01, and use the prompt in `docs/webmcp/JUDGE_GUIDE.md`. Seven tools should appear on `/` and `/digital-twin`; the agent should find exact evidence, reject the invalid target, calculate valid alternatives without mutation, and stage the chosen target for a human decision.
+Open LabSpace in a WebMCP-capable browser and use both prompts in `docs/webmcp/JUDGE_GUIDE.md`. Ten tools should appear on `/` and `/digital-twin`; the agent should calculate an empty-room blueprint without mutation, stage it for human review, find exact DEMO-01 evidence, reject an invalid target, and stage a grounded correction for a human decision.
 
 Local verification:
 

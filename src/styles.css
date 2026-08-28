@@ -171,6 +171,47 @@ body {
   font-size: 12px !important;
 }
 
+.agent-review-manifest {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.agent-review-manifest > span {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
+  padding: 7px 9px;
+  color: #2d3d39;
+  background: #f0f8f6;
+  border: 1px solid #c7e0da;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.agent-review-manifest b,
+.agent-review-manifest small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-review-manifest small {
+  grid-column: 2;
+  color: #6a7b77;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.agent-review-manifest .agent-review-manifest-more {
+  display: flex;
+  justify-content: center;
+  color: #08766a;
+  font-weight: 750;
+}
+
 .agent-review-actions {
   gap: 8px;
 }
@@ -386,6 +427,26 @@ body {
   font-size: 10px;
   font-style: normal;
   line-height: 1.35;
+}
+
+.webmcp-example-prompt {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 9px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 5%, white);
+  color: var(--ink-secondary);
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.webmcp-example-prompt b {
+  color: var(--accent-strong);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .webmcp-connection.webmcp-status-ready {

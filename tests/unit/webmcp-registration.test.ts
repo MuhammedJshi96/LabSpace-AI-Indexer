@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type {
   LabSpaceNavigationActions,
+  LabSpaceLayoutActions,
   LabSpaceReadActions,
   LabSpaceReadState,
   LabSpaceSpatialActions,
@@ -72,8 +73,19 @@ function fakeSpatialActions(): LabSpaceSpatialActions {
 function fakeStagingActions(): LabSpaceStagingActions {
   return {
     stageObjectMove: vi.fn((input) => ({ source: "stage", input }) as never),
+    stageRoomLayout: vi.fn((input) => ({ source: "stage-layout", input }) as never),
     approveStagedObjectMove: vi.fn(),
     cancelStagedObjectMove: vi.fn(),
+    approveStagedChange: vi.fn(),
+    cancelStagedChange: vi.fn(),
+  };
+}
+
+function fakeLayoutActions(): LabSpaceLayoutActions {
+  return {
+    searchLabAssets: vi.fn((input) => ({ source: "asset-search", input }) as never),
+    planRoomLayout: vi.fn((input) => ({ source: "room-plan", input }) as never),
+    getRoomPlan: vi.fn(),
   };
 }
 
@@ -93,6 +105,7 @@ describe("LabSpace WebMCP registration", () => {
       fakeNavigationActions(),
       fakeSpatialActions(),
       fakeStagingActions(),
+      fakeLayoutActions(),
     );
     const schemaDescriptions = (value: unknown): string[] => {
       if (!value || typeof value !== "object") return [];
@@ -131,11 +144,15 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(7);
+    expect(tools).toHaveLength(10);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
-        !["labspace_focus_record", "labspace_stage_object_move"].includes(tool.name),
+        ![
+          "labspace_focus_record",
+          "labspace_stage_object_move",
+          "labspace_stage_room_plan",
+        ].includes(tool.name),
       );
       expect(tool.inputSchema).toMatchObject({
         type: "object",
@@ -167,12 +184,14 @@ describe("LabSpace WebMCP registration", () => {
     const navigationActions = fakeNavigationActions();
     const spatialActions = fakeSpatialActions();
     const stagingActions = fakeStagingActions();
+    const layoutActions = fakeLayoutActions();
     const registration = registerLabSpaceTools({
       modelContext,
       actions,
       navigationActions,
       spatialActions,
       stagingActions,
+      layoutActions,
     });
     await registration.ready;
     const signal = new AbortController().signal;
@@ -183,8 +202,25 @@ describe("LabSpace WebMCP registration", () => {
     const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
     const recommend = modelContext.activeTools.get("labspace_find_valid_placements")!;
     const stage = modelContext.activeTools.get("labspace_stage_object_move")!;
+    const searchAssets = modelContext.activeTools.get("labspace_search_assets")!;
+    const planRoom = modelContext.activeTools.get("labspace_plan_room")!;
+    const stageRoom = modelContext.activeTools.get("labspace_stage_room_plan")!;
 
     expect(await context.execute({}, { signal })).toEqual({ source: "context" });
+    expect(await searchAssets.execute({ query: "bench" }, { signal })).toEqual({
+      source: "asset-search",
+      input: { query: "bench" },
+    });
+    expect(
+      await planRoom.execute({ assets: [{ assetId: "lab-bench", quantity: 1 }] }, { signal }),
+    ).toEqual({
+      source: "room-plan",
+      input: { assets: [{ assetId: "lab-bench", quantity: 1 }] },
+    });
+    expect(await stageRoom.execute({ planId: "plan-1" }, { signal })).toEqual({
+      source: "stage-layout",
+      input: { planId: "plan-1" },
+    });
     expect(await focus.execute({ recordId: "record-1" }, { signal })).toEqual({
       source: "focus",
       input: { recordId: "record-1" },
@@ -237,6 +273,11 @@ describe("LabSpace WebMCP registration", () => {
       objectId: "object-1",
       target: { xMm: 1000, yMm: 2000 },
     });
+    expect(layoutActions.searchLabAssets).toHaveBeenCalledWith({ query: "bench" });
+    expect(layoutActions.planRoomLayout).toHaveBeenCalledWith({
+      assets: [{ assetId: "lab-bench", quantity: 1 }],
+    });
+    expect(stagingActions.stageRoomLayout).toHaveBeenCalledWith({ planId: "plan-1" });
 
     const cancelled = new AbortController();
     cancelled.abort(new Error("Cancelled"));
@@ -249,12 +290,14 @@ describe("LabSpace WebMCP registration", () => {
     const navigationActions = fakeNavigationActions();
     const spatialActions = fakeSpatialActions();
     const stagingActions = fakeStagingActions();
+    const layoutActions = fakeLayoutActions();
     const registration = registerLabSpaceTools({
       modelContext,
       actions,
       navigationActions,
       spatialActions,
       stagingActions,
+      layoutActions,
     });
     await registration.ready;
     const context = modelContext.activeTools.get("labspace_get_context")!;
@@ -264,8 +307,27 @@ describe("LabSpace WebMCP registration", () => {
     const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
     const recommend = modelContext.activeTools.get("labspace_find_valid_placements")!;
     const stage = modelContext.activeTools.get("labspace_stage_object_move")!;
+    const searchAssets = modelContext.activeTools.get("labspace_search_assets")!;
+    const planRoom = modelContext.activeTools.get("labspace_plan_room")!;
+    const stageRoom = modelContext.activeTools.get("labspace_stage_room_plan")!;
 
     expect(await executeLikeChrome151(context)({})).toEqual({ source: "context" });
+    expect(await executeLikeChrome151(searchAssets)({ query: "bench" })).toEqual({
+      source: "asset-search",
+      input: { query: "bench" },
+    });
+    expect(
+      await executeLikeChrome151(planRoom)({
+        assets: [{ assetId: "lab-bench", quantity: 1 }],
+      }),
+    ).toEqual({
+      source: "room-plan",
+      input: { assets: [{ assetId: "lab-bench", quantity: 1 }] },
+    });
+    expect(await executeLikeChrome151(stageRoom)({ planId: "plan-1" })).toEqual({
+      source: "stage-layout",
+      input: { planId: "plan-1" },
+    });
     expect(await executeLikeChrome151(focus)({ recordId: "record-1" })).toEqual({
       source: "focus",
       input: { recordId: "record-1" },
@@ -319,6 +381,7 @@ describe("LabSpace WebMCP registration", () => {
       fakeNavigationActions(),
       fakeSpatialActions(),
       fakeStagingActions(),
+      fakeLayoutActions(),
     ).find((tool) => tool.name === "labspace_inspect_record")!;
 
     let captured: Error | null = null;
@@ -338,15 +401,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(7);
+    expect(modelContext.activeTools.size).toBe(10);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(7);
-    expect([...modelContext.activeTools]).toHaveLength(7);
+    expect(modelContext.activeTools.size).toBe(10);
+    expect([...modelContext.activeTools]).toHaveLength(10);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

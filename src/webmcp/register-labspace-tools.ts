@@ -7,7 +7,9 @@ import {
 import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions";
 import { labSpaceSpatialActions } from "../agent/labspace-spatial-actions";
 import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
+import { labSpaceLayoutActions } from "../agent/labspace-layout-actions";
 import type {
+  LabSpaceLayoutActions,
   LabSpaceNavigationActions,
   LabSpaceReadActions,
   LabSpaceSpatialActions,
@@ -17,8 +19,11 @@ import {
   emptyObjectSchema,
   focusRecordSchema,
   inspectRecordSchema,
+  planRoomLayoutSchema,
   recommendObjectPlacementsSchema,
   searchRecordsSchema,
+  searchAssetsSchema,
+  stageRoomLayoutSchema,
   stageObjectMoveSchema,
   validateObjectMoveSchema,
 } from "./tool-schemas";
@@ -29,8 +34,11 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
+  "labspace_plan_room",
+  "labspace_search_assets",
   "labspace_search_records",
   "labspace_stage_object_move",
+  "labspace_stage_room_plan",
   "labspace_validate_object_move",
 ] as const;
 
@@ -48,12 +56,16 @@ function controlledExecution(
     const resultRecord =
       result && typeof result === "object" ? (result as Record<string, unknown>) : {};
     const status: AgentActivityStatus =
-      toolName === "labspace_stage_object_move"
+      toolName === "labspace_stage_object_move" || toolName === "labspace_stage_room_plan"
         ? "pending"
         : toolName === "labspace_find_valid_placements"
           ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
             ? "found"
             : "blocked"
+          : toolName === "labspace_plan_room"
+            ? Number(resultRecord.plannedObjects) > 0
+              ? "found"
+              : "blocked"
           : toolName === "labspace_validate_object_move"
             ? resultRecord.valid === false
               ? "blocked"
@@ -66,6 +78,8 @@ function controlledExecution(
     const subject =
       typeof resultRecord.objectName === "string"
         ? resultRecord.objectName
+        : typeof resultRecord.roomName === "string"
+          ? resultRecord.roomName
         : typeof resultRecord.name === "string"
           ? resultRecord.name
           : typeof (input as Record<string, unknown> | null)?.query === "string"
@@ -91,6 +105,7 @@ export function createLabSpaceToolDefinitions(
   navigationActions: LabSpaceNavigationActions = labSpaceNavigationActions,
   spatialActions: LabSpaceSpatialActions = labSpaceSpatialActions,
   stagingActions: LabSpaceStagingActions = labSpaceStagingActions,
+  layoutActions: LabSpaceLayoutActions = labSpaceLayoutActions,
 ): WebMCP.ModelContextTool[] {
   return [
     {
@@ -142,6 +157,38 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_plan_room",
+      title: "Plan a LabSpace room",
+      description:
+        "Calculate a compact furniture/equipment layout from exact catalog assets using current room geometry. Returns a read-only proposal for separate staging and human approval.",
+      inputSchema: planRoomLayoutSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_plan_room",
+          "Room planning",
+          input,
+          () => layoutActions.planRoomLayout(input),
+        ),
+    },
+    {
+      name: "labspace_search_assets",
+      title: "Search LabSpace assets",
+      description:
+        "Search the canonical room-planning catalog for furniture, storage, equipment, and safety assets with exact dimensions and indexing behavior.",
+      inputSchema: searchAssetsSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_search_assets",
+          "Asset search",
+          input,
+          () => layoutActions.searchLabAssets(input),
+        ),
+    },
+    {
       name: "labspace_search_records",
       title: "Search LabSpace records",
       description:
@@ -171,6 +218,22 @@ export function createLabSpaceToolDefinitions(
           "Record inspection",
           input,
           () => actions.inspectLabRecord(input),
+        ),
+    },
+    {
+      name: "labspace_stage_room_plan",
+      title: "Stage LabSpace room plan",
+      description:
+        "Display one calculated room plan as a reversible blueprint preview. It is not saved and creates no history entry until a researcher approves it in LabSpace.",
+      inputSchema: stageRoomLayoutSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_stage_room_plan",
+          "Room-plan staging",
+          input,
+          () => stagingActions.stageRoomLayout(input),
         ),
     },
     {
@@ -212,12 +275,19 @@ export function registerLabSpaceTools({
   modelContext,
   actions = labSpaceReadActions,
   navigationActions = labSpaceNavigationActions,
+  layoutActions = labSpaceLayoutActions,
   spatialActions = labSpaceSpatialActions,
   stagingActions = labSpaceStagingActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
   const controller = new AbortController();
   const tools = modelContext
-    ? createLabSpaceToolDefinitions(actions, navigationActions, spatialActions, stagingActions)
+    ? createLabSpaceToolDefinitions(
+        actions,
+        navigationActions,
+        spatialActions,
+        stagingActions,
+        layoutActions,
+      )
     : [];
   const ready = modelContext
     ? Promise.all(

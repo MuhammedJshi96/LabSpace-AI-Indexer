@@ -2,13 +2,13 @@
 
 ## Competition boundary
 
-| Boundary | Git evidence |
-| --- | --- |
-| Verified pre-existing LabSpace application | Annotated tag `pre-webmcp-2026-08-27` |
-| Application/source baseline behavior | `b4d8471483472a42901d5fbb20b781666c0a8d3b` |
-| Baseline documentation tag target | `1d8caa07cc1dbc4b80fc015f9e325dec7973d70a` |
-| Challenge branch | `webmcp-challenge-2026` |
-| Final challenge evidence | Annotated tag `webmcp-submission-v1.1` |
+| Boundary                                   | Git evidence                               |
+| ------------------------------------------ | ------------------------------------------ |
+| Verified pre-existing LabSpace application | Annotated tag `pre-webmcp-2026-08-27`      |
+| Application/source baseline behavior       | `b4d8471483472a42901d5fbb20b781666c0a8d3b` |
+| Baseline documentation tag target          | `1d8caa07cc1dbc4b80fc015f9e325dec7973d70a` |
+| Challenge branch                           | `webmcp-challenge-2026`                    |
+| Final challenge evidence                   | Annotated tag `webmcp-submission-v1.1`     |
 
 The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states the green pre-existing release checks and the known historical E2E issue. It contains no WebMCP implementation.
 
@@ -27,14 +27,15 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - Three canonical read tools for context, search, and inspection.
 - Shared focus action used by both the visible UI and `labspace_focus_record`.
 - Deterministic hypothetical move validation reusing the existing geometry engine.
+- Read-only ranked placement search that turns a blocked preferred target into diverse valid alternatives using that same geometry engine.
 - Reversible move staging with a strict one-pending-change rule.
 - Human-only Approve/Cancel UI; no agent commit tool or persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP inspector that lists the six browser registrations and their Read/View/Simulate/Review modes.
+- A visible in-product WebMCP inspector that lists the seven browser registrations and their Read/View/Simulate/Review modes.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
-- Twelve expected-call eval cases plus deterministic contract tests.
+- Fourteen expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration and the complete human-reviewed workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
 
@@ -72,9 +73,9 @@ The challenge did not replace or relabel pre-existing product features as new ag
 
 ## Verification evidence
 
-- `npm run release:check`: lint, TypeScript, 96-asset validation, 160 unit/integration tests, and production build.
-- `tests/e2e/webmcp-actions.spec.ts`: three independent browser workflow tests.
-- `docs/webmcp/evals/cases.json`: 12 direct, compositional, invalid, and safety-oriented tool-selection cases.
+- `npm run release:check`: lint, TypeScript, 96-asset validation, 165 unit/integration tests, and production build.
+- `tests/e2e/webmcp-actions.spec.ts`: four independent browser workflow tests.
+- `docs/webmcp/evals/cases.json`: 14 direct, compositional, invalid, recommendation, and safety-oriented tool-selection cases.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 
 ## Historical test note

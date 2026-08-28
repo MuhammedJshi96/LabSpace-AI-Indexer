@@ -65,6 +65,7 @@ function fakeNavigationActions(): LabSpaceNavigationActions {
 function fakeSpatialActions(): LabSpaceSpatialActions {
   return {
     validateObjectMove: vi.fn((input) => ({ source: "validate", input }) as never),
+    recommendObjectPlacements: vi.fn((input) => ({ source: "recommend", input }) as never),
   };
 }
 
@@ -130,7 +131,7 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(6);
+    expect(tools).toHaveLength(7);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
@@ -148,6 +149,14 @@ describe("LabSpace WebMCP registration", () => {
         scope: { enum: ["project", "room"] },
         kinds: { items: { enum: ["inventory", "equipment", "location"] } },
         limit: { minimum: 1, maximum: 12 },
+      },
+    });
+    const recommendations = tools.find((tool) => tool.name === "labspace_find_valid_placements")!;
+    expect(recommendations.inputSchema).toMatchObject({
+      required: ["objectId"],
+      properties: {
+        rotationsDeg: { minItems: 1, maxItems: 4 },
+        limit: { minimum: 1, maximum: 5 },
       },
     });
   });
@@ -172,6 +181,7 @@ describe("LabSpace WebMCP registration", () => {
     const search = modelContext.activeTools.get("labspace_search_records")!;
     const inspect = modelContext.activeTools.get("labspace_inspect_record")!;
     const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
+    const recommend = modelContext.activeTools.get("labspace_find_valid_placements")!;
     const stage = modelContext.activeTools.get("labspace_stage_object_move")!;
 
     expect(await context.execute({}, { signal })).toEqual({ source: "context" });
@@ -188,10 +198,16 @@ describe("LabSpace WebMCP registration", () => {
       input: { recordId: "record-1" },
     });
     expect(
-      await stage.execute(
-        { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
+      await recommend.execute(
+        { objectId: "object-1", preferredTarget: { xMm: 1000, yMm: 2000 } },
         { signal },
       ),
+    ).toEqual({
+      source: "recommend",
+      input: { objectId: "object-1", preferredTarget: { xMm: 1000, yMm: 2000 } },
+    });
+    expect(
+      await stage.execute({ objectId: "object-1", target: { xMm: 1000, yMm: 2000 } }, { signal }),
     ).toEqual({
       source: "stage",
       input: { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
@@ -212,6 +228,10 @@ describe("LabSpace WebMCP registration", () => {
     expect(spatialActions.validateObjectMove).toHaveBeenCalledWith({
       objectId: "object-1",
       target: { xMm: 1000, yMm: 2000 },
+    });
+    expect(spatialActions.recommendObjectPlacements).toHaveBeenCalledWith({
+      objectId: "object-1",
+      preferredTarget: { xMm: 1000, yMm: 2000 },
     });
     expect(stagingActions.stageObjectMove).toHaveBeenCalledWith({
       objectId: "object-1",
@@ -242,6 +262,7 @@ describe("LabSpace WebMCP registration", () => {
     const search = modelContext.activeTools.get("labspace_search_records")!;
     const inspect = modelContext.activeTools.get("labspace_inspect_record")!;
     const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
+    const recommend = modelContext.activeTools.get("labspace_find_valid_placements")!;
     const stage = modelContext.activeTools.get("labspace_stage_object_move")!;
 
     expect(await executeLikeChrome151(context)({})).toEqual({ source: "context" });
@@ -258,6 +279,15 @@ describe("LabSpace WebMCP registration", () => {
     ).toEqual({
       source: "inspect",
       input: { recordId: "inventory:reference-standards" },
+    });
+    expect(
+      await executeLikeChrome151(recommend)({
+        objectId: "object-1",
+        preferredTarget: { xMm: 1000, yMm: 2000 },
+      }),
+    ).toEqual({
+      source: "recommend",
+      input: { objectId: "object-1", preferredTarget: { xMm: 1000, yMm: 2000 } },
     });
     expect(
       await executeLikeChrome151(stage)({
@@ -308,15 +338,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(6);
+    expect(modelContext.activeTools.size).toBe(7);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(6);
-    expect([...modelContext.activeTools]).toHaveLength(6);
+    expect(modelContext.activeTools.size).toBe(7);
+    expect([...modelContext.activeTools]).toHaveLength(7);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

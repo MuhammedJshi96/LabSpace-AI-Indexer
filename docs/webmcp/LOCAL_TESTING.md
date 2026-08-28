@@ -21,7 +21,7 @@ Open `http://127.0.0.1:3004/` or `http://127.0.0.1:3004/digital-twin`.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
 
-## Discover the six tools
+## Discover the seven tools
 
 In Chrome DevTools Console:
 
@@ -34,6 +34,7 @@ tools.map(({ name, title, annotations }) => ({ name, title, annotations }));
 Expected names (Chrome normally sorts them alphabetically):
 
 ```text
+labspace_find_valid_placements
 labspace_focus_record
 labspace_get_context
 labspace_inspect_record
@@ -42,7 +43,7 @@ labspace_stage_object_move
 labspace_validate_object_move
 ```
 
-There should be six unique registrations on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
+There should be seven unique registrations on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
 
 ## Manual tool calls
 
@@ -66,10 +67,7 @@ await document.modelContext.executeTool(
   JSON.stringify({ recordId }),
 );
 
-await document.modelContext.executeTool(
-  byName.labspace_focus_record,
-  JSON.stringify({ recordId }),
-);
+await document.modelContext.executeTool(byName.labspace_focus_record, JSON.stringify({ recordId }));
 ```
 
 For the deterministic move demo, search for `Wire-basket laboratory trolley`, inspect the returned object identity, then call:
@@ -85,6 +83,18 @@ await document.modelContext.executeTool(
     rotationDeg: -180,
   }),
 ); // blocked: boundary and collision evidence, no mutation
+
+const recommendationJson = await document.modelContext.executeTool(
+  byName.labspace_find_valid_placements,
+  JSON.stringify({
+    objectId,
+    preferredTarget: { xMm: 4317.544, yMm: 7.507 },
+    rotationsDeg: [-180, -90],
+    limit: 3,
+  }),
+);
+const recommendations = JSON.parse(recommendationJson);
+recommendations.candidates; // ranked, diverse, valid alternatives; still no mutation
 
 await document.modelContext.executeTool(
   byName.labspace_validate_object_move,
@@ -117,7 +127,7 @@ npx playwright test tests/e2e/webmcp-actions.spec.ts
 npm run test:e2e
 ```
 
-The 12 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
+The 14 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
 
 If `document.modelContext` is `undefined`, confirm the Chrome flag, browser relaunch, top-level route, and secure/same-origin context. LabSpace itself should continue to work normally.
 

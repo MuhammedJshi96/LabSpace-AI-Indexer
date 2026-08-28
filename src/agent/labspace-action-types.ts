@@ -119,10 +119,7 @@ export type FocusLabRecordOptions = {
 };
 
 export type LabSpaceNavigationActions = {
-  focusLabRecord: (
-    input: unknown,
-    options?: FocusLabRecordOptions,
-  ) => FocusLabRecordResult;
+  focusLabRecord: (input: unknown, options?: FocusLabRecordOptions) => FocusLabRecordResult;
 };
 
 export type ValidateObjectMoveInput = {
@@ -154,8 +151,35 @@ export type ValidateObjectMoveResult = {
   conflicts: PlacementConflict[];
 };
 
+export type RecommendObjectPlacementsInput = {
+  objectId: string;
+  preferredTarget?: { xMm: number; yMm: number };
+  rotationsDeg?: number[];
+  limit?: number;
+};
+
+export type RecommendedPlacement = {
+  rank: number;
+  target: { xMm: number; yMm: number; rotationDeg: number };
+  distanceFromPreferredMm: number;
+  nearestObjectGapMm: number | null;
+  rationale: string[];
+};
+
+export type RecommendObjectPlacementsResult = {
+  objectId: string;
+  objectName: string;
+  objectIndexCode: string;
+  roomCode: string;
+  preferredTarget: { xMm: number; yMm: number };
+  evaluatedTargets: number;
+  candidates: RecommendedPlacement[];
+  basis: string[];
+};
+
 export type LabSpaceSpatialActions = {
   validateObjectMove: (input: unknown) => ValidateObjectMoveResult;
+  recommendObjectPlacements: (input: unknown) => RecommendObjectPlacementsResult;
 };
 
 export type PendingAgentMoveChange = {

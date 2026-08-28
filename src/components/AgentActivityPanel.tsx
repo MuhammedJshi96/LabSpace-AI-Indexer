@@ -36,6 +36,13 @@ const WEBMCP_TOOL_CATALOG = [
     description: "Runs deterministic boundary and overlap checks without changing the room.",
   },
   {
+    name: "labspace_find_valid_placements",
+    label: "Find valid placements",
+    mode: "Simulate",
+    description:
+      "Ranks diverse geometry-valid alternatives near a preferred area without changing the room.",
+  },
+  {
     name: "labspace_stage_object_move",
     label: "Stage a move for review",
     mode: "Review",
@@ -139,12 +146,14 @@ export function AgentActivityPanel() {
       <div className={`webmcp-connection webmcp-status-${bridgeStatus}`} role="status">
         <span className="webmcp-status-dot" aria-hidden="true" />
         <strong>
-          {bridgeStatus === "ready" ? "Browser agent connected" : bridgeCopy(bridgeStatus, registeredCount)}
+          {bridgeStatus === "ready"
+            ? "Browser agent connected"
+            : bridgeCopy(bridgeStatus, registeredCount)}
         </strong>
         <small>
           {bridgeStatus === "ready"
             ? "Calls use the same room, index, validator, and history as the visible interface."
-            : bridgeMessage ?? "LabSpace remains fully usable without browser-agent access."}
+            : (bridgeMessage ?? "LabSpace remains fully usable without browser-agent access.")}
         </small>
         {bridgeStatus === "ready" && (
           <button
@@ -169,11 +178,7 @@ export function AgentActivityPanel() {
       </div>
 
       <div className="webmcp-tabs" role="tablist" aria-label="WebMCP inspector sections">
-        <button
-          role="tab"
-          aria-selected={tab === "activity"}
-          onClick={() => setTab("activity")}
-        >
+        <button role="tab" aria-selected={tab === "activity"} onClick={() => setTab("activity")}>
           Live activity <b>{events.length}</b>
         </button>
         <button role="tab" aria-selected={tab === "tools"} onClick={() => setTab("tools")}>
@@ -188,8 +193,8 @@ export function AgentActivityPanel() {
               <Robot size={24} weight="duotone" />
               <b>No WebMCP calls yet</b>
               <span>
-                Ask a compatible browser agent to search, inspect, focus, validate, or stage a move.
-                Every structured call will appear here.
+                Ask a compatible browser agent to search, inspect, focus, find a valid placement,
+                validate, or stage a move. Every structured call will appear here.
               </span>
             </div>
           ) : (
@@ -236,7 +241,9 @@ export function AgentActivityPanel() {
                 </div>
                 <strong>{tool.label}</strong>
                 <p>{tool.description}</p>
-                <small>{registered ? "Registered in this browser" : "Not available in this browser"}</small>
+                <small>
+                  {registered ? "Registered in this browser" : "Not available in this browser"}
+                </small>
               </article>
             );
           })}

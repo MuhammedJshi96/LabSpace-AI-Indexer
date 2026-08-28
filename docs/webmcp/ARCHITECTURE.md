@@ -6,7 +6,7 @@ LabSpace exposes a semantic laboratory digital twin through the browser-native W
 Browser agent
     |
     v
-document.modelContext (six small WebMCP tools)
+document.modelContext (seven small WebMCP tools)
     |
     v
 LabSpace schema/error adapter
@@ -25,14 +25,15 @@ LabSpace schema/error adapter
 
 ## Public tool surface
 
-| Tool | Role | Mutates saved project? |
-| --- | --- | --- |
-| `labspace_get_context` | Active project, laboratory, room, selection, and index counts | No |
-| `labspace_search_records` | Canonical equipment, inventory, and exact-location search | No |
-| `labspace_inspect_record` | Current evidence for one record returned by search | No |
-| `labspace_focus_record` | Reveal that record in the normal room, evidence inspector, and camera | No; presentation state only |
-| `labspace_validate_object_move` | Test a hypothetical move using current room geometry | No |
-| `labspace_stage_object_move` | Apply a reversible visual preview after successful validation | No; human approval is required before history or autosave |
+| Tool                             | Role                                                                    | Mutates saved project?                                    |
+| -------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| `labspace_get_context`           | Active project, laboratory, room, selection, and index counts           | No                                                        |
+| `labspace_search_records`        | Canonical equipment, inventory, and exact-location search               | No                                                        |
+| `labspace_inspect_record`        | Current evidence for one record returned by search                      | No                                                        |
+| `labspace_focus_record`          | Reveal that record in the normal room, evidence inspector, and camera   | No; presentation state only                               |
+| `labspace_find_valid_placements` | Search and rank diverse candidates that pass the current geometry rules | No                                                        |
+| `labspace_validate_object_move`  | Test a hypothetical move using current room geometry                    | No                                                        |
+| `labspace_stage_object_move`     | Apply a reversible visual preview after successful validation           | No; human approval is required before history or autosave |
 
 There is deliberately no agent-accessible approve, save, delete, reset, import, or project-write tool.
 
@@ -40,7 +41,7 @@ There is deliberately no agent-accessible approve, save, delete, reset, import, 
 
 - `src/agent/labspace-read-actions.ts` reads current canonical state and reuses `buildDigitalTwinIndex()` and `filterDigitalTwinIndex()`.
 - `src/agent/labspace-navigation-actions.ts` owns exact record focus. The Digital Twin UI and WebMCP call the same action.
-- `src/agent/labspace-spatial-actions.ts` builds a hypothetical candidate and delegates to the existing `validatePlacement()` geometry rules. It does not duplicate collision math.
+- `src/agent/labspace-spatial-actions.ts` builds hypothetical candidates and delegates to the existing `validatePlacement()` geometry rules for both exact validation and ranked placement search. It does not duplicate collision math.
 - `src/agent/labspace-staging-actions.ts` creates one reversible preview only after validation. It never writes directly to SQLite.
 - `src/components/AgentReviewPanel.tsx` is the human trust boundary. Approve creates one normal undoable history entry and schedules the existing autosave; Cancel restores the exact prior object.
 - `src/agent/agent-activity-store.ts` keeps a bounded, sanitized evidence trail. It records actions and outcomes, not hidden reasoning or chain-of-thought.
@@ -49,7 +50,7 @@ There is deliberately no agent-accessible approve, save, delete, reset, import, 
 
 ## Registration lifecycle
 
-The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly six tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview` and `/procedural-asset-capture` routes receive no tools.
+The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly seven tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview` and `/procedural-asset-capture` routes receive no tools.
 
 ## Grounding and safety
 
@@ -59,6 +60,7 @@ The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly 
 - Tool schemas reject unexpected fields, empty identifiers, non-finite coordinates, and excessive values.
 - Validation permits only movable furniture, storage, and equipment. Structural, safety-critical, or locked objects are rejected.
 - Placement evidence is limited to rules the existing geometry engine actually proves: room boundary, collisions, floor elevation, room height, and restrictions. LabSpace does not invent utility or safety certification.
+- Ranked alternatives remain planning recommendations: each one passes those deterministic rules, reports its distance and approximate plan gap, and still requires separate staging plus human approval before persistence.
 - An invalid move returns conflicts and causes no project, preview, history, or persistence mutation.
 - A valid staged move is visibly labeled **Preview · not saved** and blocks competing edits until the researcher approves or cancels it.
 - Approval is available only through deliberate LabSpace UI interaction. It records one ordinary history entry, preserves Undo/Redo, and uses normal autosave.
@@ -68,7 +70,7 @@ The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly 
 
 ## Testing strategy
 
-Deterministic unit/integration tests cover schemas, actions, safety invariants, lifecycle cleanup, output budgets, and 12 expected-call evaluation cases. Independent Playwright coverage injects the browser API boundary and proves the full search → focus → reject invalid move → stage → cancel/approve → persistence → undo/redo flow without depending on historical editor tests.
+Deterministic unit/integration tests cover schemas, actions, safety invariants, lifecycle cleanup, output budgets, and 14 expected-call evaluation cases. Independent Playwright coverage injects the browser API boundary and proves search → focus, blocked-target → ranked-valid-alternatives, and stage → cancel/approve → persistence → undo/redo workflows without depending on historical editor tests.
 
 Official references:
 

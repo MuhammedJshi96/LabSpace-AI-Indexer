@@ -22,14 +22,15 @@ This makes the application meaningfully better when a researcher and agent work 
 
 ## What it does
 
-LabSpace registers six focused browser-native tools:
+LabSpace registers seven focused browser-native tools:
 
 1. read active laboratory context;
 2. search equipment, inventory, and exact storage;
 3. inspect one canonical record;
 4. focus the real room, selection, evidence inspector, and 3D camera;
 5. validate a hypothetical object move without mutation;
-6. stage a valid move as a reversible visual preview.
+6. turn a blocked target into ranked, geometry-valid alternatives;
+7. stage a chosen valid move as a reversible visual preview.
 
 An agent can locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, focus the evidence, reject a trolley target that crosses the room boundary or collides with equipment, and stage a corrected target. The final decision stays with the researcher through visible **Approve move** and **Cancel** controls.
 
@@ -61,7 +62,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the six-tool WebMCP surface, shared browser-agent action layer, focus integration, deterministic validation tool, reversible human-reviewed staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 12 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the seven-tool WebMCP surface, shared browser-agent action layer, focus integration, deterministic validation and ranked-placement tools, reversible human-reviewed staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 14 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 
@@ -79,7 +80,7 @@ The next product step is authenticated multi-user persistence with PostgreSQL, r
 
 ## Testing instructions
 
-Open LabSpace in a WebMCP-capable browser, select DEMO-01, and use the prompt in `docs/webmcp/JUDGE_GUIDE.md`. Six tools should appear on `/` and `/digital-twin`; the agent should find exact evidence, reject the invalid target without mutation, and stage the valid target for a human decision.
+Open LabSpace in a WebMCP-capable browser, select DEMO-01, and use the prompt in `docs/webmcp/JUDGE_GUIDE.md`. Seven tools should appear on `/` and `/digital-twin`; the agent should find exact evidence, reject the invalid target, calculate valid alternatives without mutation, and stage the chosen target for a human decision.
 
 Local verification:
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createLabSpaceSpatialActions,
+  recommendObjectPlacements,
   validateObjectMove,
 } from "../../src/agent/labspace-spatial-actions";
 import { createSeedProject } from "../../src/domain/seed";
@@ -108,9 +109,7 @@ describe("LabSpace hypothetical move validation", () => {
     );
 
     expect(result.valid).toBe(false);
-    expect(result.conflicts).toEqual([
-      expect.objectContaining({ type: "outside-room-boundary" }),
-    ]);
+    expect(result.conflicts).toEqual([expect.objectContaining({ type: "outside-room-boundary" })]);
   });
 
   it("rejects locked and structural objects without running a mutation", () => {
@@ -206,10 +205,7 @@ describe("LabSpace hypothetical move validation", () => {
       ),
     ).toThrow("finite number");
     expect(() =>
-      validateObjectMove(
-        { objectId: first.id, target: { xMm: 100001, yMm: 1000 } },
-        () => project,
-      ),
+      validateObjectMove({ objectId: first.id, target: { xMm: 100001, yMm: 1000 } }, () => project),
     ).toThrow("between -100000 and 100000");
     expect(() =>
       validateObjectMove(
@@ -230,5 +226,105 @@ describe("LabSpace hypothetical move validation", () => {
       () => project,
     );
     expect(JSON.stringify(result).length).toBeLessThan(1500);
+  });
+});
+
+describe("LabSpace valid-placement recommendations", () => {
+  it("ranks diverse valid alternatives near a blocked preferred target without mutation", () => {
+    const { project, first, second } = spatialFixture();
+    const before = structuredClone(project);
+
+    const result = recommendObjectPlacements(
+      {
+        objectId: first.id,
+        preferredTarget: { xMm: second.position.x, yMm: second.position.y },
+        rotationsDeg: [0, 90],
+        limit: 3,
+      },
+      () => project,
+    );
+
+    expect(result).toMatchObject({
+      objectId: first.id,
+      preferredTarget: { xMm: second.position.x, yMm: second.position.y },
+    });
+    expect(result.candidates).toHaveLength(3);
+    expect(result.candidates.map((candidate) => candidate.rank)).toEqual([1, 2, 3]);
+    expect(
+      result.candidates.some(
+        (candidate) =>
+          Math.hypot(
+            candidate.target.xMm - first.position.x,
+            candidate.target.yMm - first.position.y,
+          ) < 200,
+      ),
+    ).toBe(false);
+    expect(result.candidates[0].distanceFromPreferredMm).toBeLessThanOrEqual(
+      result.candidates[1].distanceFromPreferredMm,
+    );
+    for (const candidate of result.candidates) {
+      expect(
+        validateObjectMove(
+          {
+            objectId: first.id,
+            target: { xMm: candidate.target.xMm, yMm: candidate.target.yMm },
+            rotationDeg: candidate.target.rotationDeg,
+          },
+          () => project,
+        ).valid,
+      ).toBe(true);
+    }
+    for (let index = 1; index < result.candidates.length; index += 1) {
+      const current = result.candidates[index];
+      for (const previous of result.candidates.slice(0, index)) {
+        expect(
+          Math.hypot(
+            current.target.xMm - previous.target.xMm,
+            current.target.yMm - previous.target.yMm,
+          ),
+        ).toBeGreaterThanOrEqual(750);
+      }
+    }
+    expect(project).toEqual(before);
+  });
+
+  it("rejects restricted objects and malformed recommendation inputs", () => {
+    const fixture = spatialFixture();
+    const room = fixture.project.rooms.find((entry) => entry.id === fixture.room.id)!;
+    room.scene.objects[0] = { ...room.scene.objects[0], locked: true };
+    expect(() =>
+      recommendObjectPlacements({ objectId: fixture.first.id }, () => fixture.project),
+    ).toThrow("locked");
+
+    const fresh = spatialFixture();
+    expect(() =>
+      recommendObjectPlacements(
+        { objectId: fresh.first.id, rotationsDeg: [] },
+        () => fresh.project,
+      ),
+    ).toThrow("non-empty array");
+    expect(() =>
+      recommendObjectPlacements({ objectId: fresh.first.id, limit: 6 }, () => fresh.project),
+    ).toThrow("between 1 and 5");
+    expect(() =>
+      recommendObjectPlacements(
+        { objectId: fresh.first.id, unexpected: true },
+        () => fresh.project,
+      ),
+    ).toThrow("Unexpected input field");
+  });
+
+  it("keeps ranked recommendation evidence compact", () => {
+    const { project, first } = spatialFixture();
+    const result = recommendObjectPlacements(
+      { objectId: first.id, preferredTarget: { xMm: 3000, yMm: 2500 }, limit: 5 },
+      () => project,
+    );
+
+    expect(result.candidates.length).toBeGreaterThan(0);
+    expect(JSON.stringify(result).length).toBeLessThan(5000);
+    expect(result.basis).toContain(
+      "Recommendations are read-only; staging and explicit researcher approval remain separate steps.",
+    );
   });
 });

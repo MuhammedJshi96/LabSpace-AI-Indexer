@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
 
 const WEBMCP_TOOL_NAMES = [
+  "labspace_find_valid_placements",
   "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
@@ -87,10 +88,19 @@ interface MoveValidation {
   conflicts: Array<{ type: string }>;
 }
 
+interface PlacementRecommendations {
+  objectId: string;
+  evaluatedTargets: number;
+  candidates: Array<{
+    rank: number;
+    target: { xMm: number; yMm: number; rotationDeg: number };
+    distanceFromPreferredMm: number;
+  }>;
+}
+
 async function findClearMove(page: Page, room: Room) {
   const movable = room.scene.objects.filter(
-    (object) =>
-      !object.locked && ["furniture", "storage", "equipment"].includes(object.objectType),
+    (object) => !object.locked && ["furniture", "storage", "equipment"].includes(object.objectType),
   );
   const offsets = [
     [200, 0],
@@ -108,11 +118,10 @@ async function findClearMove(page: Page, room: Room) {
         xMm: object.position.x + xOffset,
         yMm: object.position.y + yOffset,
       };
-      const result = await executeTool<MoveValidation>(
-        page,
-        "labspace_validate_object_move",
-        { objectId: object.id, target },
-      );
+      const result = await executeTool<MoveValidation>(page, "labspace_validate_object_move", {
+        objectId: object.id,
+        target,
+      });
       if (result.valid) return { object, target };
     }
   }
@@ -140,7 +149,7 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly six tools on product routes and excludes internal asset routes", async ({
+test("registers exactly seven tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin"]) {
@@ -189,6 +198,43 @@ test("searches and focuses canonical indexed evidence across rooms", async ({ pa
   expect(context.selection.storageLocationId).toBeTruthy();
 });
 
+test("finds ranked valid placements without changing the canonical room", async ({ page }) => {
+  await page.goto("/");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  const project = await readProject(page);
+  const room = eligibleDemoRoom(project);
+  const movable = room.scene.objects.find(
+    (object) => !object.locked && ["furniture", "storage", "equipment"].includes(object.objectType),
+  )!;
+  const collision = await findCollisionTarget(page, room, movable);
+  const before = currentObject(project, room.id, movable.id);
+
+  const result = await executeTool<PlacementRecommendations>(
+    page,
+    "labspace_find_valid_placements",
+    {
+      objectId: movable.id,
+      preferredTarget: collision.target,
+      limit: 3,
+    },
+  );
+
+  expect(result.objectId).toBe(movable.id);
+  expect(result.evaluatedTargets).toBeGreaterThan(0);
+  expect(result.candidates).toHaveLength(3);
+  expect(result.candidates.map((candidate) => candidate.rank)).toEqual([1, 2, 3]);
+  for (const candidate of result.candidates) {
+    const validation = await executeTool<MoveValidation>(page, "labspace_validate_object_move", {
+      objectId: movable.id,
+      target: { xMm: candidate.target.xMm, yMm: candidate.target.yMm },
+      rotationDeg: candidate.target.rotationDeg,
+    });
+    expect(validation.valid).toBe(true);
+  }
+  expect(currentObject(await readProject(page), room.id, movable.id)).toEqual(before);
+  await expect(page.getByTestId("agent-change-review")).toHaveCount(0);
+});
+
 test("validates, stages, cancels, approves, persists, and reverses one human-reviewed move", async ({
   page,
 }) => {
@@ -208,7 +254,9 @@ test("validates, stages, cancels, approves, persists, and reverses one human-rev
   );
   expect(invalidStage).toEqual(expect.objectContaining({ staged: false, persisted: false }));
   await expect(page.getByTestId("agent-change-review")).toHaveCount(0);
-  expect(currentObject(await readProject(page), room.id, object.id).position).toMatchObject(original);
+  expect(currentObject(await readProject(page), room.id, object.id).position).toMatchObject(
+    original,
+  );
 
   const staged = await executeTool<{
     staged: boolean;
@@ -227,7 +275,9 @@ test("validates, stages, cancels, approves, persists, and reverses one human-rev
   await expect(review).toContainText("Preview · not saved");
   await review.getByRole("button", { name: "Cancel" }).click();
   await expect(review).toHaveCount(0);
-  expect(currentObject(await readProject(page), room.id, object.id).position).toMatchObject(original);
+  expect(currentObject(await readProject(page), room.id, object.id).position).toMatchObject(
+    original,
+  );
 
   await executeTool(page, "labspace_stage_object_move", { objectId: object.id, target });
   await expect(review).toBeVisible();

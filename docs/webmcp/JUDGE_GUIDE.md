@@ -12,7 +12,7 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all six live tools and their safety modes.
+2. Select **Registered tools** to see all seven live tools and their safety modes.
 3. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
 4. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
@@ -20,18 +20,19 @@ This is the quickest judge-visible proof that WebMCP is active. The panel report
 
 ## Best judge prompt
 
-> In LabSpace, find the BÜCHI rotary evaporator and the exact storage location of its flask set, then focus the room on that evidence. Next, check whether moving the wire-basket laboratory trolley to X 4.318 m, Y 0.008 m at −180° is valid. If it is blocked, explain the recorded conflicts, validate X 3.887 m, Y 8.006 m instead, and stage that valid move for my review. Do not approve anything for me.
+> In LabSpace, find the BÜCHI rotary evaporator and the exact storage location of its flask set, then focus the room on that evidence. Next, check whether moving the wire-basket laboratory trolley to X 4.318 m, Y 0.008 m at −180° is valid. If it is blocked, explain the recorded conflicts, find three valid alternatives near that target, choose the best grounded candidate, and stage it for my review. Do not approve anything for me.
 
 ## Expected visible workflow
 
-1. The agent discovers six structured LabSpace tools.
+1. The agent discovers seven structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
-5. The second target validates and appears as a **Preview · not saved** move.
-6. LabSpace shows the researcher the current and proposed position with **Cancel** and **Approve move**.
-7. Choose **Cancel** to prove exact reversal, or stage again and choose **Approve move** to create one normal undoable history entry and autosave.
-8. Open the **WebMCP** inspector to see the exact tool names, bounded inputs, and structured results without hidden reasoning.
+5. LabSpace searches the actual room geometry and returns three diverse ranked alternatives, each already passing the supported deterministic rules.
+6. The chosen candidate appears as a **Preview · not saved** move.
+7. LabSpace shows the researcher the current and proposed position with **Cancel** and **Approve move**.
+8. Choose **Cancel** to prove exact reversal, or stage again and choose **Approve move** to create one normal undoable history entry and autosave.
+9. Open the **WebMCP** inspector to see the exact tool names, bounded inputs, and structured results without hidden reasoning.
 
 ## Tool sequence
 
@@ -41,7 +42,7 @@ labspace_search_records
 labspace_inspect_record
 labspace_focus_record
 labspace_validate_object_move  (blocked target)
-labspace_validate_object_move  (valid target)
+labspace_find_valid_placements (three ranked alternatives)
 labspace_stage_object_move
 human: Approve move or Cancel
 ```
@@ -55,7 +56,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly six unique `labspace_*` tools on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
+Expected: exactly seven unique `labspace_*` tools on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 

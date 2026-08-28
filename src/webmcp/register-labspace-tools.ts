@@ -17,6 +17,7 @@ import {
   emptyObjectSchema,
   focusRecordSchema,
   inspectRecordSchema,
+  recommendObjectPlacementsSchema,
   searchRecordsSchema,
   stageObjectMoveSchema,
   validateObjectMoveSchema,
@@ -24,6 +25,7 @@ import {
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
 export const LABSPACE_WEBMCP_TOOL_NAMES = [
+  "labspace_find_valid_placements",
   "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
@@ -43,19 +45,24 @@ function controlledExecution(
   try {
     const result = execute();
     signal?.throwIfAborted();
-    const resultRecord = result && typeof result === "object" ? (result as Record<string, unknown>) : {};
+    const resultRecord =
+      result && typeof result === "object" ? (result as Record<string, unknown>) : {};
     const status: AgentActivityStatus =
       toolName === "labspace_stage_object_move"
         ? "pending"
-        : toolName === "labspace_validate_object_move"
-          ? resultRecord.valid === false
-            ? "blocked"
-            : "valid"
-          : toolName === "labspace_focus_record"
-            ? "focused"
-            : toolName === "labspace_search_records"
-              ? "found"
-              : "read";
+        : toolName === "labspace_find_valid_placements"
+          ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
+            ? "found"
+            : "blocked"
+          : toolName === "labspace_validate_object_move"
+            ? resultRecord.valid === false
+              ? "blocked"
+              : "valid"
+            : toolName === "labspace_focus_record"
+              ? "focused"
+              : toolName === "labspace_search_records"
+                ? "found"
+                : "read";
     const subject =
       typeof resultRecord.objectName === "string"
         ? resultRecord.objectName
@@ -87,6 +94,22 @@ export function createLabSpaceToolDefinitions(
 ): WebMCP.ModelContextTool[] {
   return [
     {
+      name: "labspace_find_valid_placements",
+      title: "Find valid LabSpace placements",
+      description:
+        "Rank diverse geometry-valid positions near a preferred area without changing the room, preview, history, or saved project.",
+      inputSchema: recommendObjectPlacementsSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_find_valid_placements",
+          "Placement search",
+          input,
+          () => spatialActions.recommendObjectPlacements(input),
+        ),
+    },
+    {
       name: "labspace_get_context",
       title: "Get LabSpace context",
       description:
@@ -94,8 +117,12 @@ export function createLabSpaceToolDefinitions(
       inputSchema: emptyObjectSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (_input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
-        controlledExecution(executionContext?.signal, "labspace_get_context", "Context read", {}, () =>
-          actions.getLabContext(),
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_get_context",
+          "Context read",
+          {},
+          () => actions.getLabContext(),
         ),
     },
     {

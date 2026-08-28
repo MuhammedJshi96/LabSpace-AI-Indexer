@@ -12,11 +12,11 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 ## Take 2 — prove WebMCP discovery (0:18–0:32)
 
-**Screen:** Show the browser-agent request and a compact view of the six discovered `labspace_*` tools; immediately return focus to LabSpace.
+**Screen:** Show the browser-agent request and a compact view of the seven discovered `labspace_*` tools; immediately return focus to LabSpace.
 
 **Voice-over:**
 
-“Instead of scraping pixels, the agent discovers six structured LabSpace tools for context, search, inspection, focus, validation, and reversible staging.”
+“Instead of scraping pixels, the agent discovers seven structured LabSpace tools for context, search, inspection, focus, validation, ranked valid placement, and reversible staging.”
 
 ## Take 3 — search exact evidence (0:32–1:02)
 

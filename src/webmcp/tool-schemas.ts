@@ -94,3 +94,51 @@ export const validateObjectMoveSchema = {
 } as const;
 
 export const stageObjectMoveSchema = validateObjectMoveSchema;
+
+export const recommendObjectPlacementsSchema = {
+  type: "object",
+  properties: {
+    objectId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description: "Canonical movable LabSpace scene-object ID to place.",
+    },
+    preferredTarget: {
+      type: "object",
+      properties: {
+        xMm: {
+          type: "number",
+          minimum: -100000,
+          maximum: 100000,
+          description: "Preferred center X position in millimetres.",
+        },
+        yMm: {
+          type: "number",
+          minimum: -100000,
+          maximum: 100000,
+          description: "Preferred center Y position in millimetres.",
+        },
+      },
+      required: ["xMm", "yMm"],
+      additionalProperties: false,
+    },
+    rotationsDeg: {
+      type: "array",
+      items: { type: "number", minimum: -360, maximum: 360 },
+      minItems: 1,
+      maxItems: 4,
+      uniqueItems: true,
+      description: "Optional Z-axis rotations to evaluate. Defaults to current and quarter-turn.",
+    },
+    limit: {
+      type: "integer",
+      minimum: 1,
+      maximum: 5,
+      default: 3,
+      description: "Number of diverse ranked candidates to return, from 1 to 5.",
+    },
+  },
+  required: ["objectId"],
+  additionalProperties: false,
+} as const;

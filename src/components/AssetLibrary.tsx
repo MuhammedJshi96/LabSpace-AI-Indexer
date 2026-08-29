@@ -30,7 +30,7 @@ const categoryTabs: Array<{ id: CategoryScope; label: string; categories: AssetC
   { id: "favorites", label: "Favorites", categories: [] },
   { id: "furniture", label: "Furniture", categories: ["Furniture"] },
   { id: "storage", label: "Storage", categories: ["Storage"] },
-  { id: "equipment", label: "Equip.", categories: ["Laboratory equipment"] },
+  { id: "equipment", label: "Equipment", categories: ["Laboratory equipment"] },
   { id: "fixtures", label: "Fixtures", categories: ["Architecture", "Safety", "Utilities"] },
 ];
 
@@ -156,7 +156,8 @@ export function AssetLibrary({
             className={categoryScope === tab.id ? "active" : ""}
             onClick={() => setCategoryScope(tab.id)}
           >
-            {tab.id === "favorites" ? `${tab.label} ${favorites.length}` : tab.label}
+            <span>{tab.label}</span>
+            {tab.id === "favorites" && <small>{favorites.length}</small>}
           </button>
         ))}
       </div>

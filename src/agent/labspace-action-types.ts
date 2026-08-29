@@ -209,7 +209,10 @@ export type SearchLabAssetsResult = {
 export type RoomAssetRequest = {
   assetId: string;
   quantity: number;
-  placement?: "auto" | "perimeter" | "island" | "open";
+  placement?: "auto" | "perimeter" | "island" | "open" | "surface";
+  position?: { xMm: number; yMm: number };
+  rotationDeg?: number;
+  elevationMm?: number;
 };
 
 export type PlanRoomLayoutInput = {
@@ -217,8 +220,9 @@ export type PlanRoomLayoutInput = {
   assets: RoomAssetRequest[];
   aisleMm?: number;
   roomShell?: {
-    widthMm: number;
-    depthMm: number;
+    widthMm?: number;
+    depthMm?: number;
+    vertices?: Array<{ xMm: number; yMm: number }>;
     wallHeightMm?: number;
     wallThicknessMm?: number;
   };
@@ -236,10 +240,12 @@ export type PlannedWallSegment = {
 
 export type PlannedRoomShell = {
   mode: "existing" | "proposed";
+  shape: "rectangle" | "polygon" | "existing";
   widthMm: number;
   depthMm: number;
   wallHeightMm: number;
   wallThicknessMm: number;
+  vertices: Array<{ xMm: number; yMm: number }>;
   segments: PlannedWallSegment[];
 };
 
@@ -250,7 +256,7 @@ export type PlannedRoomObject = {
   position: { xMm: number; yMm: number; zMm: number };
   rotationDeg: number;
   dimensionsMm: { width: number; depth: number; height: number };
-  placement: "perimeter" | "island" | "open";
+  placement: "perimeter" | "island" | "open" | "surface";
   nearestObjectGapMm: number | null;
 };
 
@@ -287,7 +293,7 @@ export type PendingAgentLayoutChange = {
     name: string;
     indexCode: string;
     kind: "wall" | "asset";
-    position: { xMm: number; yMm: number; rotationDeg: number };
+    position: { xMm: number; yMm: number; zMm: number; rotationDeg: number };
   }>;
   beforeRoomSize: { width: number; depth: number; wallHeight: number };
   proposedRoomSize: { width: number; depth: number; wallHeight: number };
@@ -300,8 +306,6 @@ export type PendingAgentLayoutChange = {
     sceneUpdatedAt: string;
   };
 };
-
-export type PendingAgentChange = PendingAgentMoveChange | PendingAgentLayoutChange;
 
 export type StageRoomLayoutResult = {
   staged: boolean;
@@ -324,6 +328,89 @@ export type LabSpaceLayoutActions = {
   getRoomPlan: (planId: string) => PlanRoomLayoutResult;
 };
 
+export type InventoryLocationSummary = {
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  laboratoryCode: string;
+  locationId: string;
+  indexCode: string;
+  locationType: string;
+  path: string[];
+  occupiedItems: number;
+};
+
+export type ListInventoryLocationsResult = {
+  query: string | null;
+  roomCode: string | null;
+  totalMatches: number;
+  returnedMatches: number;
+  locations: InventoryLocationSummary[];
+};
+
+export type InventoryEntryRequest = {
+  roomCode: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  storageLocationId?: string;
+  owner?: string;
+  notes?: string;
+  expiryDate?: string | null;
+};
+
+export type PlannedInventoryEntry = {
+  itemId: string;
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  storageLocationId: string | null;
+  locationPath: string[];
+  locationIndexCode: string | null;
+  owner: string;
+  notes: string;
+  expiryDate: string | null;
+};
+
+export type PlanInventoryResult = {
+  planId: string;
+  entries: PlannedInventoryEntry[];
+  assignedEntries: number;
+  unassignedEntries: number;
+  warnings: string[];
+  requiresHumanApproval: true;
+};
+
+export type PendingAgentInventoryChange = {
+  stageId: string;
+  tool: "inventory";
+  planId: string;
+  entries: PlannedInventoryEntry[];
+  baselineDirtyRevision: number;
+  createdAt: string;
+  status: "pending";
+  projectUpdatedAt: string;
+};
+
+export type StageInventoryPlanResult = {
+  staged: true;
+  stageId: string;
+  planId: string;
+  entryCount: number;
+  assignedEntries: number;
+  persisted: false;
+  requiresHumanApproval: true;
+};
+
+export type LabSpaceInventoryActions = {
+  listInventoryLocations: (input: unknown) => ListInventoryLocationsResult;
+  planInventory: (input: unknown) => PlanInventoryResult;
+  getInventoryPlan: (planId: string) => PlanInventoryResult;
+};
+
 export type PendingAgentMoveChange = {
   stageId: string;
   tool: "move";
@@ -343,6 +430,11 @@ export type PendingAgentMoveChange = {
     sceneUpdatedAt: string;
   };
 };
+
+export type PendingAgentChange =
+  | PendingAgentMoveChange
+  | PendingAgentLayoutChange
+  | PendingAgentInventoryChange;
 
 export type StageObjectMoveResult = {
   staged: boolean;
@@ -367,6 +459,7 @@ export type AgentMoveReviewResult = {
 export type LabSpaceStagingActions = {
   stageObjectMove: (input: unknown) => StageObjectMoveResult;
   stageRoomLayout: (input: unknown) => StageRoomLayoutResult;
+  stageInventoryPlan: (input: unknown) => StageInventoryPlanResult;
   approveStagedObjectMove: (stageId: string) => AgentMoveReviewResult;
   cancelStagedObjectMove: (stageId: string) => AgentMoveReviewResult;
   approveStagedChange: (stageId: string) => AgentMoveReviewResult;

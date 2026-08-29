@@ -23,23 +23,24 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 
 ## What was added during the WebMCP Challenge
 
-- Browser-native registration through `document.modelContext` on the two normal LabSpace routes.
+- Browser-native registration through `document.modelContext` on the editor, Digital Twin, and Inventory routes.
 - Three canonical read tools for context, search, and inspection.
 - Shared focus action used by both the visible UI and `labspace_focus_record`.
 - Deterministic hypothetical move validation reusing the existing geometry engine.
 - Read-only ranked placement search that turns a blocked preferred target into diverse valid alternatives using that same geometry engine.
-- Canonical asset discovery plus read-only room planning that can propose a connected wall shell, derive its floor, and arrange assets against current geometry and requested aisle spacing.
+- Canonical asset discovery plus read-only room planning that can propose rectangular or 3–16 corner polygon shells, derive their floors, preserve explicit transforms, and place bench equipment at support elevation.
+- Canonical location discovery plus project-wide inventory planning with human-reviewed creation.
 - One coherent cyan room-blueprint preview in 2D/3D, with a manifest and deterministic evidence before a researcher decides.
 - Reversible move staging with a strict one-pending-change rule.
 - Reversible multi-object staging that creates scene objects and applicable equipment/storage index records as one undoable approval.
 - Human-only Approve/Cancel UI; no agent commit tool or persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP inspector that lists the ten browser registrations, their Read/View/Simulate/Review modes, and a ready-to-use room-planning prompt.
+- A visible in-product WebMCP inspector that lists the thirteen browser registrations, their Read/View/Simulate/Review modes, and a ready-to-use room-planning prompt.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
-- Seventeen expected-call eval cases plus deterministic contract tests.
+- Twenty expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration, compact-header evidence, and the complete human-reviewed workflow.
 - Isolated four-hour public judge workspaces so simultaneous reviewers cannot overwrite one another.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.

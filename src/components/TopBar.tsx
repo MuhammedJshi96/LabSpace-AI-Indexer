@@ -2,6 +2,7 @@ import {
   CaretDown,
   CheckCircle,
   CloudArrowUp,
+  ClipboardText,
   Cube,
   Database,
   GearSix,
@@ -12,9 +13,10 @@ import {
 } from "@phosphor-icons/react";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { WebMCPHeaderButton } from "./AgentActivityPanel";
+import { RoomNavigator } from "./RoomNavigator";
 
 type TopBarProps = {
-  activeArea?: "layout" | "digital-twin" | "asset-studio";
+  activeArea?: "facility" | "layout" | "digital-twin" | "inventory" | "asset-studio";
   contextLabel?: string;
 };
 
@@ -53,14 +55,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
           <span className="brand-name-compact">LabSpace AI</span>
         </button>
         <span className="top-divider" />
-        <button
-          className="room-identity"
-          onClick={() => setDialog("project")}
-          title="Switch laboratory room"
-        >
-          <b>{room.name}</b>
-          <span>{room.code}</span>
-        </button>
+        <RoomNavigator />
         <span className="editable-badge">{contextLabel}</span>
       </div>
 
@@ -82,6 +77,14 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
           <span>Spatial Index</span>
         </a>
         <a
+          className={activeArea === "inventory" ? "active" : ""}
+          href="/inventory"
+          aria-current={activeArea === "inventory" ? "page" : undefined}
+        >
+          <ClipboardText size={19} weight="duotone" />
+          <span>Inventory</span>
+        </a>
+        <a
           className={activeArea === "asset-studio" ? "active" : ""}
           href="/asset-preview"
           aria-current={activeArea === "asset-studio" ? "page" : undefined}
@@ -92,7 +95,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
       </nav>
 
       <div className="top-bar-right">
-        {activeArea !== "asset-studio" && <WebMCPHeaderButton />}
+        {activeArea !== "asset-studio" && activeArea !== "facility" && <WebMCPHeaderButton />}
         <button
           data-testid="demo-room-action"
           className={`header-demo-button${demoActive ? " active" : ""}`}

@@ -37,7 +37,7 @@ Capture at 1920×1080 with readable browser zoom, clean DEMO-01 state, and no un
 
 ## 6. Tool contract (technical evidence only)
 
-- Chrome WebMCP DevTools panel or compact console result showing exactly ten tool names.
+- Chrome WebMCP DevTools panel or compact console result showing exactly thirteen tool names.
 - Use in architecture/evidence section, not as the hero.
 - Never expose local paths, unrelated console output, or browser profile data.
 

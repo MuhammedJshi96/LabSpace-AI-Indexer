@@ -22,18 +22,21 @@ This makes the application meaningfully better when a researcher and agent work 
 
 ## What it does
 
-LabSpace registers ten focused browser-native tools:
+LabSpace registers thirteen focused browser-native tools:
 
 1. read active laboratory context;
 2. search equipment, inventory, and exact storage;
 3. inspect one canonical record;
 4. focus the real room, selection, evidence inspector, and 3D camera;
 5. discover canonical furniture, storage, equipment, and safety assets with real dimensions;
-6. build a connected wall shell on a blank canvas, derive its floor, and calculate a bounded multi-object plan against the resulting geometry;
+6. build a rectangular or 3–16 corner polygon shell, derive its floor, and calculate a transform-aware multi-object plan;
 7. stage that complete room blueprint as one reversible review;
-8. validate a hypothetical object move without mutation;
-9. turn a blocked target into ranked, geometry-valid alternatives;
-10. stage a chosen valid move as a reversible visual preview.
+8. discover canonical inventory destinations across editable rooms;
+9. validate project-wide inventory proposals against exact rooms and storage IDs;
+10. stage an inventory proposal for human approval;
+11. validate a hypothetical object move without mutation;
+12. turn a blocked target into ranked, geometry-valid alternatives;
+13. stage a chosen valid move as a reversible visual preview.
 
 An agent can start from an empty laboratory, find dimensioned assets, calculate a layout with a requested aisle, and stage the entire blueprint visibly in the synchronized 2D/3D editor. It can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target. The final decision always stays with the researcher through visible approval and cancellation controls.
 
@@ -47,7 +50,7 @@ Agent Activity records compact factual evidence—search result, focused record,
 
 `document.modelContext` registers a small adapter over shared LabSpace actions. Search reuses the same Spatial Index builder and filter as the visible application. Focus is one shared action used by the Digital Twin UI and WebMCP. Hypothetical moves reuse the existing `validatePlacement()` geometry engine. Staging changes only live editor preview state; it never writes directly to SQLite.
 
-The tool adapter owns only JSON schemas, annotations, lifecycle, bounded output, and controlled errors. It mounts on the Layout Editor and Digital Twin, cleans up under React StrictMode, and is excluded from internal asset-preview/capture routes.
+The tool adapter owns only JSON schemas, annotations, lifecycle, bounded output, and controlled errors. It mounts on the Layout Editor, Digital Twin, and Inventory Studio, cleans up under React StrictMode, and is excluded from internal asset-preview/facility/capture routes.
 
 ## Safety and grounding
 
@@ -65,7 +68,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the ten-tool WebMCP surface, shared browser-agent action layer, canonical asset discovery, deterministic wall/floor and asset planning, focus integration, placement validation and ranked alternatives, reversible human-reviewed move and room-blueprint staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 17 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the thirteen-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, deterministic polygon room and inventory planning, support-aware transforms, focus integration, placement validation and ranked alternatives, reversible human-reviewed move/room/inventory staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 20 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 
@@ -83,7 +86,7 @@ The next product step is authenticated multi-user persistence with PostgreSQL, r
 
 ## Testing instructions
 
-Open LabSpace in a WebMCP-capable browser and use both prompts in `docs/webmcp/JUDGE_GUIDE.md`. Ten tools should appear on `/` and `/digital-twin`; the agent should calculate an empty-room blueprint without mutation, stage it for human review, find exact DEMO-01 evidence, reject an invalid target, and stage a grounded correction for a human decision.
+Open LabSpace in a WebMCP-capable browser and use the prompts in `docs/webmcp/JUDGE_GUIDE.md`. Thirteen tools should appear on `/`, `/digital-twin`, and `/inventory`; the agent should calculate a room blueprint without mutation, stage it for human review, propose exact-location inventory, find DEMO-01 evidence, reject an invalid target, and stage a grounded correction for a human decision.
 
 Local verification:
 

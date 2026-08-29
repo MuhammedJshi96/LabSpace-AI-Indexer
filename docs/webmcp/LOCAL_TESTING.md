@@ -10,7 +10,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://127.0.0.1:3004/` or `http://127.0.0.1:3004/digital-twin`.
+Open `http://127.0.0.1:3004/`, `/digital-twin`, or `/inventory`.
 
 ## Enable local Chrome support
 
@@ -21,7 +21,7 @@ Open `http://127.0.0.1:3004/` or `http://127.0.0.1:3004/digital-twin`.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
 
-## Discover the ten tools
+## Discover the thirteen tools
 
 In Chrome DevTools Console:
 
@@ -38,15 +38,18 @@ labspace_find_valid_placements
 labspace_focus_record
 labspace_get_context
 labspace_inspect_record
+labspace_inventory_locations
+labspace_plan_inventory
 labspace_plan_room
 labspace_search_assets
 labspace_search_records
 labspace_stage_object_move
+labspace_stage_inventory_plan
 labspace_stage_room_plan
 labspace_validate_object_move
 ```
 
-There should be ten unique registrations on `/` and `/digital-twin`, and none on `/asset-preview` or `/procedural-asset-capture`.
+There should be thirteen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## Manual tool calls
 

@@ -3,6 +3,8 @@ import {
   CheckCircle,
   Robot,
   Ruler,
+  MapPin,
+  Package,
   Square,
   Stack,
   WarningCircle,
@@ -81,11 +83,16 @@ export function AgentReviewPanel() {
           <div className="agent-review-heading">
             <span className="agent-review-state">Preview · not saved</span>
             <span className="agent-review-valid">
-              <CheckCircle size={15} weight="fill" /> Geometry clear
+              <CheckCircle size={15} weight="fill" />
+              {pending.tool === "inventory" ? "Canonical targets" : "Geometry clear"}
             </span>
           </div>
           <h2 id="agent-review-title">
-            {pending.tool === "layout" ? "Review room shell and layout" : "Review agent move"}
+            {pending.tool === "layout"
+              ? "Review room shell and layout"
+              : pending.tool === "inventory"
+                ? "Review inventory creation"
+                : "Review agent move"}
           </h2>
           {pending.tool === "layout" ? (
             <>
@@ -116,7 +123,8 @@ export function AgentReviewPanel() {
                     <Stack size={14} weight="duotone" />
                     <b>{object.name}</b>
                     <small>
-                      X {metres(object.position.xMm)} · Y {metres(object.position.yMm)}
+                      X {metres(object.position.xMm)} · Y {metres(object.position.yMm)} · Z{" "}
+                      {metres(object.position.zMm)} · {Math.round(object.position.rotationDeg)}°
                     </small>
                   </span>
                 ))}
@@ -136,6 +144,32 @@ export function AgentReviewPanel() {
                   <small>Commit</small>
                   Shell + assets in one undoable update
                 </span>
+              </div>
+            </>
+          ) : pending.tool === "inventory" ? (
+            <>
+              <p id="agent-review-summary">
+                <b>{pending.entries.length} inventory record{pending.entries.length === 1 ? "" : "s"}</b>
+                {" · "}
+                {pending.entries.filter((entry) => entry.storageLocationId).length} assigned to exact locations
+              </p>
+              <div className="agent-review-manifest" aria-label="Proposed inventory records">
+                {pending.entries.slice(0, 6).map((entry) => (
+                  <span key={entry.itemId}>
+                    <Package size={14} weight="duotone" />
+                    <b>{entry.name}</b>
+                    <small>{entry.quantity} {entry.unit} · {entry.roomCode}</small>
+                    <small><MapPin size={12} /> {entry.locationPath.join(" → ") || "Unassigned"}</small>
+                  </span>
+                ))}
+                {pending.entries.length > 6 && (
+                  <span className="agent-review-manifest-more">+{pending.entries.length - 6} more</span>
+                )}
+              </div>
+              <div className="agent-review-route" aria-label="Inventory plan evidence">
+                <span><small>Source</small>WebMCP structured proposal</span>
+                <ArrowRight size={18} aria-hidden="true" />
+                <span><small>Commit</small>Canonical room inventory after approval</span>
               </div>
             </>
           ) : (
@@ -166,7 +200,11 @@ export function AgentReviewPanel() {
           </button>
           <button className="button-primary" onClick={approve}>
             <CheckCircle size={16} weight="bold" />
-            {pending.tool === "layout" ? "Approve room plan" : "Approve move"}
+            {pending.tool === "layout"
+              ? "Approve room plan"
+              : pending.tool === "inventory"
+                ? "Approve inventory"
+                : "Approve move"}
           </button>
         </div>
       </section>

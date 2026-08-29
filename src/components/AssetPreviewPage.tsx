@@ -9,14 +9,22 @@ import {
   PerspectiveCamera,
   useGLTF,
 } from "@react-three/drei";
-import { ArrowLeft, Cube, MagnifyingGlass } from "@phosphor-icons/react";
+import {
+  Archive,
+  ArrowCounterClockwise,
+  ArrowLeft,
+  Cube,
+  MagnifyingGlass,
+} from "@phosphor-icons/react";
 import * as THREE from "three";
 import { ASSET_CATALOG } from "../domain/assets";
 import { BUILD_WEEK_DEMO_ASSET_IDS } from "../domain/build-week-demo";
 import { resolveLayerIdForObjectType } from "../domain/layers";
 import { createBlankRoom } from "../domain/room-factory";
 import type { SceneObject } from "../domain/schema";
+import { useEditorStore } from "../store/editor-store";
 import { AssetThumbnail } from "./AssetThumbnail";
+import { Toasts } from "./Dialogs";
 import { Asset3D } from "./ThreeDView";
 
 type PreviewView = "isometric" | "front" | "back" | "left" | "right" | "top";
@@ -79,6 +87,10 @@ function PreviewCameraRig({
 }
 
 export function AssetPreviewPage() {
+  const hydrate = useEditorStore((state) => state.hydrate);
+  const archivedAssetIds = useEditorStore((state) => state.project.archivedAssetIds);
+  const archiveAsset = useEditorStore((state) => state.archiveAsset);
+  const restoreAsset = useEditorStore((state) => state.restoreAsset);
   const [query, setQuery] = useState("");
   const [previewView, setPreviewView] = useState<PreviewView>("isometric");
   const requestedAssetId = new URLSearchParams(window.location.search).get("asset");
@@ -91,6 +103,9 @@ export function AssetPreviewPage() {
       ? requestedAssetId!
       : ASSET_CATALOG[0].id,
   );
+  useEffect(() => void hydrate(), [hydrate]);
+  const archivedIdSet = useMemo(() => new Set(archivedAssetIds ?? []), [archivedAssetIds]);
+  const archivedAssets = ASSET_CATALOG.filter((entry) => archivedIdSet.has(entry.id));
   const room = useMemo(
     () =>
       createBlankRoom({
@@ -103,15 +118,18 @@ export function AssetPreviewPage() {
   const availableAssets = useMemo(
     () =>
       showFullCatalog
-        ? ASSET_CATALOG
-        : ASSET_CATALOG.filter((entry) => curatedAssetIdSet.has(entry.id)),
-    [curatedAssetIdSet, showFullCatalog],
+        ? ASSET_CATALOG.filter((entry) => !archivedIdSet.has(entry.id))
+        : ASSET_CATALOG.filter(
+            (entry) => curatedAssetIdSet.has(entry.id) && !archivedIdSet.has(entry.id),
+          ),
+    [archivedIdSet, curatedAssetIdSet, showFullCatalog],
   );
+  const fallbackAsset = availableAssets[0] ?? ASSET_CATALOG[0];
   const effectiveAssetId = availableAssets.some((entry) => entry.id === assetId)
     ? assetId
-    : availableAssets[0].id;
+    : fallbackAsset.id;
   const asset =
-    ASSET_CATALOG.find((entry) => entry.id === effectiveAssetId) ?? availableAssets[0];
+    ASSET_CATALOG.find((entry) => entry.id === effectiveAssetId) ?? fallbackAsset;
   const previewSource = asset.model3d
     ? `${asset.model3d.previewSrc}?v=${encodeURIComponent(asset.model3d.revision)}`
     : null;
@@ -172,7 +190,7 @@ export function AssetPreviewPage() {
           <h1>PBR Asset Studio & orbitable 3D preview</h1>
         </div>
         <span className="asset-preview-count">
-          {availableAssets.length} loaded · {ASSET_CATALOG.length} validated
+          {availableAssets.length} active · {archivedAssets.length} archived
         </span>
       </header>
       <section className="asset-preview-layout">
@@ -216,6 +234,21 @@ export function AssetPreviewPage() {
               </button>
             ))}
           </div>
+          <details className="asset-archive-list">
+            <summary>
+              <Archive size={16} /> Archived from library <em>{archivedAssets.length}</em>
+            </summary>
+            <p>Archived definitions remain safe in existing rooms but disappear from search and new placement.</p>
+            {archivedAssets.map((entry) => (
+              <div key={entry.id}>
+                <span><b>{entry.name}</b><small>{entry.id}</small></span>
+                <button onClick={() => restoreAsset(entry.id)}>
+                  <ArrowCounterClockwise size={14} /> Restore
+                </button>
+              </div>
+            ))}
+            {!archivedAssets.length && <p>No catalog assets are archived.</p>}
+          </details>
         </aside>
         <section className="asset-preview-stage">
           <div className="asset-preview-canvas">
@@ -352,9 +385,19 @@ export function AssetPreviewPage() {
                 </dd>
               </div>
             </dl>
+            <div className="asset-lifecycle-action">
+              <span>
+                <b>Catalog visibility</b>
+                <small>Hide an unused definition from the Asset Library and WebMCP search. Existing room instances are always protected.</small>
+              </span>
+              <button onClick={() => archiveAsset(asset.id)}>
+                <Archive size={16} /> Archive from library
+              </button>
+            </div>
           </div>
         </section>
       </section>
+      <Toasts />
     </main>
   );
 }

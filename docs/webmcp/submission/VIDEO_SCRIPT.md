@@ -12,19 +12,19 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 ## Take 2 — prove WebMCP discovery (0:16–0:29)
 
-**Screen:** Open the WebMCP Inspector, show ten registered tools and the ready-to-use planning prompt, then return to the room.
+**Screen:** Open the WebMCP Inspector, show thirteen registered tools and the ready-to-use planning prompt, then return to the room.
 
 **Voice-over:**
 
-“The agent discovers ten structured tools: catalog and record search, room planning, exact focus, deterministic validation, and reversible staging. The activity inspector makes every bounded call visible.”
+“The agent discovers thirteen structured tools: catalog and location search, polygon room and inventory planning, exact focus, deterministic validation, and reversible staging. The activity inspector makes every bounded call visible.”
 
 ## Take 3 — build from the empty room (0:29–1:12)
 
-**Screen:** Start on the empty canvas. Ask for an 8 × 6 m room with 3 m walls, a bench, and a floor centrifuge with a 900 mm aisle. Show the connected shell, automatically derived floor, read-only plan, cyan 2D/3D blueprint, review manifest, Cancel once, then restage and approve yourself.
+**Screen:** Start on the empty canvas. Ask for an L-shaped six-wall room, a bench, a bench-mounted rotary evaporator, and a 90° floor centrifuge. Show the connected shell, automatically derived floor, support elevation, cyan 2D/3D blueprint, review manifest, Cancel once, then restage and approve yourself.
 
 **Voice-over:**
 
-“Starting from an empty room, I ask for a compact preparation layout. WebMCP resolves canonical assets and dimensions, then LabSpace calculates positions against the actual walls, floor, existing objects, and requested aisle. Planning changes nothing. Only when I ask to stage it does one cyan blueprint appear. I can cancel it exactly, or approve the complete plan myself as one undoable update.”
+“Starting from an empty room, I ask for a six-wall preparation layout. WebMCP resolves canonical assets and transforms; LabSpace validates the polygon, derives its floor, rotates the centrifuge, and places the evaporator at the real bench elevation. Planning changes nothing. Only staging shows the cyan blueprint, which I can cancel exactly or approve as one undoable update.”
 
 ## Take 4 — search exact evidence (1:12–1:40)
 

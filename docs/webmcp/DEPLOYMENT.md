@@ -39,6 +39,7 @@ $URL = "https://your-service.onrender.com"
 Invoke-RestMethod "$URL/api/health"
 Invoke-WebRequest "$URL/" -UseBasicParsing
 Invoke-WebRequest "$URL/digital-twin" -UseBasicParsing
+Invoke-WebRequest "$URL/inventory" -UseBasicParsing
 ```
 
 Expected health response:
@@ -47,7 +48,7 @@ Expected health response:
 { "ok": true, "database": "session-memory", "publicDemo": true, "schemaVersion": 2 }
 ```
 
-Then use a WebMCP-capable top-level browser context to verify the ten registered tools on `/` and `/digital-twin`, and no tools on the internal preview/capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
+Then use a WebMCP-capable top-level browser context to verify the thirteen registered tools on `/`, `/digital-twin`, and `/inventory`, and no tools on internal `/asset-preview`, `/facility`, or capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
 
 Official hosting references:
 

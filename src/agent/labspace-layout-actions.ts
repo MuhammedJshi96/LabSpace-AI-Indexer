@@ -1,5 +1,10 @@
 import { ASSET_BY_ID, ASSET_CATALOG } from "../domain/assets";
-import { objectBounds, validatePlacement } from "../domain/geometry";
+import {
+  objectBounds,
+  requiresBenchSupport,
+  snapBenchObjectToAvailableSupport,
+  validatePlacement,
+} from "../domain/geometry";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import { resolveLayerIdForObjectType } from "../domain/layers";
 import type { AssetDefinition, Project, Room, SceneObject } from "../domain/schema";
@@ -17,14 +22,14 @@ import type {
 import { LabSpaceActionError } from "./labspace-read-actions";
 
 const MAX_QUERY_LENGTH = 120;
-const MAX_REQUEST_GROUPS = 8;
-const MAX_PLANNED_OBJECTS = 12;
+const MAX_REQUEST_GROUPS = 16;
+const MAX_PLANNED_OBJECTS = 24;
 const MAX_PLAN_REGISTRY = 12;
 const PLAN_GRID_MM = 250;
-const SUPPORTED_CONNECTIONS = new Set(["free", "floor"]);
+const SUPPORTED_CONNECTIONS = new Set(["free", "floor", "bench"]);
 const PLAN_CATEGORIES = new Set(["Furniture", "Storage", "Laboratory equipment", "Safety"]);
 
-type ResolvedPlacement = "perimeter" | "island" | "open";
+type ResolvedPlacement = "perimeter" | "island" | "open" | "surface";
 
 type StoredRoomPlan = {
   result: PlanRoomLayoutResult;
@@ -67,6 +72,66 @@ function integer(value: unknown, label: string, minimum: number, maximum: number
     throw new LabSpaceActionError(`${label} must be an integer from ${minimum} to ${maximum}.`);
   }
   return Number(value);
+}
+
+function finiteNumber(value: unknown, label: string, minimum: number, maximum: number) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < minimum || value > maximum) {
+    throw new LabSpaceActionError(`${label} must be a finite number from ${minimum} to ${maximum}.`);
+  }
+  return value;
+}
+
+type PlanVertex = { xMm: number; yMm: number };
+
+function polygonArea(vertices: PlanVertex[]) {
+  return Math.abs(
+    vertices.reduce((sum, point, index) => {
+      const next = vertices[(index + 1) % vertices.length];
+      return sum + point.xMm * next.yMm - next.xMm * point.yMm;
+    }, 0) / 2,
+  );
+}
+
+function orientation(a: PlanVertex, b: PlanVertex, c: PlanVertex) {
+  return (b.xMm - a.xMm) * (c.yMm - a.yMm) - (b.yMm - a.yMm) * (c.xMm - a.xMm);
+}
+
+function segmentsCross(a: PlanVertex, b: PlanVertex, c: PlanVertex, d: PlanVertex) {
+  const abC = orientation(a, b, c);
+  const abD = orientation(a, b, d);
+  const cdA = orientation(c, d, a);
+  const cdB = orientation(c, d, b);
+  return abC * abD < 0 && cdA * cdB < 0;
+}
+
+function validatePolygon(vertices: PlanVertex[]) {
+  if (vertices.length < 3 || vertices.length > 16) {
+    throw new LabSpaceActionError("roomShell.vertices must contain 3 to 16 corners.");
+  }
+  if (vertices.some((point, index) => {
+    const next = vertices[(index + 1) % vertices.length];
+    return Math.hypot(next.xMm - point.xMm, next.yMm - point.yMm) < 500;
+  })) {
+    throw new LabSpaceActionError("Every room-shell wall segment must be at least 500 mm long.");
+  }
+  for (let first = 0; first < vertices.length; first += 1) {
+    for (let second = first + 1; second < vertices.length; second += 1) {
+      const firstNext = (first + 1) % vertices.length;
+      const secondNext = (second + 1) % vertices.length;
+      if (first === second || firstNext === second || secondNext === first) continue;
+      if (segmentsCross(vertices[first], vertices[firstNext], vertices[second], vertices[secondNext])) {
+        throw new LabSpaceActionError("roomShell.vertices must describe one simple non-crossing polygon.");
+      }
+    }
+  }
+  if (polygonArea(vertices) < 9_000_000) {
+    throw new LabSpaceActionError("The closed room shell must contain at least 9 m² of floor area.");
+  }
+  const minX = Math.min(...vertices.map((point) => point.xMm));
+  const minY = Math.min(...vertices.map((point) => point.yMm));
+  if (minX !== 0 || minY !== 0) {
+    throw new LabSpaceActionError("Polygon room coordinates must start at x=0 and y=0.");
+  }
 }
 
 function normalizeAssetSearch(input: unknown): SearchLabAssetsInput {
@@ -121,18 +186,49 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
   }
   const assets: RoomAssetRequest[] = record.assets.map((entry, index) => {
     const request = plainObject(entry, `Asset request ${index + 1}`);
-    rejectUnexpected(request, ["assetId", "quantity", "placement"]);
+    rejectUnexpected(request, [
+      "assetId",
+      "quantity",
+      "placement",
+      "position",
+      "rotationDeg",
+      "elevationMm",
+    ]);
     if (typeof request.assetId !== "string" || !request.assetId.trim()) {
       throw new LabSpaceActionError(`Asset request ${index + 1} needs a catalog assetId.`);
     }
     const placement = request.placement ?? "auto";
-    if (!["auto", "perimeter", "island", "open"].includes(String(placement))) {
+    if (!["auto", "perimeter", "island", "open", "surface"].includes(String(placement))) {
       throw new LabSpaceActionError(`Asset request ${index + 1} has an unsupported placement.`);
+    }
+    let position: RoomAssetRequest["position"];
+    if (request.position !== undefined) {
+      const target = plainObject(request.position, `Asset request ${index + 1} position`);
+      rejectUnexpected(target, ["xMm", "yMm"]);
+      position = {
+        xMm: finiteNumber(target.xMm, `Asset request ${index + 1} xMm`, -20_000, 40_000),
+        yMm: finiteNumber(target.yMm, `Asset request ${index + 1} yMm`, -20_000, 40_000),
+      };
+    }
+    const quantity = integer(request.quantity, `Asset request ${index + 1} quantity`, 1, 4);
+    if (position && quantity !== 1) {
+      throw new LabSpaceActionError(
+        `Asset request ${index + 1} must use quantity 1 when an exact position is supplied.`,
+      );
     }
     return {
       assetId: request.assetId.trim(),
-      quantity: integer(request.quantity, `Asset request ${index + 1} quantity`, 1, 4),
+      quantity,
       placement: placement as RoomAssetRequest["placement"],
+      position,
+      rotationDeg:
+        request.rotationDeg === undefined
+          ? undefined
+          : finiteNumber(request.rotationDeg, `Asset request ${index + 1} rotationDeg`, -360, 360),
+      elevationMm:
+        request.elevationMm === undefined
+          ? undefined
+          : finiteNumber(request.elevationMm, `Asset request ${index + 1} elevationMm`, 0, 6000),
     };
   });
   const requested = assets.reduce((total, entry) => total + entry.quantity, 0);
@@ -145,10 +241,45 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
   let roomShell: PlanRoomLayoutInput["roomShell"];
   if (record.roomShell !== undefined) {
     const shell = plainObject(record.roomShell, "roomShell");
-    rejectUnexpected(shell, ["widthMm", "depthMm", "wallHeightMm", "wallThicknessMm"]);
+    rejectUnexpected(shell, ["widthMm", "depthMm", "vertices", "wallHeightMm", "wallThicknessMm"]);
+    let vertices: PlanVertex[] | undefined;
+    if (shell.vertices !== undefined) {
+      if (!Array.isArray(shell.vertices)) {
+        throw new LabSpaceActionError("roomShell.vertices must be an array of coordinate objects.");
+      }
+      vertices = shell.vertices.map((entry, index) => {
+        const point = plainObject(entry, `Room corner ${index + 1}`);
+        rejectUnexpected(point, ["xMm", "yMm"]);
+        return {
+          xMm: integer(point.xMm, `Room corner ${index + 1} xMm`, 0, 20_000),
+          yMm: integer(point.yMm, `Room corner ${index + 1} yMm`, 0, 20_000),
+        };
+      });
+      if (
+        vertices.length > 3 &&
+        vertices[0].xMm === vertices.at(-1)?.xMm &&
+        vertices[0].yMm === vertices.at(-1)?.yMm
+      ) {
+        vertices = vertices.slice(0, -1);
+      }
+      validatePolygon(vertices);
+    }
+    if (!vertices && (shell.widthMm === undefined || shell.depthMm === undefined)) {
+      throw new LabSpaceActionError(
+        "roomShell needs widthMm and depthMm, or a vertices array for a custom closed polygon.",
+      );
+    }
+    if (vertices && (shell.widthMm !== undefined || shell.depthMm !== undefined)) {
+      throw new LabSpaceActionError(
+        "Use either widthMm/depthMm or vertices for roomShell, not both.",
+      );
+    }
     roomShell = {
-      widthMm: integer(shell.widthMm, "Room width", 3000, 20_000),
-      depthMm: integer(shell.depthMm, "Room depth", 3000, 20_000),
+      widthMm:
+        shell.widthMm === undefined ? undefined : integer(shell.widthMm, "Room width", 3000, 20_000),
+      depthMm:
+        shell.depthMm === undefined ? undefined : integer(shell.depthMm, "Room depth", 3000, 20_000),
+      vertices,
       wallHeightMm:
         shell.wallHeightMm === undefined
           ? undefined
@@ -173,11 +304,16 @@ function assetSearchText(asset: AssetDefinition) {
     .toLowerCase();
 }
 
-export function searchLabAssets(input: unknown): SearchLabAssetsResult {
+export function searchLabAssets(
+  input: unknown,
+  readProject: () => Project = currentProject,
+): SearchLabAssetsResult {
   const normalized = normalizeAssetSearch(input);
+  const archived = new Set(readProject().archivedAssetIds ?? []);
   const terms = normalized.query.toLowerCase().split(/\s+/).filter(Boolean);
   const matches = ASSET_CATALOG.filter(
     (asset) =>
+      !archived.has(asset.id) &&
       PLAN_CATEGORIES.has(asset.category) &&
       asset.objectType !== "wall" &&
       (!normalized.categories?.length || normalized.categories.includes(asset.category)) &&
@@ -209,6 +345,7 @@ function resolvedPlacement(
   requested: RoomAssetRequest["placement"],
 ): ResolvedPlacement {
   if (requested && requested !== "auto") return requested;
+  if (asset.connection === "bench") return "surface";
   const identity = `${asset.id} ${asset.name}`.toLowerCase();
   if (identity.includes("island")) return "island";
   if (["bench", "cabinet", "shelf", "hood", "rack", "washer"].includes(asset.profile)) {
@@ -242,7 +379,7 @@ function spatiallyValid(room: Room, candidate: SceneObject) {
   return !validatePlacement(hypothetical).some(
     (warning) =>
       warning.objectIds.includes(candidate.id) &&
-      ["outside-", "below-floor-", "above-ceiling-", "overlap-"].some((prefix) =>
+      ["outside-", "below-floor-", "above-ceiling-", "overlap-", "unsupported-"].some((prefix) =>
         warning.id.startsWith(prefix),
       ),
   );
@@ -309,7 +446,7 @@ function proposalObject(
   room: Room,
   asset: AssetDefinition,
   placement: ResolvedPlacement,
-  position: { x: number; y: number; rotation: number },
+  position: { x: number; y: number; rotation: number; elevation?: number },
 ): SceneObject {
   const now = new Date().toISOString();
   return {
@@ -318,7 +455,7 @@ function proposalObject(
     name: asset.name,
     assetDefinitionId: asset.id,
     objectType: asset.objectType,
-    position: { x: position.x, y: position.y, z: 0 },
+    position: { x: position.x, y: position.y, z: position.elevation ?? 0 },
     dimensions: asset.defaultDimensions,
     rotation: { x: 0, y: 0, z: position.rotation },
     flipHorizontal: false,
@@ -406,24 +543,33 @@ function planRoomShell(room: Room, requested: PlanRoomLayoutInput["roomShell"]):
     }
     return {
       mode: "existing",
+      shape: "existing",
       widthMm: room.width,
       depthMm: room.depth,
       wallHeightMm: room.wallHeight,
       wallThicknessMm: existingWalls[0]?.wall?.thickness ?? 150,
+      vertices: existingFloor.points.map((point) => ({ xMm: point.x, yMm: point.y })),
       segments: [],
     };
   }
 
-  const widthMm = requested?.widthMm ?? room.width;
-  const depthMm = requested?.depthMm ?? room.depth;
+  const customVertices = requested?.vertices;
+  const widthMm = customVertices
+    ? Math.max(...customVertices.map((point) => point.xMm))
+    : (requested?.widthMm ?? room.width);
+  const depthMm = customVertices
+    ? Math.max(...customVertices.map((point) => point.yMm))
+    : (requested?.depthMm ?? room.depth);
   const wallHeightMm = requested?.wallHeightMm ?? room.wallHeight;
   const wallThicknessMm = requested?.wallThicknessMm ?? 150;
-  const points = [
-    { x: 0, y: 0 },
-    { x: widthMm, y: 0 },
-    { x: widthMm, y: depthMm },
-    { x: 0, y: depthMm },
-  ];
+  const points = customVertices
+    ? customVertices.map((point) => ({ x: point.xMm, y: point.yMm }))
+    : [
+        { x: 0, y: 0 },
+        { x: widthMm, y: 0 },
+        { x: widthMm, y: depthMm },
+        { x: 0, y: depthMm },
+      ];
   const segments = points.map((start, index) => {
     const end = points[(index + 1) % points.length];
     const object = wallObject(room, start, end, wallThicknessMm, wallHeightMm);
@@ -439,10 +585,12 @@ function planRoomShell(room: Room, requested: PlanRoomLayoutInput["roomShell"]):
   });
   return {
     mode: "proposed",
+    shape: customVertices ? "polygon" : "rectangle",
     widthMm,
     depthMm,
     wallHeightMm,
     wallThicknessMm,
+    vertices: points.map((point) => ({ xMm: point.x, yMm: point.y })),
     segments,
   };
 }
@@ -482,7 +630,15 @@ export function planRoomLayout(
   const proposals: PlannedRoomObject[] = [];
   const unplaced: PlanRoomLayoutResult["unplaced"] = [];
 
-  for (const request of normalized.assets) {
+  const orderedRequests = normalized.assets
+    .map((request, order) => ({ request, order }))
+    .sort((left, right) => {
+      const leftBench = ASSET_BY_ID.get(left.request.assetId)?.connection === "bench" ? 1 : 0;
+      const rightBench = ASSET_BY_ID.get(right.request.assetId)?.connection === "bench" ? 1 : 0;
+      return leftBench - rightBench || left.order - right.order;
+    });
+
+  for (const { request } of orderedRequests) {
     const asset = ASSET_BY_ID.get(request.assetId);
     if (!asset || !PLAN_CATEGORIES.has(asset.category) || asset.objectType === "wall") {
       throw new LabSpaceActionError(`Unknown or unsupported planning asset: ${request.assetId}.`);
@@ -501,11 +657,42 @@ export function planRoomLayout(
     for (let index = 0; index < request.quantity; index += 1) {
       let accepted: SceneObject | null = null;
       let acceptedGap: number | null = null;
-      for (const position of planningPositions(workingRoom, asset, placement)) {
-        const candidate = proposalObject(workingRoom, asset, placement, position);
+      const positions = request.position
+        ? [
+            {
+              x: request.position.xMm,
+              y: request.position.yMm,
+              rotation: request.rotationDeg ?? 0,
+              elevation: request.elevationMm,
+              edgeDistance: 0,
+            },
+          ]
+        : planningPositions(workingRoom, asset, placement).map((position) => ({
+            ...position,
+            rotation: request.rotationDeg ?? position.rotation,
+            elevation: request.elevationMm,
+          }));
+      for (const position of positions) {
+        let candidate = proposalObject(workingRoom, asset, placement, position);
+        if (requiresBenchSupport(candidate)) {
+          const supported = snapBenchObjectToAvailableSupport(workingRoom, candidate);
+          if (!supported) continue;
+          if (
+            request.elevationMm !== undefined &&
+            Math.abs(supported.position.z - request.elevationMm) > 20
+          ) {
+            continue;
+          }
+          candidate = supported;
+        }
         if (!spatiallyValid(workingRoom, candidate)) continue;
         const gap = nearestGap(candidate, workingRoom.scene.objects);
-        const minimumGap = placement === "perimeter" ? 80 : (normalized.aisleMm ?? 900);
+        const minimumGap =
+          asset.connection === "bench"
+            ? 0
+            : placement === "perimeter"
+              ? 80
+              : (normalized.aisleMm ?? 900);
         if (gap !== null && gap < minimumGap) continue;
         accepted = candidate;
         acceptedGap = gap;
@@ -515,7 +702,10 @@ export function planRoomLayout(
         unplaced.push({
           assetId: asset.id,
           assetName: asset.name,
-          reason: `No geometry-valid ${placement} position met the ${normalized.aisleMm} mm planning aisle.`,
+          reason:
+            asset.connection === "bench"
+              ? "No compatible bench or table surface could support this equipment at the requested transform."
+              : `No geometry-valid ${placement} position met the ${normalized.aisleMm} mm planning aisle.`,
         });
         continue;
       }
@@ -551,9 +741,11 @@ export function planRoomLayout(
     proposals,
     basis: [
       shell.mode === "proposed"
-        ? "Builds a closed rectangular wall outline first; the floor is derived from that validated loop."
+        ? `Builds a validated closed ${shell.shape} wall outline with ${shell.segments.length} connected walls; the floor is derived from that loop.`
         : "Uses the active room's existing closed wall and floor geometry without replacing it.",
       "Uses canonical catalog dimensions and the active room's current wall/floor geometry.",
+      "Preserves explicit x/y position, rotation, and elevation requests when they pass deterministic validation.",
+      "Bench-connected equipment is placed on a compatible support surface at its actual worktop elevation.",
       "Rejects boundary, overlap, elevation, and room-height conflicts with LabSpace's deterministic validator.",
       "Aisle spacing is a planning preference, not a regulatory or manufacturer-certified clearance.",
       "This proposal is read-only until separately staged and explicitly approved in LabSpace.",
@@ -590,7 +782,7 @@ export function clearStoredRoomPlans() {
 
 export function createLabSpaceLayoutActions(readProject: () => Project): LabSpaceLayoutActions {
   return {
-    searchLabAssets,
+    searchLabAssets: (input) => searchLabAssets(input, readProject),
     planRoomLayout: (input) => planRoomLayout(input, readProject),
     getRoomPlan,
   };

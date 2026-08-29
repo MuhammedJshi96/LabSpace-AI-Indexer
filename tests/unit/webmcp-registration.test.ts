@@ -74,6 +74,7 @@ function fakeStagingActions(): LabSpaceStagingActions {
   return {
     stageObjectMove: vi.fn((input) => ({ source: "stage", input }) as never),
     stageRoomLayout: vi.fn((input) => ({ source: "stage-layout", input }) as never),
+    stageInventoryPlan: vi.fn((input) => ({ source: "stage-inventory", input }) as never),
     approveStagedObjectMove: vi.fn(),
     cancelStagedObjectMove: vi.fn(),
     approveStagedChange: vi.fn(),
@@ -144,12 +145,13 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(10);
+    expect(tools).toHaveLength(13);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
         ![
           "labspace_focus_record",
+          "labspace_stage_inventory_plan",
           "labspace_stage_object_move",
           "labspace_stage_room_plan",
         ].includes(tool.name),
@@ -401,15 +403,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(10);
+    expect(modelContext.activeTools.size).toBe(13);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(10);
-    expect([...modelContext.activeTools]).toHaveLength(10);
+    expect(modelContext.activeTools.size).toBe(13);
+    expect([...modelContext.activeTools]).toHaveLength(13);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

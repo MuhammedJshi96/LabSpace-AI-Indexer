@@ -186,7 +186,7 @@ export const planRoomLayoutSchema = {
     assets: {
       type: "array",
       minItems: 0,
-      maxItems: 8,
+      maxItems: 16,
       items: {
         type: "object",
         properties: {
@@ -199,9 +199,33 @@ export const planRoomLayoutSchema = {
           quantity: { type: "integer", minimum: 1, maximum: 4 },
           placement: {
             type: "string",
-            enum: ["auto", "perimeter", "island", "open"],
+            enum: ["auto", "perimeter", "island", "open", "surface"],
             default: "auto",
-            description: "Preferred deterministic placement pattern.",
+            description:
+              "Preferred deterministic placement pattern. Surface places bench-connected equipment on a compatible worktop.",
+          },
+          position: {
+            type: "object",
+            properties: {
+              xMm: { type: "number", minimum: -20000, maximum: 40000 },
+              yMm: { type: "number", minimum: -20000, maximum: 40000 },
+            },
+            required: ["xMm", "yMm"],
+            additionalProperties: false,
+            description: "Optional exact object centre in room millimetres; requires quantity 1.",
+          },
+          rotationDeg: {
+            type: "number",
+            minimum: -360,
+            maximum: 360,
+            description: "Optional exact Z-axis rotation in degrees.",
+          },
+          elevationMm: {
+            type: "number",
+            minimum: 0,
+            maximum: 6000,
+            description:
+              "Optional raised-from-floor elevation. Bench equipment is validated against the supporting worktop elevation.",
           },
         },
         required: ["assetId", "quantity"],
@@ -232,13 +256,29 @@ export const planRoomLayoutSchema = {
           maximum: 20000,
           description: "Inside room depth in millimetres for a new rectangular wall shell.",
         },
+        vertices: {
+          type: "array",
+          minItems: 3,
+          maxItems: 17,
+          items: {
+            type: "object",
+            properties: {
+              xMm: { type: "integer", minimum: 0, maximum: 20000 },
+              yMm: { type: "integer", minimum: 0, maximum: 20000 },
+            },
+            required: ["xMm", "yMm"],
+            additionalProperties: false,
+          },
+          description:
+            "Three to sixteen ordered corners for a closed non-crossing room. LabSpace closes the final corner automatically.",
+        },
         wallHeightMm: { type: "integer", minimum: 2400, maximum: 6000, default: 3000 },
         wallThicknessMm: { type: "integer", minimum: 100, maximum: 300, default: 150 },
       },
-      required: ["widthMm", "depthMm"],
+      oneOf: [{ required: ["widthMm", "depthMm"] }, { required: ["vertices"] }],
       additionalProperties: false,
       description:
-        "Closed rectangular shell for a blank room. When omitted on a blank canvas, current room dimensions generate real walls.",
+        "Closed rectangular or arbitrary polygon shell for a blank room. Existing walls are never replaced automatically.",
     },
   },
   required: ["assets"],
@@ -253,6 +293,82 @@ export const stageRoomLayoutSchema = {
       minLength: 1,
       maxLength: 200,
       description: "Exact plan ID returned by labspace_plan_room.",
+    },
+  },
+  required: ["planId"],
+  additionalProperties: false,
+} as const;
+
+export const listInventoryLocationsSchema = {
+  type: "object",
+  properties: {
+    query: {
+      type: "string",
+      minLength: 1,
+      maxLength: 120,
+      description: "Optional storage name, code, room, or path query.",
+    },
+    roomCode: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      description: "Optional exact editable room code such as DEMO-01.",
+    },
+    limit: { type: "integer", minimum: 1, maximum: 50, default: 20 },
+  },
+  additionalProperties: false,
+} as const;
+
+export const planInventorySchema = {
+  type: "object",
+  properties: {
+    entries: {
+      type: "array",
+      minItems: 1,
+      maxItems: 20,
+      items: {
+        type: "object",
+        properties: {
+          roomCode: {
+            type: "string",
+            minLength: 1,
+            maxLength: 40,
+            description: "Exact editable room code returned by LabSpace context or location search.",
+          },
+          name: { type: "string", minLength: 1, maxLength: 120 },
+          quantity: { type: "number", minimum: 0 },
+          unit: { type: "string", minLength: 1, maxLength: 40 },
+          storageLocationId: {
+            type: "string",
+            minLength: 1,
+            maxLength: 120,
+            description: "Exact locationId returned by labspace_inventory_locations.",
+          },
+          owner: { type: "string", maxLength: 120 },
+          notes: { type: "string", maxLength: 500 },
+          expiryDate: {
+            type: ["string", "null"],
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+            description: "Optional ISO calendar date YYYY-MM-DD.",
+          },
+        },
+        required: ["roomCode", "name", "quantity", "unit"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["entries"],
+  additionalProperties: false,
+} as const;
+
+export const stageInventoryPlanSchema = {
+  type: "object",
+  properties: {
+    planId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description: "Exact plan ID returned by labspace_plan_inventory.",
     },
   },
   required: ["planId"],

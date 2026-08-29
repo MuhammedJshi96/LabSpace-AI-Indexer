@@ -21,16 +21,19 @@ import type {
   AgentMoveReviewResult,
   LabSpaceStagingActions,
   PendingAgentChange,
+  PendingAgentInventoryChange,
   PendingAgentLayoutChange,
   PendingAgentMoveChange,
   PlannedWallSegment,
   StageRoomLayoutResult,
+  StageInventoryPlanResult,
   StageObjectMoveResult,
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
 import { validateObjectMove } from "./labspace-spatial-actions";
 import { agentActivityActions } from "./agent-activity-store";
 import { getStoredRoomPlan } from "./labspace-layout-actions";
+import { getStoredInventoryPlan } from "./labspace-inventory-actions";
 
 function resolveObject(project: Project, objectId: string): { room: Room; object: SceneObject } {
   for (const room of project.rooms) {
@@ -446,6 +449,7 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
         position: {
           xMm: wall.position.x,
           yMm: wall.position.y,
+          zMm: wall.position.z,
           rotationDeg: wall.rotation.z,
         },
       });
@@ -479,6 +483,7 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
       position: {
         xMm: object.position.x,
         yMm: object.position.y,
+        zMm: object.position.z,
         rotationDeg: object.rotation.z,
       },
     });
@@ -532,6 +537,65 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     pendingAgentChange: change,
   });
   return layoutStageResult(change);
+}
+
+export function stageInventoryPlan(input: unknown): StageInventoryPlanResult {
+  const { planId } = normalizeStageRoomLayoutInput(input);
+  const stored = getStoredInventoryPlan(planId);
+  const state = useEditorStore.getState();
+  if (state.pendingAgentChange) {
+    if (state.pendingAgentChange.tool === "inventory" && state.pendingAgentChange.planId === planId) {
+      const pending = state.pendingAgentChange;
+      return {
+        staged: true,
+        stageId: pending.stageId,
+        planId,
+        entryCount: pending.entries.length,
+        assignedEntries: pending.entries.filter((entry) => entry.storageLocationId).length,
+        persisted: false,
+        requiresHumanApproval: true,
+      };
+    }
+    throw new LabSpaceActionError(
+      "Another agent change is awaiting human review. Approve or cancel it before staging inventory.",
+    );
+  }
+  if (state.saveStatus !== "saved") {
+    throw new LabSpaceActionError(
+      "LabSpace must finish saving current human edits before inventory can be staged.",
+    );
+  }
+  if (
+    state.project.updatedAt !== stored.baseline.projectUpdatedAt ||
+    Object.entries(stored.baseline.roomUpdatedAt).some(
+      ([roomId, updatedAt]) =>
+        state.project.rooms.find((room) => room.id === roomId)?.updatedAt !== updatedAt,
+    )
+  ) {
+    throw new LabSpaceActionError(
+      "The project changed after this inventory plan was calculated. Create a fresh plan before staging.",
+    );
+  }
+  const change: PendingAgentInventoryChange = {
+    stageId: crypto.randomUUID(),
+    tool: "inventory",
+    planId,
+    entries: structuredClone(stored.result.entries),
+    baselineDirtyRevision: state.dirtyRevision,
+    createdAt: new Date().toISOString(),
+    status: "pending",
+    projectUpdatedAt: state.project.updatedAt,
+  };
+  useEditorStore.setState({ pendingAgentChange: change });
+  return {
+    staged: true,
+    stageId: change.stageId,
+    planId,
+    entryCount: change.entries.length,
+    assignedEntries: change.entries.filter((entry) => entry.storageLocationId).length,
+    persisted: false,
+    requiresHumanApproval: true,
+  };
 }
 
 function requirePending(stageId: string): PendingAgentChange {
@@ -772,14 +836,121 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
   };
 }
 
+function cancelInventory(pending: PendingAgentInventoryChange): AgentMoveReviewResult {
+  useEditorStore.setState({ pendingAgentChange: null });
+  useEditorStore
+    .getState()
+    .pushToast("Agent inventory plan cancelled. No records were created.", "info");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Inventory plan rejected",
+    subject: `${pending.entries.length} proposed records`,
+    status: "rejected",
+    evidence: "Review dismissed · project data unchanged",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.planId,
+    objectIds: pending.entries.map((entry) => entry.itemId),
+    status: "cancelled",
+    persisted: false,
+  };
+}
+
+function approveInventory(pending: PendingAgentInventoryChange): AgentMoveReviewResult {
+  const state = useEditorStore.getState();
+  if (
+    state.dirtyRevision !== pending.baselineDirtyRevision ||
+    state.project.updatedAt !== pending.projectUpdatedAt
+  ) {
+    cancelInventory(pending);
+    throw new LabSpaceActionError(
+      "The staged inventory plan became stale because the project changed. It was not committed.",
+    );
+  }
+  const now = new Date().toISOString();
+  const entriesByRoom = new Map<string, PendingAgentInventoryChange["entries"]>();
+  pending.entries.forEach((entry) =>
+    entriesByRoom.set(entry.roomId, [...(entriesByRoom.get(entry.roomId) ?? []), entry]),
+  );
+  useEditorStore.setState({
+    project: {
+      ...state.project,
+      updatedAt: now,
+      rooms: state.project.rooms.map((room) => {
+        const entries = entriesByRoom.get(room.id);
+        if (!entries) return room;
+        return {
+          ...room,
+          updatedAt: now,
+          scene: {
+            ...room.scene,
+            updatedAt: now,
+            inventoryItems: [
+              ...room.scene.inventoryItems,
+              ...entries.map((entry) => ({
+                id: entry.itemId,
+                name: entry.name,
+                quantity: entry.quantity,
+                unit: entry.unit,
+                notes: entry.notes,
+                owner: entry.owner,
+                expiryDate: entry.expiryDate,
+                storageLocationId: entry.storageLocationId,
+                createdAt: now,
+                updatedAt: now,
+              })),
+            ],
+          },
+        };
+      }),
+    },
+    pendingAgentChange: null,
+    saveStatus: "unsaved",
+    dirtyRevision: state.dirtyRevision + 1,
+  });
+  useEditorStore
+    .getState()
+    .pushToast(`${pending.entries.length} approved inventory records are being saved.`, "success");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Inventory plan approved",
+    subject: `${pending.entries.length} records`,
+    status: "approved",
+    evidence: "Explicit researcher approval",
+  });
+  agentActivityActions.record({
+    actor: "LabSpace",
+    action: "Inventory committed",
+    subject: `${entriesByRoom.size} room${entriesByRoom.size === 1 ? "" : "s"}`,
+    status: "committed",
+    evidence: "Canonical records created in selected room locations",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.planId,
+    objectIds: pending.entries.map((entry) => entry.itemId),
+    status: "approved",
+    persisted: false,
+  };
+}
+
 export function cancelStagedChange(stageId: string): AgentMoveReviewResult {
   const pending = requirePending(stageId);
-  return pending.tool === "layout" ? cancelLayout(pending) : cancelMove(pending);
+  return pending.tool === "layout"
+    ? cancelLayout(pending)
+    : pending.tool === "inventory"
+      ? cancelInventory(pending)
+      : cancelMove(pending);
 }
 
 export function approveStagedChange(stageId: string): AgentMoveReviewResult {
   const pending = requirePending(stageId);
-  return pending.tool === "layout" ? approveLayout(pending) : approveMove(pending);
+  return pending.tool === "layout"
+    ? approveLayout(pending)
+    : pending.tool === "inventory"
+      ? approveInventory(pending)
+      : approveMove(pending);
 }
 
 export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {
@@ -797,6 +968,7 @@ export function approveStagedObjectMove(stageId: string): AgentMoveReviewResult 
 export const labSpaceStagingActions: LabSpaceStagingActions = {
   stageObjectMove,
   stageRoomLayout,
+  stageInventoryPlan,
   approveStagedObjectMove,
   cancelStagedObjectMove,
   approveStagedChange,

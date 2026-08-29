@@ -6,14 +6,15 @@ LabSpace exposes a semantic laboratory digital twin through the browser-native W
 Browser agent
     |
     v
-document.modelContext (ten small WebMCP tools)
+document.modelContext (thirteen bounded WebMCP tools)
     |
     v
 LabSpace schema/error adapter
     |
     +--> canonical read actions --> Spatial Index --> project state
     +--> shared focus action -----> room/selection/camera state
-    +--> catalog + wall/floor planner --> geometry-checked room proposal
+    +--> catalog + polygon planner --> geometry-checked room proposal
+    +--> inventory planner --------> canonical room/location proposal
     +--> placement action --------> deterministic geometry validator
     +--> staging action ----------> reversible move / blueprint preview
                                       |
@@ -34,9 +35,12 @@ LabSpace schema/error adapter
 | `labspace_focus_record`          | Reveal that record in the normal room, evidence inspector, and camera    | No; presentation state only                               |
 | `labspace_search_assets`         | Find canonical planning assets, dimensions, and connection behavior      | No                                                        |
 | `labspace_plan_room`             | Propose a closed shell and assets, or plan within existing room geometry | No                                                        |
+| `labspace_inventory_locations`   | Find exact editable-room storage destinations                           | No                                                        |
+| `labspace_plan_inventory`        | Validate proposed inventory records and canonical assignments           | No                                                        |
 | `labspace_find_valid_placements` | Search and rank diverse candidates that pass the current geometry rules  | No                                                        |
 | `labspace_validate_object_move`  | Test a hypothetical move using current room geometry                     | No                                                        |
 | `labspace_stage_object_move`     | Apply a reversible visual preview after successful validation            | No; human approval is required before history or autosave |
+| `labspace_stage_inventory_plan`  | Present proposed inventory records for researcher review                 | No; human approval is required before record creation     |
 | `labspace_stage_room_plan`       | Apply one reversible multi-object room blueprint for review              | No; human approval is required before history or autosave |
 
 There is deliberately no agent-accessible approve, save, delete, reset, import, or project-write tool.
@@ -47,7 +51,8 @@ There is deliberately no agent-accessible approve, save, delete, reset, import, 
 - `src/agent/labspace-navigation-actions.ts` owns exact record focus. The Digital Twin UI and WebMCP call the same action.
 - `src/agent/labspace-spatial-actions.ts` builds hypothetical candidates and delegates to the existing `validatePlacement()` geometry rules for both exact validation and ranked placement search. It does not duplicate collision math.
 - `src/agent/labspace-layout-actions.ts` searches the canonical asset catalog and calculates bounded multi-object plans from canonical dimensions, the active floor/wall geometry, and the existing placement validator. Plans are read-only.
-- `src/agent/labspace-staging-actions.ts` creates one reversible move or complete room-blueprint preview only after validation. It never writes directly to SQLite.
+- `src/agent/labspace-inventory-actions.ts` lists canonical locations and validates bounded project-wide inventory proposals without mutating project state.
+- `src/agent/labspace-staging-actions.ts` creates one reversible move, complete room blueprint, or inventory review only after validation. It never writes directly to SQLite.
 - `src/components/AgentReviewPanel.tsx` is the human trust boundary. Approve creates one normal undoable history entry and schedules the existing autosave; Cancel restores the exact prior object or scene.
 - `src/agent/agent-activity-store.ts` keeps a bounded, sanitized evidence trail. It records actions and outcomes, not hidden reasoning or chain-of-thought.
 - `src/webmcp/register-labspace-tools.ts` owns schemas, annotations, controlled errors, and registration lifecycle only.
@@ -55,7 +60,7 @@ There is deliberately no agent-accessible approve, save, delete, reset, import, 
 
 ## Registration lifecycle
 
-The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly ten tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview` and `/procedural-asset-capture` routes receive no tools.
+The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Each mount registers exactly thirteen tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools.
 
 ## Grounding and safety
 
@@ -66,8 +71,10 @@ The bridge mounts only on `/` and `/digital-twin`. Each mount registers exactly 
 - Validation permits only movable furniture, storage, and equipment. Structural, safety-critical, or locked objects are rejected.
 - Placement evidence is limited to rules the existing geometry engine actually proves: room boundary, collisions, floor elevation, room height, and restrictions. LabSpace does not invent utility or safety certification.
 - Ranked alternatives remain planning recommendations: each one passes those deterministic rules, reports its distance and approximate plan gap, and still requires separate staging plus human approval before persistence.
-- Room plans are capped at 12 objects, use only supported floor/free-connected planning assets, and report unplaced requests rather than inventing wall hosts or certified safety clearances.
-- On a blank canvas, room planning creates a closed chain of canonical wall objects first; LabSpace derives the 2D/3D floor from that same loop and validates assets inside it. Existing walls are preserved and cannot be replaced by an agent plan.
+- Room plans are capped at 24 objects and 16 connected wall corners. They support free, floor, and bench-connected assets and report unplaced requests rather than inventing wall hosts or certified safety clearances.
+- On a blank canvas, room planning creates a validated rectangular or simple polygon chain of canonical wall objects first; LabSpace derives the 2D/3D floor from that same loop and validates assets inside it. Existing walls are preserved and cannot be replaced by an agent plan.
+- Exact position, rotation, and elevation requests are preserved only when deterministic geometry passes. Bench equipment resolves to a compatible worktop and its actual support elevation.
+- Inventory plans resolve exact editable rooms and canonical storage IDs, remain read-only until staged, and create records only after explicit researcher approval.
 - Staged room plans create shell walls, assets, updated room dimensions, and applicable storage/equipment records together. Approval commits the complete change as one undoable history entry.
 - An invalid move returns conflicts and causes no project, preview, history, or persistence mutation.
 - A valid staged move is visibly labeled **Preview · not saved** and blocks competing edits until the researcher approves or cancels it.

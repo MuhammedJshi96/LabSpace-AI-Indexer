@@ -8,8 +8,10 @@ import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions"
 import { labSpaceSpatialActions } from "../agent/labspace-spatial-actions";
 import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
 import { labSpaceLayoutActions } from "../agent/labspace-layout-actions";
+import { labSpaceInventoryActions } from "../agent/labspace-inventory-actions";
 import type {
   LabSpaceLayoutActions,
+  LabSpaceInventoryActions,
   LabSpaceNavigationActions,
   LabSpaceReadActions,
   LabSpaceSpatialActions,
@@ -19,11 +21,14 @@ import {
   emptyObjectSchema,
   focusRecordSchema,
   inspectRecordSchema,
+  listInventoryLocationsSchema,
+  planInventorySchema,
   planRoomLayoutSchema,
   recommendObjectPlacementsSchema,
   searchRecordsSchema,
   searchAssetsSchema,
   stageRoomLayoutSchema,
+  stageInventoryPlanSchema,
   stageObjectMoveSchema,
   validateObjectMoveSchema,
 } from "./tool-schemas";
@@ -34,9 +39,12 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
+  "labspace_inventory_locations",
+  "labspace_plan_inventory",
   "labspace_plan_room",
   "labspace_search_assets",
   "labspace_search_records",
+  "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
   "labspace_stage_room_plan",
   "labspace_validate_object_move",
@@ -56,7 +64,9 @@ function controlledExecution(
     const resultRecord =
       result && typeof result === "object" ? (result as Record<string, unknown>) : {};
     const status: AgentActivityStatus =
-      toolName === "labspace_stage_object_move" || toolName === "labspace_stage_room_plan"
+      toolName === "labspace_stage_object_move" ||
+      toolName === "labspace_stage_room_plan" ||
+      toolName === "labspace_stage_inventory_plan"
         ? "pending"
         : toolName === "labspace_find_valid_placements"
           ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
@@ -106,6 +116,7 @@ export function createLabSpaceToolDefinitions(
   spatialActions: LabSpaceSpatialActions = labSpaceSpatialActions,
   stagingActions: LabSpaceStagingActions = labSpaceStagingActions,
   layoutActions: LabSpaceLayoutActions = labSpaceLayoutActions,
+  inventoryActions: LabSpaceInventoryActions = labSpaceInventoryActions,
 ): WebMCP.ModelContextTool[] {
   return [
     {
@@ -157,10 +168,42 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_inventory_locations",
+      title: "List LabSpace inventory locations",
+      description:
+        "List canonical storage destinations across editable LabSpace rooms before proposing inventory records. Hidden factory-template rooms are excluded.",
+      inputSchema: listInventoryLocationsSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_inventory_locations",
+          "Inventory location search",
+          input,
+          () => inventoryActions.listInventoryLocations(input),
+        ),
+    },
+    {
+      name: "labspace_plan_inventory",
+      title: "Plan LabSpace inventory records",
+      description:
+        "Validate up to twenty inventory records against exact editable rooms and canonical storage locations. Returns a read-only proposal for human review.",
+      inputSchema: planInventorySchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_plan_inventory",
+          "Inventory planning",
+          input,
+          () => inventoryActions.planInventory(input),
+        ),
+    },
+    {
       name: "labspace_plan_room",
       title: "Plan a LabSpace room",
       description:
-        "Calculate a closed wall-and-floor room shell when the canvas is blank, then arrange exact catalog assets inside it. Existing walls are preserved. Returns a read-only proposal for separate staging and human approval.",
+        "Calculate a validated rectangular or multi-wall polygon room shell, then arrange exact catalog assets with explicit rotations and elevations. Bench equipment snaps to compatible worktops. Existing walls are preserved. Returns a read-only proposal for separate staging and human approval.",
       inputSchema: planRoomLayoutSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -237,6 +280,22 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_stage_inventory_plan",
+      title: "Stage LabSpace inventory plan",
+      description:
+        "Present a validated inventory plan for explicit researcher approval. No inventory record is created until approval in LabSpace.",
+      inputSchema: stageInventoryPlanSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_stage_inventory_plan",
+          "Inventory-plan staging",
+          input,
+          () => stagingActions.stageInventoryPlan(input),
+        ),
+    },
+    {
       name: "labspace_stage_object_move",
       title: "Stage LabSpace object move",
       description:
@@ -276,6 +335,7 @@ export function registerLabSpaceTools({
   actions = labSpaceReadActions,
   navigationActions = labSpaceNavigationActions,
   layoutActions = labSpaceLayoutActions,
+  inventoryActions = labSpaceInventoryActions,
   spatialActions = labSpaceSpatialActions,
   stagingActions = labSpaceStagingActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
@@ -287,6 +347,7 @@ export function registerLabSpaceTools({
         spatialActions,
         stagingActions,
         layoutActions,
+        inventoryActions,
       )
     : [];
   const ready = modelContext

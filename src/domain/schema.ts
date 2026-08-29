@@ -209,6 +209,14 @@ export const RoomSchema = z.object({
   code: z.string().min(1),
   roomKind: z.enum(["standard", "demo-template", "demo"]).optional(),
   demoSavedAt: IsoDateSchema.nullable().optional(),
+  facilityPlacement: z
+    .object({
+      floor: z.number().int().min(0).max(50).default(0),
+      x: z.number().finite().min(-100_000).max(100_000).default(0),
+      y: z.number().finite().min(-100_000).max(100_000).default(0),
+      rotation: z.number().finite().min(-360).max(360).default(0),
+    })
+    .optional(),
   viewState: z
     .object({
       cameraPreset: z
@@ -263,6 +271,8 @@ export const ProjectSchema = z.object({
   laboratories: z.array(LaboratorySchema),
   rooms: z.array(RoomSchema),
   activeRoomId: IdSchema,
+  featuredDemoRoomId: IdSchema.nullable().optional(),
+  archivedAssetIds: z.array(z.string().min(2)).optional(),
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
 });

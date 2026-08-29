@@ -1,6 +1,7 @@
 import type {
   LabSpaceNavigationActions,
   LabSpaceLayoutActions,
+  LabSpaceInventoryActions,
   LabSpaceReadActions,
   LabSpaceSpatialActions,
   LabSpaceStagingActions,
@@ -18,6 +19,7 @@ export type RegisterLabSpaceToolsOptions = {
   actions?: LabSpaceReadActions;
   navigationActions?: LabSpaceNavigationActions;
   layoutActions?: LabSpaceLayoutActions;
+  inventoryActions?: LabSpaceInventoryActions;
   spatialActions?: LabSpaceSpatialActions;
   stagingActions?: LabSpaceStagingActions;
 };

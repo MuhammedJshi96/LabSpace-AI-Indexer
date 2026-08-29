@@ -67,7 +67,8 @@ export type AppDialog =
   | "reports"
   | "labels"
   | "reindex"
-  | "inventory";
+  | "inventory"
+  | "demos";
 
 export type AlignmentGuide = { axis: "x" | "y"; value: number; kind: string };
 
@@ -195,6 +196,17 @@ type EditorState = {
   addInventoryItem: (locationId: string | null, name?: string) => void;
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
   removeInventoryItem: (id: string) => void;
+  addInventoryItemToRoom: (
+    roomId: string,
+    locationId: string | null,
+    item?: Partial<InventoryItem>,
+  ) => string | null;
+  updateInventoryItemInRoom: (
+    roomId: string,
+    id: string,
+    patch: Partial<InventoryItem>,
+  ) => void;
+  removeInventoryItemFromRoom: (roomId: string, id: string) => void;
   updateEquipmentRecord: (id: string, patch: Partial<EquipmentRecord>) => void;
   applyReindex: (changes: ReindexChange[]) => void;
   saveNow: () => Promise<void>;
@@ -209,10 +221,18 @@ type EditorState = {
   createRoom: (input?: NewRoomInput) => string | null;
   deleteRoom: (roomId: string) => boolean;
   duplicateRoom: () => void;
+  duplicateRoomAsDemo: (roomId?: string) => string | null;
   createDemoFromTemplate: () => string | null;
   openLatestDemoRoom: () => string | null;
+  setFeaturedDemoRoom: (roomId: string) => boolean;
   saveAsDemoRoom: () => Promise<void>;
   resetActiveDemoFromTemplate: () => boolean;
+  updateRoomFacilityPlacement: (
+    roomId: string,
+    patch: Partial<NonNullable<Room["facilityPlacement"]>>,
+  ) => void;
+  archiveAsset: (id: string) => boolean;
+  restoreAsset: (id: string) => void;
   setAssetSearch: (value: string) => void;
   toggleFavorite: (id: string) => void;
   toggleCuratedAsset: (id: string) => void;
@@ -250,6 +270,21 @@ function writeStoredBoolean(key: string, value: boolean) {
 
 function activeRoom(project: Project): Room {
   return project.rooms.find((room) => room.id === project.activeRoomId) ?? project.rooms[0];
+}
+
+function suggestedFacilityPlacement(project: Project, laboratoryId: string) {
+  const rooms = project.rooms.filter(
+    (room) => room.laboratoryId === laboratoryId && room.roomKind !== "demo-template",
+  );
+  const index = rooms.length;
+  const column = index % 3;
+  const row = Math.floor(index / 3);
+  return {
+    floor: 0,
+    x: column * 13_000,
+    y: row * 11_000,
+    rotation: 0,
+  };
 }
 
 const DEFAULT_ROOM_VIEW_STATE: RoomViewState = {
@@ -1537,6 +1572,92 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     })),
+  addInventoryItemToRoom: (roomId, locationId, item = {}) => {
+    const state = get();
+    const room = state.project.rooms.find(
+      (entry) => entry.id === roomId && entry.roomKind !== "demo-template",
+    );
+    if (!room) {
+      state.pushToast("Choose an editable room for this inventory item.", "error");
+      return null;
+    }
+    if (
+      locationId &&
+      !room.scene.storageLocations.some((location) => location.id === locationId)
+    ) {
+      state.pushToast("That storage location does not belong to the selected room.", "error");
+      return null;
+    }
+    const now = new Date().toISOString();
+    const id = crypto.randomUUID();
+    const inventoryItem: InventoryItem = {
+      id,
+      name: item.name?.trim() || "New inventory item",
+      imageSrc: item.imageSrc,
+      quantity: Number.isFinite(item.quantity) ? Number(item.quantity) : 1,
+      unit: item.unit?.trim() || "each",
+      notes: item.notes ?? "",
+      owner: item.owner ?? "",
+      expiryDate: item.expiryDate ?? null,
+      storageLocationId: locationId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    set({
+      project: replaceRoom(state.project, {
+        ...room,
+        updatedAt: now,
+        scene: {
+          ...room.scene,
+          inventoryItems: [...room.scene.inventoryItems, inventoryItem],
+          updatedAt: now,
+        },
+      }),
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    return id;
+  },
+  updateInventoryItemInRoom: (roomId, id, patch) =>
+    set((state) => {
+      const room = state.project.rooms.find((entry) => entry.id === roomId);
+      if (!room) return state;
+      const now = new Date().toISOString();
+      return {
+        project: replaceRoom(state.project, {
+          ...room,
+          updatedAt: now,
+          scene: {
+            ...room.scene,
+            inventoryItems: room.scene.inventoryItems.map((item) =>
+              item.id === id ? { ...item, ...patch, updatedAt: now } : item,
+            ),
+            updatedAt: now,
+          },
+        }),
+        saveStatus: "unsaved" as const,
+        dirtyRevision: state.dirtyRevision + 1,
+      };
+    }),
+  removeInventoryItemFromRoom: (roomId, id) =>
+    set((state) => {
+      const room = state.project.rooms.find((entry) => entry.id === roomId);
+      if (!room) return state;
+      const now = new Date().toISOString();
+      return {
+        project: replaceRoom(state.project, {
+          ...room,
+          updatedAt: now,
+          scene: {
+            ...room.scene,
+            inventoryItems: room.scene.inventoryItems.filter((item) => item.id !== id),
+            updatedAt: now,
+          },
+        }),
+        saveStatus: "unsaved" as const,
+        dirtyRevision: state.dirtyRevision + 1,
+      };
+    }),
   updateEquipmentRecord: (id, patch) =>
     set((state) => ({
       project: updateSceneInProject(state.project, (scene) => ({
@@ -1778,6 +1899,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       name: input.roomName?.trim() || "Room 1",
       code: input.roomCode?.trim() || "R001",
     });
+    room.facilityPlacement = { floor: 0, x: 0, y: 0, rotation: 0 };
     laboratory.roomIds = [room.id];
     const project = {
       ...state.project,
@@ -1826,6 +1948,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       name: input.name?.trim() || `Room ${laboratoryRooms.length + 1}`,
       code,
     });
+    nextRoom.facilityPlacement = suggestedFacilityPlacement(state.project, laboratory.id);
     const project = {
       ...state.project,
       rooms: [...state.project.rooms, nextRoom],
@@ -1866,6 +1989,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ...state.project,
       rooms: nextRooms,
       activeRoomId: fallbackRoom.id,
+      featuredDemoRoomId:
+        state.project.featuredDemoRoomId === roomId
+          ? nextRooms.find((entry) => entry.roomKind === "demo")?.id ?? null
+          : state.project.featuredDemoRoomId,
       updatedAt: now,
       laboratories: state.project.laboratories.map((laboratory) =>
         laboratory.roomIds.includes(roomId)
@@ -1889,6 +2016,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => {
       const room = activeRoom(state.project);
       const clone = cloneRoomFromScene(room, room.scene, `${room.name} copy`, `${room.code}-COPY`);
+      clone.facilityPlacement = suggestedFacilityPlacement(state.project, room.laboratoryId);
       return {
         project: {
           ...state.project,
@@ -1906,6 +2034,48 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         dirtyRevision: state.dirtyRevision + 1,
       };
     }),
+  duplicateRoomAsDemo: (roomId) => {
+    const state = get();
+    const source = state.project.rooms.find(
+      (room) => room.id === (roomId ?? state.project.activeRoomId),
+    );
+    if (!source || source.roomKind === "demo-template") {
+      state.pushToast("Choose an editable room to create a demo copy.", "error");
+      return null;
+    }
+    const demos = state.project.rooms.filter((room) => room.roomKind === "demo");
+    const name = `${source.name} demo ${demos.length + 1}`;
+    const code = nextAvailableCode(
+      state.project.rooms.map((room) => room.code),
+      "DEMO-",
+      2,
+    );
+    const now = new Date().toISOString();
+    const demo = cloneRoomFromScene(source, source.scene, name, code);
+    demo.roomKind = "demo";
+    demo.demoSavedAt = now;
+    demo.facilityPlacement = suggestedFacilityPlacement(state.project, source.laboratoryId);
+    const project = {
+      ...state.project,
+      rooms: [...state.project.rooms, demo],
+      activeRoomId: demo.id,
+      featuredDemoRoomId: state.project.featuredDemoRoomId ?? demo.id,
+      updatedAt: now,
+      laboratories: state.project.laboratories.map((laboratory) =>
+        laboratory.id === source.laboratoryId
+          ? { ...laboratory, roomIds: [...laboratory.roomIds, demo.id] }
+          : laboratory,
+      ),
+    };
+    set({
+      ...roomSwitchState(project),
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+      dialog: null,
+    });
+    state.pushToast(`${demo.name} created without changing ${source.name}.`, "success");
+    return demo.id;
+  },
   createDemoFromTemplate: () => {
     const state = get();
     const template = factoryDemoTemplate();
@@ -1932,11 +2102,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       demoSavedAt: now,
       environmentProfileId: null,
       viewState: { ...DEFAULT_ROOM_VIEW_STATE },
+      facilityPlacement: suggestedFacilityPlacement(state.project, currentRoom.laboratoryId),
     };
     const project = {
       ...state.project,
       rooms: [...state.project.rooms, demoRoom],
       activeRoomId: demoRoom.id,
+      featuredDemoRoomId: state.project.featuredDemoRoomId ?? demoRoom.id,
       updatedAt: now,
       laboratories: state.project.laboratories.map((laboratory) =>
         laboratory.id === currentRoom.laboratoryId
@@ -1955,11 +2127,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   openLatestDemoRoom: () => {
     const state = get();
-    const latest = state.project.rooms
-      .filter((room) => room.roomKind === "demo")
-      .sort((a, b) =>
-        (b.demoSavedAt ?? b.updatedAt).localeCompare(a.demoSavedAt ?? a.updatedAt),
-      )[0];
+    const latest =
+      state.project.rooms.find(
+        (room) => room.id === state.project.featuredDemoRoomId && room.roomKind === "demo",
+      ) ??
+      state.project.rooms
+        .filter((room) => room.roomKind === "demo")
+        .sort((a, b) =>
+          (b.demoSavedAt ?? b.updatedAt).localeCompare(a.demoSavedAt ?? a.updatedAt),
+        )[0];
     if (!latest) {
       state.pushToast("No saved Demo Room yet. Create one from the factory template.", "info");
       set({ dialog: "project" });
@@ -1979,6 +2155,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
     return latest.id;
   },
+  setFeaturedDemoRoom: (roomId) => {
+    const state = get();
+    const room = state.project.rooms.find(
+      (entry) => entry.id === roomId && entry.roomKind === "demo",
+    );
+    if (!room) {
+      state.pushToast("Only an editable demo can be featured.", "error");
+      return false;
+    }
+    set({
+      project: {
+        ...state.project,
+        featuredDemoRoomId: room.id,
+        updatedAt: new Date().toISOString(),
+      },
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast(`${room.name} is now the featured demo.`, "success");
+    return true;
+  },
   saveAsDemoRoom: async () => {
     const state = get();
     const room = activeRoom(state.project);
@@ -1988,20 +2185,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     const now = new Date().toISOString();
     set({
-      project: replaceRoom(state.project, {
-        ...room,
-        roomKind: "demo",
-        demoSavedAt: now,
-        viewState: {
-          ...resolvedRoomViewState(room),
-          cameraPreset: state.cameraPreset,
-          presentation: state.presentation,
-          floorVisible: state.floorVisible,
-          wallTransparent: state.wallTransparent,
-          environmentContextVisible: state.environmentContextVisible,
-        },
-        updatedAt: now,
-      }),
+      project: {
+        ...replaceRoom(state.project, {
+          ...room,
+          roomKind: "demo",
+          demoSavedAt: now,
+          viewState: {
+            ...resolvedRoomViewState(room),
+            cameraPreset: state.cameraPreset,
+            presentation: state.presentation,
+            floorVisible: state.floorVisible,
+            wallTransparent: state.wallTransparent,
+            environmentContextVisible: state.environmentContextVisible,
+          },
+          updatedAt: now,
+        }),
+        featuredDemoRoomId: state.project.featuredDemoRoomId ?? room.id,
+      },
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     });
@@ -2031,6 +2231,54 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
     get().pushToast("Demo Room reset from the factory template.", "success");
     return true;
+  },
+  updateRoomFacilityPlacement: (roomId, patch) => {
+    const state = get();
+    const room = state.project.rooms.find((entry) => entry.id === roomId);
+    if (!room || room.roomKind === "demo-template") return;
+    const now = new Date().toISOString();
+    const current = room.facilityPlacement ?? suggestedFacilityPlacement(state.project, room.laboratoryId);
+    set({
+      project: replaceRoom(state.project, {
+        ...room,
+        facilityPlacement: { ...current, ...patch },
+        updatedAt: now,
+      }),
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+  },
+  archiveAsset: (id) => {
+    const state = get();
+    const inUse = state.project.rooms.some((room) =>
+      room.roomKind !== "demo-template" &&
+      room.scene.objects.some((object) => object.assetDefinitionId === id),
+    );
+    if (inUse) {
+      state.pushToast("This asset is used by a room. Remove or replace its instances first.", "info");
+      return false;
+    }
+    const archivedAssetIds = Array.from(new Set([...(state.project.archivedAssetIds ?? []), id]));
+    set({
+      project: { ...state.project, archivedAssetIds, updatedAt: new Date().toISOString() },
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast("Asset removed from the active library. It can be restored in Asset Studio.", "success");
+    return true;
+  },
+  restoreAsset: (id) => {
+    const state = get();
+    set({
+      project: {
+        ...state.project,
+        archivedAssetIds: (state.project.archivedAssetIds ?? []).filter((entry) => entry !== id),
+        updatedAt: new Date().toISOString(),
+      },
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast("Asset restored to the active library.", "success");
   },
   setAssetSearch: (assetSearch) => set({ assetSearch }),
   toggleFavorite: (id) =>

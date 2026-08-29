@@ -7,12 +7,39 @@
     "labspace_search_assets",
     "labspace_search_records",
     "labspace_inspect_record",
+    "labspace_inventory_locations",
+    "labspace_plan_inventory",
     "labspace_focus_record",
+    "labspace_stage_inventory_plan",
     "labspace_stage_room_plan",
     "labspace_validate_object_move",
     "labspace_stage_object_move"
   ],
   "cases": [
+    {
+      "id": "plan-canonical-inventory",
+      "prompt": "Find the exact Shelf 01 location in DEMO-01 and propose two boxes of new pipette tips there for my review.",
+      "expectedTools": ["labspace_inventory_locations", "labspace_plan_inventory"],
+      "forbiddenTools": ["labspace_stage_inventory_plan"],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Resolve one canonical editable-room location and return a bounded read-only inventory proposal without creating records."
+    },
+    {
+      "id": "stage-reviewed-inventory",
+      "prompt": "Stage that inventory proposal so I can inspect it before anything is saved.",
+      "expectedTools": ["labspace_stage_inventory_plan"],
+      "forbiddenTools": [],
+      "requiresHumanApproval": true,
+      "expectedOutcome": "Present the proposed names, quantities, rooms, and exact storage trails while project inventory remains unchanged until explicit approval."
+    },
+    {
+      "id": "plan-complex-polygon-room",
+      "prompt": "Plan an L-shaped six-wall preparation room with one bench, a rotary evaporator on its worktop at 900 millimetres elevation, and a floor centrifuge rotated 90 degrees.",
+      "expectedTools": ["labspace_search_assets", "labspace_plan_room"],
+      "forbiddenTools": ["labspace_stage_room_plan"],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Return a validated non-crossing six-wall shell, derived floor, explicit equipment transforms, and bench-support evidence without changing the room."
+    },
     {
       "id": "discover-planning-assets",
       "prompt": "Find a standard laboratory bench and a floor centrifuge that can be used in this room.",

@@ -56,7 +56,25 @@ const WEBMCP_TOOL_CATALOG = [
     name: "labspace_plan_room",
     label: "Calculate a room plan",
     mode: "Simulate",
-    description: "Builds a geometry-checked furniture proposal without changing the room.",
+    description: "Builds a polygon shell and support-aware transform plan without changing the room.",
+  },
+  {
+    name: "labspace_inventory_locations",
+    label: "Find inventory locations",
+    mode: "Read",
+    description: "Lists canonical storage destinations across editable rooms.",
+  },
+  {
+    name: "labspace_plan_inventory",
+    label: "Calculate inventory records",
+    mode: "Simulate",
+    description: "Validates names, quantities, rooms, and exact storage assignments without mutation.",
+  },
+  {
+    name: "labspace_stage_inventory_plan",
+    label: "Stage inventory for review",
+    mode: "Review",
+    description: "Shows proposed records and locations. Only a human can approve their creation.",
   },
   {
     name: "labspace_stage_room_plan",
@@ -174,8 +192,8 @@ export function AgentActivityPanel() {
               ChatGPT discovers LabSpace tools from this open page—there is no second chat box.
             </small>
             <span>
-              “Build an 8 × 6 m laboratory with 3 m walls, add a laboratory bench and floor
-              centrifuge with a 900 mm aisle, then stage the blueprint for my approval.”
+              “Build an L-shaped six-wall preparation room. Add a bench, place a rotary evaporator
+              on its worktop, rotate the floor centrifuge 90°, then stage the blueprint for my approval.”
             </span>
           </p>
         )}

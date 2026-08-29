@@ -6,9 +6,12 @@ const WEBMCP_TOOL_NAMES = [
   "labspace_focus_record",
   "labspace_get_context",
   "labspace_inspect_record",
+  "labspace_inventory_locations",
+  "labspace_plan_inventory",
   "labspace_plan_room",
   "labspace_search_assets",
   "labspace_search_records",
+  "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
   "labspace_stage_room_plan",
   "labspace_validate_object_move",
@@ -156,15 +159,15 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly ten tools on product routes and excludes internal asset routes", async ({
+test("registers exactly thirteen tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
-  for (const route of ["/", "/digital-twin"]) {
+  for (const route of ["/", "/digital-twin", "/inventory"]) {
     await page.goto(route);
     await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
   }
 
-  for (const route of ["/asset-preview", "/procedural-asset-capture"]) {
+  for (const route of ["/asset-preview", "/facility", "/procedural-asset-capture"]) {
     await page.goto(route);
     await expect.poll(() => registeredToolNames(page)).toEqual([]);
   }
@@ -201,7 +204,7 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByText("Empty lab plan", { exact: true })).toBeVisible();
+  await expect(page.locator(".room-navigator > summary").getByText("Empty lab plan", { exact: true })).toBeVisible();
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
 
   const before = await readProject(page);
@@ -315,7 +318,7 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
 
 test("searches and focuses canonical indexed evidence across rooms", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("Empty lab plan", { exact: true })).toBeVisible();
+  await expect(page.locator(".room-navigator > summary").getByText("Empty lab plan", { exact: true })).toBeVisible();
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
 
   const search = await executeTool<{

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 import {
   Archive,
+  ArrowRight,
   ArrowCounterClockwise,
   Check,
   Copy,
@@ -17,6 +18,7 @@ import {
   Printer,
   Question,
   Ruler,
+  Star,
   Trash,
   TreeStructure,
   UploadSimple,
@@ -341,6 +343,14 @@ function ProjectDialog() {
           </span>
         </button>
         <button
+          onClick={() => setDialog("demos")}
+        >
+          <Star size={19} />
+          <span>
+            <b>Demo Manager</b>Save, duplicate, feature, and open presentation rooms
+          </span>
+        </button>
+        <button
           data-testid="open-build-week-demo"
           onClick={() => {
             const id = createDemoFromTemplate();
@@ -436,6 +446,90 @@ function ProjectDialog() {
           <Trash size={16} />
           Delete project
         </button>
+      </div>
+    </Modal>
+  );
+}
+
+function DemoManagerDialog() {
+  const project = useEditorStore((state) => state.project);
+  const activeRoom = useEditorStore(selectActiveRoom);
+  const switchRoom = useEditorStore((state) => state.switchRoom);
+  const setDialog = useEditorStore((state) => state.setDialog);
+  const createDemo = useEditorStore((state) => state.createDemoFromTemplate);
+  const duplicateAsDemo = useEditorStore((state) => state.duplicateRoomAsDemo);
+  const setFeatured = useEditorStore((state) => state.setFeaturedDemoRoom);
+  const saveAsDemo = useEditorStore((state) => state.saveAsDemoRoom);
+  const deleteRoom = useEditorStore((state) => state.deleteRoom);
+  const demos = project.rooms
+    .filter((room) => room.roomKind === "demo")
+    .sort((left, right) => (right.demoSavedAt ?? right.updatedAt).localeCompare(left.demoSavedAt ?? left.updatedAt));
+
+  const openRoom = (roomId: string) => {
+    switchRoom(roomId);
+    setDialog(null);
+    window.location.assign("/");
+  };
+
+  return (
+    <Modal title="Demo Manager" eyebrow="Reusable presentation rooms" wide>
+      <div className="demo-manager-intro">
+        <Database size={24} weight="duotone" />
+        <span>
+          <b>Demos are independent editable rooms</b>
+          Save or duplicate a room without overwriting DEMO-01. The featured demo is the room opened by the header action.
+        </span>
+      </div>
+      <div className="demo-manager-actions">
+        <button className="primary-action" onClick={() => void saveAsDemo()}>
+          <FloppyDisk size={16} />
+          {activeRoom.roomKind === "demo" ? "Update current demo" : "Save current room as demo"}
+        </button>
+        <button onClick={() => duplicateAsDemo(activeRoom.id)}>
+          <Copy size={16} /> Duplicate current as new demo
+        </button>
+        <button onClick={() => createDemo()}>
+          <FilePlus size={16} /> Create from factory template
+        </button>
+      </div>
+      <div className="demo-manager-list">
+        {demos.map((room) => {
+          const featured = room.id === project.featuredDemoRoomId;
+          return (
+            <article key={room.id} className={featured ? "featured" : ""}>
+              <span className="demo-manager-mark"><Database size={20} weight="duotone" /></span>
+              <span className="demo-manager-copy">
+                <span>
+                  <b>{room.name}</b>
+                  {featured && <em><Star size={12} weight="fill" /> Featured</em>}
+                </span>
+                <small>{room.code} · {room.scene.objects.filter((object) => object.objectType !== "wall").length} assets · {room.scene.inventoryItems.length} inventory</small>
+                <code>{room.id}</code>
+              </span>
+              <span className="demo-manager-row-actions">
+                {!featured && <button onClick={() => setFeatured(room.id)}><Star size={15} /> Set featured</button>}
+                <button onClick={() => openRoom(room.id)}>Open <ArrowRight size={15} /></button>
+                <button
+                  className="danger-icon"
+                  aria-label={`Delete ${room.name}`}
+                  onClick={() => {
+                    if (!window.confirm(`Delete demo “${room.name}”? Other rooms and the factory template will remain unchanged.`)) return;
+                    deleteRoom(room.id);
+                  }}
+                >
+                  <Trash size={15} />
+                </button>
+              </span>
+            </article>
+          );
+        })}
+        {!demos.length && (
+          <div className="empty-state">
+            <Database size={32} />
+            <b>No editable demos yet</b>
+            <span>Save the current room or create an independent template copy.</span>
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -1015,6 +1109,7 @@ export function Dialogs() {
   if (dialog === "labels") return <LabelsDialog />;
   if (dialog === "reindex") return <ReindexDialog />;
   if (dialog === "inventory") return <InventoryDialog />;
+  if (dialog === "demos") return <DemoManagerDialog />;
   return null;
 }
 

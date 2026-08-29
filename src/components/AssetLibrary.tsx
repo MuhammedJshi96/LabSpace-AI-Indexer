@@ -21,7 +21,7 @@ type AssetLibraryProps = {
 type CategoryScope = "all" | "favorites" | "furniture" | "storage" | "equipment" | "fixtures";
 
 const LIBRARY_HIDDEN_ASSET_IDS = new Set(["straight-wall", "half-height-wall"]);
-const BROWSABLE_ASSET_COUNT = ASSET_CATALOG.filter(
+const CATALOG_ASSET_COUNT = ASSET_CATALOG.filter(
   (asset) => !LIBRARY_HIDDEN_ASSET_IDS.has(asset.id),
 ).length;
 
@@ -50,6 +50,7 @@ export function AssetLibrary({
   const search = useEditorStore((state) => state.assetSearch);
   const setSearch = useEditorStore((state) => state.setAssetSearch);
   const favorites = useEditorStore((state) => state.favorites);
+  const archivedAssetIds = useEditorStore((state) => state.project.archivedAssetIds);
   const toggleFavorite = useEditorStore((state) => state.toggleFavorite);
   const addAsset = useEditorStore((state) => state.addAsset);
   const setTool = useEditorStore((state) => state.setTool);
@@ -58,15 +59,16 @@ export function AssetLibrary({
   const [collapsed, setCollapsed] = useState<AssetCategory[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const favoriteIdSet = useMemo(() => new Set(favorites), [favorites]);
+  const archivedIdSet = useMemo(() => new Set(archivedAssetIds ?? []), [archivedAssetIds]);
   const activeCategory = categoryTabs.find((tab) => tab.id === categoryScope) ?? categoryTabs[0];
   const results = useMemo(() => {
     const matchingAssets = searchAssets(search, activeCategory.categories).filter(
-      (asset) => !LIBRARY_HIDDEN_ASSET_IDS.has(asset.id),
+      (asset) => !LIBRARY_HIDDEN_ASSET_IDS.has(asset.id) && !archivedIdSet.has(asset.id),
     );
     return categoryScope === "favorites"
       ? matchingAssets.filter((asset) => favoriteIdSet.has(asset.id))
       : matchingAssets;
-  }, [activeCategory.categories, categoryScope, favoriteIdSet, search]);
+  }, [activeCategory.categories, archivedIdSet, categoryScope, favoriteIdSet, search]);
   const grouped = useMemo(
     () =>
       new Map(
@@ -264,7 +266,7 @@ export function AssetLibrary({
 
       <div className="asset-library-footer" aria-label="Asset library summary">
         <ListBullets size={17} />
-        {BROWSABLE_ASSET_COUNT} assets · {favorites.length} favorite
+        {CATALOG_ASSET_COUNT - (archivedAssetIds?.length ?? 0)} active assets · {favorites.length} favorite
         {favorites.length === 1 ? "" : "s"}
       </div>
     </aside>

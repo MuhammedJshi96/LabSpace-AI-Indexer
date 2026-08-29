@@ -214,6 +214,87 @@ describe("LabSpace browser-agent room planning", () => {
     expect(furnishingPlan.shell).toMatchObject({ mode: "existing", segments: [] });
   });
 
+  it("plans a six-wall room with explicit rotation, elevation, and bench support", () => {
+    blankLayoutFixture();
+    const plan = planRoomLayout({
+      brief: "L-shaped instrument preparation room",
+      aisleMm: 700,
+      roomShell: {
+        vertices: [
+          { xMm: 0, yMm: 0 },
+          { xMm: 9000, yMm: 0 },
+          { xMm: 9000, yMm: 4500 },
+          { xMm: 6000, yMm: 4500 },
+          { xMm: 6000, yMm: 7500 },
+          { xMm: 0, yMm: 7500 },
+        ],
+        wallHeightMm: 3200,
+      },
+      assets: [
+        {
+          assetId: "lab-bench",
+          quantity: 1,
+          placement: "perimeter",
+          position: { xMm: 2000, yMm: 900 },
+          rotationDeg: 0,
+        },
+        {
+          assetId: "rotary-evaporator",
+          quantity: 1,
+          placement: "surface",
+          position: { xMm: 2000, yMm: 900 },
+          rotationDeg: 180,
+          elevationMm: 900,
+        },
+        {
+          assetId: "floor-centrifuge",
+          quantity: 1,
+          placement: "open",
+          position: { xMm: 4200, yMm: 5900 },
+          rotationDeg: 90,
+          elevationMm: 0,
+        },
+      ],
+    });
+
+    expect(plan.shell).toMatchObject({
+      mode: "proposed",
+      shape: "polygon",
+      widthMm: 9000,
+      depthMm: 7500,
+    });
+    expect(plan.shell.segments).toHaveLength(6);
+    expect(plan.unplaced).toEqual([]);
+    const rotary = plan.proposals.find((proposal) => proposal.assetId === "rotary-evaporator")!;
+    const centrifuge = plan.proposals.find((proposal) => proposal.assetId === "floor-centrifuge")!;
+    expect(rotary).toMatchObject({
+      position: { zMm: 900 },
+      rotationDeg: 180,
+      placement: "surface",
+    });
+    expect(centrifuge).toMatchObject({
+      position: { xMm: 4200, yMm: 5900, zMm: 0 },
+      rotationDeg: 90,
+    });
+  });
+
+  it("rejects self-crossing custom room polygons", () => {
+    blankLayoutFixture();
+    expect(() =>
+      planRoomLayout({
+        assets: [],
+        roomShell: {
+          vertices: [
+            { xMm: 0, yMm: 0 },
+            { xMm: 6000, yMm: 5000 },
+            { xMm: 0, yMm: 5000 },
+            { xMm: 6000, yMm: 0 },
+          ],
+        },
+      }),
+    ).toThrow("non-crossing polygon");
+  });
+
   it("rejects stale or unsaved plans before changing the room", () => {
     blankLayoutFixture();
     const plan = planRoomLayout({

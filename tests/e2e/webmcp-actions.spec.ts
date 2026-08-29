@@ -218,6 +218,12 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
   await inspector.getByRole("button", { name: "Run read-only check" }).click();
   await expect(inspector).toContainText("labspace_get_context");
   await expect(inspector).toContainText("Empty lab plan");
+
+  await inspector.getByRole("tab", { name: "Use WebMCP" }).click();
+  await expect(inspector).toContainText("ChatGPT in-app browser");
+  await expect(inspector).toContainText("Chrome Model Context Tool Inspector");
+  await expect(inspector).toContainText("Chrome DevTools WebMCP pane");
+  await expect(inspector).toContainText("DevTools is a debugger, not an AI chat");
 });
 
 test("searches, plans, previews, approves, persists, and reverses a reviewed room blueprint", async ({

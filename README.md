@@ -24,6 +24,7 @@ Open the **WebMCP** status control in the LabSpace header. Its inspector makes t
 2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
 3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
 4. **Agent workflows** provides four copy-ready, compositional prompts for building, locating, auditing, and resizing without adding a competing chatbot UI.
+5. **Use WebMCP** explains where to type natural-language prompts and distinguishes that flow from Chrome DevTools' one-tool-at-a-time JSON runner.
 
 Type the suggested request in the ChatGPT/browser-agent conversation that opened LabSpace. LabSpace does not add a second chatbot: the browser agent discovers the tools directly from the open page, and the inspector shows each call inside the product.
 
@@ -210,7 +211,7 @@ The shipped Spatial Index is deterministic local software and requires no OpenAI
 
 ## WebMCP local test and deployment
 
-Use Chrome with `chrome://flags/#enable-webmcp-testing` enabled, or a WebMCP-capable ChatGPT in-app browser. On `/` or `/digital-twin`, run:
+Use a WebMCP-capable ChatGPT in-app browser for the easiest natural-language flow. In Chrome, enable `chrome://flags/#enable-webmcp-testing`; to use Chrome's DevTools WebMCP pane, also enable `chrome://flags/#devtools-webmcp-support`. On `/` or `/digital-twin`, run:
 
 ```js
 const tools = await document.modelContext.getTools();
@@ -260,6 +261,7 @@ React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, 
 - [ROADMAP.md](ROADMAP.md) — limitations and recommended next phase
 - [SECURITY_NOTES.md](SECURITY_NOTES.md) — local security model
 - [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUIDE.md) — rapid WebMCP judge workflow
+- [docs/webmcp/CHALLENGE_SCORECARD.md](docs/webmcp/CHALLENGE_SCORECARD.md) — evidence-based judging-criteria audit
 - [docs/webmcp/ARCHITECTURE.md](docs/webmcp/ARCHITECTURE.md) — WebMCP adapter, shared actions, bounded initial creation, and later-change approval
 - [docs/webmcp/CHALLENGE_EVIDENCE.md](docs/webmcp/CHALLENGE_EVIDENCE.md) — dated pre-existing versus challenge-built evidence
 - [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md) — production hosting and smoke checks

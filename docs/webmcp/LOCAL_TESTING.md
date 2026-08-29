@@ -16,10 +16,17 @@ Open `http://127.0.0.1:3004/`, `/digital-twin`, or `/inventory`.
 
 1. Open `chrome://flags/#enable-webmcp-testing`.
 2. Set **WebMCP testing** to **Enabled**.
-3. Relaunch Chrome.
-4. Open LabSpace as a top-level page.
+3. To use the DevTools **Application → WebMCP** pane, also enable `chrome://flags/#devtools-webmcp-support`.
+4. Relaunch Chrome.
+5. Open LabSpace as a top-level page.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
+
+### Which Chrome surface should I use?
+
+- **ChatGPT in-app browser:** type normal requests in the ChatGPT conversation controlling the page. This is the simplest complete agent workflow.
+- **Model Context Tool Inspector extension:** provides a natural-language agent-style testing surface inside Chrome. Installing it is optional and remains a user-controlled browser change.
+- **Chrome DevTools → Application → WebMCP:** a manual debugger. Select one available tool, enter JSON arguments, and choose **Run tool**. It does not turn the DevTools Console into a natural-language chat.
 
 ## Discover the seventeen tools
 

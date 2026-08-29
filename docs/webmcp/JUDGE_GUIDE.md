@@ -13,13 +13,16 @@
 
 1. Open the **WebMCP** status control in the LabSpace header.
 2. Select **Registered tools** to see all seventeen live tools and their safety modes.
-3. Select **Agent workflows** to copy a complete build, exact-evidence, audit, or resize request.
-4. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
-5. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
+3. Select **Use WebMCP** if you need to see exactly where ChatGPT prompts or Chrome JSON arguments belong.
+4. Select **Agent workflows** to copy a complete build, exact-evidence, audit, or resize request.
+5. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
+6. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
 This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
 
 Enter the prompts below in the ChatGPT/browser-agent conversation controlling this page—not in a separate LabSpace chat box. The open page exposes its tools to that conversation through WebMCP; the header inspector makes the resulting calls visible in LabSpace.
+
+Chrome DevTools is intentionally different: it is a manual debugger that executes one selected tool with JSON arguments. For natural-language workflows in Chrome, use Google's Model Context Tool Inspector extension; for the simplest judge flow, use ChatGPT's in-app browser.
 
 The public service assigns each browser an isolated four-hour workspace, so another judge's edits cannot alter this demo.
 

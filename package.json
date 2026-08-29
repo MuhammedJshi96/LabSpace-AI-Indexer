@@ -2,6 +2,7 @@
   "name": "labspace-ai-agent-twin",
   "version": "0.1.0",
   "description": "A browser-agent-ready laboratory spatial twin for design, indexing, audit, and exact-location workflows.",
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
   "engines": {

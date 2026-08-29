@@ -514,7 +514,7 @@ body {
 
 .webmcp-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 0 10px;
   background: #ffffff;
   border-bottom: 1px solid #dce4e2;
@@ -962,7 +962,149 @@ body {
   line-height: 1.45;
 }
 
+.webmcp-guide {
+  min-height: 180px;
+  padding-bottom: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: linear-gradient(180deg, rgba(10, 160, 139, 0.08), transparent 160px), #f8faf9;
+}
+
+.webmcp-guide > header {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid #dce5e2;
+}
+
+.webmcp-guide > header > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.webmcp-guide > header b {
+  color: var(--graphite);
+  font-size: 13px;
+}
+
+.webmcp-guide > header small {
+  color: #63726e;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.webmcp-guide-card {
+  margin: 10px 12px;
+  padding: 12px;
+  color: #40504c;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(23, 37, 34, 0.05);
+}
+
+.webmcp-guide-card.is-recommended {
+  border-color: #91cfc3;
+  box-shadow:
+    inset 3px 0 #0aa08b,
+    0 6px 18px rgba(23, 37, 34, 0.05);
+}
+
+.webmcp-guide-card-heading {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  color: #0a7467;
+}
+
+.webmcp-guide-card-heading > span {
+  display: grid;
+  gap: 1px;
+}
+
+.webmcp-guide-card-heading small {
+  color: #74817e;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.webmcp-guide-card-heading strong {
+  color: #243630;
+  font-size: 12px;
+}
+
+.webmcp-guide-card-heading em {
+  padding: 3px 7px;
+  color: #07695e;
+  background: #e6f6f2;
+  border: 1px solid #c2e5dd;
+  border-radius: 10px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.webmcp-guide-card p,
+.webmcp-guide-card ol {
+  margin: 9px 0 0 33px;
+  color: #566560;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.webmcp-guide-card ol {
+  padding-left: 17px;
+}
+
+.webmcp-guide-card li + li {
+  margin-top: 3px;
+}
+
+.webmcp-guide code {
+  padding: 2px 4px;
+  color: #075f55;
+  background: #edf5f3;
+  border: 1px solid #d8e6e2;
+  border-radius: 3px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.webmcp-guide > aside {
+  display: grid;
+  gap: 3px;
+  margin: 12px;
+  padding: 11px 12px;
+  color: #dffaf4;
+  background: var(--lab-enamel);
+  border: 1px solid #135f55;
+  border-radius: 7px;
+}
+
+.webmcp-guide > aside b {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.webmcp-guide > aside span {
+  color: #b9ddd5;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 @media (max-width: 620px) {
+  .webmcp-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .webmcp-workflows > article {
     grid-template-columns: 28px minmax(0, 1fr);
   }

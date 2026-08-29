@@ -1,12 +1,23 @@
 import { useState } from "react";
-import { Check, ClockCounterClockwise, Copy, Path, Robot, Trash, X } from "@phosphor-icons/react";
+import {
+  Browser,
+  ChatCircleText,
+  Check,
+  ClockCounterClockwise,
+  Code,
+  Copy,
+  Path,
+  Robot,
+  Trash,
+  X,
+} from "@phosphor-icons/react";
 import { useAgentActivityStore } from "../agent/agent-activity-store";
 import {
   executeReadOnlyToolCompat,
   type ExecutableModelContext,
 } from "../webmcp/execute-tool-compat";
 
-type InspectorTab = "activity" | "workflows" | "tools";
+type InspectorTab = "activity" | "workflows" | "guide" | "tools";
 
 const WEBMCP_WORKFLOWS = [
   {
@@ -298,6 +309,9 @@ export function AgentActivityPanel() {
         <button role="tab" aria-selected={tab === "workflows"} onClick={() => setTab("workflows")}>
           Agent workflows <b>{WEBMCP_WORKFLOWS.length}</b>
         </button>
+        <button role="tab" aria-selected={tab === "guide"} onClick={() => setTab("guide")}>
+          Use WebMCP
+        </button>
         <button role="tab" aria-selected={tab === "tools"} onClick={() => setTab("tools")}>
           Registered tools <b>{registeredCount}</b>
         </button>
@@ -390,6 +404,80 @@ export function AgentActivityPanel() {
               movement, resizing, and inventory remain previews until a researcher approves them.
             </span>
           </footer>
+        </div>
+      ) : tab === "guide" ? (
+        <div className="webmcp-guide" role="tabpanel">
+          <header>
+            <span className="webmcp-workflow-mark" aria-hidden="true">
+              <ChatCircleText size={22} weight="duotone" />
+            </span>
+            <span>
+              <b>Choose the right control surface</b>
+              <small>
+                LabSpace exposes the same tools everywhere. What changes is where you write the
+                request.
+              </small>
+            </span>
+          </header>
+
+          <section className="webmcp-guide-card is-recommended">
+            <div className="webmcp-guide-card-heading">
+              <ChatCircleText size={18} weight="duotone" aria-hidden="true" />
+              <span>
+                <small>Natural language · recommended</small>
+                <strong>ChatGPT in-app browser</strong>
+              </span>
+              <em>Fastest</em>
+            </div>
+            <ol>
+              <li>Keep LabSpace open in ChatGPT&apos;s browser.</li>
+              <li>Type your request in the ChatGPT conversation beside the page.</li>
+              <li>Review every structured call here and approve staged changes in LabSpace.</li>
+            </ol>
+          </section>
+
+          <section className="webmcp-guide-card">
+            <div className="webmcp-guide-card-heading">
+              <Browser size={18} weight="duotone" aria-hidden="true" />
+              <span>
+                <small>Natural language · optional extension</small>
+                <strong>Chrome Model Context Tool Inspector</strong>
+              </span>
+            </div>
+            <p>
+              Enable <code>chrome://flags/#enable-webmcp-testing</code>, relaunch Chrome, then use
+              Google&apos;s inspector extension when you want a chat-like prompt surface in Chrome.
+            </p>
+          </section>
+
+          <section className="webmcp-guide-card">
+            <div className="webmcp-guide-card-heading">
+              <Code size={18} weight="duotone" aria-hidden="true" />
+              <span>
+                <small>Manual JSON · developer verification</small>
+                <strong>Chrome DevTools WebMCP pane</strong>
+              </span>
+            </div>
+            <ol>
+              <li>
+                Enable <code>#enable-webmcp-testing</code> and <code>#devtools-webmcp-support</code>
+                .
+              </li>
+              <li>Open DevTools, then choose Application → WebMCP → Available Tools.</li>
+              <li>
+                Select a tool, enter its JSON arguments—for example <code>{"{}"}</code> for the room
+                audit—and choose <b>Run tool</b>.
+              </li>
+            </ol>
+          </section>
+
+          <aside role="note">
+            <b>Why Chrome can feel harder</b>
+            <span>
+              DevTools is a debugger, not an AI chat. Complete natural-language workflows belong in
+              ChatGPT or the optional inspector; DevTools runs one tool at a time with JSON.
+            </span>
+          </aside>
         </div>
       ) : (
         <div className="webmcp-tools-list" role="tabpanel">

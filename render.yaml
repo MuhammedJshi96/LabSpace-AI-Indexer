@@ -12,5 +12,5 @@ services:
         value: 24
       - key: NODE_ENV
         value: production
-      - key: LABSPACE_DB_PATH
-        value: /tmp/labspace-agent-twin.sqlite
+      - key: LABSPACE_PUBLIC_DEMO
+        value: "1"

@@ -18,6 +18,10 @@
 
 This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
 
+Enter the prompts below in the ChatGPT/browser-agent conversation controlling this page—not in a separate LabSpace chat box. The open page exposes its tools to that conversation through WebMCP; the header inspector makes the resulting calls visible in LabSpace.
+
+The public service assigns each browser an isolated four-hour workspace, so another judge's edits cannot alter this demo.
+
 ## Signature empty-room builder prompt
 
 Open **Empty lab plan**, then ask:

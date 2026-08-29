@@ -50,6 +50,8 @@ There should be ten unique registrations on `/` and `/digital-twin`, and none on
 
 ## Manual tool calls
 
+ChatGPT's in-app browser invokes tools with ordinary object arguments. Chrome 151's testing interface currently uses a JSON string. LabSpace's visible **Run read-only check** supports both signatures automatically.
+
 Chrome 151 accepts the current tool definition plus a JSON string when calling `executeTool`:
 
 ```js
@@ -162,7 +164,8 @@ The exact UUIDs above belong to the source-controlled DEMO-01 seed. For any edit
 
 ```powershell
 npm run release:check
-npx playwright test tests/e2e/webmcp-actions.spec.ts
+npx cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium
+npm run test:e2e:webmcp
 npm run test:e2e
 ```
 

@@ -36,10 +36,13 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
 - A visible in-product WebMCP inspector that lists the ten browser registrations, their Read/View/Simulate/Review modes, and a ready-to-use room-planning prompt.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
+- Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
 - Seventeen expected-call eval cases plus deterministic contract tests.
-- Independent Playwright coverage for route registration and the complete human-reviewed workflow.
+- Independent Playwright coverage for route registration, compact-header evidence, and the complete human-reviewed workflow.
+- Isolated four-hour public judge workspaces so simultaneous reviewers cannot overwrite one another.
+- GitHub Actions verification for the release gate and independent WebMCP browser workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
 
 ## Challenge commits
@@ -77,7 +80,7 @@ The challenge did not replace or relabel pre-existing product features as new ag
 ## Verification evidence
 
 - `npm run release:check`: lint, TypeScript, 96-asset validation, unit/integration tests, and production build.
-- `tests/e2e/webmcp-actions.spec.ts`: five independent browser workflow tests, including room-blueprint approval and reversal.
+- `tests/e2e/webmcp-actions.spec.ts`: six independent browser workflow tests, including visible inspector evidence, room-blueprint approval, and reversal.
 - `docs/webmcp/evals/cases.json`: 17 direct, compositional, room-planning, invalid, recommendation, and safety-oriented tool-selection cases.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 

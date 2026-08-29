@@ -1,6 +1,6 @@
 # WebMCP Challenge deployment
 
-LabSpace is a stateful Node/Express application with a Vite frontend and local SQLite repository. The challenge deployment keeps that architecture intact and uses the root `render.yaml` Blueprint.
+LabSpace is a stateful Node/Express application with a Vite frontend. Local development keeps the SQLite repository; the public challenge service uses isolated in-memory browser sessions so reviewers never share one mutable project. Deployment uses the root `render.yaml` Blueprint.
 
 Live judge service: [https://labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com)
 
@@ -12,7 +12,7 @@ The Blueprint creates one free Node web service from `webmcp-challenge-2026`:
   development-only type packages even though the deployed runtime is production)
 - start: `npm run start`
 - health check: `/api/health`
-- production database: `/tmp/labspace-agent-twin.sqlite`
+- public judge data: isolated four-hour in-memory browser sessions
 - no API keys, secrets, or paid services required
 
 The server binds to Render's `PORT` on `0.0.0.0`. In production it serves `dist/`, keeps API responses uncached, and does not mount `/api/testing/reset`.
@@ -26,9 +26,9 @@ The server binds to Render's `PORT` on `0.0.0.0`. In production it serves `dist/
 
 No credential belongs in this repository.
 
-## Free-tier data behavior
+## Public judge-session behavior
 
-Render free web services use an ephemeral filesystem. The SQLite database therefore starts from LabSpace's deterministic source-controlled seed after a restart, redeploy, or spin-down. This is suitable for a repeatable judge demo but is not durable production storage. A session's edits work normally while the instance remains live; export JSON for a portable copy. A production SaaS deployment should use a managed database or paid persistent disk.
+With `LABSPACE_PUBLIC_DEMO=1`, the server issues an HTTP-only, same-site session cookie and creates a fresh memory repository from LabSpace's deterministic source-controlled seed. A browser keeps its own edits and versions for four hours of inactivity; another browser receives an independent seed. Up to 250 active sessions are retained with oldest-session eviction. Restart, redeploy, spin-down, expiry, or cookie removal starts a fresh workspace. Export JSON for a portable copy. A production multi-user deployment should add authentication and a managed database with organization-level isolation.
 
 ## Production smoke test
 
@@ -44,7 +44,7 @@ Invoke-WebRequest "$URL/digital-twin" -UseBasicParsing
 Expected health response:
 
 ```json
-{ "ok": true, "database": "sqlite", "schemaVersion": 2 }
+{ "ok": true, "database": "session-memory", "publicDemo": true, "schemaVersion": 2 }
 ```
 
 Then use a WebMCP-capable top-level browser context to verify the ten registered tools on `/` and `/digital-twin`, and no tools on the internal preview/capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.

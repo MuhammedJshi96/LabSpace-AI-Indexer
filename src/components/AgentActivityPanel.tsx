@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { ClockCounterClockwise, Robot, Trash, X } from "@phosphor-icons/react";
 import { useAgentActivityStore } from "../agent/agent-activity-store";
+import {
+  executeReadOnlyToolCompat,
+  type ExecutableModelContext,
+} from "../webmcp/execute-tool-compat";
 
 type InspectorTab = "activity" | "tools";
 
@@ -97,11 +101,7 @@ export function AgentActivityPanel() {
   const registeredCount = registeredTools.length;
 
   const runReadOnlyCheck = async () => {
-    const modelContext = document.modelContext as
-      | (WebMCP.ModelContext & {
-          executeTool?: (tool: WebMCP.RegisteredTool, input: string) => Promise<string>;
-        })
-      | undefined;
+    const modelContext = document.modelContext as ExecutableModelContext | undefined;
     if (!modelContext?.executeTool) {
       setConnectionError("This browser can register tools but does not expose manual execution.");
       return;
@@ -113,7 +113,7 @@ export function AgentActivityPanel() {
       const tools = await modelContext.getTools();
       const contextTool = tools.find((tool) => tool.name === "labspace_get_context");
       if (!contextTool) throw new Error("The context tool is not registered.");
-      await modelContext.executeTool(contextTool, "{}");
+      await executeReadOnlyToolCompat(modelContext, contextTool, {});
     } catch (error) {
       setConnectionError(
         error instanceof Error ? error.message : "The read-only WebMCP check could not run.",
@@ -123,23 +123,7 @@ export function AgentActivityPanel() {
     }
   };
 
-  if (!open) {
-    return (
-      <button
-        className={`agent-activity-trigger webmcp-status-${bridgeStatus}`}
-        onClick={() => setOpen(true)}
-        aria-label={`Open WebMCP Inspector, ${bridgeCopy(bridgeStatus, registeredCount)}${
-          events.length ? `, ${events.length} recent events` : ""
-        }`}
-      >
-        <span className="webmcp-status-dot" aria-hidden="true" />
-        <Robot size={17} weight="duotone" />
-        <span>WebMCP</span>
-        {bridgeStatus === "ready" && <small>{registeredCount} tools</small>}
-        {events.length > 0 && <b>{events.length}</b>}
-      </button>
-    );
-  }
+  if (!open) return null;
 
   return (
     <aside className="agent-activity-panel" aria-label="WebMCP Inspector">
@@ -185,7 +169,10 @@ export function AgentActivityPanel() {
         {connectionError && <em>{connectionError}</em>}
         {bridgeStatus === "ready" && (
           <p className="webmcp-example-prompt">
-            <b>Try with your browser agent</b>
+            <b>Type this in your browser-agent conversation</b>
+            <small>
+              ChatGPT discovers LabSpace tools from this open page—there is no second chat box.
+            </small>
             <span>
               “Build an 8 × 6 m laboratory with 3 m walls, add a laboratory bench and floor
               centrifuge with a 900 mm aisle, then stage the blueprint for my approval.”
@@ -285,5 +272,29 @@ export function AgentActivityPanel() {
         </div>
       )}
     </aside>
+  );
+}
+
+export function WebMCPHeaderButton() {
+  const events = useAgentActivityStore((state) => state.events);
+  const bridgeStatus = useAgentActivityStore((state) => state.bridgeStatus);
+  const registeredCount = useAgentActivityStore((state) => state.registeredTools.length);
+  const setOpen = useAgentActivityStore((state) => state.setOpen);
+
+  return (
+    <button
+      className={`agent-activity-trigger webmcp-status-${bridgeStatus}`}
+      onClick={() => setOpen(true)}
+      aria-label={`Open WebMCP Inspector, ${bridgeCopy(bridgeStatus, registeredCount)}${
+        events.length ? `, ${events.length} recent events` : ""
+      }`}
+      title="Open WebMCP inspector"
+    >
+      <span className="webmcp-status-dot" aria-hidden="true" />
+      <Robot size={17} weight="duotone" />
+      <span>WebMCP</span>
+      {bridgeStatus === "ready" && <small>{registeredCount}</small>}
+      {events.length > 0 && <b>{events.length}</b>}
+    </button>
   );
 }

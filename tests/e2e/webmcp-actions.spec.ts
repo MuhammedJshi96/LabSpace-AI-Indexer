@@ -35,6 +35,10 @@ async function installModelContext(page: Page) {
       async getTools() {
         return [...activeTools.values()].sort((left, right) => left.name.localeCompare(right.name));
       },
+      async executeTool(tool: WebMCP.ModelContextTool, input: Record<string, unknown> | string) {
+        const parsedInput = typeof input === "string" ? JSON.parse(input) : input;
+        return tool.execute(parsedInput, { signal: new AbortController().signal });
+      },
     };
     Object.defineProperty(document, "modelContext", {
       configurable: true,
@@ -167,6 +171,30 @@ test("registers exactly ten tools on product routes and excludes internal asset 
 
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+});
+
+test("keeps WebMCP evidence visible in the compact judge header", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 800 });
+  await page.goto("/");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+
+  const left = await page.locator(".top-bar-left").boundingBox();
+  const navigation = await page.locator(".primary-navigation").boundingBox();
+  const right = await page.locator(".top-bar-right").boundingBox();
+  expect(left && navigation && right).toBeTruthy();
+  expect(left!.x + left!.width).toBeLessThanOrEqual(navigation!.x);
+  expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(right!.x);
+  expect(right!.x + right!.width).toBeLessThanOrEqual(1120);
+
+  await page.getByRole("button", { name: /Open WebMCP Inspector/ }).click();
+  const inspector = page.getByRole("complementary", { name: "WebMCP Inspector" });
+  await expect(inspector).toBeVisible();
+  await expect(inspector).toContainText("Type this in your browser-agent conversation");
+  await expect(inspector).toContainText("there is no second chat box");
+
+  await inspector.getByRole("button", { name: "Run read-only check" }).click();
+  await expect(inspector).toContainText("labspace_get_context");
+  await expect(inspector).toContainText("Empty lab plan");
 });
 
 test("searches, plans, previews, approves, persists, and reverses a reviewed room blueprint", async ({

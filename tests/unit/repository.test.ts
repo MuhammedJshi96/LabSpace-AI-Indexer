@@ -1,7 +1,7 @@
 import { existsSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { SqliteProjectRepository } from "../../server/repository";
+import { MemoryProjectRepository, SqliteProjectRepository } from "../../server/repository";
 
 const databasePath = resolve("data", "test-labspace.sqlite");
 
@@ -61,5 +61,23 @@ describe("SQLite project repository", () => {
     const reopened = new SqliteProjectRepository(databasePath);
     expect(reopened.getActiveProject().id).toBe("project-labspace-demo");
     reopened.close();
+  });
+});
+
+describe("in-memory public demo repository", () => {
+  it("isolates visitors and never leaks mutable references", () => {
+    const firstVisitor = new MemoryProjectRepository();
+    const secondVisitor = new MemoryProjectRepository();
+    const firstProject = firstVisitor.getActiveProject();
+
+    firstProject.name = "First visitor workspace";
+    firstVisitor.saveProject(firstProject);
+
+    expect(firstVisitor.getActiveProject().name).toBe("First visitor workspace");
+    expect(secondVisitor.getActiveProject().name).toBe("LabSpace Professional Laboratory Index");
+
+    const unsaved = firstVisitor.getActiveProject();
+    unsaved.name = "Unsaved mutation";
+    expect(firstVisitor.getActiveProject().name).toBe("First visitor workspace");
   });
 });

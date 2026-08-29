@@ -24,6 +24,8 @@ Open the **WebMCP** status control in the LabSpace header. Its inspector makes t
 2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
 3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
 
+Type the suggested request in the ChatGPT/browser-agent conversation that opened LabSpace. LabSpace does not add a second chatbot: the browser agent discovers the tools directly from the open page, and the inspector shows each call inside the product.
+
 The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity, and staged changes still require a separate human approval or cancellation.
 
 ### Ten browser-native tools
@@ -175,8 +177,9 @@ For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUI
 | `npm run assets:render-procedural` | Rebuild 44 same-geometry procedural catalog renders       |
 | `npm run lint`                     | Run ESLint                                                |
 | `npm run typecheck`                | Run strict TypeScript checks                              |
-| `npm run test`                     | Run the 170 Vitest unit/integration cases                 |
+| `npm run test`                     | Run the Vitest unit/integration suite                     |
 | `npm run test:e2e`                 | Run the Playwright competition and editor workflows       |
+| `npm run test:e2e:webmcp`          | Run the independent WebMCP judge workflow                 |
 | `npm run validate:assets`          | Validate manifests, authored GLBs, and static PNG renders |
 | `npm run release:check`            | Run lint, types, asset validation, tests, and build       |
 | `npm run format`                   | Format source and documentation                           |
@@ -208,7 +211,7 @@ tools.map((tool) => tool.name);
 
 The result should contain exactly the ten tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
-The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. A free Render instance uses ephemeral storage, so the public judge demo starts from the deterministic source-controlled seed after a service restart; use JSON export for work that must persist. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
+The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. The public service gives each browser an isolated four-hour in-memory judge workspace seeded from the same source-controlled project, so simultaneous reviewers cannot overwrite one another. Render free instances still restart after inactivity; use JSON export for work that must outlive a browser session. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 
 ## Build Week scope and authorship
 

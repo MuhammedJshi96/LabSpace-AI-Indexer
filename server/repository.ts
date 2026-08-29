@@ -189,3 +189,82 @@ export class SqliteProjectRepository implements ProjectRepository {
     this.database.close();
   }
 }
+
+function cloneProject(project: Project) {
+  return ProjectSchema.parse(structuredClone(project));
+}
+
+function cloneVersion(version: RoomVersion) {
+  return RoomVersionSchema.parse(structuredClone(version));
+}
+
+/**
+ * Browser-session repository used by the public judge deployment. It provides
+ * the complete save/version workflow without sharing one visitor's changes
+ * with another visitor or writing judge data to the machine-local database.
+ */
+export class MemoryProjectRepository implements ProjectRepository {
+  private project: Project | null = cloneProject(createSeedProject());
+  private readonly versions = new Map<string, RoomVersion>();
+
+  getActiveProject(): Project {
+    if (!this.project) this.project = cloneProject(createSeedProject());
+    return cloneProject(this.project);
+  }
+
+  saveProject(input: Project): Project {
+    this.project = ProjectSchema.parse({
+      ...structuredClone(input),
+      updatedAt: new Date().toISOString(),
+    });
+    return cloneProject(this.project);
+  }
+
+  listVersions(projectId: string, roomId: string): RoomVersion[] {
+    return [...this.versions.values()]
+      .filter((version) => version.projectId === projectId && version.roomId === roomId)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .map(cloneVersion);
+  }
+
+  saveVersion(
+    projectId: string,
+    roomId: string,
+    name: string,
+    note: string,
+    scene: Scene,
+  ): RoomVersion {
+    const version = RoomVersionSchema.parse({
+      id: crypto.randomUUID(),
+      projectId,
+      roomId,
+      name,
+      note,
+      schemaVersion: scene.schemaVersion,
+      scene: structuredClone(scene),
+      createdAt: new Date().toISOString(),
+    });
+    this.versions.set(version.id, version);
+    return cloneVersion(version);
+  }
+
+  getVersion(versionId: string): RoomVersion | null {
+    const version = this.versions.get(versionId);
+    return version ? cloneVersion(version) : null;
+  }
+
+  deleteProject(projectId: string) {
+    if (this.project?.id === projectId) this.project = null;
+    for (const [versionId, version] of this.versions) {
+      if (version.projectId === projectId) this.versions.delete(versionId);
+    }
+  }
+
+  resetToSeed(): Project {
+    this.project = cloneProject(createSeedProject());
+    this.versions.clear();
+    return cloneProject(this.project);
+  }
+
+  close() {}
+}

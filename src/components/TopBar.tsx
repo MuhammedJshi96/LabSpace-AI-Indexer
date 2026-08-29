@@ -11,6 +11,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
+import { WebMCPHeaderButton } from "./AgentActivityPanel";
 
 type TopBarProps = {
   activeArea?: "layout" | "digital-twin" | "asset-studio";
@@ -90,6 +91,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
       </nav>
 
       <div className="top-bar-right">
+        {activeArea !== "asset-studio" && <WebMCPHeaderButton />}
         <button
           data-testid="demo-room-action"
           className={`header-demo-button${demoActive ? " active" : ""}`}

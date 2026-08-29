@@ -4,18 +4,27 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { ProjectSchema, SceneSchema } from "../src/domain/schema";
 import { SqliteProjectRepository } from "./repository";
+import { PublicDemoSessionStore } from "./public-demo-sessions";
 
 const root = process.cwd();
 const production = process.argv.includes("--production") || process.env.NODE_ENV === "production";
 const port = Number(process.env.PORT ?? 3004);
 const databasePath =
   process.env.LABSPACE_DB_PATH ?? resolve(root, "data", "labspace-indexer.sqlite");
-const repository = new SqliteProjectRepository(databasePath);
+const publicDemo = production && process.env.LABSPACE_PUBLIC_DEMO === "1";
+const repository = publicDemo ? null : new SqliteProjectRepository(databasePath);
+const publicDemoSessions = publicDemo ? new PublicDemoSessionStore(true) : null;
 const app = express();
 let viteServer: Awaited<ReturnType<typeof createViteServer>> | null = null;
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "12mb" }));
+app.use((_request, response, next) => {
+  response.set("X-Content-Type-Options", "nosniff");
+  response.set("Referrer-Policy", "same-origin");
+  response.set("Permissions-Policy", "tools=(self)");
+  next();
+});
 app.use("/api", (_request, response, next) => {
   response.set("Cache-Control", "no-store, no-cache, must-revalidate");
   response.set("Pragma", "no-cache");
@@ -23,11 +32,22 @@ app.use("/api", (_request, response, next) => {
 });
 
 app.get("/api/health", (_request, response) => {
-  response.json({ ok: true, database: "sqlite", schemaVersion: 2 });
+  response.json({
+    ok: true,
+    database: publicDemo ? "session-memory" : "sqlite",
+    publicDemo,
+    schemaVersion: 2,
+  });
 });
 
-app.get("/api/project", (_request, response) => {
-  response.json(repository.getActiveProject());
+const requestRepository = (request: express.Request, response: express.Response) => {
+  if (publicDemoSessions) return publicDemoSessions.getRepository(request, response);
+  if (!repository) throw new Error("Project repository is unavailable.");
+  return repository;
+};
+
+app.get("/api/project", (request, response) => {
+  response.json(requestRepository(request, response).getActiveProject());
 });
 
 app.put("/api/project/:id", (request, response) => {
@@ -39,18 +59,18 @@ app.put("/api/project/:id", (request, response) => {
     });
     return;
   }
-  response.json(repository.saveProject(parsed.data));
+  response.json(requestRepository(request, response).saveProject(parsed.data));
 });
 
 app.delete("/api/project/:id", (request, response) => {
-  repository.deleteProject(request.params.id);
+  requestRepository(request, response).deleteProject(request.params.id);
   response.status(204).end();
 });
 
 app.get("/api/versions", (request, response) => {
   const projectId = String(request.query.projectId ?? "");
   const roomId = String(request.query.roomId ?? "");
-  response.json(repository.listVersions(projectId, roomId));
+  response.json(requestRepository(request, response).listVersions(projectId, roomId));
 });
 
 app.post("/api/versions", (request, response) => {
@@ -65,7 +85,7 @@ app.post("/api/versions", (request, response) => {
   response
     .status(201)
     .json(
-      repository.saveVersion(
+      requestRepository(request, response).saveVersion(
         String(projectId),
         String(roomId),
         name.trim(),
@@ -76,7 +96,7 @@ app.post("/api/versions", (request, response) => {
 });
 
 app.get("/api/versions/:id", (request, response) => {
-  const version = repository.getVersion(request.params.id);
+  const version = requestRepository(request, response).getVersion(request.params.id);
   if (!version) {
     response.status(404).json({ error: "Version not found." });
     return;
@@ -93,11 +113,12 @@ app.post("/api/import", (request, response) => {
     });
     return;
   }
-  response.json(repository.saveProject(parsed.data));
+  response.json(requestRepository(request, response).saveProject(parsed.data));
 });
 
 if (!production) {
   app.post("/api/testing/reset", (_request, response) => {
+    if (!repository) throw new Error("Project repository is unavailable.");
     response.json(repository.resetToSeed());
   });
 }
@@ -121,7 +142,9 @@ if (production) {
 
 const server = app.listen(port, "0.0.0.0", () => {
   console.log(`LabSpace Indexer running at http://localhost:${port}`);
-  console.log(`Local data: ${databasePath}`);
+  console.log(
+    publicDemo ? "Judge data: isolated in-memory browser sessions" : `Local data: ${databasePath}`,
+  );
 });
 
 let shuttingDown = false;
@@ -133,7 +156,8 @@ const shutdown = async () => {
   server.close();
   server.closeAllConnections();
   await viteServer?.close();
-  repository.close();
+  repository?.close();
+  publicDemoSessions?.close();
   clearTimeout(forceExit);
   process.exit(0);
 };

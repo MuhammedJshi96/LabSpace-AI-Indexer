@@ -10,53 +10,54 @@ LabSpace AI Indexer is a local-first, multi-laboratory layout editor and indexin
 
 ## WebMCP Challenge — LabSpace Agent Twin
 
-**WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. From a blank canvas, the agent can propose a validated rectangular or multi-wall polygon shell, derive its floor, arrange dimensioned assets with explicit rotations/elevations, place bench equipment on real support surfaces, and stage the complete blueprint for human review. It can also search exact physical records, focus the real 2D/3D workspace, validate equipment moves, and propose project inventory at canonical locations.
+**WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can create and activate a genuinely blank room, infer its building floor, calculate a rectangular or multi-wall polygon shell, host doors and windows on exact wall segments, pair chairs with workstations, orient perimeter furniture inward, and place bench equipment on real support surfaces. It can also search exact physical records, focus the real 2D/3D workspace, validate equipment moves, and propose project inventory at canonical locations.
 
 **Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — open **Demo room** for the preserved DEMO-01 showcase. The free instance can take up to about a minute to wake after inactivity.
 
-The researcher remains in control: staged moves and room blueprints are labeled **Preview · not saved**, and only a human-facing approval can create an ordinary undoable history entry and trigger autosave. Invalid proposals return compact conflict evidence and do not mutate the project. There is no agent-accessible approve, save, reset, delete, import, or unrestricted write tool.
+The trust boundary is risk-based. `labspace_create_room` saves only a blank room, and that newly created pristine room receives a one-use capability for its first complete validated blueprint to auto-commit as one undoable update. Existing-room layouts, later placements, object moves, and inventory changes remain labeled **Preview · not saved** until a researcher approves them. Invalid or incomplete initial blueprints do not commit. There is no agent-accessible approve, reset, delete, import, or unrestricted project-write tool.
 
 ### See WebMCP working
 
 Open the **WebMCP** status control in the LabSpace header. Its inspector makes the browser integration visible without DevTools:
 
-1. **Registered tools** shows the thirteen live browser tools and their Read, View, Simulate, or Review boundary.
+1. **Registered tools** shows the fourteen live browser tools and their Read, View, Simulate, Create, or Review boundary.
 2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
 3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
 
 Type the suggested request in the ChatGPT/browser-agent conversation that opened LabSpace. LabSpace does not add a second chatbot: the browser agent discovers the tools directly from the open page, and the inspector shows each call inside the product.
 
-The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity, and staged changes still require a separate human approval or cancellation.
+The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity. The one-time initial build is recorded as an automatic commit; subsequent staged changes still require separate human approval or cancellation.
 
-### Thirteen browser-native tools
+### Fourteen browser-native tools
 
-| Tool                             | Capability                                                                   | Saved-data behavior                    |
-| -------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------- |
-| `labspace_get_context`           | Read the active project, room, selection, and index counts                   | Read-only                              |
-| `labspace_search_records`        | Search equipment, inventory, and exact storage                               | Read-only                              |
-| `labspace_inspect_record`        | Inspect current canonical evidence                                           | Read-only                              |
-| `labspace_focus_record`          | Reveal a record in the normal room, evidence panel, and camera               | Presentation state only                |
-| `labspace_search_assets`         | Discover planning assets with canonical dimensions and connection behavior   | Read-only                              |
-| `labspace_plan_room`             | Propose a rectangular or polygon shell plus transform-aware supported assets | Read-only                              |
-| `labspace_inventory_locations`   | Discover canonical inventory destinations in editable rooms                 | Read-only                              |
-| `labspace_plan_inventory`        | Validate proposed project-wide inventory records and assignments             | Read-only                              |
-| `labspace_find_valid_placements` | Rank diverse valid alternatives near a preferred area using current geometry | Read-only                              |
-| `labspace_validate_object_move`  | Test a hypothetical position with current geometry                           | Read-only                              |
-| `labspace_stage_object_move`     | Show a reversible valid-move preview                                         | Not persisted; human approval required |
-| `labspace_stage_inventory_plan`  | Show a human-reviewable inventory proposal                                   | Not persisted; human approval required |
-| `labspace_stage_room_plan`       | Show a complete reversible room blueprint                                    | Not persisted; human approval required |
+| Tool                             | Capability                                                                          | Saved-data behavior                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `labspace_create_room`           | Create, activate, and save one genuinely blank room in a selected laboratory        | Blank room only; one-use initial-build capability                        |
+| `labspace_get_context`           | Read the active project, room, selection, and index counts                          | Read-only                                                                |
+| `labspace_search_records`        | Search equipment, inventory, and exact storage                                      | Read-only                                                                |
+| `labspace_inspect_record`        | Inspect current canonical evidence                                                  | Read-only                                                                |
+| `labspace_focus_record`          | Reveal a record in the normal room, evidence panel, and camera                      | Presentation state only                                                  |
+| `labspace_search_assets`         | Discover openings and planning assets with dimensions and connection behavior       | Read-only                                                                |
+| `labspace_plan_room`             | Propose a polygon shell, hosted openings, paired workstations, and supported assets | Read-only                                                                |
+| `labspace_inventory_locations`   | Discover canonical inventory destinations in editable rooms                         | Read-only                                                                |
+| `labspace_plan_inventory`        | Validate proposed project-wide inventory records and assignments                    | Read-only                                                                |
+| `labspace_find_valid_placements` | Rank diverse valid alternatives near a preferred area using current geometry        | Read-only                                                                |
+| `labspace_validate_object_move`  | Test a hypothetical position with current geometry                                  | Read-only                                                                |
+| `labspace_stage_object_move`     | Show a reversible valid-move preview                                                | Not persisted; human approval required                                   |
+| `labspace_stage_inventory_plan`  | Show a human-reviewable inventory proposal                                          | Not persisted; human approval required                                   |
+| `labspace_stage_room_plan`       | Apply a complete blueprint                                                          | First pristine created-room plan auto-commits; otherwise review required |
 
 ```text
 browser agent → document.modelContext → LabSpace tool adapter
-                                      → shared catalog / polygon planner / index / validator
-                                      → reversible room, inventory, or move review
-                                      → researcher Approve or Cancel
-                                      → normal history + autosave (Approve only)
+                                      → blank-room capability + catalog / polygon planner
+                                      → first complete pristine-room build → history + autosave + Undo
+                                      → later room, inventory, or move preview
+                                      → researcher Approve or Cancel → normal history + autosave
 ```
 
-This challenge work extends the pre-existing LabSpace application. The annotated `pre-webmcp-2026-08-27` tag preserves the verified boundary; later challenge commits add the WebMCP adapter, shared actions, deterministic validation, human-reviewed staging, Agent Activity evidence, evals, and independent browser workflow tests. See the [WebMCP judge guide](docs/webmcp/JUDGE_GUIDE.md), [architecture](docs/webmcp/ARCHITECTURE.md), and [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md).
+This challenge work extends the pre-existing LabSpace application. The annotated `pre-webmcp-2026-08-27` tag preserves the verified boundary; later challenge commits add the WebMCP adapter, shared actions, deterministic validation, capability-scoped initial-room creation, human-reviewed later changes, Agent Activity evidence, evals, and independent browser workflow tests. See the [WebMCP judge guide](docs/webmcp/JUDGE_GUIDE.md), [architecture](docs/webmcp/ARCHITECTURE.md), and [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md).
 
-The runtime remains local and no-billing: LabSpace embeds no model, sends no model API request, and needs no OpenAI API key. Intelligence comes from the user's WebMCP-capable browser agent; LabSpace supplies deterministic domain tools and the human approval surface.
+The runtime remains local and no-billing: LabSpace embeds no model, sends no model API request, and needs no OpenAI API key. Intelligence comes from the user's WebMCP-capable browser agent; LabSpace supplies deterministic domain tools, one bounded initial-build capability, and the human review surface for later changes.
 
 ## Finalized product tour
 
@@ -128,7 +129,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
 
-There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's thirteen structured tools, while the canonical catalog, room planner, inventory planner, index, geometry validator, and human approval UI remain deterministic application behavior.
+There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's fourteen structured tools, while the canonical catalog, room planner, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
 
 The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 96-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
 
@@ -212,7 +213,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-The result should contain exactly the thirteen tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
+The result should contain exactly the fourteen tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
 The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. The public service gives each browser an isolated four-hour in-memory judge workspace seeded from the same source-controlled project, so simultaneous reviewers cannot overwrite one another. Render free instances still restart after inactivity; use JSON export for work that must outlive a browser session. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 
@@ -255,7 +256,7 @@ React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, 
 - [ROADMAP.md](ROADMAP.md) — limitations and recommended next phase
 - [SECURITY_NOTES.md](SECURITY_NOTES.md) — local security model
 - [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUIDE.md) — rapid WebMCP judge workflow
-- [docs/webmcp/ARCHITECTURE.md](docs/webmcp/ARCHITECTURE.md) — WebMCP adapter, shared actions, and human approval
+- [docs/webmcp/ARCHITECTURE.md](docs/webmcp/ARCHITECTURE.md) — WebMCP adapter, shared actions, bounded initial creation, and later-change approval
 - [docs/webmcp/CHALLENGE_EVIDENCE.md](docs/webmcp/CHALLENGE_EVIDENCE.md) — dated pre-existing versus challenge-built evidence
 - [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md) — production hosting and smoke checks
 

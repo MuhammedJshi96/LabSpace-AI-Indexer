@@ -24,24 +24,26 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 ## What was added during the WebMCP Challenge
 
 - Browser-native registration through `document.modelContext` on the editor, Digital Twin, and Inventory routes.
+- Bounded blank-room creation with laboratory selection, persisted room identity, and Floor 1–15 assignment/inference.
 - Three canonical read tools for context, search, and inspection.
 - Shared focus action used by both the visible UI and `labspace_focus_record`.
 - Deterministic hypothetical move validation reusing the existing geometry engine.
 - Read-only ranked placement search that turns a blocked preferred target into diverse valid alternatives using that same geometry engine.
-- Canonical asset discovery plus read-only room planning that can propose rectangular or 3–16 corner polygon shells, derive their floors, preserve explicit transforms, and place bench equipment at support elevation.
+- Canonical asset discovery plus read-only room planning that can propose rectangular or 3–16 corner polygon shells, derive their floors, preserve explicit transforms, host doors/windows, pair seats with workstations, face perimeter furniture inward, and place bench equipment at support elevation.
 - Canonical location discovery plus project-wide inventory planning with human-reviewed creation.
 - One coherent cyan room-blueprint preview in 2D/3D, with a manifest and deterministic evidence before a researcher decides.
 - Reversible move staging with a strict one-pending-change rule.
 - Reversible multi-object staging that creates scene objects and applicable equipment/storage index records as one undoable approval.
-- Human-only Approve/Cancel UI; no agent commit tool or persistence bypass.
+- A one-use, fail-closed capability that auto-commits only the first complete blueprint of a newly WebMCP-created pristine room as one undoable update.
+- Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP inspector that lists the thirteen browser registrations, their Read/View/Simulate/Review modes, and a ready-to-use room-planning prompt.
+- A visible in-product WebMCP inspector that lists the fourteen browser registrations, their Read/View/Simulate/Create/Review modes, and a ready-to-use room-planning prompt.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
-- Twenty expected-call eval cases plus deterministic contract tests.
-- Independent Playwright coverage for route registration, compact-header evidence, and the complete human-reviewed workflow.
+- Twenty-one expected-call eval cases plus deterministic contract tests.
+- Independent Playwright coverage for route registration, compact-header evidence, automatic first-room construction, and the complete human-reviewed later-change workflow.
 - Isolated four-hour public judge workspaces so simultaneous reviewers cannot overwrite one another.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
@@ -73,7 +75,8 @@ BEFORE: human UI → canonical LabSpace services → project state
 AFTER:  human UI ─┐
                    ├→ shared canonical actions → project state
         WebMCP ────┘             |
-                                  └→ reversible preview → human approval → history/autosave
+                                  ├→ bounded first-room capability → history/autosave + Undo
+                                  └→ later reversible preview → human approval → history/autosave
 ```
 
 The challenge did not replace or relabel pre-existing product features as new agent work. It made those capabilities discoverable, composable, and safely actionable by a browser agent.
@@ -81,8 +84,8 @@ The challenge did not replace or relabel pre-existing product features as new ag
 ## Verification evidence
 
 - `npm run release:check`: lint, TypeScript, 96-asset validation, unit/integration tests, and production build.
-- `tests/e2e/webmcp-actions.spec.ts`: six independent browser workflow tests, including visible inspector evidence, room-blueprint approval, and reversal.
-- `docs/webmcp/evals/cases.json`: 17 direct, compositional, room-planning, invalid, recommendation, and safety-oriented tool-selection cases.
+- `tests/e2e/webmcp-actions.spec.ts`: seven independent browser workflow tests, including visible inspector evidence, first-room auto-commit, later-change review, room-blueprint approval, and reversal.
+- `docs/webmcp/evals/cases.json`: 21 direct, compositional, room-planning, invalid, recommendation, and safety-oriented tool-selection cases.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 
 ## Historical test note

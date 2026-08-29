@@ -6,6 +6,7 @@ import type {
   LabSpaceReadState,
   LabSpaceSpatialActions,
   LabSpaceStagingActions,
+  LabSpaceWorkspaceActions,
 } from "../../src/agent/labspace-action-types";
 import { createLabSpaceReadActions } from "../../src/agent/labspace-read-actions";
 import { createSeedProject } from "../../src/domain/seed";
@@ -90,6 +91,12 @@ function fakeLayoutActions(): LabSpaceLayoutActions {
   };
 }
 
+function fakeWorkspaceActions(): LabSpaceWorkspaceActions {
+  return {
+    createRoom: vi.fn(async (input) => ({ source: "room-create", input }) as never),
+  };
+}
+
 type ChromeCompatibleExecute = (
   input: Record<string, unknown>,
   executionContext?: WebMCP.ToolExecuteCallbackOptions,
@@ -145,12 +152,13 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(13);
+    expect(tools).toHaveLength(14);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
         ![
           "labspace_focus_record",
+          "labspace_create_room",
           "labspace_stage_inventory_plan",
           "labspace_stage_object_move",
           "labspace_stage_room_plan",
@@ -176,6 +184,24 @@ describe("LabSpace WebMCP registration", () => {
       properties: {
         rotationsDeg: { minItems: 1, maxItems: 4 },
         limit: { minimum: 1, maximum: 5 },
+      },
+    });
+    const createRoom = tools.find((tool) => tool.name === "labspace_create_room")!;
+    expect(createRoom.inputSchema).toMatchObject({
+      required: ["name", "code"],
+      properties: { floor: { minimum: 1, maximum: 15 } },
+    });
+    const planRoom = tools.find((tool) => tool.name === "labspace_plan_room")!;
+    expect(planRoom.inputSchema).toMatchObject({
+      properties: {
+        assets: {
+          items: {
+            properties: {
+              placement: { enum: expect.arrayContaining(["wall"]) },
+              host: { properties: { wallIndex: { minimum: 1, maximum: 16 } } },
+            },
+          },
+        },
       },
     });
   });
@@ -209,6 +235,19 @@ describe("LabSpace WebMCP registration", () => {
     const stageRoom = modelContext.activeTools.get("labspace_stage_room_plan")!;
 
     expect(await context.execute({}, { signal })).toEqual({ source: "context" });
+    expect(
+      await createLabSpaceToolDefinitions(
+        actions,
+        navigationActions,
+        spatialActions,
+        stagingActions,
+        layoutActions,
+        undefined,
+        fakeWorkspaceActions(),
+      )
+        .find((tool) => tool.name === "labspace_create_room")!
+        .execute({ name: "Office", code: "812" }, { signal }),
+    ).toEqual({ source: "room-create", input: { name: "Office", code: "812" } });
     expect(await searchAssets.execute({ query: "bench" }, { signal })).toEqual({
       source: "asset-search",
       input: { query: "bench" },
@@ -403,15 +442,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(13);
+    expect(modelContext.activeTools.size).toBe(14);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(13);
-    expect([...modelContext.activeTools]).toHaveLength(13);
+    expect(modelContext.activeTools.size).toBe(14);
+    expect([...modelContext.activeTools]).toHaveLength(14);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

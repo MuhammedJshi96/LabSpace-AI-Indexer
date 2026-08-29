@@ -12,7 +12,7 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all thirteen live tools and their safety modes.
+2. Select **Registered tools** to see all fourteen live tools and their safety modes.
 3. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
 4. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
@@ -22,15 +22,15 @@ Enter the prompts below in the ChatGPT/browser-agent conversation controlling th
 
 The public service assigns each browser an isolated four-hour workspace, so another judge's edits cannot alter this demo.
 
-## Signature empty-room builder prompt
+## Signature room-creation prompt
 
-Open **Empty lab plan**, then ask:
+From any editable room, ask:
 
-> Build an 8 × 6 metre preparation room with 3 metre walls. Add a standard laboratory bench and a floor centrifuge with a 900 mm aisle, then stage the complete blueprint for my approval. Do not approve it for me.
+> Create an empty room in the current laboratory named Office for Students, room number 812. Give it a six-wall enclosure of about 32 square metres with four desks, four chairs, one cabinet, one door, and one observation window.
 
-Expected: the agent discovers canonical catalog IDs and dimensions, proposes four connected walls and a derived floor, then arranges the assets against that real geometry without mutation. LabSpace shows one cyan 2D/3D blueprint and a readable shell/asset manifest. **Cancel preview** restores the empty room exactly. Stage it again and choose **Approve room plan** yourself to create one undoable update containing the room dimensions, shell, assets, and applicable index records.
+Expected: the agent creates and activates a saved blank room, infers Floor 8 from `812`, discovers exact catalog IDs, calculates a non-crossing six-wall shell, hosts the door/window on real wall segments, pairs each chair with one desk, and faces perimeter furniture into the room. The first complete blueprint for this newly created pristine room auto-commits as one undoable update without an approval interruption.
 
-For the advanced builder, ask for an L-shaped six-wall room and specify a 90° instrument rotation. Bench-connected instruments such as the rotary evaporator are automatically placed at the supporting worktop elevation rather than on the floor.
+This is a deliberately narrow capability, not silent general editing. An incomplete initial blueprint fails closed. A second furnishing request, any existing-room plan, object movement, or inventory change still opens **Preview · not saved** and requires the researcher to approve or cancel it. Bench-connected instruments such as the rotary evaporator also snap to the supporting worktop elevation rather than the floor.
 
 ## Human-reviewed inventory prompt
 
@@ -46,7 +46,7 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ## Expected visible workflow
 
-1. The agent discovers thirteen structured LabSpace tools.
+1. The agent discovers fourteen structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
@@ -60,10 +60,12 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ```text
 labspace_get_context
+labspace_create_room
 labspace_search_assets
 labspace_plan_room
 labspace_stage_room_plan
-human: Approve room plan or Cancel preview
+automatic: first complete pristine-room build only
+human: Approve room plan or Cancel preview for every later/existing-room plan
 
 labspace_inventory_locations
 labspace_plan_inventory
@@ -80,7 +82,7 @@ labspace_stage_object_move
 human: Approve move or Cancel
 ```
 
-The agent cannot approve its own proposal. No WebMCP tool can reset, delete, import, or save a project.
+The agent cannot approve its own later proposal. No WebMCP tool can reset, delete, import, or perform an unrestricted project save. `labspace_create_room` is restricted to one blank room, and its initial-build capability cannot move or overwrite existing content.
 
 ## Verify registration
 
@@ -89,10 +91,10 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly thirteen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+Expected: exactly fourteen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 
-The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, human-reviewed staging, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The corrected deployed evidence tag is `webmcp-submission-v1.1`; `webmcp-submission-v1` preserves the first pre-deployment candidate.
+The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, bounded initial-room creation, later-change review, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The corrected deployed evidence tag is `webmcp-submission-v1.1`; `webmcp-submission-v1` preserves the first pre-deployment candidate.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md), [CHALLENGE_EVIDENCE.md](CHALLENGE_EVIDENCE.md), and [LOCAL_TESTING.md](LOCAL_TESTING.md).

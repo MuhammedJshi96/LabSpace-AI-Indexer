@@ -9,6 +9,7 @@ import { labSpaceSpatialActions } from "../agent/labspace-spatial-actions";
 import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
 import { labSpaceLayoutActions } from "../agent/labspace-layout-actions";
 import { labSpaceInventoryActions } from "../agent/labspace-inventory-actions";
+import { labSpaceWorkspaceActions } from "../agent/labspace-workspace-actions";
 import type {
   LabSpaceLayoutActions,
   LabSpaceInventoryActions,
@@ -16,8 +17,10 @@ import type {
   LabSpaceReadActions,
   LabSpaceSpatialActions,
   LabSpaceStagingActions,
+  LabSpaceWorkspaceActions,
 } from "../agent/labspace-action-types";
 import {
+  createRoomSchema,
   emptyObjectSchema,
   focusRecordSchema,
   inspectRecordSchema,
@@ -35,6 +38,7 @@ import {
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
 export const LABSPACE_WEBMCP_TOOL_NAMES = [
+  "labspace_create_room",
   "labspace_find_valid_placements",
   "labspace_focus_record",
   "labspace_get_context",
@@ -50,23 +54,22 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_validate_object_move",
 ] as const;
 
-function controlledExecution(
+function completeControlledExecution(
   signal: AbortSignal | undefined,
   toolName: string,
   action: string,
   input: unknown,
-  execute: () => unknown,
+  result: unknown,
 ) {
   signal?.throwIfAborted();
-  try {
-    const result = execute();
-    signal?.throwIfAborted();
-    const resultRecord =
-      result && typeof result === "object" ? (result as Record<string, unknown>) : {};
-    const status: AgentActivityStatus =
-      toolName === "labspace_stage_object_move" ||
-      toolName === "labspace_stage_room_plan" ||
-      toolName === "labspace_stage_inventory_plan"
+  const resultRecord =
+    result && typeof result === "object" ? (result as Record<string, unknown>) : {};
+  const status: AgentActivityStatus =
+    toolName === "labspace_create_room" || resultRecord.autoCommitted === true
+      ? "committed"
+      : toolName === "labspace_stage_object_move" ||
+          toolName === "labspace_stage_room_plan" ||
+          toolName === "labspace_stage_inventory_plan"
         ? "pending"
         : toolName === "labspace_find_valid_placements"
           ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
@@ -85,18 +88,42 @@ function controlledExecution(
                 : toolName === "labspace_search_records"
                   ? "found"
                   : "read";
-    const subject =
-      typeof resultRecord.objectName === "string"
-        ? resultRecord.objectName
-        : typeof resultRecord.roomName === "string"
-          ? resultRecord.roomName
-          : typeof resultRecord.name === "string"
-            ? resultRecord.name
-            : typeof (input as Record<string, unknown> | null)?.query === "string"
-              ? `“${String((input as Record<string, unknown>).query)}”`
-              : action;
-    recordWebMCPToolSuccess(toolName, action, subject, status, input, result);
-    return result;
+  const subject =
+    typeof resultRecord.objectName === "string"
+      ? resultRecord.objectName
+      : typeof resultRecord.roomName === "string"
+        ? resultRecord.roomName
+        : typeof resultRecord.name === "string"
+          ? resultRecord.name
+          : typeof (input as Record<string, unknown> | null)?.query === "string"
+            ? `“${String((input as Record<string, unknown>).query)}”`
+            : action;
+  recordWebMCPToolSuccess(toolName, action, subject, status, input, result);
+  return result;
+}
+
+function controlledExecution(
+  signal: AbortSignal | undefined,
+  toolName: string,
+  action: string,
+  input: unknown,
+  execute: () => unknown,
+) {
+  signal?.throwIfAborted();
+  try {
+    const result = execute();
+    if (result && typeof (result as PromiseLike<unknown>).then === "function") {
+      return Promise.resolve(result).then(
+        (resolved) => completeControlledExecution(signal, toolName, action, input, resolved),
+        (error: unknown) => {
+          signal?.throwIfAborted();
+          recordControlledToolError(action, error, toolName, input);
+          if (error instanceof LabSpaceActionError) throw new Error(error.message);
+          throw new Error("LabSpace could not complete this tool request.");
+        },
+      );
+    }
+    return completeControlledExecution(signal, toolName, action, input, result);
   } catch (error) {
     signal?.throwIfAborted();
     recordControlledToolError(action, error, toolName, input);
@@ -117,8 +144,25 @@ export function createLabSpaceToolDefinitions(
   stagingActions: LabSpaceStagingActions = labSpaceStagingActions,
   layoutActions: LabSpaceLayoutActions = labSpaceLayoutActions,
   inventoryActions: LabSpaceInventoryActions = labSpaceInventoryActions,
+  workspaceActions: LabSpaceWorkspaceActions = labSpaceWorkspaceActions,
 ): WebMCP.ModelContextTool[] {
   return [
+    {
+      name: "labspace_create_room",
+      title: "Create a blank LabSpace room",
+      description:
+        "Create, activate, and save one genuinely blank room in the current or selected laboratory. Its first complete validated WebMCP blueprint may auto-commit; later changes still require review.",
+      inputSchema: createRoomSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_create_room",
+          "Room creation",
+          input,
+          () => workspaceActions.createRoom(input),
+        ),
+    },
     {
       name: "labspace_find_valid_placements",
       title: "Find valid LabSpace placements",
@@ -203,7 +247,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_plan_room",
       title: "Plan a LabSpace room",
       description:
-        "Calculate a validated rectangular or multi-wall polygon room shell, then arrange exact catalog assets with explicit rotations and elevations. Bench equipment snaps to compatible worktops. Existing walls are preserved. Returns a read-only proposal for separate staging and human approval.",
+        "Calculate a validated rectangular or multi-wall shell, wall-hosted openings, and exact catalog assets. Seats pair with workstations, perimeter assets face inward, and bench equipment snaps to worktops. Existing walls are preserved.",
       inputSchema: planRoomLayoutSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -219,7 +263,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_search_assets",
       title: "Search LabSpace assets",
       description:
-        "Search the canonical room-planning catalog for furniture, storage, equipment, and safety assets with exact dimensions and indexing behavior.",
+        "Search the canonical room-planning catalog for openings, furniture, storage, equipment, and safety assets with exact dimensions and indexing behavior.",
       inputSchema: searchAssetsSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -267,7 +311,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_stage_room_plan",
       title: "Stage LabSpace room plan",
       description:
-        "Display a calculated wall, floor, and asset plan as one reversible blueprint. It remains unsaved until a researcher approves it in LabSpace.",
+        "Apply a calculated blueprint. The first complete plan for a blank room created by WebMCP auto-commits with Undo; existing-room or later changes remain a researcher-reviewed preview.",
       inputSchema: stageRoomLayoutSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -338,6 +382,7 @@ export function registerLabSpaceTools({
   inventoryActions = labSpaceInventoryActions,
   spatialActions = labSpaceSpatialActions,
   stagingActions = labSpaceStagingActions,
+  workspaceActions = labSpaceWorkspaceActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
   const controller = new AbortController();
   const tools = modelContext
@@ -348,6 +393,7 @@ export function registerLabSpaceTools({
         stagingActions,
         layoutActions,
         inventoryActions,
+        workspaceActions,
       )
     : [];
   const ready = modelContext

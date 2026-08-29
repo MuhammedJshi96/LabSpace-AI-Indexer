@@ -22,27 +22,30 @@ This makes the application meaningfully better when a researcher and agent work 
 
 ## What it does
 
-LabSpace registers thirteen focused browser-native tools:
+LabSpace registers fourteen focused browser-native tools:
 
-1. read active laboratory context;
-2. search equipment, inventory, and exact storage;
-3. inspect one canonical record;
-4. focus the real room, selection, evidence inspector, and 3D camera;
-5. discover canonical furniture, storage, equipment, and safety assets with real dimensions;
-6. build a rectangular or 3–16 corner polygon shell, derive its floor, and calculate a transform-aware multi-object plan;
-7. stage that complete room blueprint as one reversible review;
-8. discover canonical inventory destinations across editable rooms;
-9. validate project-wide inventory proposals against exact rooms and storage IDs;
-10. stage an inventory proposal for human approval;
-11. validate a hypothetical object move without mutation;
-12. turn a blocked target into ranked, geometry-valid alternatives;
-13. stage a chosen valid move as a reversible visual preview.
+1. create, activate, and save one genuinely blank room in a selected laboratory;
+2. read active laboratory context;
+3. search equipment, inventory, and exact storage;
+4. inspect one canonical record;
+5. focus the real room, selection, evidence inspector, and 3D camera;
+6. discover canonical openings, furniture, storage, equipment, and safety assets with real dimensions;
+7. build a rectangular or 3–16 corner polygon shell, derive its floor, host doors/windows, pair seats with workstations, and calculate transform-aware placement;
+8. apply that complete room blueprint through the bounded initial-build capability or a reversible later-change review;
+9. discover canonical inventory destinations across editable rooms;
+10. validate project-wide inventory proposals against exact rooms and storage IDs;
+11. stage an inventory proposal for human approval;
+12. validate a hypothetical object move without mutation;
+13. turn a blocked target into ranked, geometry-valid alternatives;
+14. stage a chosen valid move as a reversible visual preview.
 
-An agent can start from an empty laboratory, find dimensioned assets, calculate a layout with a requested aisle, and stage the entire blueprint visibly in the synchronized 2D/3D editor. It can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target. The final decision always stays with the researcher through visible approval and cancellation controls.
+An agent can create room 812, infer Floor 8, calculate a six-wall office of roughly 32 square metres, host a door and window, pair four chairs with four desks, and orient the cabinet correctly. The first complete blueprint for that newly created pristine room commits as one undoable update without an unnecessary confirmation pause. It can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target for researcher review.
 
 ## Human + agent collaboration
 
-The agent cannot silently save its own proposal. A stage response explicitly says it is not persisted and requires human approval. LabSpace labels the scene **Preview · not saved**, shows current and proposed coordinates, blocks competing edits, and exposes only human-facing Approve/Cancel controls. Approval creates one ordinary undoable history entry and uses the existing autosave path. Cancel restores the exact prior object.
+LabSpace uses a narrow capability instead of one blanket confirmation policy. `labspace_create_room` may save only a blank room. That exact pristine room receives a one-use in-memory capability for its first complete, fully placed, deterministic blueprint; the stage response reports `autoCommitted: true`, creates one normal undoable history entry, and uses ordinary autosave. The capability fails closed for incomplete plans, disappears after use/reload/manual editing, and cannot rewrite an existing room.
+
+Every later room change, object move, and inventory proposal remains **Preview · not saved**. LabSpace shows current and proposed evidence, blocks competing edits, and exposes only human-facing Approve/Cancel controls. Approval creates one ordinary undoable history entry; Cancel restores the exact prior state.
 
 Agent Activity records compact factual evidence—search result, focused record, blocked conflict, staged preview, human decision, and commit—without exposing chain-of-thought.
 
@@ -54,7 +57,7 @@ The tool adapter owns only JSON schemas, annotations, lifecycle, bounded output,
 
 ## Safety and grounding
 
-- No WebMCP tool can approve, save, delete, reset, or import a project.
+- No WebMCP tool can approve, delete, reset, import, or perform an unrestricted project save. Direct creation is limited to a blank room and one complete initial blueprint.
 - Only movable furniture, storage, and equipment can be staged; structural, safety-critical, locked, and layer-locked objects are rejected.
 - Invalid placement returns actual boundary, collision, elevation, or room-height evidence and performs no mutation.
 - User-authored names and notes are marked untrusted and treated as data, not instructions.
@@ -68,7 +71,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the thirteen-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, deterministic polygon room and inventory planning, support-aware transforms, focus integration, placement validation and ranked alternatives, reversible human-reviewed move/room/inventory staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 20 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the fourteen-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, bounded blank-room creation, deterministic polygon room and inventory planning, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement validation and ranked alternatives, capability-scoped initial auto-commit, reversible human-reviewed later staging, safe history/autosave handoff, Agent Activity, strict contracts and error containment, 21 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 
@@ -86,7 +89,7 @@ The next product step is authenticated multi-user persistence with PostgreSQL, r
 
 ## Testing instructions
 
-Open LabSpace in a WebMCP-capable browser and use the prompts in `docs/webmcp/JUDGE_GUIDE.md`. Thirteen tools should appear on `/`, `/digital-twin`, and `/inventory`; the agent should calculate a room blueprint without mutation, stage it for human review, propose exact-location inventory, find DEMO-01 evidence, reject an invalid target, and stage a grounded correction for a human decision.
+Open LabSpace in a WebMCP-capable browser and use the prompts in `docs/webmcp/JUDGE_GUIDE.md`. Fourteen tools should appear on `/`, `/digital-twin`, and `/inventory`; the agent should create and complete a pristine six-wall room without an unnecessary confirmation interruption, require review for its next change, propose exact-location inventory, find DEMO-01 evidence, reject an invalid target, and stage a grounded correction for a human decision.
 
 Local verification:
 

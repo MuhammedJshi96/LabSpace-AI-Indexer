@@ -10,6 +10,13 @@ type InspectorTab = "activity" | "tools";
 
 const WEBMCP_TOOL_CATALOG = [
   {
+    name: "labspace_create_room",
+    label: "Create a blank room",
+    mode: "Create",
+    description:
+      "Creates, activates, and saves a blank room whose first complete blueprint may auto-commit.",
+  },
+  {
     name: "labspace_get_context",
     label: "Read workspace context",
     mode: "Read",
@@ -50,13 +57,15 @@ const WEBMCP_TOOL_CATALOG = [
     name: "labspace_search_assets",
     label: "Search planning assets",
     mode: "Read",
-    description: "Furniture, storage, equipment, and safety assets with canonical dimensions.",
+    description:
+      "Openings, furniture, storage, equipment, and safety assets with exact dimensions.",
   },
   {
     name: "labspace_plan_room",
     label: "Calculate a room plan",
     mode: "Simulate",
-    description: "Builds a polygon shell and support-aware transform plan without changing the room.",
+    description:
+      "Builds a polygon shell with hosted openings, paired workstations, and support-aware transforms.",
   },
   {
     name: "labspace_inventory_locations",
@@ -68,7 +77,8 @@ const WEBMCP_TOOL_CATALOG = [
     name: "labspace_plan_inventory",
     label: "Calculate inventory records",
     mode: "Simulate",
-    description: "Validates names, quantities, rooms, and exact storage assignments without mutation.",
+    description:
+      "Validates names, quantities, rooms, and exact storage assignments without mutation.",
   },
   {
     name: "labspace_stage_inventory_plan",
@@ -79,8 +89,9 @@ const WEBMCP_TOOL_CATALOG = [
   {
     name: "labspace_stage_room_plan",
     label: "Stage a room blueprint",
-    mode: "Review",
-    description: "Shows all proposed assets in 2D and 3D for explicit human approval.",
+    mode: "Apply",
+    description:
+      "Auto-commits a new room's first complete blueprint; later plans remain human-reviewed.",
   },
   {
     name: "labspace_stage_object_move",
@@ -193,7 +204,8 @@ export function AgentActivityPanel() {
             </small>
             <span>
               “Build an L-shaped six-wall preparation room. Add a bench, place a rotary evaporator
-              on its worktop, rotate the floor centrifuge 90°, then stage the blueprint for my approval.”
+              on its worktop, rotate the floor centrifuge 90°, then stage the blueprint for my
+              approval.”
             </span>
           </p>
         )}
@@ -283,8 +295,9 @@ export function AgentActivityPanel() {
           <footer>
             <b>Safety boundary</b>
             <span>
-              WebMCP can stage moves and complete room blueprints, but only the researcher can
-              approve or cancel them.
+              A new WebMCP-created room may auto-commit its first complete validated blueprint.
+              Existing-room changes, later placements, moves, and inventory still require the
+              researcher to approve or cancel them.
             </span>
           </footer>
         </div>

@@ -4,6 +4,44 @@ export const emptyObjectSchema = {
   additionalProperties: false,
 } as const;
 
+export const createRoomSchema = {
+  type: "object",
+  properties: {
+    name: {
+      type: "string",
+      minLength: 1,
+      maxLength: 120,
+      description: "Human-readable name for the new blank room.",
+    },
+    code: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      description: "Unique room number or code within the selected laboratory, such as 812.",
+    },
+    laboratoryId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 120,
+      description: "Optional exact laboratory ID. Defaults to the active room's laboratory.",
+    },
+    laboratoryCode: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      description: "Optional exact laboratory code when an ID is not known.",
+    },
+    floor: {
+      type: "integer",
+      minimum: 1,
+      maximum: 15,
+      description: "Physical building floor. If omitted, LabSpace infers it from the room code.",
+    },
+  },
+  required: ["name", "code"],
+  additionalProperties: false,
+} as const;
+
 export const searchRecordsSchema = {
   type: "object",
   properties: {
@@ -156,7 +194,7 @@ export const searchAssetsSchema = {
       type: "array",
       items: {
         type: "string",
-        enum: ["Furniture", "Storage", "Laboratory equipment", "Safety"],
+        enum: ["Architecture", "Furniture", "Storage", "Laboratory equipment", "Safety"],
       },
       minItems: 1,
       uniqueItems: true,
@@ -199,7 +237,7 @@ export const planRoomLayoutSchema = {
           quantity: { type: "integer", minimum: 1, maximum: 4 },
           placement: {
             type: "string",
-            enum: ["auto", "perimeter", "island", "open", "surface"],
+            enum: ["auto", "perimeter", "island", "open", "surface", "wall"],
             default: "auto",
             description:
               "Preferred deterministic placement pattern. Surface places bench-connected equipment on a compatible worktop.",
@@ -226,6 +264,34 @@ export const planRoomLayoutSchema = {
             maximum: 6000,
             description:
               "Optional raised-from-floor elevation. Bench equipment is validated against the supporting worktop elevation.",
+          },
+          host: {
+            type: "object",
+            properties: {
+              wallIndex: {
+                type: "integer",
+                minimum: 1,
+                maximum: 16,
+                description: "One-based wall number from the proposed room-shell segment order.",
+              },
+              offsetMm: {
+                type: "number",
+                minimum: 0,
+                maximum: 20000,
+                description: "Opening center distance from the host wall's start point.",
+              },
+              sillHeightMm: {
+                type: "number",
+                minimum: 0,
+                maximum: 6000,
+                description: "Window sill or opening elevation above the floor.",
+              },
+              handing: { type: "string", enum: ["left", "right"] },
+              swing: { type: "string", enum: ["inward", "outward", "sliding"] },
+            },
+            additionalProperties: false,
+            description:
+              "Optional exact wall-hosting details for a door or window; requires quantity 1.",
           },
         },
         required: ["assetId", "quantity"],
@@ -333,7 +399,8 @@ export const planInventorySchema = {
             type: "string",
             minLength: 1,
             maxLength: 40,
-            description: "Exact editable room code returned by LabSpace context or location search.",
+            description:
+              "Exact editable room code returned by LabSpace context or location search.",
           },
           name: { type: "string", minLength: 1, maxLength: 120 },
           quantity: { type: "number", minimum: 0 },

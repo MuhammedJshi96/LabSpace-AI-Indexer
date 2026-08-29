@@ -8,6 +8,13 @@ import {
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import { resolveLayerIdForObjectType } from "../domain/layers";
 import type { AssetDefinition, Project, Room, SceneObject } from "../domain/schema";
+import {
+  findNearestWallProjection,
+  hostOpeningAtPoint,
+  openingOverlapsSibling,
+  projectPointToWall,
+  type WallProjection,
+} from "../domain/wall-openings";
 import { useEditorStore } from "../store/editor-store";
 import type {
   LabSpaceLayoutActions,
@@ -26,10 +33,16 @@ const MAX_REQUEST_GROUPS = 16;
 const MAX_PLANNED_OBJECTS = 24;
 const MAX_PLAN_REGISTRY = 12;
 const PLAN_GRID_MM = 250;
-const SUPPORTED_CONNECTIONS = new Set(["free", "floor", "bench"]);
-const PLAN_CATEGORIES = new Set(["Furniture", "Storage", "Laboratory equipment", "Safety"]);
+const SUPPORTED_CONNECTIONS = new Set(["free", "floor", "bench", "wall"]);
+const PLAN_CATEGORIES = new Set([
+  "Architecture",
+  "Furniture",
+  "Storage",
+  "Laboratory equipment",
+  "Safety",
+]);
 
-type ResolvedPlacement = "perimeter" | "island" | "open" | "surface";
+type ResolvedPlacement = "perimeter" | "island" | "open" | "surface" | "wall";
 
 type StoredRoomPlan = {
   result: PlanRoomLayoutResult;
@@ -76,7 +89,9 @@ function integer(value: unknown, label: string, minimum: number, maximum: number
 
 function finiteNumber(value: unknown, label: string, minimum: number, maximum: number) {
   if (typeof value !== "number" || !Number.isFinite(value) || value < minimum || value > maximum) {
-    throw new LabSpaceActionError(`${label} must be a finite number from ${minimum} to ${maximum}.`);
+    throw new LabSpaceActionError(
+      `${label} must be a finite number from ${minimum} to ${maximum}.`,
+    );
   }
   return value;
 }
@@ -108,10 +123,12 @@ function validatePolygon(vertices: PlanVertex[]) {
   if (vertices.length < 3 || vertices.length > 16) {
     throw new LabSpaceActionError("roomShell.vertices must contain 3 to 16 corners.");
   }
-  if (vertices.some((point, index) => {
-    const next = vertices[(index + 1) % vertices.length];
-    return Math.hypot(next.xMm - point.xMm, next.yMm - point.yMm) < 500;
-  })) {
+  if (
+    vertices.some((point, index) => {
+      const next = vertices[(index + 1) % vertices.length];
+      return Math.hypot(next.xMm - point.xMm, next.yMm - point.yMm) < 500;
+    })
+  ) {
     throw new LabSpaceActionError("Every room-shell wall segment must be at least 500 mm long.");
   }
   for (let first = 0; first < vertices.length; first += 1) {
@@ -119,13 +136,19 @@ function validatePolygon(vertices: PlanVertex[]) {
       const firstNext = (first + 1) % vertices.length;
       const secondNext = (second + 1) % vertices.length;
       if (first === second || firstNext === second || secondNext === first) continue;
-      if (segmentsCross(vertices[first], vertices[firstNext], vertices[second], vertices[secondNext])) {
-        throw new LabSpaceActionError("roomShell.vertices must describe one simple non-crossing polygon.");
+      if (
+        segmentsCross(vertices[first], vertices[firstNext], vertices[second], vertices[secondNext])
+      ) {
+        throw new LabSpaceActionError(
+          "roomShell.vertices must describe one simple non-crossing polygon.",
+        );
       }
     }
   }
   if (polygonArea(vertices) < 9_000_000) {
-    throw new LabSpaceActionError("The closed room shell must contain at least 9 m² of floor area.");
+    throw new LabSpaceActionError(
+      "The closed room shell must contain at least 9 m² of floor area.",
+    );
   }
   const minX = Math.min(...vertices.map((point) => point.xMm));
   const minY = Math.min(...vertices.map((point) => point.yMm));
@@ -193,12 +216,13 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
       "position",
       "rotationDeg",
       "elevationMm",
+      "host",
     ]);
     if (typeof request.assetId !== "string" || !request.assetId.trim()) {
       throw new LabSpaceActionError(`Asset request ${index + 1} needs a catalog assetId.`);
     }
     const placement = request.placement ?? "auto";
-    if (!["auto", "perimeter", "island", "open", "surface"].includes(String(placement))) {
+    if (!["auto", "perimeter", "island", "open", "surface", "wall"].includes(String(placement))) {
       throw new LabSpaceActionError(`Asset request ${index + 1} has an unsupported placement.`);
     }
     let position: RoomAssetRequest["position"];
@@ -211,9 +235,39 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
       };
     }
     const quantity = integer(request.quantity, `Asset request ${index + 1} quantity`, 1, 4);
-    if (position && quantity !== 1) {
+    let host: RoomAssetRequest["host"];
+    if (request.host !== undefined) {
+      const value = plainObject(request.host, `Asset request ${index + 1} host`);
+      rejectUnexpected(value, ["wallIndex", "offsetMm", "sillHeightMm", "handing", "swing"]);
+      if (value.handing !== undefined && !["left", "right"].includes(String(value.handing))) {
+        throw new LabSpaceActionError(`Asset request ${index + 1} has invalid door handing.`);
+      }
+      if (
+        value.swing !== undefined &&
+        !["inward", "outward", "sliding"].includes(String(value.swing))
+      ) {
+        throw new LabSpaceActionError(`Asset request ${index + 1} has an invalid opening swing.`);
+      }
+      host = {
+        wallIndex:
+          value.wallIndex === undefined
+            ? undefined
+            : integer(value.wallIndex, `Asset request ${index + 1} wallIndex`, 1, 16),
+        offsetMm:
+          value.offsetMm === undefined
+            ? undefined
+            : finiteNumber(value.offsetMm, `Asset request ${index + 1} offsetMm`, 0, 20_000),
+        sillHeightMm:
+          value.sillHeightMm === undefined
+            ? undefined
+            : finiteNumber(value.sillHeightMm, `Asset request ${index + 1} sillHeightMm`, 0, 6000),
+        handing: value.handing as "left" | "right" | undefined,
+        swing: value.swing as "inward" | "outward" | "sliding" | undefined,
+      };
+    }
+    if ((position || host) && quantity !== 1) {
       throw new LabSpaceActionError(
-        `Asset request ${index + 1} must use quantity 1 when an exact position is supplied.`,
+        `Asset request ${index + 1} must use quantity 1 with an exact position or wall host.`,
       );
     }
     return {
@@ -229,6 +283,7 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
         request.elevationMm === undefined
           ? undefined
           : finiteNumber(request.elevationMm, `Asset request ${index + 1} elevationMm`, 0, 6000),
+      host,
     };
   });
   const requested = assets.reduce((total, entry) => total + entry.quantity, 0);
@@ -276,9 +331,13 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
     }
     roomShell = {
       widthMm:
-        shell.widthMm === undefined ? undefined : integer(shell.widthMm, "Room width", 3000, 20_000),
+        shell.widthMm === undefined
+          ? undefined
+          : integer(shell.widthMm, "Room width", 3000, 20_000),
       depthMm:
-        shell.depthMm === undefined ? undefined : integer(shell.depthMm, "Room depth", 3000, 20_000),
+        shell.depthMm === undefined
+          ? undefined
+          : integer(shell.depthMm, "Room depth", 3000, 20_000),
       vertices,
       wallHeightMm:
         shell.wallHeightMm === undefined
@@ -345,10 +404,12 @@ function resolvedPlacement(
   requested: RoomAssetRequest["placement"],
 ): ResolvedPlacement {
   if (requested && requested !== "auto") return requested;
+  if (asset.objectType === "door" || asset.objectType === "window") return "wall";
   if (asset.connection === "bench") return "surface";
   const identity = `${asset.id} ${asset.name}`.toLowerCase();
   if (identity.includes("island")) return "island";
-  if (["bench", "cabinet", "shelf", "hood", "rack", "washer"].includes(asset.profile)) {
+  if (asset.id === "office-desk") return "perimeter";
+  if (["bench", "cabinet", "tall", "shelf", "hood", "rack", "washer"].includes(asset.profile)) {
     return "perimeter";
   }
   return "open";
@@ -379,8 +440,8 @@ function spatiallyValid(room: Room, candidate: SceneObject) {
   return !validatePlacement(hypothetical).some(
     (warning) =>
       warning.objectIds.includes(candidate.id) &&
-      ["outside-", "below-floor-", "above-ceiling-", "overlap-", "unsupported-"].some((prefix) =>
-        warning.id.startsWith(prefix),
+      ["outside-", "below-floor-", "above-ceiling-", "overlap-", "unsupported-", "opening-"].some(
+        (prefix) => warning.id.startsWith(prefix),
       ),
   );
 }
@@ -407,22 +468,38 @@ function planningPositions(room: Room, asset: AssetDefinition, placement: Resolv
     });
   };
 
-  for (const rotation of [0, 90, 180, 270]) {
-    const quarterTurn = rotation % 180 !== 0;
-    const width = quarterTurn ? asset.defaultDimensions.depth : asset.defaultDimensions.width;
-    const depth = quarterTurn ? asset.defaultDimensions.width : asset.defaultDimensions.depth;
-    const insetX = width / 2 + 180;
-    const insetY = depth / 2 + 180;
-    if (placement === "perimeter") {
-      for (let x = bounds.minX + insetX; x <= bounds.maxX - insetX; x += PLAN_GRID_MM) {
-        add(x, bounds.minY + insetY, rotation);
-        add(x, bounds.maxY - insetY, rotation);
+  if (placement === "perimeter" || placement === "wall") {
+    const sides = [
+      { rotation: 0, edge: "top" as const },
+      { rotation: 180, edge: "bottom" as const },
+      { rotation: 270, edge: "left" as const },
+      { rotation: 90, edge: "right" as const },
+    ];
+    for (const { rotation, edge } of sides) {
+      const quarterTurn = rotation % 180 !== 0;
+      const width = quarterTurn ? asset.defaultDimensions.depth : asset.defaultDimensions.width;
+      const depth = quarterTurn ? asset.defaultDimensions.width : asset.defaultDimensions.depth;
+      const insetX = width / 2 + 180;
+      const insetY = depth / 2 + 180;
+      if (edge === "top" || edge === "bottom") {
+        const y = edge === "top" ? bounds.minY + insetY : bounds.maxY - insetY;
+        for (let x = bounds.minX + insetX; x <= bounds.maxX - insetX; x += PLAN_GRID_MM) {
+          add(x, y, rotation);
+        }
+      } else {
+        const x = edge === "left" ? bounds.minX + insetX : bounds.maxX - insetX;
+        for (let y = bounds.minY + insetY; y <= bounds.maxY - insetY; y += PLAN_GRID_MM) {
+          add(x, y, rotation);
+        }
       }
-      for (let y = bounds.minY + insetY; y <= bounds.maxY - insetY; y += PLAN_GRID_MM) {
-        add(bounds.minX + insetX, y, rotation);
-        add(bounds.maxX - insetX, y, rotation);
-      }
-    } else {
+    }
+  } else {
+    for (const rotation of [0, 90, 180, 270]) {
+      const quarterTurn = rotation % 180 !== 0;
+      const width = quarterTurn ? asset.defaultDimensions.depth : asset.defaultDimensions.width;
+      const depth = quarterTurn ? asset.defaultDimensions.width : asset.defaultDimensions.depth;
+      const insetX = width / 2 + 180;
+      const insetY = depth / 2 + 180;
       for (let y = bounds.minY + insetY; y <= bounds.maxY - insetY; y += PLAN_GRID_MM) {
         for (let x = bounds.minX + insetX; x <= bounds.maxX - insetX; x += PLAN_GRID_MM) {
           add(x, y, rotation);
@@ -434,12 +511,179 @@ function planningPositions(room: Room, asset: AssetDefinition, placement: Resolv
   return [...keyed.values()].sort((left, right) => {
     const centreScore = (position: typeof left) =>
       Math.hypot(position.x - centre.x, position.y - centre.y);
-    if (placement === "perimeter") {
+    if (placement === "perimeter" || placement === "wall") {
       return left.edgeDistance - right.edgeDistance || centreScore(left) - centreScore(right);
     }
     if (placement === "island") return centreScore(left) - centreScore(right);
     return centreScore(left) - centreScore(right);
   });
+}
+
+function normalizeRotation(value: number) {
+  return ((value % 360) + 360) % 360;
+}
+
+function inwardRotationForPosition(room: Room, position: { x: number; y: number }) {
+  const floor = getClosedWallFloorPolygon(room.scene.objects);
+  const bounds = floor?.bounds ?? { minX: 0, minY: 0, maxX: room.width, maxY: room.depth };
+  const nearest = [
+    { distance: Math.abs(position.y - bounds.minY), rotation: 0 },
+    { distance: Math.abs(bounds.maxY - position.y), rotation: 180 },
+    { distance: Math.abs(position.x - bounds.minX), rotation: 270 },
+    { distance: Math.abs(bounds.maxX - position.x), rotation: 90 },
+  ].sort((left, right) => left.distance - right.distance)[0];
+  return nearest.rotation;
+}
+
+function workstationSeatCandidate(
+  room: Room,
+  seatAsset: AssetDefinition,
+  usedHostIds: Set<string>,
+  requestedRotation?: number,
+  requestedElevation?: number,
+) {
+  const hosts = room.scene.objects
+    .filter((object) => {
+      if (!object.visible || usedHostIds.has(object.id)) return false;
+      const definition = object.assetDefinitionId
+        ? ASSET_BY_ID.get(object.assetDefinitionId)
+        : undefined;
+      return definition?.profile === "table" || definition?.profile === "bench";
+    })
+    .sort((left, right) => {
+      const leftPlanned = left.id.startsWith("plan-") ? 0 : 1;
+      const rightPlanned = right.id.startsWith("plan-") ? 0 : 1;
+      return leftPlanned - rightPlanned || left.position.x - right.position.x;
+    });
+
+  for (const host of hosts) {
+    const radians = (host.rotation.z * Math.PI) / 180;
+    const frontX = -Math.sin(radians);
+    const frontY = Math.cos(radians);
+    const centreOffset = host.dimensions.depth / 2 + seatAsset.defaultDimensions.depth / 2 + 220;
+    const candidate = proposalObject(room, seatAsset, "open", {
+      x: host.position.x + frontX * centreOffset,
+      y: host.position.y + frontY * centreOffset,
+      rotation: requestedRotation ?? normalizeRotation(host.rotation.z + 180),
+      elevation: requestedElevation,
+    });
+    if (!spatiallyValid(room, candidate)) continue;
+    return { candidate, host };
+  }
+  return null;
+}
+
+function wallPointAtOffset(wall: SceneObject, offset: number) {
+  if (!wall.wall) return null;
+  const length = Math.hypot(
+    wall.wall.end.x - wall.wall.start.x,
+    wall.wall.end.y - wall.wall.start.y,
+  );
+  if (!length) return null;
+  const ratio = offset / length;
+  return {
+    x: wall.wall.start.x + (wall.wall.end.x - wall.wall.start.x) * ratio,
+    y: wall.wall.start.y + (wall.wall.end.y - wall.wall.start.y) * ratio,
+  };
+}
+
+function openingProjections(
+  room: Room,
+  asset: AssetDefinition,
+  request: RoomAssetRequest,
+): Array<{ projection: WallProjection; wallIndex: number | null }> {
+  const walls = room.scene.objects.filter((object) => object.visible && object.wall);
+  if (!walls.length) return [];
+  if (request.host?.wallIndex !== undefined) {
+    const wall = walls[request.host.wallIndex - 1];
+    if (!wall?.wall) return [];
+    const length = Math.hypot(
+      wall.wall.end.x - wall.wall.start.x,
+      wall.wall.end.y - wall.wall.start.y,
+    );
+    const offset = request.host.offsetMm ?? length / 2;
+    if (
+      offset < asset.defaultDimensions.width / 2 ||
+      offset > length - asset.defaultDimensions.width / 2
+    ) {
+      return [];
+    }
+    const target = wallPointAtOffset(wall, offset);
+    const projection = target
+      ? projectPointToWall(wall, target, asset.defaultDimensions.width)
+      : null;
+    return projection ? [{ projection, wallIndex: request.host.wallIndex }] : [];
+  }
+  if (request.position) {
+    const projection = findNearestWallProjection(
+      walls,
+      { x: request.position.xMm, y: request.position.yMm },
+      asset.defaultDimensions.width,
+    );
+    return projection
+      ? [{ projection, wallIndex: walls.findIndex((wall) => wall.id === projection.wall.id) + 1 }]
+      : [];
+  }
+
+  const candidates: Array<{ projection: WallProjection; wallIndex: number | null }> = [];
+  walls.forEach((wall, index) => {
+    if (!wall.wall) return;
+    const length = Math.hypot(
+      wall.wall.end.x - wall.wall.start.x,
+      wall.wall.end.y - wall.wall.start.y,
+    );
+    const inset = asset.defaultDimensions.width / 2;
+    const preferredOffsets =
+      asset.objectType === "door"
+        ? [Math.max(inset, Math.min(length / 2, inset + 600)), length / 2]
+        : [length / 2, Math.max(inset, length / 3), Math.min(length - inset, (length * 2) / 3)];
+    preferredOffsets.forEach((offset) => {
+      if (offset < inset || offset > length - inset) return;
+      const target = wallPointAtOffset(wall, offset);
+      const projection = target
+        ? projectPointToWall(wall, target, asset.defaultDimensions.width)
+        : null;
+      if (projection) candidates.push({ projection, wallIndex: index + 1 });
+    });
+  });
+  return candidates;
+}
+
+function hostedOpeningCandidate(room: Room, asset: AssetDefinition, request: RoomAssetRequest) {
+  for (const { projection, wallIndex } of openingProjections(room, asset, request)) {
+    const candidate = proposalObject(room, asset, "wall", {
+      x: projection.point.x,
+      y: projection.point.y,
+      rotation: projection.rotation,
+      elevation: request.host?.sillHeightMm ?? request.elevationMm,
+    });
+    candidate.opening = {
+      wallId: projection.wall.id,
+      offset: projection.offset,
+      width: candidate.dimensions.width,
+      sillHeight:
+        request.host?.sillHeightMm ??
+        request.elevationMm ??
+        (asset.objectType === "window" ? 900 : 0),
+      height: candidate.dimensions.height,
+      handing: request.host?.handing ?? "left",
+      swing: request.host?.swing ?? (asset.id.includes("sliding-door") ? "sliding" : "inward"),
+    };
+    Object.assign(candidate, hostOpeningAtPoint(candidate, projection));
+    if (
+      openingOverlapsSibling(
+        room.scene.objects,
+        projection.wall.id,
+        projection.offset,
+        candidate.dimensions.width,
+      ) ||
+      !spatiallyValid(room, candidate)
+    ) {
+      continue;
+    }
+    return { candidate, wallIndex };
+  }
+  return null;
 }
 
 function proposalObject(
@@ -480,10 +724,11 @@ function wallObject(
   end: { x: number; y: number },
   thickness: number,
   height: number,
+  objectId?: string,
 ) {
   const now = new Date().toISOString();
   const length = Math.hypot(end.x - start.x, end.y - start.y);
-  const id = `plan-wall-${crypto.randomUUID()}`;
+  const id = objectId ?? `plan-wall-${crypto.randomUUID()}`;
   const object: SceneObject = {
     id,
     indexCode: `PLAN-WALL-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
@@ -623,25 +868,49 @@ export function planRoomLayout(
           { x: segment.end.xMm, y: segment.end.yMm },
           segment.thicknessMm,
           segment.heightMm,
+          segment.proposalId,
         ),
       );
     }
   }
   const proposals: PlannedRoomObject[] = [];
   const unplaced: PlanRoomLayoutResult["unplaced"] = [];
+  const usedWorkstationHostIds = new Set<string>();
 
   const orderedRequests = normalized.assets
     .map((request, order) => ({ request, order }))
     .sort((left, right) => {
-      const leftBench = ASSET_BY_ID.get(left.request.assetId)?.connection === "bench" ? 1 : 0;
-      const rightBench = ASSET_BY_ID.get(right.request.assetId)?.connection === "bench" ? 1 : 0;
-      return leftBench - rightBench || left.order - right.order;
+      const priority = (request: RoomAssetRequest) => {
+        const definition = ASSET_BY_ID.get(request.assetId);
+        if (definition?.objectType === "door" || definition?.objectType === "window") return 0;
+        if (definition?.profile === "table" || definition?.profile === "bench") return 1;
+        if (definition?.profile === "seat") return 3;
+        if (definition?.connection === "bench") return 4;
+        return 2;
+      };
+      return priority(left.request) - priority(right.request) || left.order - right.order;
     });
 
   for (const { request } of orderedRequests) {
     const asset = ASSET_BY_ID.get(request.assetId);
     if (!asset || !PLAN_CATEGORIES.has(asset.category) || asset.objectType === "wall") {
       throw new LabSpaceActionError(`Unknown or unsupported planning asset: ${request.assetId}.`);
+    }
+    const isOpening = asset.objectType === "door" || asset.objectType === "window";
+    if (request.host && !isOpening) {
+      throw new LabSpaceActionError(
+        `Wall-host details are currently supported for doors and windows, not ${asset.name}.`,
+      );
+    }
+    if (request.placement === "wall" && asset.connection !== "wall") {
+      throw new LabSpaceActionError(`${asset.name} is not a wall-connected catalog asset.`);
+    }
+    if (
+      isOpening &&
+      request.placement !== undefined &&
+      !["auto", "wall"].includes(request.placement)
+    ) {
+      throw new LabSpaceActionError(`${asset.name} must use auto or wall placement.`);
     }
     if (!SUPPORTED_CONNECTIONS.has(asset.connection)) {
       for (let index = 0; index < request.quantity; index += 1) {
@@ -655,24 +924,102 @@ export function planRoomLayout(
     }
     const placement = resolvedPlacement(asset, request.placement);
     for (let index = 0; index < request.quantity; index += 1) {
+      if (asset.objectType === "door" || asset.objectType === "window") {
+        const hosted = hostedOpeningCandidate(workingRoom, asset, request);
+        if (!hosted) {
+          unplaced.push({
+            assetId: asset.id,
+            assetName: asset.name,
+            reason:
+              "No non-overlapping hosted wall position could fit this opening at the requested offset and sill height.",
+          });
+          continue;
+        }
+        workingRoom.scene.objects.push(hosted.candidate);
+        proposals.push({
+          proposalId: hosted.candidate.id,
+          assetId: asset.id,
+          assetName: asset.name,
+          position: {
+            xMm: hosted.candidate.position.x,
+            yMm: hosted.candidate.position.y,
+            zMm: hosted.candidate.position.z,
+          },
+          rotationDeg: hosted.candidate.rotation.z,
+          dimensionsMm: hosted.candidate.dimensions,
+          placement: "wall",
+          nearestObjectGapMm: null,
+          opening: {
+            hostWallProposalId: hosted.candidate.opening!.wallId,
+            wallIndex: hosted.wallIndex,
+            offsetMm: hosted.candidate.opening!.offset,
+            sillHeightMm: hosted.candidate.opening!.sillHeight,
+            handing: hosted.candidate.opening!.handing,
+            swing: hosted.candidate.opening!.swing,
+          },
+        });
+        continue;
+      }
+
       let accepted: SceneObject | null = null;
       let acceptedGap: number | null = null;
+      let snappedTo: PlannedRoomObject["snappedTo"];
+      if (asset.profile === "seat" && !request.position) {
+        const paired = workstationSeatCandidate(
+          workingRoom,
+          asset,
+          usedWorkstationHostIds,
+          request.rotationDeg,
+          request.elevationMm,
+        );
+        if (paired) {
+          accepted = paired.candidate;
+          acceptedGap = nearestGap(paired.candidate, workingRoom.scene.objects);
+          usedWorkstationHostIds.add(paired.host.id);
+          snappedTo = {
+            proposalId: paired.host.id,
+            name: paired.host.name,
+            relation: "workstation",
+          };
+        }
+      }
       const positions = request.position
         ? [
             {
               x: request.position.xMm,
               y: request.position.yMm,
-              rotation: request.rotationDeg ?? 0,
-              elevation: request.elevationMm,
+              rotation:
+                request.rotationDeg ??
+                (placement === "perimeter" || placement === "wall"
+                  ? inwardRotationForPosition(workingRoom, {
+                      x: request.position.xMm,
+                      y: request.position.yMm,
+                    })
+                  : 0),
+              elevation:
+                request.elevationMm ??
+                (asset.connection === "wall"
+                  ? Math.max(
+                      0,
+                      Math.min(1400, workingRoom.wallHeight - asset.defaultDimensions.height),
+                    )
+                  : undefined),
               edgeDistance: 0,
             },
           ]
         : planningPositions(workingRoom, asset, placement).map((position) => ({
             ...position,
             rotation: request.rotationDeg ?? position.rotation,
-            elevation: request.elevationMm,
+            elevation:
+              request.elevationMm ??
+              (asset.connection === "wall"
+                ? Math.max(
+                    0,
+                    Math.min(1400, workingRoom.wallHeight - asset.defaultDimensions.height),
+                  )
+                : undefined),
           }));
-      for (const position of positions) {
+      for (const position of accepted ? [] : positions) {
         let candidate = proposalObject(workingRoom, asset, placement, position);
         if (requiresBenchSupport(candidate)) {
           const supported = snapBenchObjectToAvailableSupport(workingRoom, candidate);
@@ -690,7 +1037,7 @@ export function planRoomLayout(
         const minimumGap =
           asset.connection === "bench"
             ? 0
-            : placement === "perimeter"
+            : placement === "perimeter" || placement === "wall"
               ? 80
               : (normalized.aisleMm ?? 900);
         if (gap !== null && gap < minimumGap) continue;
@@ -723,6 +1070,7 @@ export function planRoomLayout(
         dimensionsMm: accepted.dimensions,
         placement,
         nearestObjectGapMm: acceptedGap,
+        ...(snappedTo ? { snappedTo } : {}),
       });
     }
   }
@@ -744,11 +1092,13 @@ export function planRoomLayout(
         ? `Builds a validated closed ${shell.shape} wall outline with ${shell.segments.length} connected walls; the floor is derived from that loop.`
         : "Uses the active room's existing closed wall and floor geometry without replacing it.",
       "Uses canonical catalog dimensions and the active room's current wall/floor geometry.",
-      "Preserves explicit x/y position, rotation, and elevation requests when they pass deterministic validation.",
+      "Perimeter assets face inward; explicit x/y, rotation, and elevation requests remain authoritative when valid.",
+      "Seats pair one-to-one with available desks, tables, or benches before general open-floor placement.",
       "Bench-connected equipment is placed on a compatible support surface at its actual worktop elevation.",
+      "Doors and windows retain a canonical hosted-wall ID, offset, sill height, handing, and swing.",
       "Rejects boundary, overlap, elevation, and room-height conflicts with LabSpace's deterministic validator.",
       "Aisle spacing is a planning preference, not a regulatory or manufacturer-certified clearance.",
-      "This proposal is read-only until separately staged and explicitly approved in LabSpace.",
+      "The proposal is read-only. Only the first complete plan for a new WebMCP-created blank room may auto-commit; later changes require review.",
     ],
     requiresHumanApproval: true,
   };

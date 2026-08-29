@@ -21,7 +21,7 @@ Open `http://127.0.0.1:3004/`, `/digital-twin`, or `/inventory`.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
 
-## Discover the thirteen tools
+## Discover the fourteen tools
 
 In Chrome DevTools Console:
 
@@ -34,6 +34,7 @@ tools.map(({ name, title, annotations }) => ({ name, title, annotations }));
 Expected names (Chrome normally sorts them alphabetically):
 
 ```text
+labspace_create_room
 labspace_find_valid_placements
 labspace_focus_record
 labspace_get_context
@@ -49,7 +50,7 @@ labspace_stage_room_plan
 labspace_validate_object_move
 ```
 
-There should be thirteen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+There should be fourteen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## Manual tool calls
 
@@ -78,29 +79,52 @@ await document.modelContext.executeTool(
 await document.modelContext.executeTool(byName.labspace_focus_record, JSON.stringify({ recordId }));
 ```
 
-For the empty-room builder workflow, open **Empty lab plan**, then run:
+For the initial room-builder workflow, run:
 
 ```js
+const createdRoomJson = await document.modelContext.executeTool(
+  byName.labspace_create_room,
+  JSON.stringify({ name: "Office for Students", code: "812" }),
+);
+const createdRoom = JSON.parse(createdRoomJson);
+
 const assetJson = await document.modelContext.executeTool(
   byName.labspace_search_assets,
-  JSON.stringify({ query: "laboratory bench" }),
+  JSON.stringify({ query: "office desk" }),
 );
 JSON.parse(assetJson).results;
 
 const planJson = await document.modelContext.executeTool(
   byName.labspace_plan_room,
   JSON.stringify({
-    brief: "Compact equipment preparation room with a clear central aisle",
-    aisleMm: 900,
+    brief: "Six-wall student office with four paired workstations and hosted openings",
+    aisleMm: 700,
     roomShell: {
-      widthMm: 8000,
-      depthMm: 6000,
-      wallHeightMm: 3000,
-      wallThicknessMm: 150,
+      vertices: [
+        { xMm: 0, yMm: 0 },
+        { xMm: 7000, yMm: 0 },
+        { xMm: 7000, yMm: 3000 },
+        { xMm: 6000, yMm: 3000 },
+        { xMm: 6000, yMm: 5000 },
+        { xMm: 0, yMm: 5000 },
+      ],
     },
     assets: [
-      { assetId: "lab-bench", quantity: 1, placement: "perimeter" },
-      { assetId: "floor-centrifuge", quantity: 1, placement: "open" },
+      { assetId: "office-desk", quantity: 4 },
+      { assetId: "office-chair", quantity: 4 },
+      { assetId: "tall-cabinet", quantity: 1, placement: "perimeter" },
+      {
+        assetId: "single-door",
+        quantity: 1,
+        placement: "wall",
+        host: { wallIndex: 6, offsetMm: 1000, handing: "right", swing: "inward" },
+      },
+      {
+        assetId: "standard-window",
+        quantity: 1,
+        placement: "wall",
+        host: { wallIndex: 1, offsetMm: 4500, sillHeightMm: 900 },
+      },
     ],
   }),
 );
@@ -112,7 +136,9 @@ await document.modelContext.executeTool(
 );
 ```
 
-The final call creates a cyan in-memory blueprint with four connected walls, a floor derived from that closed outline, and the proposed assets. **Cancel preview** restores the exact blank room; **Approve room plan** commits the shell, room dimensions, assets, and applicable index records as one undoable history entry. Existing room walls are never replaced by the planner. The browser agent cannot approve its own plan.
+The create call saves and activates a genuinely blank room and infers Floor 8 from room code `812`. The plan remains read-only. The final stage call verifies that every requested object was placed, then uses the room's one-use initial-layout capability to commit the six-wall shell, derived floor, paired desk/chair workstations, inward-facing cabinet, and wall-hosted openings as one undoable update. It returns `autoCommitted: true` and does not open a confirmation modal.
+
+That capability is consumed immediately. A second room plan, a plan for any existing room, an object move, or an inventory proposal still opens a reversible **Preview · not saved** review with researcher-only Approve/Cancel controls. Existing walls are never replaced automatically.
 
 For the deterministic move demo, search for `Wire-basket laboratory trolley`, inspect the returned object identity, then call:
 
@@ -159,7 +185,7 @@ await document.modelContext.executeTool(
 );
 ```
 
-The last call shows a reversible preview in LabSpace. Use the visible **Approve move** or **Cancel** control. No WebMCP tool can approve its own proposal.
+The last call shows a reversible preview in LabSpace. Use the visible **Approve move** or **Cancel** control. No WebMCP tool can approve its own later placement proposal.
 
 The exact UUIDs above belong to the source-controlled DEMO-01 seed. For any edited project, discover current IDs through search rather than copying them.
 
@@ -172,7 +198,7 @@ npm run test:e2e:webmcp
 npm run test:e2e
 ```
 
-The 17 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
+The 21 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
 
 If `document.modelContext` is `undefined`, confirm the Chrome flag, browser relaunch, top-level route, and secure/same-origin context. LabSpace itself should continue to work normally.
 

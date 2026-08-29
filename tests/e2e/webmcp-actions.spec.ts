@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
 
 const WEBMCP_TOOL_NAMES = [
+  "labspace_create_room",
   "labspace_find_valid_placements",
   "labspace_focus_record",
   "labspace_get_context",
@@ -159,7 +160,7 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly thirteen tools on product routes and excludes internal asset routes", async ({
+test("registers exactly fourteen tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin", "/inventory"]) {
@@ -316,6 +317,141 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
       return persisted.rooms.find((entry) => entry.id === room.id)!.scene.objects.length;
     })
     .toBe(6);
+});
+
+test("creates a blank room and auto-commits only its first complete WebMCP blueprint", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+
+  const created = await executeTool<{
+    roomId: string;
+    roomName: string;
+    roomCode: string;
+    floor: number;
+    persisted: boolean;
+    initialLayoutAutoCommitEligible: boolean;
+  }>(page, "labspace_create_room", {
+    name: "WebMCP Student Office",
+    code: "812",
+  });
+  expect(created).toMatchObject({
+    roomName: "WebMCP Student Office",
+    roomCode: "812",
+    floor: 8,
+    persisted: true,
+    initialLayoutAutoCommitEligible: true,
+  });
+  await expect(
+    page.locator(".room-navigator > .room-identity").getByText("WebMCP Student Office", {
+      exact: true,
+    }),
+  ).toBeVisible();
+
+  const plan = await executeTool<{
+    planId: string;
+    unplaced: unknown[];
+    shell: { vertices: Array<{ xMm: number; yMm: number }> };
+    proposals: Array<{
+      assetId: string;
+      rotationDeg: number;
+      snappedTo?: { relation: string };
+      opening?: { wallIndex: number; sillHeightMm: number };
+    }>;
+  }>(page, "labspace_plan_room", {
+    brief: "Six-wall student office with paired workstations and hosted openings.",
+    aisleMm: 700,
+    roomShell: {
+      vertices: [
+        { xMm: 0, yMm: 0 },
+        { xMm: 7000, yMm: 0 },
+        { xMm: 7000, yMm: 3000 },
+        { xMm: 6000, yMm: 3000 },
+        { xMm: 6000, yMm: 5000 },
+        { xMm: 0, yMm: 5000 },
+      ],
+    },
+    assets: [
+      { assetId: "office-desk", quantity: 4 },
+      { assetId: "office-chair", quantity: 4 },
+      {
+        assetId: "tall-cabinet",
+        quantity: 1,
+        position: { xMm: 500, yMm: 2500 },
+      },
+      {
+        assetId: "single-door",
+        quantity: 1,
+        placement: "wall",
+        host: { wallIndex: 6, offsetMm: 1000, handing: "right" },
+      },
+      {
+        assetId: "standard-window",
+        quantity: 1,
+        placement: "wall",
+        host: { wallIndex: 1, offsetMm: 5000, sillHeightMm: 900 },
+      },
+    ],
+  });
+  expect(plan.unplaced).toEqual([]);
+  const doubledArea = plan.shell.vertices.reduce((sum, vertex, index, vertices) => {
+    const next = vertices[(index + 1) % vertices.length];
+    return sum + vertex.xMm * next.yMm - next.xMm * vertex.yMm;
+  }, 0);
+  expect(Math.abs(doubledArea) / 2).toBe(33_000_000);
+  expect(
+    plan.proposals
+      .filter((proposal) => proposal.assetId === "office-chair")
+      .every((proposal) => proposal.snappedTo?.relation === "workstation"),
+  ).toBe(true);
+  expect(plan.proposals.find((proposal) => proposal.assetId === "tall-cabinet")?.rotationDeg).toBe(
+    270,
+  );
+  expect(
+    plan.proposals.find((proposal) => proposal.assetId === "single-door")?.opening,
+  ).toMatchObject({ wallIndex: 6 });
+
+  const staged = await executeTool<{
+    autoCommitted: boolean;
+    requiresHumanApproval: boolean;
+    objectCount: number;
+  }>(page, "labspace_stage_room_plan", { planId: plan.planId });
+  expect(staged).toMatchObject({
+    autoCommitted: true,
+    requiresHumanApproval: false,
+    objectCount: 17,
+  });
+  await expect(page.getByTestId("agent-change-review")).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const project = await readProject(page);
+      return project.rooms.find((room) => room.id === created.roomId)?.scene.objects.length;
+    })
+    .toBe(17);
+  await expect(page.getByText("All changes saved", { exact: true }).first()).toBeVisible();
+
+  const persisted = await readProject(page);
+  const room = persisted.rooms.find((entry) => entry.id === created.roomId)!;
+  const openings = room.scene.objects.filter((object) => object.opening);
+  expect(openings).toHaveLength(2);
+  expect(
+    openings.every((object) =>
+      room.scene.objects.some((wall) => wall.id === object.opening?.wallId),
+    ),
+  ).toBe(true);
+
+  const laterPlan = await executeTool<{ planId: string }>(page, "labspace_plan_room", {
+    assets: [{ assetId: "round-stool", quantity: 1, placement: "open" }],
+  });
+  const laterStage = await executeTool<{
+    autoCommitted: boolean;
+    requiresHumanApproval: boolean;
+  }>(page, "labspace_stage_room_plan", { planId: laterPlan.planId });
+  expect(laterStage).toMatchObject({ autoCommitted: false, requiresHumanApproval: true });
+  const review = page.getByTestId("agent-change-review");
+  await expect(review).toBeVisible();
+  await review.getByRole("button", { name: "Cancel preview" }).click();
 });
 
 test("searches and focuses canonical indexed evidence across rooms", async ({ page }) => {

@@ -22,11 +22,13 @@ Capture at 1920×1080 with readable browser zoom, clean DEMO-01 state, and no un
 - No staged preview and no misleading clearance graphics.
 - Purpose: deterministic safety and no-mutation proof.
 
-## 4. Human-reviewed stage
+## 4. Automatic initial build and human-reviewed later stage
 
+- Initial room 812 visible with its six-wall shell, paired desks/chairs, inward cabinet, hosted door/window, and saved/Undo evidence.
+- Follow-up object preview visible in the room.
 - Valid trolley preview visible in the room.
 - **Preview · not saved**, current/proposed coordinates, **Cancel**, and **Approve move** all readable.
-- Purpose: primary WebMCP Challenge human-agent collaboration image.
+- Purpose: show the risk-based boundary—fast first creation, visible review for later physical changes.
 
 ## 5. Approved and undoable
 
@@ -37,7 +39,7 @@ Capture at 1920×1080 with readable browser zoom, clean DEMO-01 state, and no un
 
 ## 6. Tool contract (technical evidence only)
 
-- Chrome WebMCP DevTools panel or compact console result showing exactly thirteen tool names.
+- Chrome WebMCP DevTools panel or compact console result showing exactly fourteen tool names.
 - Use in architecture/evidence section, not as the hero.
 - Never expose local paths, unrelated console output, or browser profile data.
 

@@ -209,10 +209,17 @@ export type SearchLabAssetsResult = {
 export type RoomAssetRequest = {
   assetId: string;
   quantity: number;
-  placement?: "auto" | "perimeter" | "island" | "open" | "surface";
+  placement?: "auto" | "perimeter" | "island" | "open" | "surface" | "wall";
   position?: { xMm: number; yMm: number };
   rotationDeg?: number;
   elevationMm?: number;
+  host?: {
+    wallIndex?: number;
+    offsetMm?: number;
+    sillHeightMm?: number;
+    handing?: "left" | "right";
+    swing?: "inward" | "outward" | "sliding";
+  };
 };
 
 export type PlanRoomLayoutInput = {
@@ -256,8 +263,21 @@ export type PlannedRoomObject = {
   position: { xMm: number; yMm: number; zMm: number };
   rotationDeg: number;
   dimensionsMm: { width: number; depth: number; height: number };
-  placement: "perimeter" | "island" | "open" | "surface";
+  placement: "perimeter" | "island" | "open" | "surface" | "wall";
   nearestObjectGapMm: number | null;
+  snappedTo?: {
+    proposalId: string;
+    name: string;
+    relation: "workstation";
+  };
+  opening?: {
+    hostWallProposalId: string;
+    wallIndex: number | null;
+    offsetMm: number;
+    sillHeightMm: number;
+    handing: "left" | "right";
+    swing: "inward" | "outward" | "sliding";
+  };
 };
 
 export type PlanRoomLayoutResult = {
@@ -318,8 +338,30 @@ export type StageRoomLayoutResult = {
   assetCount: number;
   floorGenerated: boolean;
   objects: PendingAgentLayoutChange["proposedObjects"];
-  persisted: false;
-  requiresHumanApproval: true;
+  persisted: boolean;
+  requiresHumanApproval: boolean;
+  autoCommitted: boolean;
+};
+
+export type CreateLabRoomResult = {
+  created: true;
+  projectId: string;
+  laboratoryId: string;
+  laboratoryName: string;
+  laboratoryCode: string;
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  floor: number;
+  blank: true;
+  active: true;
+  persisted: true;
+  initialLayoutAutoCommitEligible: true;
+  requiresHumanApproval: false;
+};
+
+export type LabSpaceWorkspaceActions = {
+  createRoom: (input: unknown) => Promise<CreateLabRoomResult>;
 };
 
 export type LabSpaceLayoutActions = {
@@ -432,9 +474,7 @@ export type PendingAgentMoveChange = {
 };
 
 export type PendingAgentChange =
-  | PendingAgentMoveChange
-  | PendingAgentLayoutChange
-  | PendingAgentInventoryChange;
+  PendingAgentMoveChange | PendingAgentLayoutChange | PendingAgentInventoryChange;
 
 export type StageObjectMoveResult = {
   staged: boolean;

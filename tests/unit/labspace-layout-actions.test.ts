@@ -51,6 +51,17 @@ describe("LabSpace browser-agent room planning", () => {
         indexingBehavior: "storage",
       }),
     );
+    const openings = searchLabAssets({
+      query: "observation window",
+      categories: ["Architecture"],
+    });
+    expect(openings.results).toContainEqual(
+      expect.objectContaining({
+        assetId: "standard-window",
+        category: "Architecture",
+        connection: "wall",
+      }),
+    );
     expect(() => searchLabAssets({ query: "", unexpected: true })).toThrow();
   });
 

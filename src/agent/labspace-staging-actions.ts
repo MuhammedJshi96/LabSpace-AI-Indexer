@@ -34,6 +34,11 @@ import { validateObjectMove } from "./labspace-spatial-actions";
 import { agentActivityActions } from "./agent-activity-store";
 import { getStoredRoomPlan } from "./labspace-layout-actions";
 import { getStoredInventoryPlan } from "./labspace-inventory-actions";
+import { hostOpeningAtPoint, projectPointToWall } from "../domain/wall-openings";
+import {
+  consumeInitialRoomPlanAutoCommit,
+  isInitialRoomPlanAutoCommitEligible,
+} from "./labspace-workspace-actions";
 
 function resolveObject(project: Project, objectId: string): { room: Room; object: SceneObject } {
   for (const room of project.rooms) {
@@ -146,6 +151,7 @@ function instantiatePlanObject(
   scene: Scene,
   planId: string,
   proposal: ReturnType<typeof getStoredRoomPlan>["result"]["proposals"][number],
+  hostWallIds: Map<string, string>,
 ) {
   const definition = ASSET_BY_ID.get(proposal.assetId);
   if (!definition)
@@ -188,6 +194,36 @@ function instantiatePlanObject(
     childLocationIds: [],
     zIndex: Math.max(0, ...scene.objects.map((entry) => entry.zIndex)) + 1,
   };
+  if (proposal.opening) {
+    const hostWallId = hostWallIds.get(proposal.opening.hostWallProposalId);
+    const hostWall = scene.objects.find((entry) => entry.id === hostWallId && entry.wall);
+    if (!hostWall?.wall) {
+      throw new LabSpaceActionError(`The hosted wall for ${definition.name} is unavailable.`);
+    }
+    const length = Math.hypot(
+      hostWall.wall.end.x - hostWall.wall.start.x,
+      hostWall.wall.end.y - hostWall.wall.start.y,
+    );
+    const ratio = proposal.opening.offsetMm / length;
+    const target = {
+      x: hostWall.wall.start.x + (hostWall.wall.end.x - hostWall.wall.start.x) * ratio,
+      y: hostWall.wall.start.y + (hostWall.wall.end.y - hostWall.wall.start.y) * ratio,
+    };
+    const projection = projectPointToWall(hostWall, target, object.dimensions.width);
+    if (!projection) {
+      throw new LabSpaceActionError(`${definition.name} no longer fits its planned host wall.`);
+    }
+    object.opening = {
+      wallId: hostWall.id,
+      offset: projection.offset,
+      width: object.dimensions.width,
+      sillHeight: proposal.opening.sillHeightMm,
+      height: object.dimensions.height,
+      handing: proposal.opening.handing,
+      swing: proposal.opening.swing,
+    };
+    Object.assign(object, hostOpeningAtPoint(object, projection));
+  }
   return { definition, object, now };
 }
 
@@ -377,7 +413,10 @@ function normalizeStageRoomLayoutInput(input: unknown) {
   return { planId: record.planId.trim() };
 }
 
-function layoutStageResult(change: PendingAgentLayoutChange): StageRoomLayoutResult {
+function layoutStageResult(
+  change: PendingAgentLayoutChange,
+  autoCommitted = false,
+): StageRoomLayoutResult {
   const wallCount = change.proposedObjects.filter((object) => object.kind === "wall").length;
   return {
     staged: true,
@@ -391,7 +430,8 @@ function layoutStageResult(change: PendingAgentLayoutChange): StageRoomLayoutRes
     floorGenerated: wallCount > 0,
     objects: change.proposedObjects,
     persisted: false,
-    requiresHumanApproval: true,
+    requiresHumanApproval: !autoCommitted,
+    autoCommitted,
   };
 }
 
@@ -431,15 +471,35 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     );
   }
 
+  const autoCommitInitialLayout = isInitialRoomPlanAutoCommitEligible(
+    room.id,
+    state.dirtyRevision,
+    room,
+  );
+  if (
+    autoCommitInitialLayout &&
+    (stored.result.unplaced.length > 0 ||
+      stored.result.plannedObjects !== stored.result.requestedObjects)
+  ) {
+    throw new LabSpaceActionError(
+      "The initial room blueprint is incomplete. Revise the plan before automatic creation.",
+    );
+  }
+
   const stageId = crypto.randomUUID();
   const beforeScene = structuredClone(room.scene);
   const proposedScene = structuredClone(room.scene);
   const proposedObjects: PendingAgentLayoutChange["proposedObjects"] = [];
   const proposedObjectIds: string[] = [];
+  const hostWallIds = new Map<string, string>();
+  room.scene.objects.forEach((object) => {
+    if (object.wall) hostWallIds.set(object.id, object.id);
+  });
   if (stored.result.shell.mode === "proposed") {
     for (const segment of stored.result.shell.segments) {
       const wall = instantiatePlanWall(state.project, room, proposedScene, planId, segment);
       proposedScene.objects.push(wall);
+      hostWallIds.set(segment.proposalId, wall.id);
       proposedObjectIds.push(wall.id);
       proposedObjects.push({
         objectId: wall.id,
@@ -462,6 +522,7 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
       proposedScene,
       planId,
       proposal,
+      hostWallIds,
     );
     proposedScene.objects.push(object);
     if (definition.indexingBehavior === "storage") {
@@ -536,6 +597,11 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     selectedIds: proposedObjectIds,
     pendingAgentChange: change,
   });
+  if (autoCommitInitialLayout) {
+    commitLayout(change, "automatic");
+    consumeInitialRoomPlanAutoCommit(room.id);
+    return layoutStageResult(change, true);
+  }
   return layoutStageResult(change);
 }
 
@@ -544,7 +610,10 @@ export function stageInventoryPlan(input: unknown): StageInventoryPlanResult {
   const stored = getStoredInventoryPlan(planId);
   const state = useEditorStore.getState();
   if (state.pendingAgentChange) {
-    if (state.pendingAgentChange.tool === "inventory" && state.pendingAgentChange.planId === planId) {
+    if (
+      state.pendingAgentChange.tool === "inventory" &&
+      state.pendingAgentChange.planId === planId
+    ) {
       const pending = state.pendingAgentChange;
       return {
         staged: true,
@@ -763,7 +832,10 @@ function committedLayoutScene(pending: PendingAgentLayoutChange, scene: Scene) {
   };
 }
 
-function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
+function commitLayout(
+  pending: PendingAgentLayoutChange,
+  mode: "human" | "automatic",
+): AgentMoveReviewResult {
   const state = useEditorStore.getState();
   const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
   if (
@@ -774,7 +846,8 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
     room.depth !== pending.proposedRoomSize.depth ||
     room.wallHeight !== pending.proposedRoomSize.wallHeight
   ) {
-    cancelLayout(pending);
+    if (mode === "human") cancelLayout(pending);
+    else useEditorStore.setState({ pendingAgentChange: null });
     throw new LabSpaceActionError(
       "The staged room plan became stale because the layout changed. It was not committed.",
     );
@@ -782,7 +855,10 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
   const after = committedLayoutScene(pending, room.scene);
   const command: SceneCommand = {
     id: crypto.randomUUID(),
-    label: `Approve agent room plan (${pending.proposedObjects.length} elements)`,
+    label:
+      mode === "automatic"
+        ? `Create initial WebMCP room plan (${pending.proposedObjects.length} elements)`
+        : `Approve agent room plan (${pending.proposedObjects.length} elements)`,
     kind: "scene",
     before: pending.beforeScene,
     after,
@@ -807,19 +883,32 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
     saveStatus: "unsaved",
     dirtyRevision: state.dirtyRevision + 1,
   });
+  const assetCount = pending.proposedObjects.filter((object) => object.kind === "asset").length;
   useEditorStore
     .getState()
     .pushToast(
-      `Room plan approved. LabSpace is saving the room shell and ${pending.proposedObjects.filter((object) => object.kind === "asset").length} assets.`,
+      mode === "automatic"
+        ? `Initial WebMCP room created with ${assetCount} assets. Later changes still require review.`
+        : `Room plan approved. LabSpace is saving the room shell and ${assetCount} assets.`,
       "success",
     );
-  agentActivityActions.record({
-    actor: "Human",
-    action: "Room plan approved",
-    subject: `${pending.proposedObjects.length} planned elements in ${pending.roomName}`,
-    status: "approved",
-    evidence: "Explicit researcher approval",
-  });
+  if (mode === "human") {
+    agentActivityActions.record({
+      actor: "Human",
+      action: "Room plan approved",
+      subject: `${pending.proposedObjects.length} planned elements in ${pending.roomName}`,
+      status: "approved",
+      evidence: "Explicit researcher approval",
+    });
+  } else {
+    agentActivityActions.record({
+      actor: "LabSpace",
+      action: "Initial room plan auto-committed",
+      subject: pending.roomName,
+      status: "committed",
+      evidence: "Brand-new blank room · deterministic validation passed · Undo available",
+    });
+  }
   agentActivityActions.record({
     actor: "LabSpace",
     action: "Layout committed",
@@ -834,6 +923,10 @@ function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult
     status: "approved",
     persisted: false,
   };
+}
+
+function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
+  return commitLayout(pending, "human");
 }
 
 function cancelInventory(pending: PendingAgentInventoryChange): AgentMoveReviewResult {

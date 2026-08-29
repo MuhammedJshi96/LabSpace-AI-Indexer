@@ -1,6 +1,7 @@
 {
   "version": 1,
   "toolSet": [
+    "labspace_create_room",
     "labspace_find_valid_placements",
     "labspace_get_context",
     "labspace_plan_room",
@@ -16,6 +17,19 @@
     "labspace_stage_object_move"
   ],
   "cases": [
+    {
+      "id": "create-initial-student-office",
+      "prompt": "Create room 812 named Office for Students in the current laboratory, give it a six-wall 32 square metre shell, four paired desks and chairs, one inward-facing cabinet, one door, and one observation window.",
+      "expectedTools": [
+        "labspace_create_room",
+        "labspace_search_assets",
+        "labspace_plan_room",
+        "labspace_stage_room_plan"
+      ],
+      "forbiddenTools": ["labspace_stage_object_move"],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Create and save one pristine blank room, then auto-commit its first complete deterministic blueprint with paired workstations and canonical hosted openings; later changes remain reviewed and Undo remains available."
+    },
     {
       "id": "plan-canonical-inventory",
       "prompt": "Find the exact Shelf 01 location in DEMO-01 and propose two boxes of new pipette tips there for my review.",

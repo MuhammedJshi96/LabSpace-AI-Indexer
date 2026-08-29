@@ -7,18 +7,18 @@
 - [ ] Confirm no pending staged change is present.
 - [ ] Confirm Agent Activity is clear/collapsed at the start.
 - [ ] Confirm the 2D/3D room and evidence images are fully loaded.
-- [ ] Confirm `document.modelContext.getTools()` returns thirteen unique LabSpace tools.
+- [ ] Confirm `document.modelContext.getTools()` returns fourteen unique LabSpace tools.
 - [ ] Confirm `/asset-preview` and `/procedural-asset-capture` expose no LabSpace tools.
 - [ ] Close private tabs, local paths, notifications, and unrelated consoles.
 
 ## Canonical story
 
-- [ ] Open Empty lab plan; ask the agent to build an 8 × 6 m room with connected walls, then add a bench and floor centrifuge with a 900 mm aisle.
-- [ ] Confirm the staged blueprint shows four walls, the derived floor, room dimensions, and the two requested assets in both 2D and 3D.
+- [ ] Ask the agent to create Office for Students, room 812, with a six-wall shell of roughly 32 m², four desks/chairs, one cabinet, one door, and one observation window.
+- [ ] Confirm Floor 8 is inferred from room code 812 and the room begins genuinely blank.
 - [ ] Confirm planning alone does not change the room.
-- [ ] Stage the complete blueprint; show the cyan 2D/3D proposal and manifest.
-- [ ] Demonstrate Cancel once, then stage again and use the human **Approve room plan** control.
-- [ ] Show one-step Undo/Redo of the complete approved blueprint.
+- [ ] Confirm the first complete blueprint auto-commits once with a derived floor, four workstation pairs, an inward-facing cabinet, and two canonical hosted openings.
+- [ ] Show one-step Undo/Redo of the complete initial blueprint.
+- [ ] Request one additional asset and confirm the later plan opens **Preview · not saved** with human Approve/Cancel.
 - [ ] Search BÜCHI rotary evaporator and its flask set.
 - [ ] Inspect canonical evidence and storage path.
 - [ ] Focus exact record; verify camera/evidence transition.
@@ -34,7 +34,7 @@
 
 - [ ] `npm ci` passes from a clean tree.
 - [ ] `npm run release:check` passes.
-- [ ] `npx playwright test tests/e2e/webmcp-actions.spec.ts` passes 5/5.
+- [ ] `npm run test:e2e:webmcp` passes 7/7.
 - [ ] Production `/api/health`, `/`, and `/digital-twin` smoke checks pass.
 - [ ] `pre-webmcp-2026-08-27` points to the baseline evidence commit.
 - [ ] `webmcp-submission-v1.1` points to the verified deployed branch commit.

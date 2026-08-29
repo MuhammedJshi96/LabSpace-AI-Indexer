@@ -12,19 +12,19 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 ## Take 2 — prove WebMCP discovery (0:16–0:29)
 
-**Screen:** Open the WebMCP Inspector, show thirteen registered tools and the ready-to-use planning prompt, then return to the room.
+**Screen:** Open the WebMCP Inspector, show fourteen registered tools and the ready-to-use planning prompt, then return to the room.
 
 **Voice-over:**
 
-“The agent discovers thirteen structured tools: catalog and location search, polygon room and inventory planning, exact focus, deterministic validation, and reversible staging. The activity inspector makes every bounded call visible.”
+“The agent discovers fourteen structured tools: blank-room creation, catalog and location search, polygon planning, exact focus, deterministic validation, and reversible later-change staging. The activity inspector makes every bounded call visible.”
 
 ## Take 3 — build from the empty room (0:29–1:12)
 
-**Screen:** Start on the empty canvas. Ask for an L-shaped six-wall room, a bench, a bench-mounted rotary evaporator, and a 90° floor centrifuge. Show the connected shell, automatically derived floor, support elevation, cyan 2D/3D blueprint, review manifest, Cancel once, then restage and approve yourself.
+**Screen:** Ask the agent to create Office for Students, room 812, with a six-wall shell of roughly 32 m², four desks/chairs, one cabinet, one door, and one observation window. Show the new room, connected shell, derived floor, paired workstations, correctly oriented cabinet, hosted openings, and the single Undo entry. Then request one additional stool and show that the later change opens human review.
 
 **Voice-over:**
 
-“Starting from an empty room, I ask for a six-wall preparation layout. WebMCP resolves canonical assets and transforms; LabSpace validates the polygon, derives its floor, rotates the centrifuge, and places the evaporator at the real bench elevation. Planning changes nothing. Only staging shows the cyan blueprint, which I can cancel exactly or approve as one undoable update.”
+“I ask for student office 812 with a six-wall plan. WebMCP creates a blank room, infers Floor 8, resolves real assets, derives the floor, pairs each chair with a desk, faces the cabinet inward, and hosts the door and window on exact walls. Its first complete blueprint commits once with Undo—no pointless interruption. My next change returns to human review.”
 
 ## Take 4 — search exact evidence (1:12–1:40)
 

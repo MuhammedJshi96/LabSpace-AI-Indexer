@@ -129,7 +129,7 @@ test("application starts empty, opens the bundled showcase, and can create a lea
   expect(room.scene.layers.length).toBeGreaterThanOrEqual(9);
   await expect(page.getByRole("button", { name: /Demo kit \d+/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Curated \d+/ })).toHaveCount(0);
-  await expect(page.getByText(/\d+ assets .* \d+ favorites/)).toBeVisible();
+  await expect(page.getByText(/\d+ active assets .* \d+ favorites?/)).toBeVisible();
   await expect(page.getByRole("button", { name: /Reset camera|Fit room/ })).toHaveCount(0);
 
   // The competition demo deliberately omits the optional ceiling/services profile.
@@ -181,7 +181,8 @@ test("the 3D canvas renders real pixels and Asset Studio opens safely", async ({
     .locator("img")
     .first();
   await expect(authoredThumbnail).toHaveAttribute("data-render-source", "3d");
-  await expect(authoredThumbnail).toHaveAttribute("src", /models\/hero\/renders\/lab-bench/);
+  await expect(authoredThumbnail).toHaveAttribute("data-thumbnail-alignment", "alpha-baseline");
+  await expect(authoredThumbnail).toHaveAttribute("src", /^data:image\/png;base64,/);
 
   const studioLink = page.getByRole("link", { name: "Asset Studio", exact: true });
   await expect(studioLink).toHaveAttribute("href", "/asset-preview");

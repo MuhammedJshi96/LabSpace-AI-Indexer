@@ -21,11 +21,27 @@ test("keeps room switching and facility management discoverable", async ({ page 
   const floorStack = page.getByLabel("Three-dimensional facility floor stack");
   await expect(floorStack).toBeVisible();
   await expect(floorStack).toHaveAttribute("data-facility-render-mode", "material-aware");
+  await expect(floorStack).toHaveAttribute("data-facility-envelope", "cutaway");
   await expect(page.locator(".facility-stack-label")).toHaveCount(0);
   await expect(page.locator(".facility-stack-summary b")).toContainText(/occupied floor/);
   await expect(page.locator(".facility-floor-setter select option")).toHaveCount(15);
   await page.getByRole("button", { name: "Organize floors from room numbers" }).click();
   await expect(page.getByText(/rooms organized across floors/)).toBeVisible();
+});
+
+test("keeps the complete desktop shell separated at capture width", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 900 });
+  await page.goto("/digital-twin");
+
+  const left = await page.locator(".top-bar-left").boundingBox();
+  const navigation = await page.locator(".primary-navigation").boundingBox();
+  const right = await page.locator(".top-bar-right").boundingBox();
+  expect(left).not.toBeNull();
+  expect(navigation).not.toBeNull();
+  expect(right).not.toBeNull();
+  expect(left!.x + left!.width).toBeLessThanOrEqual(navigation!.x + 0.5);
+  expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(right!.x + 0.5);
+  await expect(page.locator(".editable-badge")).toBeHidden();
 });
 
 test("uses one ordered Create menu and focused workspace forms", async ({ page }) => {

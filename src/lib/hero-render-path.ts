@@ -2,6 +2,8 @@ import type { AssetDefinition } from "../domain/schema";
 
 export type AuthoredRenderView = "isometric" | "top";
 
+const AUTHORED_RENDER_REVISION = "catalog-frame-r2";
+
 /**
  * Resolve the deterministic Blender render generated beside the authored GLB.
  * Keeping this convention derived from previewSrc prevents a second manifest
@@ -14,5 +16,5 @@ export function authoredAssetRenderSource(asset: AssetDefinition, view: Authored
   const fileName = cleanSource.slice(cleanSource.lastIndexOf("/") + 1);
   const stem = fileName.replace(/\.glb$/i, "");
   if (!stem || stem === fileName) return null;
-  return `/models/hero/renders/${stem}-${view}.png?v=${encodeURIComponent(model.revision)}`;
+  return `/models/hero/renders/${stem}-${view}.png?v=${encodeURIComponent(`${model.revision}-${AUTHORED_RENDER_REVISION}`)}`;
 }

@@ -12,7 +12,15 @@ import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { getAssetDefinition } from "../domain/assets";
-import { FACILITY_FLOORS, inferFacilityFloorFromRoomCode } from "../domain/facility";
+import {
+  FACILITY_FLOORS,
+  facilityFloorBounds,
+  inferFacilityFloorFromRoomCode,
+  nextFacilityRoomPlacement,
+  resolveFacilityFloorLayout,
+  type FacilityRoomLayoutEntry,
+  type FacilityRoomLayoutInput,
+} from "../domain/facility";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import type { Room, SceneObject } from "../domain/schema";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
@@ -39,6 +47,18 @@ function roomPlacement(room: Room, index = 0) {
 
 function roomFloor(room: Room, index = 0) {
   return clampFloorIndex(roomPlacement(room, index).floor) + 1;
+}
+
+function roomLayoutInput(room: Room, index = 0): FacilityRoomLayoutInput {
+  const placement = roomPlacement(room, index);
+  return {
+    id: room.id,
+    widthMm: room.width,
+    depthMm: room.depth,
+    xMm: placement.x,
+    yMm: placement.y,
+    rotationDeg: placement.rotation,
+  };
 }
 
 function metres(value: number) {
@@ -71,45 +91,67 @@ function representativeObjects(objects: SceneObject[]) {
     .slice(0, 24);
 }
 
-type PositionedRoom = {
+type PositionedRoom = FacilityRoomLayoutEntry & {
   room: Room;
-  x: number;
-  z: number;
 };
 
 function layoutRoomsOnFloor(rooms: Room[]): PositionedRoom[] {
-  if (rooms.length === 1) return [{ room: rooms[0], x: 0, z: 0 }];
-  const raw = rooms.map((room, index) => {
-    const placement = roomPlacement(room, index);
-    return {
-      room,
-      x: placement.x / 1000 + room.width / 2000,
-      z: placement.y / 1000 + room.depth / 2000,
-    };
-  });
-  const distinctPositions = new Set(
-    raw.map((entry) => `${entry.x.toFixed(2)}:${entry.z.toFixed(2)}`),
+  const byId = new Map(rooms.map((room) => [room.id, room]));
+  return resolveFacilityFloorLayout(rooms.map(roomLayoutInput)).map((entry) => ({
+    ...entry,
+    room: byId.get(entry.id)!,
+  }));
+}
+
+function FacilityFloorEnvelope({
+  rooms,
+  sectionY,
+  selected,
+}: {
+  rooms: PositionedRoom[];
+  sectionY: number;
+  selected: boolean;
+}) {
+  const bounds = facilityFloorBounds(rooms);
+  const padding = 0.72;
+  const width = bounds.maxX - bounds.minX + padding * 2;
+  const depth = bounds.maxZ - bounds.minZ + padding * 2;
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerZ = (bounds.minZ + bounds.maxZ) / 2;
+  const wallThickness = 0.18;
+  const wallHeight = 1.22;
+  const cutawayHeight = 0.2;
+
+  return (
+    <group position={[centerX, sectionY, centerZ]}>
+      <mesh position={[0, -0.2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[width, 0.24, depth]} />
+        <meshPhysicalMaterial
+          color={selected ? "#cbe9e2" : "#c7d2cf"}
+          metalness={0.16}
+          roughness={0.48}
+          clearcoat={0.14}
+          clearcoatRoughness={0.42}
+        />
+      </mesh>
+      <mesh position={[0, wallHeight / 2, -depth / 2 + wallThickness / 2]} castShadow>
+        <boxGeometry args={[width, wallHeight, wallThickness]} />
+        <meshPhysicalMaterial color="#e3e8e6" roughness={0.58} clearcoat={0.08} />
+      </mesh>
+      <mesh position={[-width / 2 + wallThickness / 2, wallHeight / 2, 0]} castShadow>
+        <boxGeometry args={[wallThickness, wallHeight, depth]} />
+        <meshPhysicalMaterial color="#dce3e0" roughness={0.58} clearcoat={0.08} />
+      </mesh>
+      <mesh position={[0, cutawayHeight / 2, depth / 2 - wallThickness / 2]} castShadow>
+        <boxGeometry args={[width, cutawayHeight, wallThickness]} />
+        <meshStandardMaterial color="#879b96" metalness={0.24} roughness={0.4} />
+      </mesh>
+      <mesh position={[width / 2 - wallThickness / 2, cutawayHeight / 2, 0]} castShadow>
+        <boxGeometry args={[wallThickness, cutawayHeight, depth]} />
+        <meshStandardMaterial color="#879b96" metalness={0.24} roughness={0.4} />
+      </mesh>
+    </group>
   );
-  const positioned =
-    distinctPositions.size === rooms.length
-      ? raw
-      : (() => {
-          const columns = Math.ceil(Math.sqrt(rooms.length));
-          const cellWidth = Math.max(...rooms.map((room) => room.width / 1000)) + 1.4;
-          const cellDepth = Math.max(...rooms.map((room) => room.depth / 1000)) + 1.4;
-          return rooms.map((room, index) => ({
-            room,
-            x: (index % columns) * cellWidth,
-            z: Math.floor(index / columns) * cellDepth,
-          }));
-        })();
-  const minX = Math.min(...positioned.map((entry) => entry.x - entry.room.width / 2000));
-  const maxX = Math.max(...positioned.map((entry) => entry.x + entry.room.width / 2000));
-  const minZ = Math.min(...positioned.map((entry) => entry.z - entry.room.depth / 2000));
-  const maxZ = Math.max(...positioned.map((entry) => entry.z + entry.room.depth / 2000));
-  const centreX = (minX + maxX) / 2;
-  const centreZ = (minZ + maxZ) / 2;
-  return positioned.map((entry) => ({ ...entry, x: entry.x - centreX, z: entry.z - centreZ }));
 }
 
 type RoomMiniatureProps = {
@@ -140,7 +182,7 @@ function RoomMiniature({ room, x, z, sectionY, selected, onSelect, onOpen }: Roo
       rotation={[0, THREE.MathUtils.degToRad(-placement.rotation), 0]}
     >
       <mesh
-        position={[0, -0.12, 0]}
+        position={[0, -0.055, 0]}
         castShadow
         receiveShadow
         onClick={chooseRoom}
@@ -149,12 +191,12 @@ function RoomMiniature({ room, x, z, sectionY, selected, onSelect, onOpen }: Roo
           onOpen(room.id);
         }}
       >
-        <boxGeometry args={[width + 0.32, 0.18, depth + 0.32]} />
+        <boxGeometry args={[width + 0.12, 0.07, depth + 0.12]} />
         <meshPhysicalMaterial
-          color={selected ? "#75cdbd" : "#8c9b97"}
-          metalness={0.18}
-          roughness={0.46}
-          clearcoat={0.12}
+          color={selected ? "#67c7b6" : "#b8c4c1"}
+          metalness={0.12}
+          roughness={0.5}
+          clearcoat={0.1}
           clearcoatRoughness={0.4}
         />
       </mesh>
@@ -257,8 +299,8 @@ function FacilityStackView({
     9,
     ...floorScenes.flatMap((scene) =>
       scene.rooms.flatMap((entry) => [
-        Math.abs(entry.x) * 2 + entry.room.width / 1000,
-        Math.abs(entry.z) * 2 + entry.room.depth / 1000,
+        Math.abs(entry.x) * 2 + entry.footprintWidth,
+        Math.abs(entry.z) * 2 + entry.footprintDepth,
       ]),
     ),
   );
@@ -319,20 +361,27 @@ function FacilityStackView({
       />
       <directionalLight intensity={0.65} position={[-12, 10, -8]} color="#d5eee8" />
       <gridHelper args={[100, 100, "#adc7c1", "#d5e3df"]} position={[0, -0.22, 0]} />
-      {floorScenes.flatMap((scene) =>
-        scene.rooms.map((entry) => (
-          <RoomMiniature
-            key={entry.room.id}
-            room={entry.room}
-            x={entry.x}
-            z={entry.z}
+      {floorScenes.map((scene) => (
+        <group key={`facility-floor-${scene.floor}`}>
+          <FacilityFloorEnvelope
+            rooms={scene.rooms}
             sectionY={scene.sectionY}
-            selected={selectedRoomId === entry.room.id}
-            onSelect={onSelect}
-            onOpen={onOpen}
+            selected={scene.rooms.some((entry) => entry.room.id === selectedRoomId)}
           />
-        )),
-      )}
+          {scene.rooms.map((entry) => (
+            <RoomMiniature
+              key={entry.room.id}
+              room={entry.room}
+              x={entry.x}
+              z={entry.z}
+              sectionY={scene.sectionY}
+              selected={selectedRoomId === entry.room.id}
+              onSelect={onSelect}
+              onOpen={onOpen}
+            />
+          ))}
+        </group>
+      ))}
       <OrbitControls
         makeDefault
         target={[0, stackHeight / 2, 0]}
@@ -410,6 +459,21 @@ export function FacilityPage() {
     if (floorFilter !== "all" && room) setFloorFilter(roomFloor(room));
   };
 
+  const assignRoomToFloor = (room: Room, floor: number) => {
+    const joiningFloor = roomFloor(room) !== floor;
+    const floorPeers = laboratoryRooms.filter(
+      (candidate) => candidate.id !== room.id && roomFloor(candidate) === floor,
+    );
+    const openPosition = joiningFloor
+      ? nextFacilityRoomPlacement(floorPeers.map(roomLayoutInput), roomLayoutInput(room))
+      : null;
+    updatePlacement(room.id, {
+      floor: floor - 1,
+      ...(openPosition ?? {}),
+    });
+    if (floorFilter !== "all") setFloorFilter(floor);
+  };
+
   const organizeFromRoomNumbers = () => {
     const assignments = laboratoryRooms.map((room, index) => ({
       room,
@@ -421,16 +485,17 @@ export function FacilityPage() {
     });
     let inferredCount = 0;
     grouped.forEach((entries) => {
-      const columns = Math.ceil(Math.sqrt(entries.length));
-      const cellWidth = Math.max(...entries.map(({ room }) => room.width)) + 1400;
-      const cellDepth = Math.max(...entries.map(({ room }) => room.depth)) + 1400;
-      entries.forEach(({ room, floor }, index) => {
+      const packed = resolveFacilityFloorLayout(
+        entries.map(({ room }) => ({ ...roomLayoutInput(room), xMm: 0, yMm: 0 })),
+      );
+      const packedById = new Map(packed.map((entry) => [entry.id, entry]));
+      entries.forEach(({ room, floor }) => {
         if (inferFacilityFloorFromRoomCode(room.code)) inferredCount += 1;
+        const layout = packedById.get(room.id)!;
         updatePlacement(room.id, {
           floor: floor - 1,
-          x: (index % columns) * cellWidth,
-          y: Math.floor(index / columns) * cellDepth,
-          rotation: 0,
+          x: Math.round((layout.x - room.width / 2000) * 1000),
+          y: Math.round((layout.z - room.depth / 2000) * 1000),
         });
       });
     });
@@ -559,6 +624,7 @@ export function FacilityPage() {
             className="facility-map facility-stack-canvas"
             aria-label="Three-dimensional facility floor stack"
             data-facility-render-mode="material-aware"
+            data-facility-envelope="cutaway"
           >
             {laboratoryRooms.length ? (
               <FacilityStackView
@@ -580,7 +646,7 @@ export function FacilityPage() {
                 <i className="selected" /> Selected room slab
               </span>
               <span>
-                <i /> Saved floor structure
+                <i /> Cutaway building envelope
               </span>
             </div>
           </div>
@@ -628,8 +694,7 @@ export function FacilityPage() {
                   value={selectedFloor}
                   onChange={(event) => {
                     const floor = Number(event.target.value);
-                    updatePlacement(selectedRoom.id, { floor: floor - 1 });
-                    if (floorFilter !== "all") setFloorFilter(floor);
+                    assignRoomToFloor(selectedRoom, floor);
                   }}
                 >
                   {FACILITY_FLOORS.map((floor) => (
@@ -642,7 +707,7 @@ export function FacilityPage() {
               {suggestedFloor && suggestedFloor !== selectedFloor && (
                 <button
                   className="facility-floor-suggestion"
-                  onClick={() => updatePlacement(selectedRoom.id, { floor: suggestedFloor - 1 })}
+                  onClick={() => assignRoomToFloor(selectedRoom, suggestedFloor)}
                 >
                   <MagicWand size={16} /> Use Floor {suggestedFloor} from “{selectedRoom.code}”
                 </button>

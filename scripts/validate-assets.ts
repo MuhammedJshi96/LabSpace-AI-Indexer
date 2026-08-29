@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { inflateSync } from "node:zlib";
 import { ASSET_CATALOG } from "../src/domain/assets";
 import { AssetDefinitionSchema } from "../src/domain/schema";
 import { assetRenderSource } from "../src/lib/asset-render-path";
@@ -11,6 +12,72 @@ let authoredRenderCount = 0;
 let proceduralRenderCount = 0;
 const expectedProceduralRenderFiles = new Set<string>();
 
+function paeth(left: number, up: number, upperLeft: number) {
+  const estimate = left + up - upperLeft;
+  const leftDistance = Math.abs(estimate - left);
+  const upDistance = Math.abs(estimate - up);
+  const upperLeftDistance = Math.abs(estimate - upperLeft);
+  if (leftDistance <= upDistance && leftDistance <= upperLeftDistance) return left;
+  return upDistance <= upperLeftDistance ? up : upperLeft;
+}
+
+function visiblePngBounds(buffer: Buffer, width: number, height: number) {
+  const idat: Buffer[] = [];
+  let offset = 8;
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.subarray(offset + 4, offset + 8).toString("ascii");
+    if (type === "IDAT") idat.push(buffer.subarray(offset + 8, offset + 8 + length));
+    offset += length + 12;
+    if (type === "IEND") break;
+  }
+  const encoded = inflateSync(Buffer.concat(idat));
+  const bytesPerPixel = 4;
+  const stride = width * bytesPerPixel;
+  const pixels = Buffer.alloc(stride * height);
+  let sourceOffset = 0;
+  for (let y = 0; y < height; y += 1) {
+    const filter = encoded[sourceOffset];
+    sourceOffset += 1;
+    const rowOffset = y * stride;
+    for (let x = 0; x < stride; x += 1) {
+      const left = x >= bytesPerPixel ? pixels[rowOffset + x - bytesPerPixel] : 0;
+      const up = y > 0 ? pixels[rowOffset - stride + x] : 0;
+      const upperLeft = y > 0 && x >= bytesPerPixel ? pixels[rowOffset - stride + x - 4] : 0;
+      const predictor =
+        filter === 0
+          ? 0
+          : filter === 1
+            ? left
+            : filter === 2
+              ? up
+              : filter === 3
+                ? Math.floor((left + up) / 2)
+                : filter === 4
+                  ? paeth(left, up, upperLeft)
+                  : Number.NaN;
+      if (!Number.isFinite(predictor)) throw new Error(`Unsupported PNG filter ${filter}`);
+      pixels[rowOffset + x] = (encoded[sourceOffset + x] + predictor) & 0xff;
+    }
+    sourceOffset += stride;
+  }
+
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (pixels[(y * width + x) * 4 + 3] <= 32) continue;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  return maxX < minX ? null : { minX, minY, maxX, maxY };
+}
+
 function inspectCatalogRender(
   assetId: string,
   source: string,
@@ -18,6 +85,7 @@ function inspectCatalogRender(
   expectedWidth: number,
   expectedHeight: number,
   kind: "authored" | "procedural",
+  view: "isometric" | "top",
 ) {
   if (!existsSync(publicPath)) {
     errors.push(`${assetId}: ${kind} catalog render is missing at ${source}`);
@@ -39,6 +107,27 @@ function inspectCatalogRender(
   }
   if (colorType !== 6)
     errors.push(`${assetId}: ${source} must retain an RGBA transparency channel`);
+  if (buffer[24] !== 8 || buffer[28] !== 0) {
+    errors.push(`${assetId}: ${source} must use non-interlaced 8-bit RGBA pixels`);
+  } else if (colorType === 6) {
+    try {
+      const bounds = visiblePngBounds(buffer, width, height);
+      const minimumMargin = view === "isometric" ? 4 : 2;
+      if (
+        !bounds ||
+        bounds.minX < minimumMargin ||
+        bounds.minY < minimumMargin ||
+        width - 1 - bounds.maxX < minimumMargin ||
+        height - 1 - bounds.maxY < minimumMargin
+      ) {
+        errors.push(
+          `${assetId}: ${source} clips its visible silhouette; keep at least ${minimumMargin}px transparent framing on every edge`,
+        );
+      }
+    } catch (error) {
+      errors.push(`${assetId}: could not inspect ${source} framing (${String(error)})`);
+    }
+  }
   if (kind === "authored") authoredRenderCount += 1;
   else proceduralRenderCount += 1;
 }
@@ -66,11 +155,7 @@ function inspectGlb(assetId: string, source: string, publicPath: string) {
   );
   const extensions = new Set<string>(document.extensionsUsed ?? []);
   if (extensions.has("KHR_draco_mesh_compression")) {
-    for (const decoderFile of [
-      "draco_decoder.js",
-      "draco_decoder.wasm",
-      "draco_wasm_wrapper.js",
-    ]) {
+    for (const decoderFile of ["draco_decoder.js", "draco_decoder.wasm", "draco_wasm_wrapper.js"]) {
       const decoderPath = resolve(process.cwd(), "public", "draco", "gltf", decoderFile);
       if (!existsSync(decoderPath)) {
         errors.push(
@@ -127,6 +212,7 @@ for (const asset of ASSET_CATALOG) {
       width,
       height,
       asset.model3d ? "authored" : "procedural",
+      view,
     );
   }
 }

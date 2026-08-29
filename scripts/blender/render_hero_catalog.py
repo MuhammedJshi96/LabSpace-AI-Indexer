@@ -37,6 +37,12 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Render only this asset ID. Repeat the option for multiple assets.",
     )
+    parser.add_argument(
+        "--view",
+        choices=("all", "isometric", "top"),
+        default="all",
+        help="Render both catalog views or only the selected derived view.",
+    )
     return parser.parse_args(argv)
 
 
@@ -252,7 +258,10 @@ def frame_camera(
         point.y for point in projected
     )
     aspect = resolution[0] / resolution[1]
-    camera.data.ortho_scale = max(height, width / aspect, 0.02) * FRAME_MARGIN
+    # Blender's orthographic scale describes the horizontal camera span. The
+    # earlier vertical-span formula compressed 3:2 isometric captures by their
+    # aspect ratio, clipping tall doors and wide benches at the image edges.
+    camera.data.ortho_scale = max(width, height * aspect, 0.02) * FRAME_MARGIN
 
 
 def render_view(
@@ -278,7 +287,7 @@ def render_view(
     print(f"LABSPACE_HERO_RENDER {view} {output_path}")
 
 
-def render_model(glb_path: Path) -> None:
+def render_model(glb_path: Path, views: tuple[str, ...]) -> None:
     reset_scene()
     result = bpy.ops.import_scene.gltf(filepath=str(glb_path))
     if "FINISHED" not in result:
@@ -293,22 +302,24 @@ def render_model(glb_path: Path) -> None:
     scale = max(dimensions.x, dimensions.y, dimensions.z, 0.1)
     add_studio_lighting(target, scale)
 
-    render_view(
-        bpy.context.scene,
-        OUTPUT_DIRECTORY / f"{glb_path.stem}-isometric.png",
-        "isometric",
-        ISO_RESOLUTION,
-        minimum,
-        maximum,
-    )
-    render_view(
-        bpy.context.scene,
-        OUTPUT_DIRECTORY / f"{glb_path.stem}-top.png",
-        "top",
-        TOP_RESOLUTION,
-        minimum,
-        maximum,
-    )
+    if "isometric" in views:
+        render_view(
+            bpy.context.scene,
+            OUTPUT_DIRECTORY / f"{glb_path.stem}-isometric.png",
+            "isometric",
+            ISO_RESOLUTION,
+            minimum,
+            maximum,
+        )
+    if "top" in views:
+        render_view(
+            bpy.context.scene,
+            OUTPUT_DIRECTORY / f"{glb_path.stem}-top.png",
+            "top",
+            TOP_RESOLUTION,
+            minimum,
+            maximum,
+        )
 
 
 def main() -> None:
@@ -328,12 +339,13 @@ def main() -> None:
 
     OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     configure_scene()
+    views = ("isometric", "top") if args.view == "all" else (args.view,)
     for glb_path in models:
-        render_model(glb_path)
+        render_model(glb_path, views)
 
     print(
         f"LABSPACE_HERO_CATALOG_COMPLETE models={len(models)} "
-        f"renders={len(models) * 2} output={OUTPUT_DIRECTORY}"
+        f"renders={len(models) * len(views)} output={OUTPUT_DIRECTORY}"
     )
 
 

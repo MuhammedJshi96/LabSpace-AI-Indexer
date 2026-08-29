@@ -10532,6 +10532,29 @@ body:has(#procedural-catalog-capture) #root {
   top: calc(100% + 18px);
 }
 
+/* At common 1920 px judging/capture widths the context label repeats the
+   active navigation state and exhausts the shell's width budget. Collapse only
+   that duplicate label so the five product areas and WebMCP evidence retain
+   full, non-overlapping names. */
+@media (max-width: 2050px) and (min-width: 1701px) {
+  .top-bar {
+    column-gap: 14px;
+    padding-inline: 18px;
+  }
+
+  .editable-badge {
+    display: none;
+  }
+
+  .primary-navigation {
+    gap: 6px;
+  }
+
+  .primary-navigation a {
+    padding-inline: 14px;
+  }
+}
+
 .facility-workspace {
   grid-template-columns: 300px minmax(0, 1fr) 330px;
 }

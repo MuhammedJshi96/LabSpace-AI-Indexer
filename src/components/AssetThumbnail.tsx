@@ -1652,7 +1652,7 @@ function normalizeThumbnailSilhouette(image: HTMLImageElement, source: string) {
   let maxY = -1;
   for (let y = 0; y < analysis.height; y += 1) {
     for (let x = 0; x < analysis.width; x += 1) {
-      if (pixels[(y * analysis.width + x) * 4 + 3] <= 14) continue;
+      if (pixels[(y * analysis.width + x) * 4 + 3] <= 32) continue;
       minX = Math.min(minX, x);
       minY = Math.min(minY, y);
       maxX = Math.max(maxX, x);

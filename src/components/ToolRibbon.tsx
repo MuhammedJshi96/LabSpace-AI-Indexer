@@ -1,6 +1,8 @@
 import {
   ArrowClockwise,
   ArrowCounterClockwise,
+  Blueprint,
+  CaretDown,
   CornersOut,
   Cursor,
   DoorOpen,
@@ -13,8 +15,12 @@ import {
   Plus,
   Ruler,
 } from "@phosphor-icons/react";
-import type { ReactNode } from "react";
-import { useEditorStore, type EditorTool } from "../store/editor-store";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEditorStore,
+  type EditorTool,
+  type MeasurementOverlayKey,
+} from "../store/editor-store";
 
 function ToolButton({
   value,
@@ -44,6 +50,8 @@ function ToolButton({
 }
 
 export function ToolRibbon() {
+  const [measurementMenuOpen, setMeasurementMenuOpen] = useState(false);
+  const measurementMenuRef = useRef<HTMLDivElement>(null);
   const history = useEditorStore((state) => state.history);
   const future = useEditorStore((state) => state.future);
   const undo = useEditorStore((state) => state.undo);
@@ -57,6 +65,31 @@ export function ToolRibbon() {
   const setPan = useEditorStore((state) => state.setPan);
   const presentation = useEditorStore((state) => state.presentation);
   const setPresentation = useEditorStore((state) => state.setPresentation);
+  const setDialog = useEditorStore((state) => state.setDialog);
+  const measurementOverlays = useEditorStore((state) => state.measurementOverlays);
+  const toggleMeasurementOverlay = useEditorStore((state) => state.toggleMeasurementOverlay);
+  const activeMeasurements = Object.values(measurementOverlays).filter(Boolean).length;
+
+  useEffect(() => {
+    if (!measurementMenuOpen) return;
+    const close = (event: MouseEvent) => {
+      if (!measurementMenuRef.current?.contains(event.target as Node)) setMeasurementMenuOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => event.key === "Escape" && setMeasurementMenuOpen(false);
+    window.addEventListener("mousedown", close);
+    window.addEventListener("keydown", escape);
+    return () => {
+      window.removeEventListener("mousedown", close);
+      window.removeEventListener("keydown", escape);
+    };
+  }, [measurementMenuOpen]);
+
+  const measurementOptions: Array<{ key: MeasurementOverlayKey; label: string; detail: string }> = [
+    { key: "overall", label: "Overall room", detail: "Width and depth frame" },
+    { key: "walls", label: "Wall lengths", detail: "Every visible wall segment" },
+    { key: "openings", label: "Doors and windows", detail: "Width, height and sill" },
+    { key: "clearance", label: "Selected clearance", detail: "Nearest straight-line gaps" },
+  ];
   return (
     <nav className="tool-ribbon" aria-label="Editor tools">
       <div className="tool-group principal-tools">
@@ -71,6 +104,14 @@ export function ToolRibbon() {
         <ToolButton value="door" label="Door" shortcut="D" icon={<DoorOpen size={19} />} />
         <ToolButton value="window" label="Window" shortcut="O" icon={<FrameCorners size={19} />} />
         <ToolButton value="measure" label="Measure" shortcut="M" icon={<Ruler size={19} />} />
+        <button
+          className="tool-button blueprint-tool"
+          onClick={() => setDialog("blueprint")}
+          title="Import a measured blueprint"
+        >
+          <Blueprint size={19} weight="duotone" />
+          <span>Blueprint</span>
+        </button>
       </div>
       <span className="ribbon-divider" />
       <div className="tool-group compact-tools">
@@ -94,7 +135,7 @@ export function ToolRibbon() {
         </button>
       </div>
       <span className="ribbon-divider" />
-      <div className="tool-group compact-tools">
+      <div className="tool-group compact-tools measurement-tools">
         <button
           className={`toggle-tool ${grid ? "active" : ""}`}
           onClick={toggleGrid}
@@ -111,6 +152,35 @@ export function ToolRibbon() {
           <Magnet size={18} weight={snap ? "fill" : "regular"} />
           <span>Snap</span>
         </button>
+        <div className="measurement-menu" ref={measurementMenuRef}>
+          <button
+            className={`toggle-tool measurement-trigger ${measurementMenuOpen ? "active" : ""}`}
+            onClick={() => setMeasurementMenuOpen((open) => !open)}
+            aria-expanded={measurementMenuOpen}
+            aria-haspopup="menu"
+          >
+            <Ruler size={18} weight={activeMeasurements ? "fill" : "regular"} />
+            <span>Dimensions</span>
+            <small>{activeMeasurements}</small>
+            <CaretDown size={12} />
+          </button>
+          {measurementMenuOpen && (
+            <div className="measurement-popover" role="menu" aria-label="Automatic measurements">
+              <header><b>Automatic measurements</b><span>Choose the evidence visible on the 2D plan.</span></header>
+              {measurementOptions.map((option) => (
+                <label key={option.key}>
+                  <input
+                    type="checkbox"
+                    checked={measurementOverlays[option.key]}
+                    onChange={() => toggleMeasurementOverlay(option.key)}
+                  />
+                  <span><b>{option.label}</b><small>{option.detail}</small></span>
+                </label>
+              ))}
+              <footer>Manual tape measure remains available with <kbd>M</kbd>.</footer>
+            </div>
+          )}
+        </div>
       </div>
       <div className="ribbon-spacer" />
       <div className="zoom-control" aria-label="Plan zoom">

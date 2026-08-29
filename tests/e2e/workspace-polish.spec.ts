@@ -23,11 +23,76 @@ test("keeps room switching and facility management discoverable", async ({ page 
   await expect(floorStack).toHaveAttribute("data-facility-render-mode", "material-aware");
   await expect(floorStack).toHaveAttribute("data-facility-envelope", "cutaway");
   await expect(floorStack).toHaveAttribute("data-building-frame", "continuous-section");
+  await expect(floorStack).toHaveAttribute("data-room-identification", "slab-mounted-plates");
+  await expect(floorStack).toHaveAttribute("data-hosted-openings", "cut-wall");
   await expect(page.locator(".facility-stack-label")).toHaveCount(0);
   await expect(page.locator(".facility-stack-summary b")).toContainText(/occupied floor/);
   await expect(page.locator(".facility-floor-setter select option")).toHaveCount(15);
   await page.getByRole("button", { name: "Organize floors from room numbers" }).click();
   await expect(page.getByText(/rooms organized across floors/)).toBeVisible();
+});
+
+test("exposes blueprint conversion and selectable measurement evidence", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Blueprint" }).click();
+  const blueprint = page.getByRole("dialog", { name: "Blueprint to Lab" });
+  await expect(blueprint).toBeVisible();
+  await expect(blueprint.getByText("Local processing · reversible proposal")).toBeVisible();
+  await expect(blueprint.getByText(/Only approved wall geometry enters the project/)).toBeVisible();
+  await expect(blueprint.locator('input[type="file"]')).toHaveAttribute(
+    "accept",
+    "application/pdf,image/png,image/jpeg,image/webp,image/svg+xml",
+  );
+  await blueprint.getByRole("button", { name: "Close blueprint import" }).click();
+
+  const dimensions = page.getByRole("button", { name: /Dimensions/ });
+  await dimensions.click();
+  const menu = page.getByRole("menu", { name: "Automatic measurements" });
+  await expect(menu).toBeVisible();
+  await menu.getByRole("checkbox", { name: /Wall lengths/ }).check();
+  await menu.getByRole("checkbox", { name: /Doors and windows/ }).check();
+  await expect(page.locator("[data-automatic-measurements]")).toHaveAttribute(
+    "data-automatic-measurements",
+    "overall,walls,openings",
+  );
+  await expect(menu.getByText(/Manual tape measure remains available/)).toBeVisible();
+});
+
+test("turns a calibrated local blueprint into a reversible room proposal", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Blueprint" }).click();
+  const blueprint = page.getByRole("dialog", { name: "Blueprint to Lab" });
+  const source = Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+      <rect width="800" height="600" fill="white"/>
+      <rect x="100" y="100" width="600" height="400" fill="none" stroke="#111" stroke-width="8"/>
+    </svg>
+  `);
+  await blueprint.locator('input[type="file"]').setInputFiles({
+    name: "simple-laboratory-plan.svg",
+    mimeType: "image/svg+xml",
+    buffer: source,
+  });
+
+  const calibration = blueprint.locator('svg[aria-label="Select two scale points"]');
+  await expect(calibration).toBeVisible();
+  await expect(blueprint.getByText("Long wall pairs detected")).toBeVisible();
+  const box = await calibration.boundingBox();
+  expect(box).not.toBeNull();
+  await calibration.click({ position: { x: box!.width * 0.125, y: box!.height * 0.17 } });
+  await calibration.click({ position: { x: box!.width * 0.875, y: box!.height * 0.17 } });
+
+  const metrics = blueprint.locator(".blueprint-metrics");
+  await expect(metrics.getByText("5.00 m", { exact: true })).toBeVisible();
+  await expect(metrics.getByText("3.33 m", { exact: true })).toBeVisible();
+  await expect(metrics.getByText("4", { exact: true })).toBeVisible();
+  await blueprint.getByRole("button", { name: "Stage editable room proposal" }).click();
+
+  await expect(page.getByText("Preview · not saved")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Approve room plan" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel preview" }).click();
+  await expect(page.getByText("Preview · not saved")).toHaveCount(0);
 });
 
 test("opens the exact room selected in the Facility inspector", async ({ page, request }) => {

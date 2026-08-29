@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Buildings,
+  CheckCircle,
   DoorOpen,
   MagicWand,
   PresentationChart,
@@ -24,6 +25,7 @@ import {
 } from "../domain/facility";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import type { Room, SceneObject } from "../domain/schema";
+import { resolveHostedOpening } from "../domain/wall-openings";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { AssetVisual } from "./AssetVisual";
 import { Dialogs, Toasts } from "./Dialogs";
@@ -84,12 +86,20 @@ function representativeObjects(objects: SceneObject[]) {
     architecture: 7,
   };
   return visibleFacilityObjects(objects)
+    .filter((object) => !["door", "window"].includes(object.objectType))
     .sort(
       (first, second) =>
         (priority[first.objectType] ?? 8) - (priority[second.objectType] ?? 8) ||
         first.zIndex - second.zIndex,
     )
     .slice(0, 24);
+}
+
+function facilityOpenings(objects: SceneObject[]) {
+  return objects.filter(
+    (object) =>
+      object.visible && ["door", "window"].includes(object.objectType),
+  );
 }
 
 type PositionedRoom = FacilityRoomLayoutEntry & {
@@ -238,12 +248,280 @@ type RoomMiniatureProps = {
   onOpen: (roomId: string) => void;
 };
 
+function RoomIdentityPlate({
+  room,
+  width,
+  position,
+  selected,
+  onSelect,
+}: {
+  room: Room;
+  width: number;
+  position: [number, number, number];
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const plateWidth = Math.min(4.2, Math.max(2.4, width * 0.62));
+  const plateHeight = 0.5;
+  const texture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1000;
+    canvas.height = 130;
+    const context = canvas.getContext("2d")!;
+    context.fillStyle = selected ? "#dff6f1" : "rgba(248,251,250,.96)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = selected ? "#068978" : "#52645f";
+    context.fillRect(0, 0, 18, canvas.height);
+    context.strokeStyle = selected ? "#079987" : "#a9b9b5";
+    context.lineWidth = 5;
+    context.strokeRect(2.5, 2.5, canvas.width - 5, canvas.height - 5);
+    context.fillStyle = selected ? "#075f55" : "#42534f";
+    context.font = "800 54px Bahnschrift, Segoe UI, sans-serif";
+    context.fillText(room.code, 42, 86, 190);
+    context.fillStyle = "#142723";
+    context.font = "750 56px Bahnschrift, Segoe UI, sans-serif";
+    const name = room.name.length > 24 ? `${room.name.slice(0, 23)}…` : room.name;
+    context.fillText(name, 248, 86, 700);
+    const map = new THREE.CanvasTexture(canvas);
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.anisotropy = 4;
+    map.needsUpdate = true;
+    return map;
+  }, [room.code, room.name, selected]);
+
+  useEffect(() => () => texture.dispose(), [texture]);
+
+  return (
+    <group
+      name={`Room identity · ${room.code} · ${room.name}`}
+      position={position}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect();
+      }}
+    >
+      {[-1, 1].map((side) => (
+        <mesh
+          key={`mount-${side}`}
+          position={[side * plateWidth * 0.39, -plateHeight / 2 - 0.065, -0.008]}
+          castShadow
+        >
+          <boxGeometry args={[0.045, 0.14, 0.05]} />
+          <meshStandardMaterial color="#667a75" metalness={0.56} roughness={0.32} />
+        </mesh>
+      ))}
+      <mesh castShadow>
+        <boxGeometry args={[plateWidth + 0.06, plateHeight + 0.035, 0.055]} />
+        <meshPhysicalMaterial
+          color={selected ? "#188f7e" : "#71837e"}
+          metalness={0.48}
+          roughness={0.34}
+          clearcoat={0.12}
+        />
+      </mesh>
+      <mesh position={[0, 0, 0.031]}>
+        <planeGeometry args={[plateWidth, plateHeight]} />
+        <meshBasicMaterial map={texture} transparent toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+type FacilityWallPiece = { center: number; width: number; base: number; height: number };
+
+function facilityWallPieces(
+  wall: SceneObject,
+  openings: SceneObject[],
+  visualHeight: number,
+): FacilityWallPiece[] {
+  const length = Math.max(0.12, Math.hypot(
+    wall.wall!.end.x - wall.wall!.start.x,
+    wall.wall!.end.y - wall.wall!.start.y,
+  ) / 1000);
+  const hosted = openings
+    .filter((opening) => opening.opening?.wallId === wall.id)
+    .map((opening) => ({
+      start: opening.opening!.offset / 1000 - opening.opening!.width / 2000,
+      end: opening.opening!.offset / 1000 + opening.opening!.width / 2000,
+      sill: opening.opening!.sillHeight / 1000,
+      top: (opening.opening!.sillHeight + opening.opening!.height) / 1000,
+    }))
+    .sort((first, second) => first.start - second.start);
+  if (!hosted.length) return [{ center: 0, width: length, base: 0, height: visualHeight }];
+  const pieces: FacilityWallPiece[] = [];
+  let cursor = 0;
+  hosted.forEach((opening) => {
+    const start = Math.max(cursor, Math.max(0, opening.start));
+    const end = Math.min(length, Math.max(start, opening.end));
+    if (start > cursor + 0.02) {
+      pieces.push({
+        center: (cursor + start) / 2 - length / 2,
+        width: start - cursor,
+        base: 0,
+        height: visualHeight,
+      });
+    }
+    const openingWidth = Math.max(0, end - start);
+    const lowerHeight = Math.min(visualHeight, Math.max(0, opening.sill));
+    if (openingWidth > 0.02 && lowerHeight > 0.025) {
+      pieces.push({
+        center: (start + end) / 2 - length / 2,
+        width: openingWidth,
+        base: 0,
+        height: lowerHeight,
+      });
+    }
+    if (openingWidth > 0.02 && visualHeight > opening.top + 0.025) {
+      pieces.push({
+        center: (start + end) / 2 - length / 2,
+        width: openingWidth,
+        base: opening.top,
+        height: visualHeight - opening.top,
+      });
+    }
+    cursor = Math.max(cursor, end);
+  });
+  if (cursor < length - 0.02) {
+    pieces.push({
+      center: (cursor + length) / 2 - length / 2,
+      width: length - cursor,
+      base: 0,
+      height: visualHeight,
+    });
+  }
+  return pieces;
+}
+
+function facilityOpeningSurroundPieces(
+  wall: SceneObject,
+  openings: SceneObject[],
+  cutawayHeight: number,
+  actualHeight: number,
+): FacilityWallPiece[] {
+  const length = Math.max(
+    0.12,
+    Math.hypot(
+      wall.wall!.end.x - wall.wall!.start.x,
+      wall.wall!.end.y - wall.wall!.start.y,
+    ) / 1000,
+  );
+  const jambWidth = 0.14;
+  return openings
+    .filter((opening) => opening.opening?.wallId === wall.id)
+    .flatMap((opening) => {
+      const start = Math.max(0, opening.opening!.offset / 1000 - opening.opening!.width / 2000);
+      const end = Math.min(length, opening.opening!.offset / 1000 + opening.opening!.width / 2000);
+      const sill = Math.min(actualHeight, Math.max(0, opening.opening!.sillHeight / 1000));
+      const top = Math.min(
+        actualHeight,
+        Math.max(sill, (opening.opening!.sillHeight + opening.opening!.height) / 1000),
+      );
+      const pieces: FacilityWallPiece[] = [];
+      const surroundTop = Math.min(actualHeight, top + 0.16);
+      const uprightHeight = surroundTop - cutawayHeight;
+      if (uprightHeight > 0.025) {
+        if (start > 0.02) {
+          pieces.push({
+            center: start - Math.min(jambWidth, start) / 2 - length / 2,
+            width: Math.min(jambWidth, start),
+            base: cutawayHeight,
+            height: uprightHeight,
+          });
+        }
+        if (end < length - 0.02) {
+          pieces.push({
+            center: end + Math.min(jambWidth, length - end) / 2 - length / 2,
+            width: Math.min(jambWidth, length - end),
+            base: cutawayHeight,
+            height: uprightHeight,
+          });
+        }
+      }
+      if (sill > cutawayHeight + 0.025) {
+        pieces.push({
+          center: (start + end) / 2 - length / 2,
+          width: end - start,
+          base: cutawayHeight,
+          height: sill - cutawayHeight,
+        });
+      }
+      if (surroundTop > top + 0.025) {
+        pieces.push({
+          center: (start + end) / 2 - length / 2,
+          width: end - start,
+          base: top,
+          height: surroundTop - top,
+        });
+      }
+      return pieces;
+    });
+}
+
+function FacilityWall({
+  object,
+  openings,
+  roomWidth,
+  roomDepth,
+  selected,
+  onSelect,
+}: {
+  object: SceneObject;
+  openings: SceneObject[];
+  roomWidth: number;
+  roomDepth: number;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const wall = object.wall!;
+  const dx = wall.end.x - wall.start.x;
+  const dy = wall.end.y - wall.start.y;
+  const wallX = (wall.start.x + wall.end.x) / 2000 - roomWidth / 2;
+  const wallZ = (wall.start.y + wall.end.y) / 2000 - roomDepth / 2;
+  const angle = -Math.atan2(dy, dx);
+  const actualHeight = Math.min(3.4, wall.height / 1000);
+  const nearCutaway = wallX > roomWidth * 0.27 || wallZ > roomDepth * 0.27;
+  const visualHeight = nearCutaway ? Math.min(0.32, actualHeight) : actualHeight;
+  const thickness = Math.max(0.065, wall.thickness / 1000);
+  const pieces = [
+    ...facilityWallPieces(object, openings, visualHeight),
+    ...(nearCutaway
+      ? facilityOpeningSurroundPieces(object, openings, visualHeight, actualHeight)
+      : []),
+  ];
+
+  return (
+    <group position={[wallX, 0, wallZ]} rotation={[0, angle, 0]}>
+      {pieces.map((piece, index) => (
+        <mesh
+          key={`${object.id}-piece-${index}`}
+          position={[piece.center, piece.base + piece.height / 2, 0]}
+          castShadow
+          receiveShadow
+          onClick={(event) => {
+            event.stopPropagation();
+            onSelect();
+          }}
+        >
+          <boxGeometry args={[piece.width, piece.height, thickness]} />
+          <meshPhysicalMaterial
+            color={selected ? "#eef8f5" : "#e3e7e5"}
+            metalness={0.02}
+            roughness={0.58}
+            clearcoat={0.08}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function RoomMiniature({ room, x, z, sectionY, selected, onSelect, onOpen }: RoomMiniatureProps) {
   const width = room.width / 1000;
   const depth = room.depth / 1000;
   const placement = roomPlacement(room);
   const walls = room.scene.objects.filter((object) => object.visible && object.wall);
   const objects = representativeObjects(room.scene.objects);
+  const openings = facilityOpenings(room.scene.objects);
   const hasClosedFloor = Boolean(getClosedWallFloorPolygon(room.scene.objects));
   const chooseRoom = (event: { stopPropagation: () => void }) => {
     event.stopPropagation();
@@ -283,30 +561,42 @@ function RoomMiniature({ room, x, z, sectionY, selected, onSelect, onOpen }: Roo
         </mesh>
       )}
 
-      {walls.map((object) => {
-        const wall = object.wall!;
-        const dx = wall.end.x - wall.start.x;
-        const dy = wall.end.y - wall.start.y;
-        const length = Math.max(0.12, Math.hypot(dx, dy) / 1000);
-        const wallHeight = Math.min(1.08, wall.height / 1000);
-        const wallX = (wall.start.x + wall.end.x) / 2000 - width / 2;
-        const wallZ = (wall.start.y + wall.end.y) / 2000 - depth / 2;
-        const angle = -Math.atan2(dy, dx);
+      {walls.map((object) => (
+        <FacilityWall
+          key={object.id}
+          object={object}
+          openings={openings}
+          roomWidth={width}
+          roomDepth={depth}
+          selected={selected}
+          onSelect={() => onSelect(room.id)}
+        />
+      ))}
+
+      {openings.map((object) => {
+        const definition = getAssetDefinition(object.assetDefinitionId);
+        const hosted = resolveHostedOpening(object, room.scene.objects);
+        const position = hosted?.point ?? object.position;
+        const rotation = hosted?.rotation ?? object.rotation.z;
         return (
-          <group key={object.id} position={[wallX, 0, wallZ]} rotation={[0, angle, 0]}>
-            <mesh position={[0, wallHeight / 2, 0]} castShadow receiveShadow onClick={chooseRoom}>
-              <boxGeometry args={[length, wallHeight, Math.max(0.065, wall.thickness / 1000)]} />
-              <meshPhysicalMaterial
-                color={selected ? "#eef8f5" : "#e3e7e5"}
-                metalness={0.02}
-                roughness={0.58}
-                clearcoat={0.08}
-              />
-            </mesh>
-            <mesh position={[0, 0.045, -Math.max(0.04, wall.thickness / 1900)]}>
-              <boxGeometry args={[length, 0.09, 0.018]} />
-              <meshStandardMaterial color="#7d8986" metalness={0.34} roughness={0.4} />
-            </mesh>
+          <group
+            key={`opening-${object.id}`}
+            position={[
+              position.x / 1000 - width / 2,
+              (object.opening?.sillHeight ?? object.position.z) / 1000,
+              position.y / 1000 - depth / 2,
+            ]}
+            rotation={[0, THREE.MathUtils.degToRad(-rotation), 0]}
+            scale={[object.flipHorizontal ? -1 : 1, 1, object.flipVertical ? -1 : 1]}
+            onClick={chooseRoom}
+          >
+            <AssetVisual
+              definition={definition}
+              width={object.dimensions.width / 1000}
+              depth={object.dimensions.depth / 1000}
+              height={object.dimensions.height / 1000}
+              detail="room"
+            />
           </group>
         );
       })}
@@ -457,6 +747,20 @@ function FacilityStackView({
               onOpen={onOpen}
             />
           ))}
+          {scene.rooms.map((entry) => (
+            <RoomIdentityPlate
+              key={`room-plate-${entry.room.id}`}
+              room={entry.room}
+              width={entry.footprintWidth}
+              position={[
+                entry.x,
+                scene.sectionY + 0.37,
+                buildingBounds.maxZ + 0.7,
+              ]}
+              selected={selectedRoomId === entry.room.id}
+              onSelect={() => onSelect(entry.room.id)}
+            />
+          ))}
         </group>
       ))}
       <OrbitControls
@@ -486,10 +790,18 @@ export function FacilityPage() {
   const [laboratoryId, setLaboratoryId] = useState(activeRoom.laboratoryId);
   const [selectedRoomId, setSelectedRoomId] = useState(activeRoom.id);
   const [floorFilter, setFloorFilter] = useState<number | "all">("all");
+  const [organizationSummary, setOrganizationSummary] = useState<string | null>(null);
   const [openingRoomId, setOpeningRoomId] = useState<string | null>(null);
   const openingRoomRef = useRef<string | null>(null);
+  const hydrationSyncedRef = useRef(false);
 
   useEffect(() => void hydrate(), [hydrate]);
+  useEffect(() => {
+    if (!hydrated || hydrationSyncedRef.current) return;
+    hydrationSyncedRef.current = true;
+    setLaboratoryId(activeRoom.laboratoryId);
+    setSelectedRoomId(activeRoom.id);
+  }, [activeRoom.id, activeRoom.laboratoryId, hydrated]);
   useEffect(() => {
     if (!hydrated || saveStatus !== "unsaved" || dirtyRevision === 0) return;
     const timer = window.setTimeout(() => void saveNow(), 900);
@@ -613,10 +925,9 @@ export function FacilityPage() {
       });
     });
     setFloorFilter("all");
-    pushToast(
-      `${laboratoryRooms.length} rooms organized across floors; ${inferredCount} matched room numbering.`,
-      "success",
-    );
+    const summary = `${laboratoryRooms.length} rooms organized across floors; ${inferredCount} matched room numbering.`;
+    setOrganizationSummary(summary);
+    pushToast(summary, "success");
   };
 
   return (
@@ -716,6 +1027,11 @@ export function FacilityPage() {
           <button className="facility-arrange" onClick={organizeFromRoomNumbers}>
             <MagicWand size={17} /> Organize floors from room numbers
           </button>
+          {organizationSummary && (
+            <p className="facility-arrange-status" role="status">
+              <CheckCircle size={15} weight="fill" /> {organizationSummary}
+            </p>
+          )}
           <p className="facility-arrange-note">
             Recognizes codes such as 813 or R809 as Floors 8. Rooms without a clear number keep
             their current floor.
@@ -739,6 +1055,8 @@ export function FacilityPage() {
             data-facility-render-mode="material-aware"
             data-facility-envelope="cutaway"
             data-building-frame="continuous-section"
+            data-room-identification="slab-mounted-plates"
+            data-hosted-openings="cut-wall"
           >
             {laboratoryRooms.length ? (
               <FacilityStackView

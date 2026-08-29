@@ -10671,6 +10671,25 @@ body:has(#procedural-catalog-capture) #root {
   line-height: 1.45;
 }
 
+.facility-arrange-status {
+  display: grid;
+  grid-template-columns: 17px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+  margin: 8px 0 0;
+  padding: 9px 10px;
+  color: #116d61;
+  font-size: 11px;
+  line-height: 1.4;
+  background: #eaf7f3;
+  border: 1px solid #b9ddd5;
+  border-radius: 6px;
+}
+
+.facility-arrange-status svg {
+  margin-top: 1px;
+}
+
 .facility-stack-panel {
   background: #edf3f1;
 }
@@ -10836,6 +10855,726 @@ body:has(#procedural-catalog-capture) #root {
   color: #657571;
   font-size: 11px;
   line-height: 1.4;
+}
+
+/* Blueprint-to-Lab uses LabSpace's technical survey language: one quiet
+   calibration rail, one cyan traced outline, and an explicit review boundary. */
+.measurement-menu {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.tool-ribbon > .tool-group.measurement-tools {
+  position: relative;
+  z-index: 30;
+  overflow: visible;
+}
+
+.measurement-trigger small {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  place-items: center;
+  color: #075f55;
+  font-size: 10px;
+  font-weight: 800;
+  background: #dff2ee;
+  border-radius: 9px;
+}
+
+.measurement-popover {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 9px);
+  right: 0;
+  display: grid;
+  width: 300px;
+  padding: 8px;
+  color: #263a35;
+  background: rgba(255, 255, 255, 0.985);
+  border: 1px solid #c9d8d4;
+  border-radius: 9px;
+  box-shadow: 0 18px 42px rgba(9, 34, 29, 0.18);
+}
+
+.measurement-popover::before {
+  position: absolute;
+  top: -5px;
+  right: 24px;
+  width: 9px;
+  height: 9px;
+  content: "";
+  background: #fff;
+  border-top: 1px solid #c9d8d4;
+  border-left: 1px solid #c9d8d4;
+  transform: rotate(45deg);
+}
+
+.measurement-popover header {
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px 10px;
+  border-bottom: 1px solid #e2e9e7;
+}
+
+.measurement-popover header b {
+  font-size: 13px;
+}
+
+.measurement-popover header span,
+.measurement-popover footer {
+  color: #697b76;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.measurement-popover label {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  min-height: 48px;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 9px;
+  cursor: pointer;
+  border-bottom: 1px solid #edf1f0;
+}
+
+.measurement-popover label:hover {
+  background: #f1f8f6;
+}
+
+.measurement-popover label input {
+  width: 16px;
+  height: 16px;
+  accent-color: #078f7e;
+}
+
+.measurement-popover label > span {
+  display: grid;
+  gap: 1px;
+}
+
+.measurement-popover label b {
+  font-size: 12px;
+}
+
+.measurement-popover label small {
+  color: #6a7a76;
+  font-size: 10px;
+}
+
+.measurement-popover footer {
+  padding: 9px;
+}
+
+.measurement-popover footer kbd {
+  padding: 1px 5px;
+  color: #3f5550;
+  background: #edf3f1;
+  border: 1px solid #ccd9d5;
+  border-radius: 3px;
+}
+
+.blueprint-backdrop {
+  z-index: 500;
+  padding: 18px;
+  background: rgba(6, 24, 21, 0.62);
+  backdrop-filter: blur(5px);
+}
+
+.blueprint-dialog {
+  display: grid;
+  width: min(1460px, 98vw);
+  height: min(850px, 95vh);
+  min-height: 650px;
+  overflow: hidden;
+  background: #f7faf9;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 11px;
+  box-shadow: 0 32px 90px rgba(3, 17, 14, 0.34);
+  grid-template-columns: 184px minmax(420px, 1fr) 326px;
+  grid-template-rows: 64px minmax(0, 1fr);
+  grid-template-areas:
+    "header header header"
+    "steps workspace inspector";
+}
+
+.blueprint-dialog > header {
+  display: grid;
+  grid-area: header;
+  grid-template-columns: 38px minmax(0, 1fr) auto 34px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 13px;
+  color: #f7fffd;
+  background: #073d36;
+  border-bottom: 1px solid #325d56;
+}
+
+.blueprint-title-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #b8eee5;
+  background: #0d554b;
+  border: 1px solid #37796f;
+  border-radius: 7px;
+}
+
+.blueprint-dialog > header > span:nth-child(2) {
+  display: grid;
+  gap: 1px;
+}
+
+.blueprint-dialog > header small {
+  color: #8fc9bf;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.blueprint-dialog > header h2 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.blueprint-dialog > header em {
+  color: #a9d8cf;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.blueprint-dialog > header > button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: #d9f4ef;
+  background: #153f3a;
+  border: 1px solid #416a63;
+  border-radius: 6px;
+}
+
+.blueprint-steps {
+  display: grid;
+  grid-area: steps;
+  align-content: start;
+  gap: 5px;
+  padding: 14px 10px;
+  background: #edf3f1;
+  border-right: 1px solid #d4dfdc;
+}
+
+.blueprint-steps > button {
+  display: grid;
+  grid-template-columns: 25px 20px minmax(0, 1fr);
+  min-height: 46px;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  color: #53635f;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+
+.blueprint-steps > button > span {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  color: #667a75;
+  font-family: Bahnschrift, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  background: #fff;
+  border: 1px solid #cdd9d6;
+  border-radius: 50%;
+}
+
+.blueprint-steps > button b {
+  font-size: 12px;
+}
+
+.blueprint-steps > button.active {
+  color: #075f55;
+  background: #fff;
+  border-color: #a9d3cb;
+  box-shadow: inset 3px 0 #079987;
+}
+
+.blueprint-steps > button.complete > span {
+  color: #fff;
+  background: #078f7e;
+  border-color: #078f7e;
+}
+
+.blueprint-privacy-note {
+  display: grid;
+  gap: 5px;
+  margin: 15px 4px 0;
+  padding: 11px;
+  color: #5c706b;
+  font-size: 10px;
+  line-height: 1.45;
+  background: #f7faf9;
+  border: 1px solid #d5e0dd;
+  border-radius: 7px;
+}
+
+.blueprint-privacy-note b {
+  color: #31544c;
+  font-size: 11px;
+}
+
+.blueprint-workspace {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-area: workspace;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: #e4ece9;
+}
+
+.blueprint-dropzone {
+  display: grid;
+  width: min(560px, 75%);
+  min-height: 270px;
+  align-self: center;
+  justify-self: center;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: #55706a;
+  text-align: center;
+  background: #f9fbfa;
+  border: 1px dashed #80afa6;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(16, 49, 42, 0.08);
+  cursor: pointer;
+}
+
+.blueprint-dropzone svg {
+  color: #078f7e;
+}
+
+.blueprint-dropzone b {
+  color: #183b34;
+  font-size: 16px;
+}
+
+.blueprint-dropzone span {
+  font-size: 12px;
+}
+
+.blueprint-dropzone input,
+.blueprint-replace input {
+  display: none;
+}
+
+.blueprint-workspace-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 55px;
+  padding: 8px 11px;
+  background: #f9fbfa;
+  border-bottom: 1px solid #ccd9d5;
+}
+
+.blueprint-workspace-toolbar > span {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.blueprint-workspace-toolbar > span b {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blueprint-workspace-toolbar > span small {
+  color: #71817d;
+  font-size: 10px;
+}
+
+.blueprint-mode-switch {
+  display: flex;
+  padding: 3px;
+  background: #edf3f1;
+  border: 1px solid #d0dcd9;
+  border-radius: 7px;
+}
+
+.blueprint-mode-switch button,
+.blueprint-replace {
+  display: inline-flex;
+  min-height: 31px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  color: #50645f;
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+}
+
+.blueprint-mode-switch button.active {
+  color: #075f55;
+  background: #fff;
+  border-color: #b9cec9;
+  box-shadow: 0 2px 5px rgba(24, 50, 44, 0.08);
+}
+
+.blueprint-replace {
+  cursor: pointer;
+  border-color: #cedbd7;
+}
+
+.blueprint-sheet-stage {
+  display: flex;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 17px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(61, 104, 95, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 104, 95, 0.04) 1px, transparent 1px),
+    #e6eeeb;
+  background-size: 22px 22px;
+}
+
+.blueprint-sheet {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #b9c9c5;
+  border-radius: 3px;
+  box-shadow: 0 16px 40px rgba(20, 45, 39, 0.17);
+}
+
+.blueprint-sheet img,
+.blueprint-sheet svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.blueprint-sheet img {
+  object-fit: fill;
+  filter: saturate(0.72) contrast(1.04);
+}
+
+.blueprint-sheet svg {
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.blueprint-outline-fill {
+  fill: rgba(0, 190, 170, 0.14);
+  stroke: #00a995;
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.blueprint-outline-point circle {
+  fill: #fff;
+  stroke: #008e7f;
+  stroke-width: 4px;
+  vector-effect: non-scaling-stroke;
+  cursor: grab;
+}
+
+.blueprint-outline-point text {
+  fill: #075f55;
+  font: 800 13px Bahnschrift, sans-serif;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.blueprint-scale-line {
+  stroke: #d39723;
+  stroke-width: 4px;
+  stroke-dasharray: 10 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.blueprint-scale-point {
+  fill: #fff9e6;
+  stroke: #bd8115;
+  stroke-width: 4px;
+  vector-effect: non-scaling-stroke;
+  cursor: grab;
+}
+
+.blueprint-mode-cursor {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  padding: 5px 8px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 750;
+  background: rgba(7, 61, 54, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.blueprint-mode-cursor.scale {
+  background: rgba(126, 86, 17, 0.9);
+}
+
+.blueprint-inspector {
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  background: #fff;
+  border-left: 1px solid #d3dedb;
+  grid-area: inspector;
+}
+
+.blueprint-inspector-heading h3 {
+  margin: 3px 0 5px;
+  color: #193b34;
+  font-size: 17px;
+}
+
+.blueprint-inspector-heading p {
+  margin: 0 0 15px;
+  color: #647671;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.blueprint-inspector > label,
+.blueprint-wall-specs label {
+  display: grid;
+  gap: 5px;
+  color: #53645f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.blueprint-unit-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #afc0bb;
+  border-radius: 6px;
+}
+
+.blueprint-unit-input input {
+  min-width: 0;
+  height: 36px;
+  padding: 7px 9px;
+  font: inherit;
+  border: 0;
+  outline: 0;
+}
+
+.blueprint-unit-input:focus-within {
+  border-color: #079987;
+  box-shadow: 0 0 0 2px rgba(7, 153, 135, 0.14);
+}
+
+.blueprint-unit-input b {
+  display: grid;
+  min-width: 39px;
+  padding: 0 8px;
+  place-items: center;
+  color: #597069;
+  font-size: 10px;
+  background: #edf3f1;
+  border-left: 1px solid #d3ddda;
+}
+
+.blueprint-calibration-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 10px 0 12px;
+  padding: 9px;
+  color: #74571b;
+  background: #fff8e6;
+  border: 1px solid #ead39b;
+  border-radius: 7px;
+}
+
+.blueprint-calibration-status > span {
+  display: grid;
+  gap: 1px;
+}
+
+.blueprint-calibration-status b {
+  font-size: 11px;
+}
+
+.blueprint-calibration-status small {
+  color: #856e3d;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.blueprint-outline-actions {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  gap: 6px;
+}
+
+.blueprint-outline-actions button {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px;
+  color: #08695f;
+  font-size: 10px;
+  font-weight: 750;
+  background: #edf8f5;
+  border: 1px solid #b8dcd5;
+  border-radius: 6px;
+}
+
+.blueprint-detection-detected,
+.blueprint-detection-page-bounds {
+  display: block;
+  margin-top: 6px;
+  color: #14806f;
+  font-size: 10px;
+}
+
+.blueprint-detection-page-bounds {
+  color: #9a671b;
+}
+
+.blueprint-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 13px 0;
+}
+
+.blueprint-metrics > span {
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px;
+  background: #f5f8f7;
+  border: 1px solid #dce5e2;
+  border-radius: 6px;
+}
+
+.blueprint-metrics small {
+  color: #71817d;
+  font-size: 9px;
+}
+
+.blueprint-metrics b {
+  color: #183c34;
+  font-size: 13px;
+}
+
+.blueprint-wall-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  padding-top: 12px;
+  border-top: 1px solid #e1e8e6;
+}
+
+.blueprint-message,
+.blueprint-blocker {
+  margin: 11px 0 0;
+  padding: 8px 9px;
+  color: #536a64;
+  font-size: 10px;
+  line-height: 1.4;
+  background: #f4f8f7;
+  border-left: 3px solid #84aaa1;
+}
+
+.blueprint-blocker {
+  color: #8a3e3e;
+  background: #fff3f2;
+  border-color: #c65a55;
+}
+
+.blueprint-stage-button {
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  background: #087f70;
+  border: 1px solid #06695d;
+  border-radius: 7px;
+  box-shadow: 0 6px 14px rgba(7, 127, 112, 0.2);
+}
+
+.blueprint-stage-button:disabled {
+  color: #879692;
+  background: #e6ecea;
+  border-color: #d2dcda;
+  box-shadow: none;
+}
+
+.blueprint-stage-note {
+  display: block;
+  margin: 7px 5px 0;
+  color: #71807c;
+  font-size: 9px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-width: 1220px) {
+  .blueprint-dialog {
+    grid-template-columns: 150px minmax(360px, 1fr) 292px;
+  }
+
+  .blueprint-dialog > header em,
+  .blueprint-privacy-note {
+    display: none;
+  }
+
+  .blueprint-dialog > header {
+    grid-template-columns: 38px minmax(0, 1fr) 34px;
+  }
+
+  .blueprint-steps > button {
+    grid-template-columns: 24px 18px minmax(0, 1fr);
+  }
+
+  .blueprint-tool span,
+  .measurement-trigger > span {
+    display: none;
+  }
 }
 
 /* Both libraries use two deliberate columns and a tall contain-fit viewport.

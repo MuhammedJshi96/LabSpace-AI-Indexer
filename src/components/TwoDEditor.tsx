@@ -205,6 +205,234 @@ function PlanDimensionFrame({ bounds, scale }: { bounds: PlanBounds; scale: numb
   );
 }
 
+function ScreenLabel({
+  x,
+  y,
+  text,
+  scale,
+  rotation = 0,
+  tone = "technical",
+}: {
+  x: number;
+  y: number;
+  text: string;
+  scale: number;
+  rotation?: number;
+  tone?: "technical" | "opening" | "clearance";
+}) {
+  const width = Math.max(70, Math.min(156, text.length * 6.4 + 18)) / scale;
+  const height = 21 / scale;
+  const palette =
+    tone === "opening"
+      ? { fill: "rgba(235,248,248,.97)", stroke: "#87bfc4", text: "#225f66" }
+      : tone === "clearance"
+        ? { fill: "rgba(255,249,232,.97)", stroke: "#d6b866", text: "#6b5317" }
+        : { fill: "rgba(250,252,251,.97)", stroke: "#b9c8c4", text: "#314541" };
+  return (
+    <Group x={x} y={y} rotation={rotation} listening={false}>
+      <Rect
+        x={-width / 2}
+        y={-height / 2}
+        width={width}
+        height={height}
+        cornerRadius={4 / scale}
+        fill={palette.fill}
+        stroke={palette.stroke}
+        strokeWidth={0.8 / scale}
+        shadowColor="rgba(16,35,31,.16)"
+        shadowBlur={4 / scale}
+        shadowOffsetY={1 / scale}
+      />
+      <Text
+        x={-width / 2}
+        y={-height / 2}
+        width={width}
+        height={height}
+        text={text}
+        align="center"
+        verticalAlign="middle"
+        fontFamily="Bahnschrift, Segoe UI"
+        fontSize={11 / scale}
+        fontStyle="600"
+        fill={palette.text}
+      />
+    </Group>
+  );
+}
+
+function readablePlanAngle(angle: number) {
+  const normalized = ((angle + 180) % 360) - 180;
+  return normalized > 90 ? normalized - 180 : normalized < -90 ? normalized + 180 : normalized;
+}
+
+function WallLengthMeasurements({ objects, scale }: { objects: SceneObject[]; scale: number }) {
+  return (
+    <Group name="automatic-wall-measurements" listening={false}>
+      {objects
+        .filter((object) => object.visible && object.wall)
+        .map((object) => {
+          const wall = object.wall!;
+          const dx = wall.end.x - wall.start.x;
+          const dy = wall.end.y - wall.start.y;
+          const length = Math.hypot(dx, dy);
+          if (length < 500) return null;
+          const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+          const normal = { x: -dy / length, y: dx / length };
+          const offset = 18 / scale;
+          return (
+            <ScreenLabel
+              key={`wall-measure-${object.id}`}
+              x={(wall.start.x + wall.end.x) / 2 + normal.x * offset}
+              y={(wall.start.y + wall.end.y) / 2 + normal.y * offset}
+              text={`${(length / 1000).toFixed(2)} m`}
+              scale={scale}
+              rotation={readablePlanAngle(angle)}
+            />
+          );
+        })}
+    </Group>
+  );
+}
+
+function OpeningMeasurements({ objects, scale }: { objects: SceneObject[]; scale: number }) {
+  return (
+    <Group name="automatic-opening-measurements" listening={false}>
+      {objects
+        .filter(
+          (object) => object.visible && ["door", "window"].includes(object.objectType),
+        )
+        .map((object) => {
+          const hosted = resolveHostedOpening(object, objects);
+          const point = hosted?.point ?? object.position;
+          const angle = hosted?.rotation ?? object.rotation.z;
+          const radians = (angle * Math.PI) / 180;
+          const normal = { x: -Math.sin(radians), y: Math.cos(radians) };
+          const type = object.objectType === "door" ? "D" : "W";
+          const sill = object.objectType === "window" ? ` · sill ${(object.position.z / 1000).toFixed(2)}` : "";
+          return (
+            <ScreenLabel
+              key={`opening-measure-${object.id}`}
+              x={point.x + normal.x * (30 / scale)}
+              y={point.y + normal.y * (30 / scale)}
+              text={`${type} ${(object.dimensions.width / 1000).toFixed(2)} × ${(object.dimensions.height / 1000).toFixed(2)}${sill}`}
+              scale={scale}
+              rotation={readablePlanAngle(angle)}
+              tone="opening"
+            />
+          );
+        })}
+    </Group>
+  );
+}
+
+type ClearanceSpan = {
+  id: string;
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+  label: string;
+};
+
+function selectedClearanceSpans(
+  selected: SceneObject,
+  objects: SceneObject[],
+  bounds: PlanBounds,
+): ClearanceSpan[] {
+  const target = objectBounds(selected);
+  const obstacles = objects
+    .filter(
+      (object) =>
+        object.id !== selected.id &&
+        object.visible &&
+        !["wall", "door", "window", "label", "measurement"].includes(object.objectType),
+    )
+    .map((object) => objectBounds(object));
+  const overlapsVertically = (entry: ReturnType<typeof objectBounds>) =>
+    entry.bottom > target.top && entry.top < target.bottom;
+  const overlapsHorizontally = (entry: ReturnType<typeof objectBounds>) =>
+    entry.right > target.left && entry.left < target.right;
+  const leftEdge = Math.max(
+    bounds.minX,
+    ...obstacles.filter((entry) => overlapsVertically(entry) && entry.right <= target.left).map((entry) => entry.right),
+  );
+  const rightEdge = Math.min(
+    bounds.maxX,
+    ...obstacles.filter((entry) => overlapsVertically(entry) && entry.left >= target.right).map((entry) => entry.left),
+  );
+  const topEdge = Math.max(
+    bounds.minY,
+    ...obstacles.filter((entry) => overlapsHorizontally(entry) && entry.bottom <= target.top).map((entry) => entry.bottom),
+  );
+  const bottomEdge = Math.min(
+    bounds.maxY,
+    ...obstacles.filter((entry) => overlapsHorizontally(entry) && entry.top >= target.bottom).map((entry) => entry.top),
+  );
+  const centerX = (target.left + target.right) / 2;
+  const centerY = (target.top + target.bottom) / 2;
+  const spans = [
+    { id: "left", start: { x: leftEdge, y: centerY }, end: { x: target.left, y: centerY } },
+    { id: "right", start: { x: target.right, y: centerY }, end: { x: rightEdge, y: centerY } },
+    { id: "top", start: { x: centerX, y: topEdge }, end: { x: centerX, y: target.top } },
+    { id: "bottom", start: { x: centerX, y: target.bottom }, end: { x: centerX, y: bottomEdge } },
+  ];
+  return spans
+    .map((span) => {
+      const gap = Math.hypot(span.end.x - span.start.x, span.end.y - span.start.y);
+      return { ...span, label: `${(gap / 1000).toFixed(2)} m` };
+    })
+    .filter((span) => {
+      const gap = Math.hypot(span.end.x - span.start.x, span.end.y - span.start.y);
+      return gap >= 80 && gap <= 12_000;
+    });
+}
+
+function ClearanceMeasurements({
+  selected,
+  objects,
+  bounds,
+  scale,
+}: {
+  selected: SceneObject;
+  objects: SceneObject[];
+  bounds: PlanBounds;
+  scale: number;
+}) {
+  const spans = selectedClearanceSpans(selected, objects, bounds);
+  return (
+    <Group name="automatic-clearance-measurements" listening={false}>
+      {spans.map((span) => {
+        const middle = {
+          x: (span.start.x + span.end.x) / 2,
+          y: (span.start.y + span.end.y) / 2,
+        };
+        const horizontal = Math.abs(span.end.x - span.start.x) >= Math.abs(span.end.y - span.start.y);
+        return (
+          <Group key={`clearance-${span.id}`}>
+            <Arrow
+              points={[span.start.x, span.start.y, span.end.x, span.end.y]}
+              pointerAtBeginning
+              pointerAtEnding
+              pointerLength={5 / scale}
+              pointerWidth={5 / scale}
+              stroke="#a27b24"
+              fill="#a27b24"
+              strokeWidth={1 / scale}
+              dash={[5 / scale, 3 / scale]}
+            />
+            <ScreenLabel
+              x={middle.x}
+              y={middle.y + (horizontal ? -14 / scale : 0)}
+              text={span.label}
+              scale={scale}
+              rotation={horizontal ? 0 : -90}
+              tone="clearance"
+            />
+          </Group>
+        );
+      })}
+    </Group>
+  );
+}
+
 function PlanObject({
   object,
   selected,
@@ -1003,6 +1231,7 @@ export function TwoDEditor() {
   const snapEnabled = useEditorStore((state) => state.snapEnabled);
   const gridSize = useEditorStore((state) => state.gridSize);
   const snapTolerance = useEditorStore((state) => state.snapTolerance);
+  const measurementOverlays = useEditorStore((state) => state.measurementOverlays);
   const guides = useEditorStore((state) => state.guides);
   const setSelected = useEditorStore((state) => state.setSelected);
   const setCursor = useEditorStore((state) => state.setCursor);
@@ -1417,6 +1646,10 @@ export function TwoDEditor() {
       data-floor-state={closedFloor ? "wall-derived" : "awaiting-closed-walls"}
       data-wall-chain-start-x={drawStart?.x ?? undefined}
       data-wall-chain-start-y={drawStart?.y ?? undefined}
+      data-automatic-measurements={Object.entries(measurementOverlays)
+        .filter(([, enabled]) => enabled)
+        .map(([key]) => key)
+        .join(",")}
       onDragOver={(event) => event.preventDefault()}
       onAuxClick={(event) => event.button === 1 && event.preventDefault()}
       onDrop={(event) => {
@@ -1615,6 +1848,24 @@ export function TwoDEditor() {
                 />
               </Group>
             )}
+            {measurementOverlays.walls && (
+              <WallLengthMeasurements objects={visibleObjects} scale={scale} />
+            )}
+            {measurementOverlays.openings && (
+              <OpeningMeasurements objects={visibleObjects} scale={scale} />
+            )}
+            {measurementOverlays.clearance &&
+              selectedSceneObject &&
+              !["wall", "door", "window", "label", "measurement"].includes(
+                selectedSceneObject.objectType,
+              ) && (
+                <ClearanceMeasurements
+                  selected={selectedSceneObject}
+                  objects={visibleObjects}
+                  bounds={floorPlan.bounds}
+                  scale={scale}
+                />
+              )}
             {marquee && (
               <Rect
                 x={Math.min(marquee.start.x, marquee.end.x)}
@@ -1645,7 +1896,9 @@ export function TwoDEditor() {
               flipEnabled={false}
               keepRatio={false}
             />
-            {closedFloor && <PlanDimensionFrame bounds={closedFloor.bounds} scale={scale} />}
+            {closedFloor && measurementOverlays.overall && (
+              <PlanDimensionFrame bounds={closedFloor.bounds} scale={scale} />
+            )}
           </Group>
         </Layer>
       </Stage>

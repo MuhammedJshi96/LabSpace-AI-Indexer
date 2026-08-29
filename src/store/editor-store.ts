@@ -53,6 +53,7 @@ export type InspectorPanel =
 export type CameraPreset =
   "perspective" | "orthographic" | "top" | "isometric" | "front" | "right" | "left" | "back";
 export type SaveStatus = "loading" | "unsaved" | "saving" | "saved" | "error";
+export type MeasurementOverlayKey = "overall" | "walls" | "openings" | "clearance";
 export const LAB_ENVIRONMENT_CONTEXT_VISIBILITY_KEY = "labspace-environment-context-visible";
 export type AppDialog =
   | null
@@ -65,7 +66,8 @@ export type AppDialog =
   | "labels"
   | "reindex"
   | "inventory"
-  | "demos";
+  | "demos"
+  | "blueprint";
 
 export type AlignmentGuide = { axis: "x" | "y"; value: number; kind: string };
 
@@ -116,6 +118,7 @@ type EditorState = {
   snapEnabled: boolean;
   gridSize: number;
   snapTolerance: number;
+  measurementOverlays: Record<MeasurementOverlayKey, boolean>;
   cursor: { x: number; y: number };
   guides: AlignmentGuide[];
   cameraPreset: CameraPreset;
@@ -154,6 +157,7 @@ type EditorState = {
   toggleSnap: () => void;
   setGridSize: (size: number) => void;
   setSnapTolerance: (value: number) => void;
+  toggleMeasurementOverlay: (key: MeasurementOverlayKey) => void;
   setCameraPreset: (preset: CameraPreset) => void;
   setCameraPose: (pose: RoomViewState["cameraPose"]) => void;
   applySpatialFocus: (focus: SpatialFocusRequest) => boolean;
@@ -611,6 +615,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   snapEnabled: true,
   gridSize: 200,
   snapTolerance: 80,
+  measurementOverlays: {
+    overall: true,
+    walls: false,
+    openings: false,
+    clearance: false,
+  },
   cursor: { x: 0, y: 0 },
   guides: [],
   cameraPreset: "isometric",
@@ -707,6 +717,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   toggleSnap: () => set((state) => ({ snapEnabled: !state.snapEnabled })),
   setGridSize: (gridSize) => set({ gridSize }),
   setSnapTolerance: (snapTolerance) => set({ snapTolerance }),
+  toggleMeasurementOverlay: (key) =>
+    set((state) => ({
+      measurementOverlays: {
+        ...state.measurementOverlays,
+        [key]: !state.measurementOverlays[key],
+      },
+    })),
   setCameraPreset: (cameraPreset) =>
     set((state) => ({
       project: projectWithRoomViewState(state.project, { cameraPreset, cameraPose: null }),

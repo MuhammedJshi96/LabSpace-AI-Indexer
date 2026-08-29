@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { AssetLibrary } from "./components/AssetLibrary";
+import { BlueprintImportDialog } from "./components/BlueprintImportDialog";
 import { Dialogs, Toasts } from "./components/Dialogs";
 import { InspectorPanels } from "./components/InspectorPanels";
 import { StatusBar } from "./components/StatusBar";
@@ -289,6 +290,7 @@ export function App() {
         </div>
       )}
       <Dialogs />
+      <BlueprintImportDialog />
       <Toasts />
     </div>
   );

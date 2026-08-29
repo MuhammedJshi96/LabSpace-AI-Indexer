@@ -10516,3 +10516,298 @@ body:has(#procedural-catalog-capture) #root {
   background-color: transparent;
   border-radius: 0;
 }
+
+/* Final workspace polish: preserve visible room navigation, show a real
+   geometry-driven facility stack, and give authored thumbnails enough room to
+   present their complete silhouette. */
+.top-bar-left {
+  overflow: visible;
+}
+
+.top-bar {
+  z-index: 300;
+}
+
+.room-navigator-popover {
+  top: calc(100% + 18px);
+}
+
+.facility-workspace {
+  grid-template-columns: 300px minmax(0, 1fr) 330px;
+}
+
+.facility-stack-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 10px;
+  padding: 10px 11px;
+  color: #176d62;
+  background: #edf8f5;
+  border: 1px solid #c5e3dd;
+  border-radius: 8px;
+}
+
+.facility-stack-summary > span {
+  display: grid;
+  gap: 1px;
+}
+
+.facility-stack-summary small {
+  color: #647a75;
+  font-size: 11px;
+}
+
+.facility-room-list {
+  gap: 7px;
+}
+
+.facility-room-list button {
+  grid-template-columns: auto auto minmax(0, 1fr);
+}
+
+.facility-level-number {
+  display: grid !important;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #0a7568;
+  font-family: Bahnschrift, monospace;
+  font-size: 11px;
+  font-weight: 760;
+  background: #e1f3ef;
+  border: 1px solid #badfd7;
+  border-radius: 6px;
+}
+
+.facility-arrange-note {
+  margin: 8px 3px 0;
+  color: #6b7b77;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.facility-stack-panel {
+  background: #edf3f1;
+}
+
+.facility-stack-panel > header {
+  background: rgba(251, 253, 252, 0.96);
+}
+
+.facility-stack-canvas {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.94), rgba(232, 241, 238, 0.9) 68%),
+    #edf3f1;
+}
+
+.facility-stack-canvas canvas {
+  display: block;
+}
+
+.facility-stack-label {
+  display: grid;
+  width: max-content;
+  min-width: 176px;
+  gap: 2px;
+  padding: 9px 11px;
+  color: #1c2f2b;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 174, 168, 0.82);
+  border-left: 4px solid #768985;
+  border-radius: 7px;
+  box-shadow: 0 8px 22px rgba(24, 50, 45, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.facility-stack-label.selected {
+  background: rgba(236, 251, 247, 0.96);
+  border-color: #77c8b9;
+  border-left-color: #078f7e;
+  box-shadow: 0 10px 28px rgba(8, 111, 98, 0.18);
+}
+
+.facility-stack-label small {
+  color: #08796b;
+  font-family: Bahnschrift, monospace;
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+}
+
+.facility-stack-label b {
+  font-size: 14px;
+}
+
+.facility-stack-label span {
+  color: #63736f;
+  font-size: 11px;
+}
+
+.facility-stack-key {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  gap: 14px;
+  padding: 8px 10px;
+  color: #526761;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #cfddda;
+  border-radius: 7px;
+  box-shadow: 0 5px 14px rgba(25, 48, 43, 0.08);
+  pointer-events: none;
+}
+
+.facility-stack-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.facility-stack-key i {
+  width: 10px;
+  height: 10px;
+  background: #f5f8f7;
+  border: 1px solid #8aa09a;
+  border-radius: 2px;
+}
+
+.facility-stack-key i.selected {
+  background: #caeee6;
+  border-color: #078f7e;
+}
+
+.facility-placement-heading {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+
+.facility-placement-heading p {
+  margin: 5px 0 0;
+  color: #657571;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.inventory-registry-badge {
+  display: flex;
+  min-width: 235px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  color: #106e62;
+  background: #e8f6f2;
+  border: 1px solid #bddfd7;
+  border-radius: 7px;
+}
+
+.inventory-registry-badge > span {
+  display: grid;
+  gap: 1px;
+}
+
+.inventory-registry-badge b {
+  font-size: 12px;
+}
+
+.inventory-registry-badge small {
+  color: #607872;
+  font-size: 10px;
+}
+
+.inventory-assignment-heading {
+  margin-top: 6px;
+  padding: 13px 0 3px;
+  border-top: 1px solid var(--rule);
+}
+
+.inventory-assignment-heading p {
+  margin: 4px 0 0;
+  color: #657571;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Both libraries use two deliberate columns and a tall contain-fit viewport.
+   This avoids cropping architectural families and makes equipment identifiable
+   before placement. */
+.asset-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.asset-card {
+  height: 158px;
+  padding: 8px 8px 9px;
+}
+
+.asset-thumbnail {
+  height: 108px;
+  min-height: 108px;
+  padding: 7px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.asset-card b {
+  font-size: 12px;
+}
+
+.asset-card .asset-card-dimensions {
+  font-size: 10px;
+}
+
+.asset-preview-layout {
+  grid-template-columns: 360px minmax(0, 1fr);
+}
+
+.asset-preview-list {
+  gap: 9px;
+}
+
+.asset-preview-list > button {
+  grid-template-rows: 126px auto;
+  padding: 8px;
+  border-radius: 7px;
+}
+
+.asset-preview-thumbnail-frame {
+  height: 126px;
+  padding: 6px;
+}
+
+.asset-preview-thumbnail-frame > .asset-thumbnail {
+  padding: 10px;
+}
+
+.asset-preview-list b {
+  font-size: 12px;
+}
+
+.asset-preview-list em {
+  font-size: 10px;
+}
+
+@media (max-width: 1280px) {
+  .facility-workspace {
+    grid-template-columns: 250px minmax(0, 1fr) 300px;
+  }
+
+  .asset-preview-layout {
+    grid-template-columns: 330px minmax(0, 1fr);
+  }
+
+  .asset-preview-list > button {
+    grid-template-rows: 112px auto;
+  }
+
+  .asset-preview-thumbnail-frame {
+    height: 112px;
+  }
+}

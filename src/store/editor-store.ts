@@ -199,6 +199,7 @@ type EditorState = {
     item?: Partial<InventoryItem>,
   ) => string | null;
   updateInventoryItemInRoom: (roomId: string, id: string, patch: Partial<InventoryItem>) => void;
+  moveInventoryItemToRoom: (sourceRoomId: string, id: string, targetRoomId: string) => boolean;
   removeInventoryItemFromRoom: (roomId: string, id: string) => void;
   updateEquipmentRecord: (id: string, patch: Partial<EquipmentRecord>) => void;
   applyReindex: (changes: ReindexChange[]) => void;
@@ -1625,6 +1626,61 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         dirtyRevision: state.dirtyRevision + 1,
       };
     }),
+  moveInventoryItemToRoom: (sourceRoomId, id, targetRoomId) => {
+    const state = get();
+    if (sourceRoomId === targetRoomId) return true;
+    const sourceRoom = state.project.rooms.find(
+      (room) => room.id === sourceRoomId && room.roomKind !== "demo-template",
+    );
+    const targetRoom = state.project.rooms.find(
+      (room) => room.id === targetRoomId && room.roomKind !== "demo-template",
+    );
+    const item = sourceRoom?.scene.inventoryItems.find((entry) => entry.id === id);
+    if (!sourceRoom || !targetRoom || !item) {
+      state.pushToast("That inventory assignment is no longer available.", "error");
+      return false;
+    }
+    const now = new Date().toISOString();
+    const movedItem = { ...item, storageLocationId: null, updatedAt: now };
+    set({
+      project: {
+        ...state.project,
+        rooms: state.project.rooms.map((room) => {
+          if (room.id === sourceRoom.id) {
+            return {
+              ...room,
+              updatedAt: now,
+              scene: {
+                ...room.scene,
+                inventoryItems: room.scene.inventoryItems.filter((entry) => entry.id !== id),
+                updatedAt: now,
+              },
+            };
+          }
+          if (room.id === targetRoom.id) {
+            return {
+              ...room,
+              updatedAt: now,
+              scene: {
+                ...room.scene,
+                inventoryItems: [...room.scene.inventoryItems, movedItem],
+                updatedAt: now,
+              },
+            };
+          }
+          return room;
+        }),
+        updatedAt: now,
+      },
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast(
+      `${item.name} assigned to ${targetRoom.name}. Choose a storage location when ready.`,
+      "success",
+    );
+    return true;
+  },
   removeInventoryItemFromRoom: (roomId, id) =>
     set((state) => {
       const room = state.project.rooms.find((entry) => entry.id === roomId);

@@ -17,7 +17,11 @@ test("keeps room switching and facility management discoverable", async ({ page 
 
   await page.getByRole("link", { name: "Facility Manager" }).click();
   await expect(page).toHaveURL(/\/facility$/);
-  await expect(page.getByRole("heading", { name: "Facility workspace" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Facility stack" })).toBeVisible();
+  await expect(page.getByLabel("Three-dimensional facility room stack")).toBeVisible();
+  await expect(page.locator(".facility-stack-label")).not.toHaveCount(0);
+  await page.getByRole("button", { name: "Auto-stack rooms top to bottom" }).click();
+  await expect(page.getByText(/rooms arranged into a top-to-bottom facility stack/)).toBeVisible();
 });
 
 test("uses one ordered Create menu and focused workspace forms", async ({ page }) => {

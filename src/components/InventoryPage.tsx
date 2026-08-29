@@ -41,7 +41,8 @@ function locationPath(room: Room, locationId: string | null) {
 
 function statusFor(item: InventoryItem) {
   if (!item.storageLocationId) return "unassigned" as const;
-  if (item.expiryDate && new Date(item.expiryDate).getTime() < Date.now()) return "expired" as const;
+  if (item.expiryDate && new Date(item.expiryDate).getTime() < Date.now())
+    return "expired" as const;
   return "indexed" as const;
 }
 
@@ -54,13 +55,15 @@ export function InventoryPage() {
   const project = useEditorStore((state) => state.project);
   const addItem = useEditorStore((state) => state.addInventoryItemToRoom);
   const updateItem = useEditorStore((state) => state.updateInventoryItemInRoom);
+  const moveItem = useEditorStore((state) => state.moveInventoryItemToRoom);
   const removeItem = useEditorStore((state) => state.removeInventoryItemFromRoom);
   const switchRoom = useEditorStore((state) => state.switchRoom);
   const [query, setQuery] = useState("");
   const [roomFilter, setRoomFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "indexed" | "unassigned" | "expired">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "indexed" | "unassigned" | "expired">(
+    "all",
+  );
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [newItemRoomId, setNewItemRoomId] = useState(project.activeRoomId);
 
   useEffect(() => void hydrate(), [hydrate]);
   useEffect(() => {
@@ -80,7 +83,8 @@ export function InventoryPage() {
           laboratoryName: laboratory?.name ?? "Laboratory",
           laboratoryCode: laboratory?.code ?? "LAB",
           location:
-            room.scene.storageLocations.find((entry) => entry.id === item.storageLocationId) ?? null,
+            room.scene.storageLocations.find((entry) => entry.id === item.storageLocationId) ??
+            null,
           path: locationPath(room, item.storageLocationId),
         }));
       }),
@@ -109,9 +113,13 @@ export function InventoryPage() {
   });
   const selected =
     rows.find((row) => row.item.id === selectedItemId) ?? filteredRows[0] ?? rows[0] ?? null;
+  const selectedLaboratoryRooms = selected
+    ? editableRooms.filter((room) => room.laboratoryId === selected.room.laboratoryId)
+    : [];
 
   const createItem = () => {
-    const room = editableRooms.find((entry) => entry.id === newItemRoomId) ?? editableRooms[0];
+    const room =
+      editableRooms.find((entry) => entry.id === project.activeRoomId) ?? editableRooms[0];
     if (!room) return;
     const id = addItem(room.id, null, { name: "New inventory item", quantity: 1, unit: "item" });
     if (id) setSelectedItemId(id);
@@ -125,18 +133,20 @@ export function InventoryPage() {
           <div>
             <span className="eyebrow">Project-wide index</span>
             <h1>Inventory Studio</h1>
-            <p>Create, assign, and audit inventory across every editable laboratory room.</p>
+            <p>
+              One shared inventory registry across every laboratory, room, and storage location.
+            </p>
           </div>
           <div className="inventory-create-control">
-            <select
-              aria-label="Room for new inventory item"
-              value={newItemRoomId}
-              onChange={(event) => setNewItemRoomId(event.target.value)}
-            >
-              {editableRooms.map((room) => (
-                <option key={room.id} value={room.id}>{room.name} · {room.code}</option>
-              ))}
-            </select>
+            <span className="inventory-registry-badge">
+              <Buildings size={17} weight="duotone" />
+              <span>
+                <b>Universal registry</b>
+                <small>
+                  {project.laboratories.length} laboratories · {rows.length} records
+                </small>
+              </span>
+            </span>
             <button className="primary-action" onClick={createItem}>
               <Plus size={17} /> New inventory item
             </button>
@@ -154,16 +164,28 @@ export function InventoryPage() {
               />
             </label>
             <label>
-              <span><Buildings size={15} /> Room scope</span>
+              <span>
+                <Buildings size={15} /> Location filter
+              </span>
               <select value={roomFilter} onChange={(event) => setRoomFilter(event.target.value)}>
-                <option value="all">All editable rooms</option>
-                {editableRooms.map((room) => (
-                  <option key={room.id} value={room.id}>{room.name} · {room.code}</option>
+                <option value="all">All laboratories and rooms</option>
+                {project.laboratories.map((laboratory) => (
+                  <optgroup key={laboratory.id} label={`${laboratory.name} · ${laboratory.code}`}>
+                    {editableRooms
+                      .filter((room) => room.laboratoryId === laboratory.id)
+                      .map((room) => (
+                        <option key={room.id} value={room.id}>
+                          {room.name} · {room.code}
+                        </option>
+                      ))}
+                  </optgroup>
                 ))}
               </select>
             </label>
             <div className="inventory-status-filters">
-              <span><Funnel size={15} /> Assignment state</span>
+              <span>
+                <Funnel size={15} /> Assignment state
+              </span>
               {(["all", "indexed", "unassigned", "expired"] as const).map((status) => (
                 <button
                   key={status}
@@ -171,7 +193,11 @@ export function InventoryPage() {
                   onClick={() => setStatusFilter(status)}
                 >
                   <span>{status[0].toUpperCase() + status.slice(1)}</span>
-                  <em>{status === "all" ? rows.length : rows.filter((row) => statusFor(row.item) === status).length}</em>
+                  <em>
+                    {status === "all"
+                      ? rows.length
+                      : rows.filter((row) => statusFor(row.item) === status).length}
+                  </em>
                 </button>
               ))}
             </div>
@@ -179,8 +205,13 @@ export function InventoryPage() {
 
           <section className="inventory-record-list" aria-label="Inventory records">
             <header>
-              <span><b>{filteredRows.length}</b> matching records</span>
-              <small>{rows.length} across {editableRooms.length} rooms</small>
+              <span>
+                <b>{filteredRows.length}</b> matching records
+              </span>
+              <small>
+                {rows.length} shared records · {project.laboratories.length} laboratories ·{" "}
+                {editableRooms.length} rooms
+              </small>
             </header>
             <div className="inventory-record-scroll">
               {filteredRows.map((row) => {
@@ -191,14 +222,20 @@ export function InventoryPage() {
                     className={selected?.item.id === row.item.id ? "selected" : ""}
                     onClick={() => setSelectedItemId(row.item.id)}
                   >
-                    <span className="inventory-record-icon"><Package size={20} weight="duotone" /></span>
+                    <span className="inventory-record-icon">
+                      <Package size={20} weight="duotone" />
+                    </span>
                     <span className="inventory-record-copy">
                       <b>{row.item.name}</b>
-                      <small>{row.room.name} · {row.room.code}</small>
+                      <small>
+                        {row.laboratoryCode} · {row.room.name} · {row.room.code}
+                      </small>
                       <em>{row.path.length ? row.path.join(" / ") : "Location not assigned"}</em>
                     </span>
                     <span className={`inventory-record-status ${status}`}>{status}</span>
-                    <strong>{row.item.quantity} {row.item.unit}</strong>
+                    <strong>
+                      {row.item.quantity} {row.item.unit}
+                    </strong>
                   </button>
                 );
               })}
@@ -216,9 +253,13 @@ export function InventoryPage() {
             {selected ? (
               <>
                 <header>
-                  <span className="inventory-detail-mark"><Package size={22} weight="duotone" /></span>
+                  <span className="inventory-detail-mark">
+                    <Package size={22} weight="duotone" />
+                  </span>
                   <span>
-                    <small>{selected.laboratoryCode} / {selected.room.code}</small>
+                    <small>
+                      {selected.laboratoryCode} / {selected.room.code}
+                    </small>
                     <h2>{selected.item.name}</h2>
                   </span>
                 </header>
@@ -231,26 +272,153 @@ export function InventoryPage() {
                   </span>
                 </div>
                 <div className="inventory-detail-form">
-                  <label className="wide"><span>Item name</span><input value={selected.item.name} onChange={(event) => updateItem(selected.room.id, selected.item.id, { name: event.target.value })} /></label>
-                  <label><span>Quantity</span><input type="number" min="0" value={selected.item.quantity} onChange={(event) => updateItem(selected.room.id, selected.item.id, { quantity: Number(event.target.value) })} /></label>
-                  <label><span>Unit</span><input value={selected.item.unit} onChange={(event) => updateItem(selected.room.id, selected.item.id, { unit: event.target.value })} /></label>
-                  <label className="wide"><span>Owner</span><input value={selected.item.owner} onChange={(event) => updateItem(selected.room.id, selected.item.id, { owner: event.target.value })} placeholder="Shared or responsible person" /></label>
-                  <label className="wide"><span>Room</span><input value={`${selected.room.name} · ${selected.room.code}`} disabled /></label>
                   <label className="wide">
-                    <span>Storage location</span>
-                    <select value={selected.item.storageLocationId ?? ""} onChange={(event) => updateItem(selected.room.id, selected.item.id, { storageLocationId: event.target.value || null })}>
-                      <option value="">Unassigned</option>
-                      {selected.room.scene.storageLocations.map((location) => (
-                        <option key={location.id} value={location.id}>{location.indexCode} · {locationPath(selected.room, location.id).join(" / ")}</option>
+                    <span>Item name</span>
+                    <input
+                      value={selected.item.name}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, { name: event.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    <span>Quantity</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={selected.item.quantity}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, {
+                          quantity: Number(event.target.value),
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    <span>Unit</span>
+                    <input
+                      value={selected.item.unit}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, { unit: event.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="wide">
+                    <span>Owner</span>
+                    <input
+                      value={selected.item.owner}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, {
+                          owner: event.target.value,
+                        })
+                      }
+                      placeholder="Shared or responsible person"
+                    />
+                  </label>
+                  <div className="inventory-assignment-heading wide">
+                    <span className="eyebrow">Physical assignment</span>
+                    <p>
+                      The record stays in the universal registry when its laboratory or room
+                      changes.
+                    </p>
+                  </div>
+                  <label className="wide">
+                    <span>Laboratory</span>
+                    <select
+                      value={selected.room.laboratoryId}
+                      onChange={(event) => {
+                        const targetRoom = editableRooms.find(
+                          (room) => room.laboratoryId === event.target.value,
+                        );
+                        if (targetRoom) moveItem(selected.room.id, selected.item.id, targetRoom.id);
+                      }}
+                    >
+                      {project.laboratories.map((laboratory) => (
+                        <option key={laboratory.id} value={laboratory.id}>
+                          {laboratory.name} · {laboratory.code}
+                        </option>
                       ))}
                     </select>
                   </label>
-                  <label className="wide"><span>Evidence image URL</span><input type="url" value={selected.item.imageSrc ?? ""} onChange={(event) => updateItem(selected.room.id, selected.item.id, { imageSrc: event.target.value || undefined })} placeholder="/images/inventory/example.png" /></label>
-                  <label className="wide"><span>Expiry date</span><input type="date" value={selected.item.expiryDate ?? ""} onChange={(event) => updateItem(selected.room.id, selected.item.id, { expiryDate: event.target.value || null })} /></label>
-                  <label className="wide"><span>Notes</span><textarea rows={4} value={selected.item.notes} onChange={(event) => updateItem(selected.room.id, selected.item.id, { notes: event.target.value })} /></label>
+                  <label className="wide">
+                    <span>Room assignment</span>
+                    <select
+                      value={selected.room.id}
+                      onChange={(event) =>
+                        moveItem(selected.room.id, selected.item.id, event.target.value)
+                      }
+                    >
+                      {selectedLaboratoryRooms.map((room) => (
+                        <option key={room.id} value={room.id}>
+                          {room.name} · {room.code}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="wide">
+                    <span>Storage location</span>
+                    <select
+                      value={selected.item.storageLocationId ?? ""}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, {
+                          storageLocationId: event.target.value || null,
+                        })
+                      }
+                    >
+                      <option value="">Unassigned</option>
+                      {selected.room.scene.storageLocations.map((location) => (
+                        <option key={location.id} value={location.id}>
+                          {location.indexCode} ·{" "}
+                          {locationPath(selected.room, location.id).join(" / ")}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="wide">
+                    <span>Evidence image URL</span>
+                    <input
+                      type="url"
+                      value={selected.item.imageSrc ?? ""}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, {
+                          imageSrc: event.target.value || undefined,
+                        })
+                      }
+                      placeholder="/images/inventory/example.png"
+                    />
+                  </label>
+                  <label className="wide">
+                    <span>Expiry date</span>
+                    <input
+                      type="date"
+                      value={selected.item.expiryDate ?? ""}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, {
+                          expiryDate: event.target.value || null,
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="wide">
+                    <span>Notes</span>
+                    <textarea
+                      rows={4}
+                      value={selected.item.notes}
+                      onChange={(event) =>
+                        updateItem(selected.room.id, selected.item.id, {
+                          notes: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
                 </div>
                 <footer>
-                  <button onClick={() => { switchRoom(selected.room.id); window.location.assign("/"); }}>
+                  <button
+                    onClick={() => {
+                      switchRoom(selected.room.id);
+                      window.location.assign("/");
+                    }}
+                  >
                     Open room <ArrowRight size={16} />
                   </button>
                   <button
@@ -266,7 +434,10 @@ export function InventoryPage() {
                 </footer>
               </>
             ) : (
-              <div className="inventory-empty-state"><Package size={36} /><b>Select an inventory record</b></div>
+              <div className="inventory-empty-state">
+                <Package size={36} />
+                <b>Select an inventory record</b>
+              </div>
             )}
           </aside>
         </section>

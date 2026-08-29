@@ -2,21 +2,217 @@ import {
   ArrowRight,
   Buildings,
   DoorOpen,
-  GridFour,
   PresentationChart,
   Ruler,
+  StackSimple,
 } from "@phosphor-icons/react";
+import { Html, OrbitControls } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
+import * as THREE from "three";
+import type { Room, SceneObject } from "../domain/schema";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { Dialogs, Toasts } from "./Dialogs";
 import { TopBar } from "./TopBar";
 
 function fallbackPlacement(index: number) {
-  return { floor: 0, x: (index % 3) * 13_000, y: Math.floor(index / 3) * 11_000, rotation: 0 };
+  return { floor: index, x: 0, y: 0, rotation: 0 };
 }
 
 function metres(value: number) {
   return `${(value / 1000).toFixed(1)} m`;
+}
+
+function objectColor(object: SceneObject) {
+  if (object.objectType === "storage") return "#91a6a0";
+  if (object.objectType === "equipment") return "#d9e2df";
+  if (object.objectType === "furniture") return "#3b4c49";
+  if (object.objectType === "safety") return "#e5b960";
+  if (object.objectType === "utility") return "#7fa59f";
+  if (object.objectType === "door" || object.objectType === "window") return "#a9c5c0";
+  return "#b8c5c2";
+}
+
+type StackRoomProps = {
+  room: Room;
+  stackIndex: number;
+  selected: boolean;
+  onSelect: (roomId: string) => void;
+  onOpen: (roomId: string) => void;
+};
+
+function StackRoom({ room, stackIndex, selected, onSelect, onOpen }: StackRoomProps) {
+  const width = room.width / 1000;
+  const depth = room.depth / 1000;
+  const levelY = stackIndex * 2.25;
+  const placement = room.facilityPlacement ?? fallbackPlacement(stackIndex);
+  const walls = room.scene.objects.filter((object) => object.visible && object.wall);
+  const objects = room.scene.objects.filter(
+    (object) =>
+      object.visible &&
+      object.objectType !== "wall" &&
+      object.objectType !== "label" &&
+      object.objectType !== "measurement",
+  );
+
+  return (
+    <group
+      position={[0, levelY, 0]}
+      rotation={[0, THREE.MathUtils.degToRad(-placement.rotation), 0]}
+    >
+      <mesh
+        receiveShadow
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect(room.id);
+        }}
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          onOpen(room.id);
+        }}
+      >
+        <boxGeometry args={[width + 0.28, 0.14, depth + 0.28]} />
+        <meshStandardMaterial
+          color={selected ? "#caeee6" : "#f5f8f7"}
+          emissive={selected ? "#0a6f62" : "#000000"}
+          emissiveIntensity={selected ? 0.08 : 0}
+          roughness={0.78}
+          metalness={0.02}
+        />
+      </mesh>
+
+      {walls.map((object) => {
+        const wall = object.wall!;
+        const dx = wall.end.x - wall.start.x;
+        const dy = wall.end.y - wall.start.y;
+        const length = Math.max(0.12, Math.hypot(dx, dy) / 1000);
+        const x = (wall.start.x + wall.end.x) / 2000 - width / 2;
+        const z = (wall.start.y + wall.end.y) / 2000 - depth / 2;
+        const angle = -Math.atan2(dy, dx);
+        return (
+          <mesh
+            key={object.id}
+            position={[x, 0.42, z]}
+            rotation={[0, angle, 0]}
+            castShadow
+            receiveShadow
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect(room.id);
+            }}
+          >
+            <boxGeometry args={[length, 0.76, Math.max(0.06, wall.thickness / 1000)]} />
+            <meshStandardMaterial color={selected ? "#effaf7" : "#d8e0de"} roughness={0.7} />
+          </mesh>
+        );
+      })}
+
+      {objects.map((object) => {
+        const objectWidth = Math.max(0.08, object.dimensions.width / 1000);
+        const objectDepth = Math.max(0.08, object.dimensions.depth / 1000);
+        const objectHeight = Math.min(0.7, Math.max(0.12, object.dimensions.height / 2400));
+        return (
+          <mesh
+            key={object.id}
+            position={[
+              object.position.x / 1000 - width / 2,
+              0.12 + objectHeight / 2,
+              object.position.y / 1000 - depth / 2,
+            ]}
+            rotation={[0, THREE.MathUtils.degToRad(-object.rotation.z), 0]}
+            castShadow
+            receiveShadow
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect(room.id);
+            }}
+          >
+            <boxGeometry args={[objectWidth, objectHeight, objectDepth]} />
+            <meshStandardMaterial
+              color={objectColor(object)}
+              roughness={object.objectType === "equipment" ? 0.38 : 0.68}
+              metalness={object.objectType === "equipment" ? 0.24 : 0.04}
+            />
+          </mesh>
+        );
+      })}
+
+      <Html
+        position={[-width / 2, 1.12, -depth / 2]}
+        center={false}
+        zIndexRange={[40, 0]}
+        style={{ pointerEvents: "none" }}
+      >
+        <div className={`facility-stack-label${selected ? " selected" : ""}`}>
+          <small>
+            LEVEL {placement.floor + 1} · {room.code}
+          </small>
+          <b>{room.name}</b>
+          <span>
+            {objects.length} assets · {room.scene.inventoryItems.length} inventory
+          </span>
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+type StackViewProps = {
+  rooms: Room[];
+  selectedRoomId: string | undefined;
+  onSelect: (roomId: string) => void;
+  onOpen: (roomId: string) => void;
+};
+
+function FacilityStackView({ rooms, selectedRoomId, onSelect, onOpen }: StackViewProps) {
+  const maxSpan = Math.max(8, ...rooms.flatMap((room) => [room.width / 1000, room.depth / 1000]));
+  const stackHeight = Math.max(2, (rooms.length - 1) * 2.25);
+
+  return (
+    <Canvas
+      shadows
+      dpr={[1, 1.5]}
+      camera={{
+        position: [maxSpan * 1.25, stackHeight * 0.7 + 7, maxSpan * 1.35],
+        fov: 42,
+        near: 0.1,
+        far: 180,
+      }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+    >
+      <color attach="background" args={["#edf3f1"]} />
+      <fog attach="fog" args={["#edf3f1", 30, 90]} />
+      <ambientLight intensity={1.75} />
+      <directionalLight
+        castShadow
+        intensity={2.2}
+        position={[12, 18, 10]}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      <directionalLight intensity={0.7} position={[-10, 8, -8]} color="#d7f2ec" />
+      <gridHelper args={[80, 80, "#b8d0cb", "#dbe7e4"]} position={[0, -0.09, 0]} />
+      {rooms.map((room, index) => (
+        <StackRoom
+          key={room.id}
+          room={room}
+          stackIndex={rooms.length - index - 1}
+          selected={selectedRoomId === room.id}
+          onSelect={onSelect}
+          onOpen={onOpen}
+        />
+      ))}
+      <OrbitControls
+        makeDefault
+        target={[0, stackHeight / 2, 0]}
+        enableDamping
+        dampingFactor={0.08}
+        minDistance={7}
+        maxDistance={70}
+        maxPolarAngle={Math.PI * 0.49}
+      />
+    </Canvas>
+  );
 }
 
 export function FacilityPage() {
@@ -29,8 +225,8 @@ export function FacilityPage() {
   const activeRoom = useEditorStore(selectActiveRoom);
   const switchRoom = useEditorStore((state) => state.switchRoom);
   const updatePlacement = useEditorStore((state) => state.updateRoomFacilityPlacement);
+  const pushToast = useEditorStore((state) => state.pushToast);
   const [laboratoryId, setLaboratoryId] = useState(activeRoom.laboratoryId);
-  const [floor, setFloor] = useState(activeRoom.facilityPlacement?.floor ?? 0);
   const [selectedRoomId, setSelectedRoomId] = useState(activeRoom.id);
 
   useEffect(() => void hydrate(), [hydrate]);
@@ -44,53 +240,44 @@ export function FacilityPage() {
     project.laboratories.find((entry) => entry.id === laboratoryId) ?? project.laboratories[0];
   const laboratoryRooms = useMemo(
     () =>
-      project.rooms.filter(
-        (room) => room.laboratoryId === laboratory?.id && room.roomKind !== "demo-template",
-      ),
+      project.rooms
+        .filter((room) => room.laboratoryId === laboratory?.id && room.roomKind !== "demo-template")
+        .sort((a, b) => {
+          const floorDelta = (a.facilityPlacement?.floor ?? 0) - (b.facilityPlacement?.floor ?? 0);
+          return floorDelta || a.name.localeCompare(b.name);
+        }),
     [laboratory?.id, project.rooms],
   );
-  const floorRooms = laboratoryRooms.filter(
-    (room, index) => (room.facilityPlacement ?? fallbackPlacement(index)).floor === floor,
-  );
   const selectedRoom =
-    laboratoryRooms.find((room) => room.id === selectedRoomId) ?? floorRooms[0] ?? laboratoryRooms[0];
-  const floors = Array.from(
-    new Set(laboratoryRooms.map((room, index) => (room.facilityPlacement ?? fallbackPlacement(index)).floor)),
-  ).sort((a, b) => a - b);
+    laboratoryRooms.find((room) => room.id === selectedRoomId) ?? laboratoryRooms[0];
 
-  const mapBounds = useMemo(() => {
-    const boxes = floorRooms.map((room, index) => {
-      const placement = room.facilityPlacement ?? fallbackPlacement(index);
-      return {
-        left: placement.x,
-        top: placement.y,
-        right: placement.x + room.width,
-        bottom: placement.y + room.depth,
-      };
-    });
-    if (!boxes.length) return { x: -1000, y: -1000, width: 14_000, height: 10_000 };
-    const minX = Math.min(...boxes.map((box) => box.left)) - 1500;
-    const minY = Math.min(...boxes.map((box) => box.top)) - 1500;
-    const maxX = Math.max(...boxes.map((box) => box.right)) + 1500;
-    const maxY = Math.max(...boxes.map((box) => box.bottom)) + 1500;
-    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
-  }, [floorRooms]);
+  const openRoom = (roomId: string) => {
+    switchRoom(roomId);
+    window.location.assign("/");
+  };
 
   const arrangeRooms = () => {
-    floorRooms.forEach((room, index) =>
-      updatePlacement(room.id, { ...fallbackPlacement(index), floor }),
+    laboratoryRooms.forEach((room, index) =>
+      updatePlacement(room.id, { floor: index, x: 0, y: 0, rotation: 0 }),
     );
+    if (laboratoryRooms.length) {
+      setSelectedRoomId(laboratoryRooms[0].id);
+      pushToast(
+        `${laboratoryRooms.length} rooms arranged into a top-to-bottom facility stack.`,
+        "success",
+      );
+    }
   };
 
   return (
     <div className="app-shell facility-shell">
-      <TopBar activeArea="facility" contextLabel="Facility layout" />
+      <TopBar activeArea="facility" contextLabel="Facility workspace" />
       <main className="facility-workspace">
         <aside className="facility-rail">
           <div className="facility-rail-heading">
             <span className="eyebrow">Laboratory navigator</span>
-            <h1>Facility workspace</h1>
-            <p>Position rooms together while every room keeps its own detailed editor scene.</p>
+            <h1>Facility stack</h1>
+            <p>Review every room as one vertical spatial system, then open any level for detail.</p>
           </div>
           <label>
             <span>Laboratory</span>
@@ -99,108 +286,95 @@ export function FacilityPage() {
               onChange={(event) => {
                 setLaboratoryId(event.target.value);
                 const next = project.rooms.find(
-                  (room) => room.laboratoryId === event.target.value && room.roomKind !== "demo-template",
+                  (room) =>
+                    room.laboratoryId === event.target.value && room.roomKind !== "demo-template",
                 );
-                if (next) {
-                  setSelectedRoomId(next.id);
-                  setFloor(next.facilityPlacement?.floor ?? 0);
-                }
+                if (next) setSelectedRoomId(next.id);
               }}
             >
               {project.laboratories.map((entry) => (
-                <option key={entry.id} value={entry.id}>{entry.name} · {entry.code}</option>
+                <option key={entry.id} value={entry.id}>
+                  {entry.name} · {entry.code}
+                </option>
               ))}
             </select>
           </label>
-          <div className="facility-floor-tabs" role="tablist" aria-label="Facility floors">
-            {(floors.length ? floors : [0]).map((entry) => (
-              <button
-                key={entry}
-                role="tab"
-                aria-selected={floor === entry}
-                className={floor === entry ? "active" : ""}
-                onClick={() => setFloor(entry)}
-              >
-                Level {entry + 1}
-              </button>
-            ))}
+          <div className="facility-stack-summary">
+            <StackSimple size={18} weight="duotone" />
+            <span>
+              <b>{laboratoryRooms.length} room layers</b>
+              <small>Highest saved level shown first</small>
+            </span>
           </div>
-          <div className="facility-room-list">
-            {floorRooms.map((room) => (
-              <button
-                key={room.id}
-                className={selectedRoom?.id === room.id ? "active" : ""}
-                onClick={() => setSelectedRoomId(room.id)}
-              >
-                {room.roomKind === "demo" ? <PresentationChart size={17} /> : <DoorOpen size={17} />}
-                <span>
-                  <b>{room.name}</b>
-                  <small>{room.code} · {room.scene.inventoryItems.length} inventory</small>
-                </span>
-              </button>
-            ))}
+          <div className="facility-room-list" aria-label="Rooms in facility stack">
+            {[...laboratoryRooms].reverse().map((room) => {
+              const placement = room.facilityPlacement ?? fallbackPlacement(0);
+              return (
+                <button
+                  key={room.id}
+                  className={selectedRoom?.id === room.id ? "active" : ""}
+                  onClick={() => setSelectedRoomId(room.id)}
+                  onDoubleClick={() => openRoom(room.id)}
+                >
+                  <span className="facility-level-number">{placement.floor + 1}</span>
+                  {room.roomKind === "demo" ? (
+                    <PresentationChart size={17} />
+                  ) : (
+                    <DoorOpen size={17} />
+                  )}
+                  <span>
+                    <b>{room.name}</b>
+                    <small>
+                      {room.code} · {room.scene.inventoryItems.length} inventory
+                    </small>
+                  </span>
+                </button>
+              );
+            })}
           </div>
           <button className="facility-arrange" onClick={arrangeRooms}>
-            <GridFour size={16} /> Arrange rooms on this level
+            <StackSimple size={17} /> Auto-stack rooms top to bottom
           </button>
+          <p className="facility-arrange-note">
+            Assigns one saved facility level per room and resets only facility coordinates. Room
+            layouts and contents stay unchanged.
+          </p>
         </aside>
 
-        <section className="facility-map-panel">
+        <section className="facility-map-panel facility-stack-panel">
           <header>
             <span>
-              <small>Shared spatial frame</small>
-              <b>{laboratory?.name} · Level {floor + 1}</b>
+              <small>Shared three-dimensional facility frame</small>
+              <b>{laboratory?.name}</b>
             </span>
-            <em>{floorRooms.length} room{floorRooms.length === 1 ? "" : "s"}</em>
+            <em>Orbit · pan · zoom · double-click a room to open</em>
           </header>
-          <div className="facility-map" aria-label="Facility room map">
-            <svg viewBox={`${mapBounds.x} ${mapBounds.y} ${mapBounds.width} ${mapBounds.height}`}>
-              <defs>
-                <pattern id="facility-grid" width="1000" height="1000" patternUnits="userSpaceOnUse">
-                  <path d="M 1000 0 L 0 0 0 1000" fill="none" stroke="#d9e5e2" strokeWidth="18" />
-                </pattern>
-              </defs>
-              <rect x={mapBounds.x} y={mapBounds.y} width={mapBounds.width} height={mapBounds.height} fill="url(#facility-grid)" />
-              {floorRooms.map((room, index) => {
-                const placement = room.facilityPlacement ?? fallbackPlacement(index);
-                const selected = selectedRoom?.id === room.id;
-                const nonWallObjects = room.scene.objects.filter((object) => object.objectType !== "wall");
-                return (
-                  <g
-                    key={room.id}
-                    transform={`translate(${placement.x} ${placement.y}) rotate(${placement.rotation} ${room.width / 2} ${room.depth / 2})`}
-                    className={`facility-room-shape${selected ? " selected" : ""}`}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setSelectedRoomId(room.id)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setSelectedRoomId(room.id);
-                      }
-                    }}
-                    onDoubleClick={() => {
-                      switchRoom(room.id);
-                      window.location.assign("/");
-                    }}
-                  >
-                    <rect width={room.width} height={room.depth} rx="180" />
-                    <text x="500" y="800" className="facility-room-code">{room.code}</text>
-                    <text x="500" y="1450" className="facility-room-name">{room.name}</text>
-                    <text x="500" y={room.depth - 550} className="facility-room-meta">
-                      {nonWallObjects.length} assets · {room.scene.inventoryItems.length} items
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-            {!floorRooms.length && (
+          <div
+            className="facility-map facility-stack-canvas"
+            aria-label="Three-dimensional facility room stack"
+          >
+            {laboratoryRooms.length ? (
+              <FacilityStackView
+                rooms={laboratoryRooms}
+                selectedRoomId={selectedRoom?.id}
+                onSelect={setSelectedRoomId}
+                onOpen={openRoom}
+              />
+            ) : (
               <div className="facility-map-empty">
                 <Buildings size={34} />
-                <b>No rooms on this level</b>
-                <span>Move a room here from its facility coordinates.</span>
+                <b>No rooms in this laboratory</b>
+                <span>Create a room from the project workspace.</span>
               </div>
             )}
+            <div className="facility-stack-key">
+              <span>
+                <i className="selected" /> Selected room
+              </span>
+              <span>
+                <i /> Saved level
+              </span>
+            </div>
           </div>
         </section>
 
@@ -208,17 +382,45 @@ export function FacilityPage() {
           {selectedRoom ? (
             <>
               <div className="facility-inspector-title">
-                <span className="facility-room-symbol"><Ruler size={20} /></span>
+                <span className="facility-room-symbol">
+                  <Ruler size={20} />
+                </span>
                 <span>
-                  <small>{selectedRoom.code}</small>
+                  <small>
+                    LEVEL {(selectedRoom.facilityPlacement?.floor ?? 0) + 1} · {selectedRoom.code}
+                  </small>
                   <h2>{selectedRoom.name}</h2>
                 </span>
               </div>
               <div className="facility-stat-grid">
-                <span><small>Width</small><b>{metres(selectedRoom.width)}</b></span>
-                <span><small>Depth</small><b>{metres(selectedRoom.depth)}</b></span>
-                <span><small>Assets</small><b>{selectedRoom.scene.objects.filter((object) => object.objectType !== "wall").length}</b></span>
-                <span><small>Inventory</small><b>{selectedRoom.scene.inventoryItems.length}</b></span>
+                <span>
+                  <small>Width</small>
+                  <b>{metres(selectedRoom.width)}</b>
+                </span>
+                <span>
+                  <small>Depth</small>
+                  <b>{metres(selectedRoom.depth)}</b>
+                </span>
+                <span>
+                  <small>Assets</small>
+                  <b>
+                    {
+                      selectedRoom.scene.objects.filter((object) => object.objectType !== "wall")
+                        .length
+                    }
+                  </b>
+                </span>
+                <span>
+                  <small>Inventory</small>
+                  <b>{selectedRoom.scene.inventoryItems.length}</b>
+                </span>
+              </div>
+              <div className="facility-placement-heading">
+                <span className="eyebrow">Spatial assignment</span>
+                <p>
+                  Level controls the vertical order. X, Y, and rotation preserve future campus-plan
+                  coordinates.
+                </p>
               </div>
               <div className="facility-coordinate-grid">
                 {(["x", "y", "rotation"] as const).map((key) => (
@@ -227,29 +429,35 @@ export function FacilityPage() {
                     <input
                       type="number"
                       step={key === "rotation" ? 15 : 500}
-                      value={(selectedRoom.facilityPlacement ?? fallbackPlacement(laboratoryRooms.indexOf(selectedRoom)))[key]}
-                      onChange={(event) => updatePlacement(selectedRoom.id, { [key]: Number(event.target.value) })}
+                      value={
+                        (selectedRoom.facilityPlacement ??
+                          fallbackPlacement(laboratoryRooms.indexOf(selectedRoom)))[key]
+                      }
+                      onChange={(event) =>
+                        updatePlacement(selectedRoom.id, { [key]: Number(event.target.value) })
+                      }
                     />
                   </label>
                 ))}
                 <label>
-                  <span>Level</span>
+                  <span>Facility level</span>
                   <input
                     type="number"
                     min="0"
                     max="50"
-                    value={(selectedRoom.facilityPlacement ?? fallbackPlacement(laboratoryRooms.indexOf(selectedRoom))).floor}
-                    onChange={(event) => updatePlacement(selectedRoom.id, { floor: Number(event.target.value) })}
+                    value={
+                      (
+                        selectedRoom.facilityPlacement ??
+                        fallbackPlacement(laboratoryRooms.indexOf(selectedRoom))
+                      ).floor
+                    }
+                    onChange={(event) =>
+                      updatePlacement(selectedRoom.id, { floor: Number(event.target.value) })
+                    }
                   />
                 </label>
               </div>
-              <button
-                className="facility-open-room"
-                onClick={() => {
-                  switchRoom(selectedRoom.id);
-                  window.location.assign("/");
-                }}
-              >
+              <button className="facility-open-room" onClick={() => openRoom(selectedRoom.id)}>
                 Open room editor <ArrowRight size={17} />
               </button>
             </>

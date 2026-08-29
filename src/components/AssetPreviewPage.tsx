@@ -38,6 +38,11 @@ const previewViews: Array<{ value: PreviewView; label: string }> = [
   { value: "top", label: "Top" },
 ];
 
+const ASSET_STUDIO_HIDDEN_ASSET_IDS = new Set(["straight-wall", "half-height-wall"]);
+const ASSET_STUDIO_CATALOG = ASSET_CATALOG.filter(
+  (asset) => !ASSET_STUDIO_HIDDEN_ASSET_IDS.has(asset.id),
+);
+
 function PreviewCameraRig({
   view,
   extent,
@@ -99,13 +104,17 @@ export function AssetPreviewPage() {
     Boolean(requestedAssetId && !curatedAssetIdSet.has(requestedAssetId)),
   );
   const [assetId, setAssetId] = useState(
-    ASSET_CATALOG.some((entry) => entry.id === requestedAssetId)
+    ASSET_STUDIO_CATALOG.some((entry) => entry.id === requestedAssetId)
       ? requestedAssetId!
-      : ASSET_CATALOG[0].id,
+      : ASSET_STUDIO_CATALOG[0].id,
   );
   useEffect(() => void hydrate(), [hydrate]);
   const archivedIdSet = useMemo(() => new Set(archivedAssetIds ?? []), [archivedAssetIds]);
-  const archivedAssets = ASSET_CATALOG.filter((entry) => archivedIdSet.has(entry.id));
+  const archivedAssets = ASSET_STUDIO_CATALOG.filter((entry) => archivedIdSet.has(entry.id));
+  const curatedAssets = useMemo(
+    () => ASSET_STUDIO_CATALOG.filter((entry) => curatedAssetIdSet.has(entry.id)),
+    [curatedAssetIdSet],
+  );
   const room = useMemo(
     () =>
       createBlankRoom({
@@ -118,18 +127,16 @@ export function AssetPreviewPage() {
   const availableAssets = useMemo(
     () =>
       showFullCatalog
-        ? ASSET_CATALOG.filter((entry) => !archivedIdSet.has(entry.id))
-        : ASSET_CATALOG.filter(
-            (entry) => curatedAssetIdSet.has(entry.id) && !archivedIdSet.has(entry.id),
-          ),
-    [archivedIdSet, curatedAssetIdSet, showFullCatalog],
+        ? ASSET_STUDIO_CATALOG.filter((entry) => !archivedIdSet.has(entry.id))
+        : curatedAssets.filter((entry) => !archivedIdSet.has(entry.id)),
+    [archivedIdSet, curatedAssets, showFullCatalog],
   );
-  const fallbackAsset = availableAssets[0] ?? ASSET_CATALOG[0];
+  const fallbackAsset = availableAssets[0] ?? ASSET_STUDIO_CATALOG[0];
   const effectiveAssetId = availableAssets.some((entry) => entry.id === assetId)
     ? assetId
     : fallbackAsset.id;
   const asset =
-    ASSET_CATALOG.find((entry) => entry.id === effectiveAssetId) ?? fallbackAsset;
+    ASSET_STUDIO_CATALOG.find((entry) => entry.id === effectiveAssetId) ?? fallbackAsset;
   const previewSource = asset.model3d
     ? `${asset.model3d.previewSrc}?v=${encodeURIComponent(asset.model3d.revision)}`
     : null;
@@ -209,24 +216,26 @@ export function AssetPreviewPage() {
               aria-pressed={!showFullCatalog}
               onClick={() => setShowFullCatalog(false)}
             >
-              Curated {BUILD_WEEK_DEMO_ASSET_IDS.length}
+              Curated {curatedAssets.length}
             </button>
             <button
               className={showFullCatalog ? "active" : ""}
               aria-pressed={showFullCatalog}
               onClick={() => setShowFullCatalog(true)}
             >
-              Full catalog {ASSET_CATALOG.length}
+              Full catalog {ASSET_STUDIO_CATALOG.length}
             </button>
           </div>
           <div className="asset-preview-list">
             {matches.map((entry) => (
               <button
                 key={entry.id}
-                className={entry.id === asset.id ? "selected" : ""}
+                className={entry.id === effectiveAssetId ? "selected" : ""}
                 onClick={() => setAssetId(entry.id)}
               >
-                <AssetThumbnail asset={entry} />
+                <span className="asset-preview-thumbnail-frame">
+                  <AssetThumbnail asset={entry} />
+                </span>
                 <span>
                   <b>{entry.name}</b>
                   <em>{entry.category}</em>
@@ -238,10 +247,16 @@ export function AssetPreviewPage() {
             <summary>
               <Archive size={16} /> Archived from library <em>{archivedAssets.length}</em>
             </summary>
-            <p>Archived definitions remain safe in existing rooms but disappear from search and new placement.</p>
+            <p>
+              Archived definitions remain safe in existing rooms but disappear from search and new
+              placement.
+            </p>
             {archivedAssets.map((entry) => (
               <div key={entry.id}>
-                <span><b>{entry.name}</b><small>{entry.id}</small></span>
+                <span>
+                  <b>{entry.name}</b>
+                  <small>{entry.id}</small>
+                </span>
                 <button onClick={() => restoreAsset(entry.id)}>
                   <ArrowCounterClockwise size={14} /> Restore
                 </button>
@@ -379,16 +394,17 @@ export function AssetPreviewPage() {
               <div>
                 <dt>Visual source</dt>
                 <dd>
-                  {asset.model3d
-                    ? "Current authored all-sided PBR GLB"
-                    : "Procedural PBR geometry"}
+                  {asset.model3d ? "Current authored all-sided PBR GLB" : "Procedural PBR geometry"}
                 </dd>
               </div>
             </dl>
             <div className="asset-lifecycle-action">
               <span>
                 <b>Catalog visibility</b>
-                <small>Hide an unused definition from the Asset Library and WebMCP search. Existing room instances are always protected.</small>
+                <small>
+                  Hide this definition from future Asset Library and WebMCP placement. Existing room
+                  instances stay exactly where they are.
+                </small>
               </span>
               <button onClick={() => archiveAsset(asset.id)}>
                 <Archive size={16} /> Archive from library

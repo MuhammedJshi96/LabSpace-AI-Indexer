@@ -1,4 +1,5 @@
 import {
+  Buildings,
   CaretDown,
   CheckCircle,
   CloudArrowUp,
@@ -67,6 +68,15 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
         >
           <HouseLine size={19} weight="duotone" />
           <span>Layout Editor</span>
+        </a>
+        <a
+          className={activeArea === "facility" ? "active" : ""}
+          href="/facility"
+          aria-current={activeArea === "facility" ? "page" : undefined}
+          aria-label="Facility Manager"
+        >
+          <Buildings size={19} weight="duotone" />
+          <span>Facility</span>
         </a>
         <a
           className={activeArea === "digital-twin" ? "active" : ""}

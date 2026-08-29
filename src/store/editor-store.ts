@@ -2,10 +2,7 @@ import { create } from "zustand";
 import type { PendingAgentChange } from "../agent/labspace-action-types";
 import { getAssetDefinition } from "../domain/assets";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
-import {
-  requiresBenchSupport,
-  snapBenchObjectToAvailableSupport,
-} from "../domain/geometry";
+import { requiresBenchSupport, snapBenchObjectToAvailableSupport } from "../domain/geometry";
 import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/layers";
 import { normalizeRaisedFromFloorMm } from "../domain/object-transforms";
 import { createBlankLaboratory, createBlankRoom } from "../domain/room-factory";
@@ -201,11 +198,7 @@ type EditorState = {
     locationId: string | null,
     item?: Partial<InventoryItem>,
   ) => string | null;
-  updateInventoryItemInRoom: (
-    roomId: string,
-    id: string,
-    patch: Partial<InventoryItem>,
-  ) => void;
+  updateInventoryItemInRoom: (roomId: string, id: string, patch: Partial<InventoryItem>) => void;
   removeInventoryItemFromRoom: (roomId: string, id: string) => void;
   updateEquipmentRecord: (id: string, patch: Partial<EquipmentRecord>) => void;
   applyReindex: (changes: ReindexChange[]) => void;
@@ -216,6 +209,8 @@ type EditorState = {
   duplicateVersionToRoom: (id: string) => Promise<void>;
   replaceProject: (project: Project) => void;
   renameProject: (name: string) => void;
+  renameLaboratory: (laboratoryId: string, name: string, code: string) => boolean;
+  renameRoom: (roomId: string, name: string, code: string) => boolean;
   switchRoom: (roomId: string) => void;
   createLaboratory: (input?: NewLaboratoryInput) => string | null;
   createRoom: (input?: NewRoomInput) => string | null;
@@ -1121,16 +1116,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ...normalizedPatch,
       updatedAt: new Date().toISOString(),
     };
-    if (
-      requiresBenchSupport(after) &&
-      (patch.position || patch.rotation || patch.dimensions)
-    ) {
+    if (requiresBenchSupport(after) && (patch.position || patch.rotation || patch.dimensions)) {
       const supported = snapBenchObjectToAvailableSupport(room, after);
       if (!supported) {
-        state.pushToast(
-          `${after.name} needs a clear laboratory bench or table surface.`,
-          "error",
-        );
+        state.pushToast(`${after.name} needs a clear laboratory bench or table surface.`, "error");
         return;
       }
       after = supported;
@@ -1581,10 +1570,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       state.pushToast("Choose an editable room for this inventory item.", "error");
       return null;
     }
-    if (
-      locationId &&
-      !room.scene.storageLocations.some((location) => location.id === locationId)
-    ) {
+    if (locationId && !room.scene.storageLocations.some((location) => location.id === locationId)) {
       state.pushToast("That storage location does not belong to the selected room.", "error");
       return null;
     }
@@ -1846,6 +1832,82 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     })),
+  renameLaboratory: (laboratoryId, name, code) => {
+    const state = get();
+    const laboratory = state.project.laboratories.find((entry) => entry.id === laboratoryId);
+    if (!laboratory) {
+      state.pushToast("That laboratory is no longer available.", "error");
+      return false;
+    }
+    const nextName = name.trim();
+    const nextCode = code.trim();
+    if (!nextName || !nextCode) {
+      state.pushToast("Laboratory name and code are required.", "error");
+      return false;
+    }
+    if (
+      state.project.laboratories.some(
+        (entry) =>
+          entry.id !== laboratoryId &&
+          entry.code.toLocaleUpperCase() === nextCode.toLocaleUpperCase(),
+      )
+    ) {
+      state.pushToast(`Laboratory code ${nextCode} is already in use.`, "error");
+      return false;
+    }
+    const now = new Date().toISOString();
+    set({
+      project: {
+        ...state.project,
+        laboratories: state.project.laboratories.map((entry) =>
+          entry.id === laboratoryId ? { ...entry, name: nextName, code: nextCode } : entry,
+        ),
+        updatedAt: now,
+      },
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast(`${nextName} updated.`, "success");
+    return true;
+  },
+  renameRoom: (roomId, name, code) => {
+    const state = get();
+    const room = state.project.rooms.find((entry) => entry.id === roomId);
+    if (!room || room.roomKind === "demo-template") {
+      state.pushToast("That protected room cannot be renamed.", "error");
+      return false;
+    }
+    const nextName = name.trim();
+    const nextCode = code.trim();
+    if (!nextName || !nextCode) {
+      state.pushToast("Room name and code are required.", "error");
+      return false;
+    }
+    if (
+      state.project.rooms.some(
+        (entry) =>
+          entry.id !== roomId &&
+          entry.laboratoryId === room.laboratoryId &&
+          entry.code.toLocaleUpperCase() === nextCode.toLocaleUpperCase(),
+      )
+    ) {
+      state.pushToast(`This laboratory already has a room with code ${nextCode}.`, "error");
+      return false;
+    }
+    const now = new Date().toISOString();
+    set({
+      project: replaceRoom(state.project, {
+        ...room,
+        name: nextName,
+        code: nextCode,
+        updatedAt: now,
+      }),
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast(`${nextName} updated.`, "success");
+    return true;
+  },
   switchRoom: (roomId) => {
     const state = get();
     if (state.pendingAgentChange && state.project.activeRoomId !== roomId) {
@@ -1991,7 +2053,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       activeRoomId: fallbackRoom.id,
       featuredDemoRoomId:
         state.project.featuredDemoRoomId === roomId
-          ? nextRooms.find((entry) => entry.roomKind === "demo")?.id ?? null
+          ? (nextRooms.find((entry) => entry.roomKind === "demo")?.id ?? null)
           : state.project.featuredDemoRoomId,
       updatedAt: now,
       laboratories: state.project.laboratories.map((laboratory) =>
@@ -2237,7 +2299,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const room = state.project.rooms.find((entry) => entry.id === roomId);
     if (!room || room.roomKind === "demo-template") return;
     const now = new Date().toISOString();
-    const current = room.facilityPlacement ?? suggestedFacilityPlacement(state.project, room.laboratoryId);
+    const current =
+      room.facilityPlacement ?? suggestedFacilityPlacement(state.project, room.laboratoryId);
     set({
       project: replaceRoom(state.project, {
         ...room,
@@ -2250,21 +2313,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   archiveAsset: (id) => {
     const state = get();
-    const inUse = state.project.rooms.some((room) =>
-      room.roomKind !== "demo-template" &&
-      room.scene.objects.some((object) => object.assetDefinitionId === id),
-    );
-    if (inUse) {
-      state.pushToast("This asset is used by a room. Remove or replace its instances first.", "info");
-      return false;
-    }
     const archivedAssetIds = Array.from(new Set([...(state.project.archivedAssetIds ?? []), id]));
     set({
       project: { ...state.project, archivedAssetIds, updatedAt: new Date().toISOString() },
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     });
-    state.pushToast("Asset removed from the active library. It can be restored in Asset Studio.", "success");
+    state.pushToast(
+      "Asset archived from future placement. Existing room instances remain unchanged.",
+      "success",
+    );
     return true;
   },
   restoreAsset: (id) => {

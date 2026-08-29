@@ -857,21 +857,21 @@ body {
   flex: 0 1 auto;
 }
 
-.room-navigator > summary {
-  list-style: none;
-  cursor: pointer;
-}
-
-.room-navigator > summary::-webkit-details-marker {
-  display: none;
-}
-
 .room-navigator .room-identity > span {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 0;
   border: 0;
+}
+
+.room-navigator-caret {
+  flex: 0 0 auto;
+  transition: transform 140ms ease;
+}
+
+.room-navigator.is-open .room-navigator-caret {
+  transform: rotate(180deg);
 }
 
 .room-navigator-popover {
@@ -887,6 +887,18 @@ body {
   border: 1px solid #b9ccc7;
   border-radius: 10px;
   box-shadow: 0 24px 58px rgba(5, 33, 29, 0.25);
+  animation: roomNavigatorReveal 140ms ease-out;
+}
+
+@keyframes roomNavigatorReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .room-navigator-head,
@@ -1479,9 +1491,15 @@ body {
   border-radius: 999px;
 }
 
-.inventory-record-status.indexed { color: #087466; background: #ddf2ed; }
+.inventory-record-status.indexed {
+  color: #087466;
+  background: #ddf2ed;
+}
 .inventory-record-status.unassigned,
-.inventory-record-status.expired { color: #9a6321; background: #fff0d6; }
+.inventory-record-status.expired {
+  color: #9a6321;
+  background: #fff0d6;
+}
 
 .inventory-record-scroll > button > strong {
   color: #33423f;
@@ -1728,17 +1746,33 @@ body {
 }
 
 @media (max-width: 1700px) {
-  .primary-navigation a { padding-inline: 10px; }
-  .facility-workspace { grid-template-columns: 250px minmax(0, 1fr) 310px; }
-  .inventory-studio-body { grid-template-columns: 220px minmax(330px, 1fr) 360px; }
+  .primary-navigation a {
+    padding-inline: 10px;
+  }
+  .facility-workspace {
+    grid-template-columns: 250px minmax(0, 1fr) 310px;
+  }
+  .inventory-studio-body {
+    grid-template-columns: 220px minmax(330px, 1fr) 360px;
+  }
 }
 
 @media (max-width: 1300px) {
-  .facility-workspace { grid-template-columns: 220px minmax(0, 1fr) 290px; }
-  .inventory-studio { padding-inline: 12px; }
-  .inventory-studio-body { grid-template-columns: 200px minmax(320px, 1fr) 330px; }
-  .inventory-record-scroll > button { grid-template-columns: 34px minmax(0, 1fr) auto; }
-  .inventory-record-scroll > button > strong { display: none; }
+  .facility-workspace {
+    grid-template-columns: 220px minmax(0, 1fr) 290px;
+  }
+  .inventory-studio {
+    padding-inline: 12px;
+  }
+  .inventory-studio-body {
+    grid-template-columns: 200px minmax(320px, 1fr) 330px;
+  }
+  .inventory-record-scroll > button {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+  }
+  .inventory-record-scroll > button > strong {
+    display: none;
+  }
 }
 
 button,
@@ -8810,7 +8844,7 @@ body:has(#procedural-catalog-capture) #root {
   }
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 1180px) {
   .room-identity b {
     max-width: 120px;
     overflow: hidden;
@@ -10001,4 +10035,484 @@ body:has(#procedural-catalog-capture) #root {
 .app-shell.facility-shell,
 .app-shell.inventory-page-shell {
   grid-template-rows: 72px minmax(0, 1fr);
+}
+
+/* Facility workspace manager — a calm identity tree with focused create/edit
+   dialogs instead of multiple competing forms. */
+.modal-card.wide {
+  position: relative;
+}
+
+.project-hero-manager {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 66px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+}
+
+.project-hero-manager > div {
+  min-width: 0;
+}
+
+.project-hero-manager > div b,
+.project-hero-manager > div span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-quiet-action,
+.project-selection-card > a,
+.project-workspace-actions > a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  color: #17685f;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #bdd5d0;
+  border-radius: 7px;
+}
+
+.workspace-quiet-action:hover,
+.project-selection-card > a:hover,
+.project-workspace-actions > a:hover {
+  color: #075f54;
+  background: #edf8f5;
+  border-color: #8fc8bd;
+}
+
+.project-workspace-toolbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 11px 9px 14px;
+  background: #f8faf9;
+  border: 1px solid #d4dfdc;
+  border-radius: 9px;
+}
+
+.project-workspace-toolbar > span,
+.workspace-create-menu button > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.project-workspace-toolbar > span b {
+  color: #243b37;
+  font-size: 13px;
+}
+
+.project-workspace-toolbar > span small,
+.workspace-create-menu small {
+  color: #6a7976;
+  font-size: 12px;
+}
+
+.project-workspace-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.workspace-create-control {
+  position: relative;
+}
+
+.workspace-create-button {
+  display: inline-flex;
+  min-width: 112px;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  color: #f7fffc;
+  font-size: 13px;
+  font-weight: 760;
+  background: #087d70;
+  border: 1px solid #05695f;
+  border-radius: 7px;
+  box-shadow: 0 3px 8px rgba(4, 75, 65, 0.15);
+}
+
+.workspace-create-button:hover {
+  background: #066c61;
+}
+
+.workspace-create-menu {
+  position: absolute;
+  z-index: 8;
+  top: calc(100% + 7px);
+  right: 0;
+  display: grid;
+  width: 300px;
+  padding: 6px;
+  gap: 3px;
+  background: #fff;
+  border: 1px solid #bdcfcb;
+  border-radius: 9px;
+  box-shadow: 0 18px 42px rgba(8, 42, 36, 0.2);
+  animation: roomNavigatorReveal 140ms ease-out;
+}
+
+.workspace-create-menu button {
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  color: #23514b;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+
+.workspace-create-menu button:hover {
+  background: #edf7f4;
+  border-color: #cae1dc;
+}
+
+.project-workspace-grid {
+  grid-template-columns: minmax(0, 1fr) 286px;
+  gap: 14px;
+  margin-block: 12px 18px;
+}
+
+.project-room-browser {
+  min-height: 360px;
+  max-height: 470px;
+}
+
+.laboratory-heading-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  align-items: stretch;
+  background: #f3f7f6;
+  border-bottom: 1px solid #e0e7e5;
+}
+
+.laboratory-heading-row .laboratory-heading {
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.project-identity-edit,
+.project-room-edit,
+.project-room-delete {
+  display: grid;
+  width: 38px;
+  min-height: 38px;
+  align-self: center;
+  padding: 0;
+  place-items: center;
+  color: #56716b;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid rgba(80, 104, 98, 0.12);
+  border-radius: 0;
+}
+
+.project-identity-edit:hover,
+.project-room-edit:hover {
+  color: #08776a;
+  background: #e5f4f0;
+}
+
+.project-room-row {
+  grid-template-columns: minmax(0, 1fr) 38px 38px;
+}
+
+.project-room-list .project-room-edit,
+.project-room-list .project-room-delete {
+  width: 38px;
+}
+
+.project-selection-card {
+  display: flex;
+  min-width: 0;
+  min-height: 360px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 17px;
+  gap: 12px;
+  color: #2f4540;
+  background:
+    linear-gradient(160deg, rgba(232, 247, 242, 0.82), rgba(250, 252, 251, 0.96) 55%), #f8fbfa;
+  border: 1px solid #cbdcd8;
+  border-radius: 10px;
+}
+
+.project-selection-card > svg {
+  color: #087d70;
+}
+
+.project-selection-card h3 {
+  margin: 0 0 4px;
+  color: #173e37;
+  font-size: 17px;
+}
+
+.project-selection-card code {
+  color: #48706a;
+  font-family: Bahnschrift, Consolas, monospace;
+  font-size: 12px;
+}
+
+.project-selection-card dl {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+}
+
+.project-selection-card dl > div {
+  padding: 9px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #d9e6e2;
+  border-radius: 7px;
+}
+
+.project-selection-card dt {
+  color: #6b7d79;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.project-selection-card dd {
+  margin: 3px 0 0;
+  color: #163e37;
+  font-size: 14px;
+  font-weight: 730;
+}
+
+.project-selection-card p {
+  margin: 0;
+  color: #63736f;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.project-selection-card > a {
+  width: 100%;
+  margin-top: auto;
+}
+
+.workspace-subdialog-backdrop {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgba(12, 31, 28, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.workspace-subdialog {
+  display: grid;
+  width: min(560px, 94%);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #b9cfca;
+  border-radius: 11px;
+  box-shadow: 0 28px 72px rgba(4, 32, 27, 0.28);
+  grid-template-rows: auto auto auto;
+  animation: agent-review-rise 150ms ease-out;
+}
+
+.workspace-subdialog > header,
+.workspace-subdialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workspace-subdialog > header {
+  padding: 14px 16px;
+  background: #f3f8f6;
+  border-bottom: 1px solid #d9e3e0;
+}
+
+.workspace-subdialog > header > span {
+  display: grid;
+  gap: 2px;
+}
+
+.workspace-subdialog > header small {
+  color: #5a7771;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.workspace-subdialog h3 {
+  margin: 0;
+  color: #183d36;
+  font-size: 17px;
+}
+
+.workspace-subdialog > header > button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: #61716e;
+  background: #fff;
+  border: 1px solid #d1dcda;
+  border-radius: 6px;
+}
+
+.workspace-subdialog-body {
+  padding: 17px;
+}
+
+.workspace-subdialog .dialog-field input,
+.workspace-subdialog .dialog-field select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  color: #263b37;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #cdd9d6;
+  border-radius: 6px;
+}
+
+.workspace-first-room-fields {
+  margin: 5px 0 0;
+  padding: 12px 12px 3px;
+  background: #f8faf9;
+  border: 1px solid #dbe4e1;
+  border-radius: 7px;
+}
+
+.workspace-first-room-fields legend {
+  padding: 0 5px;
+  color: #315f57;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.workspace-first-room-fields p {
+  margin: 0 0 10px;
+  color: #6b7976;
+  font-size: 12px;
+}
+
+.workspace-subdialog > footer {
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 11px 16px;
+  background: #f8faf9;
+  border-top: 1px solid #dce5e2;
+}
+
+.workspace-subdialog > footer button {
+  min-height: 38px;
+  padding: 0 14px;
+  color: #40534f;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid #cbd8d5;
+  border-radius: 6px;
+}
+
+.workspace-subdialog > footer .primary-action {
+  color: #fff;
+  background: #087d70;
+  border-color: #06685e;
+}
+
+/* Keep the Favorites count subordinate to the label and safely inside its tab. */
+.asset-category-tabs button small {
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  font-size: 9px;
+  line-height: 15px;
+  border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+  .project-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-selection-card {
+    min-height: 0;
+  }
+
+  .project-hero-manager,
+  .project-workspace-toolbar {
+    align-items: stretch;
+  }
+
+  .project-hero-manager {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .project-hero-manager > button {
+    grid-column: 1 / -1;
+  }
+
+  .project-workspace-toolbar,
+  .project-workspace-actions {
+    flex-direction: column;
+  }
+
+  .project-workspace-actions > *,
+  .workspace-create-button {
+    width: 100%;
+  }
+}
+
+/* Asset Studio thumbnails use an explicit viewport so the whole asset remains
+   visible at every card width instead of inheriting editor-card cropping. */
+.asset-preview-list > button {
+  grid-template-rows: 96px auto;
+  padding: 7px;
+}
+
+.asset-preview-thumbnail-frame {
+  display: grid !important;
+  width: 100%;
+  height: 96px;
+  min-width: 0;
+  overflow: hidden;
+  place-items: center;
+  background: linear-gradient(145deg, #f9fbfa, #eef3f1);
+  border: 1px solid #e0e8e5;
+  border-radius: 6px;
+}
+
+.asset-preview-thumbnail-frame > .asset-thumbnail {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 9px;
+  object-fit: contain;
+  object-position: center;
+  background-color: transparent;
+  border-radius: 0;
 }

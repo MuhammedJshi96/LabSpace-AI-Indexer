@@ -204,7 +204,9 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".room-navigator > summary").getByText("Empty lab plan", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".room-navigator > .room-identity").getByText("Empty lab plan", { exact: true }),
+  ).toBeVisible();
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
 
   const before = await readProject(page);
@@ -318,7 +320,9 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
 
 test("searches and focuses canonical indexed evidence across rooms", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".room-navigator > summary").getByText("Empty lab plan", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".room-navigator > .room-identity").getByText("Empty lab plan", { exact: true }),
+  ).toBeVisible();
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
 
   const search = await executeTool<{

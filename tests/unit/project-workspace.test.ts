@@ -33,6 +33,18 @@ describe("multi-laboratory project workspace", () => {
     expect(
       state.project.rooms.find((room) => room.id === microscopy.roomIds[0])?.scene.objects,
     ).toEqual([]);
+    expect(
+      useEditorStore
+        .getState()
+        .renameLaboratory(laboratoryId!, "Advanced microscopy core", "MIC-02"),
+    ).toBe(true);
+    state = useEditorStore.getState();
+    expect(
+      state.project.laboratories.find((laboratory) => laboratory.id === laboratoryId),
+    ).toMatchObject({
+      name: "Advanced microscopy core",
+      code: "MIC-02",
+    });
 
     const secondRoomId = state.createRoom({
       laboratoryId: initial.laboratories[0].id,
@@ -45,6 +57,12 @@ describe("multi-laboratory project workspace", () => {
     expect(
       state.project.rooms.find((room) => room.id === secondRoomId)?.environmentProfileId,
     ).toBeNull();
+    expect(state.renameRoom(secondRoomId!, "Cell culture suite B", "R211")).toBe(true);
+    state = useEditorStore.getState();
+    expect(state.project.rooms.find((room) => room.id === secondRoomId)).toMatchObject({
+      name: "Cell culture suite B",
+      code: "R211",
+    });
 
     state.switchRoom(microscopy.roomIds[0]);
     expect(useEditorStore.getState().project.activeRoomId).toBe(microscopy.roomIds[0]);
@@ -82,6 +100,17 @@ describe("multi-laboratory project workspace", () => {
       "imported-instrument-layer",
     );
     expect(current.scene.objects.find((object) => object.id === objectId)?.position.z).toBe(900);
+    const placedBenchId = current.scene.objects.find(
+      (object) => object.assetDefinitionId === "lab-bench",
+    )?.id;
+    expect(placedBenchId).toBeTruthy();
+    expect(useEditorStore.getState().archiveAsset("lab-bench")).toBe(true);
+    expect(useEditorStore.getState().project.archivedAssetIds).toContain("lab-bench");
+    expect(
+      useEditorStore
+        .getState()
+        .project.rooms[0].scene.objects.some((object) => object.id === placedBenchId),
+    ).toBe(true);
     expect(useEditorStore.getState().deleteRoom(customProject.rooms[0].id)).toBe(false);
   });
 });

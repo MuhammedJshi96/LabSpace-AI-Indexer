@@ -4,9 +4,12 @@ import {
   Archive,
   ArrowRight,
   ArrowCounterClockwise,
+  Buildings,
+  CaretDown,
   Check,
   Copy,
   Database,
+  DoorOpen,
   DownloadSimple,
   FileCsv,
   FilePlus,
@@ -15,6 +18,8 @@ import {
   GridFour,
   Keyboard,
   Package,
+  PencilSimple,
+  Plus,
   Printer,
   Question,
   Ruler,
@@ -87,6 +92,8 @@ function ProjectDialog() {
   const project = useEditorStore((state) => state.project);
   const room = useEditorStore(selectActiveRoom);
   const renameProject = useEditorStore((state) => state.renameProject);
+  const renameLaboratory = useEditorStore((state) => state.renameLaboratory);
+  const renameRoom = useEditorStore((state) => state.renameRoom);
   const replaceProject = useEditorStore((state) => state.replaceProject);
   const switchRoom = useEditorStore((state) => state.switchRoom);
   const createLaboratory = useEditorStore((state) => state.createLaboratory);
@@ -94,14 +101,23 @@ function ProjectDialog() {
   const deleteRoom = useEditorStore((state) => state.deleteRoom);
   const duplicateRoom = useEditorStore((state) => state.duplicateRoom);
   const createDemoFromTemplate = useEditorStore((state) => state.createDemoFromTemplate);
-  const resetActiveDemoFromTemplate = useEditorStore(
-    (state) => state.resetActiveDemoFromTemplate,
-  );
+  const resetActiveDemoFromTemplate = useEditorStore((state) => state.resetActiveDemoFromTemplate);
   const saveNow = useEditorStore((state) => state.saveNow);
   const setDialog = useEditorStore((state) => state.setDialog);
   const pushToast = useEditorStore((state) => state.pushToast);
   const fileRef = useRef<HTMLInputElement>(null);
   const [selectedLaboratoryId, setSelectedLaboratoryId] = useState(room.laboratoryId);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const [workspaceForm, setWorkspaceForm] = useState<
+    | null
+    | "rename-project"
+    | "create-laboratory"
+    | "create-room"
+    | "rename-laboratory"
+    | "rename-room"
+  >(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState(project.name);
   const [roomName, setRoomName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [laboratoryName, setLaboratoryName] = useState("");
@@ -110,6 +126,53 @@ function ProjectDialog() {
     project.laboratories.find((laboratory) => laboratory.id === selectedLaboratoryId) ??
     project.laboratories[0];
   const visibleRooms = project.rooms.filter((entry) => entry.roomKind !== "demo-template");
+
+  const closeWorkspaceForm = () => {
+    setWorkspaceForm(null);
+    setEditingId(null);
+  };
+
+  const openCreateLaboratory = () => {
+    setCreateMenuOpen(false);
+    setLaboratoryName("");
+    setLaboratoryCode("");
+    setRoomName("");
+    setRoomCode("");
+    setWorkspaceForm("create-laboratory");
+  };
+
+  const openCreateRoom = () => {
+    setCreateMenuOpen(false);
+    setRoomName("");
+    setRoomCode("");
+    setWorkspaceForm("create-room");
+  };
+
+  const openRenameLaboratory = (laboratoryId: string) => {
+    const laboratory = project.laboratories.find((entry) => entry.id === laboratoryId);
+    if (!laboratory) return;
+    setCreateMenuOpen(false);
+    setSelectedLaboratoryId(laboratory.id);
+    setEditingId(laboratory.id);
+    setLaboratoryName(laboratory.name);
+    setLaboratoryCode(laboratory.code);
+    setWorkspaceForm("rename-laboratory");
+  };
+
+  const openRenameRoom = (roomId: string) => {
+    const entry = project.rooms.find((candidate) => candidate.id === roomId);
+    if (!entry || entry.roomKind === "demo-template") return;
+    setCreateMenuOpen(false);
+    setSelectedLaboratoryId(entry.laboratoryId);
+    setEditingId(entry.id);
+    setRoomName(entry.name);
+    setRoomCode(entry.code);
+    setWorkspaceForm("rename-room");
+  };
+
+  const persistWorkspaceUpdate = () => {
+    window.setTimeout(() => void useEditorStore.getState().saveNow(), 0);
+  };
 
   const newProject = () => {
     replaceProject(createBlankProject());
@@ -129,9 +192,70 @@ function ProjectDialog() {
     pushToast("Project duplicated as a new local record.", "success");
   };
 
+  const workspaceFormTitle =
+    workspaceForm === "rename-project"
+      ? "Rename project"
+      : workspaceForm === "create-laboratory"
+        ? "Create laboratory"
+        : workspaceForm === "create-room"
+          ? "Create room"
+          : workspaceForm === "rename-laboratory"
+            ? "Rename laboratory"
+            : "Rename room";
+
+  const submitWorkspaceForm = () => {
+    if (workspaceForm === "rename-project") {
+      const nextName = projectName.trim();
+      if (!nextName) {
+        pushToast("Project name is required.", "error");
+        return;
+      }
+      renameProject(nextName);
+      pushToast("Project name updated.", "success");
+      persistWorkspaceUpdate();
+      closeWorkspaceForm();
+      return;
+    }
+    if (workspaceForm === "create-laboratory") {
+      const id = createLaboratory({
+        name: laboratoryName,
+        code: laboratoryCode,
+        roomName,
+        roomCode,
+      });
+      if (!id) return;
+      setSelectedLaboratoryId(id);
+      persistWorkspaceUpdate();
+      closeWorkspaceForm();
+      return;
+    }
+    if (workspaceForm === "create-room") {
+      const id = createRoom({
+        laboratoryId: selectedLaboratory?.id,
+        name: roomName,
+        code: roomCode,
+      });
+      if (!id) return;
+      persistWorkspaceUpdate();
+      closeWorkspaceForm();
+      return;
+    }
+    if (workspaceForm === "rename-laboratory" && editingId) {
+      if (!renameLaboratory(editingId, laboratoryName, laboratoryCode)) return;
+      persistWorkspaceUpdate();
+      closeWorkspaceForm();
+      return;
+    }
+    if (workspaceForm === "rename-room" && editingId) {
+      if (!renameRoom(editingId, roomName, roomCode)) return;
+      persistWorkspaceUpdate();
+      closeWorkspaceForm();
+    }
+  };
+
   return (
     <Modal title="Laboratories and rooms" eyebrow="Project workspace" wide>
-      <div className="project-hero">
+      <div className="project-hero project-hero-manager">
         <img src="/labspace-mark.svg" alt="" />
         <div>
           <b>{project.name}</b>
@@ -141,11 +265,55 @@ function ProjectDialog() {
             {visibleRooms.length === 1 ? "" : "s"} · Local project
           </span>
         </div>
+        <button
+          className="workspace-quiet-action"
+          onClick={() => {
+            setProjectName(project.name);
+            setWorkspaceForm("rename-project");
+          }}
+        >
+          <PencilSimple size={16} /> Rename project
+        </button>
       </div>
-      <label className="dialog-field">
-        <span>Project name</span>
-        <input value={project.name} onChange={(event) => renameProject(event.target.value)} />
-      </label>
+      <div className="project-workspace-toolbar">
+        <span>
+          <b>Facility structure</b>
+          <small>Open, rename, or remove rooms from one organized workspace.</small>
+        </span>
+        <div className="project-workspace-actions">
+          <a href="/facility">
+            <GridFour size={17} /> Facility map
+          </a>
+          <div className="workspace-create-control">
+            <button
+              className="workspace-create-button"
+              onClick={() => setCreateMenuOpen((value) => !value)}
+              aria-haspopup="menu"
+              aria-expanded={createMenuOpen}
+            >
+              <Plus size={17} weight="bold" /> Create <CaretDown size={14} />
+            </button>
+            {createMenuOpen && (
+              <div className="workspace-create-menu" role="menu">
+                <button role="menuitem" onClick={openCreateLaboratory}>
+                  <Buildings size={19} weight="duotone" />
+                  <span>
+                    <b>Laboratory</b>
+                    <small>Create a facility group with its first blank room.</small>
+                  </span>
+                </button>
+                <button role="menuitem" onClick={openCreateRoom}>
+                  <DoorOpen size={19} weight="duotone" />
+                  <span>
+                    <b>Room</b>
+                    <small>Add a blank planning canvas to a laboratory.</small>
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       <div className="project-workspace-grid">
         <section className="project-room-browser" aria-label="Project laboratories and rooms">
           <div className="project-section-heading">
@@ -167,17 +335,29 @@ function ProjectDialog() {
               const selected = selectedLaboratory?.id === laboratory.id;
               return (
                 <article key={laboratory.id} className={selected ? "selected-laboratory" : ""}>
-                  <button
-                    className="laboratory-heading"
-                    onClick={() => setSelectedLaboratoryId(laboratory.id)}
-                    aria-pressed={selected}
-                  >
-                    <span>
-                      <b>{laboratory.name}</b>
-                      <small>{laboratory.code}</small>
-                    </span>
-                    <em>{rooms.length}</em>
-                  </button>
+                  <div className="laboratory-heading-row">
+                    <button
+                      className="laboratory-heading"
+                      onClick={() => setSelectedLaboratoryId(laboratory.id)}
+                      aria-pressed={selected}
+                    >
+                      <span>
+                        <b>{laboratory.name}</b>
+                        <small>{laboratory.code}</small>
+                      </span>
+                      <em>
+                        {rooms.length} room{rooms.length === 1 ? "" : "s"}
+                      </em>
+                    </button>
+                    <button
+                      className="project-identity-edit"
+                      onClick={() => openRenameLaboratory(laboratory.id)}
+                      aria-label={`Rename ${laboratory.name}`}
+                      title={`Rename ${laboratory.name}`}
+                    >
+                      <PencilSimple size={16} />
+                    </button>
+                  </div>
                   <div className="project-room-list">
                     {rooms.map((entry) => (
                       <div
@@ -194,6 +374,14 @@ function ProjectDialog() {
                             <small>{entry.code}</small>
                           </span>
                           <em>{entry.scene.objects.length} items</em>
+                        </button>
+                        <button
+                          className="project-room-edit"
+                          aria-label={`Rename ${entry.name}`}
+                          title={`Rename ${entry.name}`}
+                          onClick={() => openRenameRoom(entry.id)}
+                        >
+                          <PencilSimple size={16} />
                         </button>
                         <button
                           className="project-room-delete"
@@ -222,95 +410,182 @@ function ProjectDialog() {
             })}
           </div>
         </section>
-        <div className="project-create-stack">
-          <section className="project-create-card">
-            <span className="eyebrow">Blank planning canvas</span>
-            <h3>Create a room</h3>
-            <label className="dialog-field">
-              <span>Laboratory</span>
-              <select
-                value={selectedLaboratory?.id ?? ""}
-                onChange={(event) => setSelectedLaboratoryId(event.target.value)}
-              >
-                {project.laboratories.map((laboratory) => (
-                  <option key={laboratory.id} value={laboratory.id}>
-                    {laboratory.name} · {laboratory.code}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="project-field-pair">
-              <label className="dialog-field">
-                <span>Room name</span>
-                <input
-                  value={roomName}
-                  onChange={(event) => setRoomName(event.target.value)}
-                  placeholder="Generated if blank"
-                />
-              </label>
-              <label className="dialog-field">
-                <span>Room code</span>
-                <input
-                  value={roomCode}
-                  onChange={(event) => setRoomCode(event.target.value)}
-                  placeholder="R001"
-                />
-              </label>
+        <aside className="project-selection-card" aria-label="Selected laboratory summary">
+          <span className="eyebrow">Selected laboratory</span>
+          <Buildings size={30} weight="duotone" />
+          <div>
+            <h3>{selectedLaboratory?.name ?? "No laboratory selected"}</h3>
+            <code>{selectedLaboratory?.code ?? "—"}</code>
+          </div>
+          <dl>
+            <div>
+              <dt>Rooms</dt>
+              <dd>
+                {
+                  visibleRooms.filter((entry) => entry.laboratoryId === selectedLaboratory?.id)
+                    .length
+                }
+              </dd>
             </div>
-            <button
-              className="primary-action project-create-action"
-              disabled={!selectedLaboratory}
-              onClick={() => {
-                const id = createRoom({
-                  laboratoryId: selectedLaboratory?.id,
-                  name: roomName,
-                  code: roomCode,
-                });
-                if (id) setDialog(null);
-              }}
-            >
-              <FilePlus size={17} />
-              Create blank room
-            </button>
-          </section>
-          <section className="project-create-card">
-            <span className="eyebrow">New facility group</span>
-            <h3>Create a laboratory</h3>
-            <div className="project-field-pair">
-              <label className="dialog-field">
-                <span>Laboratory name</span>
-                <input
-                  value={laboratoryName}
-                  onChange={(event) => setLaboratoryName(event.target.value)}
-                  placeholder="Generated if blank"
-                />
-              </label>
-              <label className="dialog-field">
-                <span>Laboratory code</span>
-                <input
-                  value={laboratoryCode}
-                  onChange={(event) => setLaboratoryCode(event.target.value)}
-                  placeholder="LAB-02"
-                />
-              </label>
+            <div>
+              <dt>Active room</dt>
+              <dd>{room.laboratoryId === selectedLaboratory?.id ? room.code : "—"}</dd>
             </div>
-            <p>A new laboratory includes one empty room and no demo equipment or room profile.</p>
+          </dl>
+          <p>
+            Rooms share one facility workspace while keeping independent layouts, inventories, and
+            spatial indexes.
+          </p>
+          {selectedLaboratory && (
             <button
-              className="project-create-action"
-              onClick={() => {
-                const id = createLaboratory({
-                  name: laboratoryName,
-                  code: laboratoryCode,
-                });
-                if (id) setDialog(null);
-              }}
+              className="workspace-quiet-action"
+              onClick={() => openRenameLaboratory(selectedLaboratory.id)}
             >
-              <GridFour size={17} />
-              Create laboratory
+              <PencilSimple size={16} /> Rename laboratory
             </button>
+          )}
+          <a href="/facility">
+            <GridFour size={17} /> Open facility map
+          </a>
+        </aside>
+      </div>
+      {workspaceForm && (
+        <div
+          className="workspace-subdialog-backdrop"
+          onMouseDown={(event) => event.target === event.currentTarget && closeWorkspaceForm()}
+        >
+          <section
+            className="workspace-subdialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label={workspaceFormTitle}
+            onKeyDown={(event) => {
+              if (event.key !== "Escape") return;
+              event.stopPropagation();
+              closeWorkspaceForm();
+            }}
+          >
+            <header>
+              <span>
+                <small>Project workspace</small>
+                <h3>{workspaceFormTitle}</h3>
+              </span>
+              <button onClick={closeWorkspaceForm} aria-label={`Close ${workspaceFormTitle}`}>
+                <X size={18} />
+              </button>
+            </header>
+            <div className="workspace-subdialog-body">
+              {workspaceForm === "rename-project" && (
+                <label className="dialog-field">
+                  <span>Project name</span>
+                  <input
+                    autoFocus
+                    value={projectName}
+                    onChange={(event) => setProjectName(event.target.value)}
+                  />
+                </label>
+              )}
+              {(workspaceForm === "create-laboratory" || workspaceForm === "rename-laboratory") && (
+                <>
+                  <div className="project-field-pair">
+                    <label className="dialog-field">
+                      <span>Laboratory name</span>
+                      <input
+                        autoFocus
+                        value={laboratoryName}
+                        onChange={(event) => setLaboratoryName(event.target.value)}
+                        placeholder={
+                          workspaceForm === "create-laboratory" ? "Generated if blank" : undefined
+                        }
+                      />
+                    </label>
+                    <label className="dialog-field">
+                      <span>Laboratory code</span>
+                      <input
+                        value={laboratoryCode}
+                        onChange={(event) => setLaboratoryCode(event.target.value)}
+                        placeholder={workspaceForm === "create-laboratory" ? "LAB-02" : undefined}
+                      />
+                    </label>
+                  </div>
+                  {workspaceForm === "create-laboratory" && (
+                    <fieldset className="workspace-first-room-fields">
+                      <legend>First blank room</legend>
+                      <p>Every laboratory starts with one editable planning canvas.</p>
+                      <div className="project-field-pair">
+                        <label className="dialog-field">
+                          <span>Room name</span>
+                          <input
+                            value={roomName}
+                            onChange={(event) => setRoomName(event.target.value)}
+                            placeholder="Room 1"
+                          />
+                        </label>
+                        <label className="dialog-field">
+                          <span>Room code</span>
+                          <input
+                            value={roomCode}
+                            onChange={(event) => setRoomCode(event.target.value)}
+                            placeholder="R001"
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
+                  )}
+                </>
+              )}
+              {(workspaceForm === "create-room" || workspaceForm === "rename-room") && (
+                <>
+                  {workspaceForm === "create-room" && (
+                    <label className="dialog-field">
+                      <span>Laboratory</span>
+                      <select
+                        autoFocus
+                        value={selectedLaboratory?.id ?? ""}
+                        onChange={(event) => setSelectedLaboratoryId(event.target.value)}
+                      >
+                        {project.laboratories.map((laboratory) => (
+                          <option key={laboratory.id} value={laboratory.id}>
+                            {laboratory.name} · {laboratory.code}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  <div className="project-field-pair">
+                    <label className="dialog-field">
+                      <span>Room name</span>
+                      <input
+                        autoFocus={workspaceForm === "rename-room"}
+                        value={roomName}
+                        onChange={(event) => setRoomName(event.target.value)}
+                        placeholder={
+                          workspaceForm === "create-room" ? "Generated if blank" : undefined
+                        }
+                      />
+                    </label>
+                    <label className="dialog-field">
+                      <span>Room code</span>
+                      <input
+                        value={roomCode}
+                        onChange={(event) => setRoomCode(event.target.value)}
+                        placeholder={workspaceForm === "create-room" ? "R001" : undefined}
+                      />
+                    </label>
+                  </div>
+                </>
+              )}
+            </div>
+            <footer>
+              <button onClick={closeWorkspaceForm}>Cancel</button>
+              <button className="primary-action" onClick={submitWorkspaceForm}>
+                {workspaceForm.startsWith("create") ? <Plus size={17} /> : <Check size={17} />}
+                {workspaceForm.startsWith("create") ? "Create" : "Save changes"}
+              </button>
+            </footer>
           </section>
         </div>
-      </div>
+      )}
       <div className="project-section-heading project-data-heading">
         <span>
           <b>Project data</b>
@@ -342,9 +617,7 @@ function ProjectDialog() {
             <b>Export project</b>Download versioned JSON
           </span>
         </button>
-        <button
-          onClick={() => setDialog("demos")}
-        >
+        <button onClick={() => setDialog("demos")}>
           <Star size={19} />
           <span>
             <b>Demo Manager</b>Save, duplicate, feature, and open presentation rooms
@@ -463,7 +736,9 @@ function DemoManagerDialog() {
   const deleteRoom = useEditorStore((state) => state.deleteRoom);
   const demos = project.rooms
     .filter((room) => room.roomKind === "demo")
-    .sort((left, right) => (right.demoSavedAt ?? right.updatedAt).localeCompare(left.demoSavedAt ?? left.updatedAt));
+    .sort((left, right) =>
+      (right.demoSavedAt ?? right.updatedAt).localeCompare(left.demoSavedAt ?? left.updatedAt),
+    );
 
   const openRoom = (roomId: string) => {
     switchRoom(roomId);
@@ -477,7 +752,8 @@ function DemoManagerDialog() {
         <Database size={24} weight="duotone" />
         <span>
           <b>Demos are independent editable rooms</b>
-          Save or duplicate a room without overwriting DEMO-01. The featured demo is the room opened by the header action.
+          Save or duplicate a room without overwriting DEMO-01. The featured demo is the room opened
+          by the header action.
         </span>
       </div>
       <div className="demo-manager-actions">
@@ -497,23 +773,44 @@ function DemoManagerDialog() {
           const featured = room.id === project.featuredDemoRoomId;
           return (
             <article key={room.id} className={featured ? "featured" : ""}>
-              <span className="demo-manager-mark"><Database size={20} weight="duotone" /></span>
+              <span className="demo-manager-mark">
+                <Database size={20} weight="duotone" />
+              </span>
               <span className="demo-manager-copy">
                 <span>
                   <b>{room.name}</b>
-                  {featured && <em><Star size={12} weight="fill" /> Featured</em>}
+                  {featured && (
+                    <em>
+                      <Star size={12} weight="fill" /> Featured
+                    </em>
+                  )}
                 </span>
-                <small>{room.code} · {room.scene.objects.filter((object) => object.objectType !== "wall").length} assets · {room.scene.inventoryItems.length} inventory</small>
+                <small>
+                  {room.code} ·{" "}
+                  {room.scene.objects.filter((object) => object.objectType !== "wall").length}{" "}
+                  assets · {room.scene.inventoryItems.length} inventory
+                </small>
                 <code>{room.id}</code>
               </span>
               <span className="demo-manager-row-actions">
-                {!featured && <button onClick={() => setFeatured(room.id)}><Star size={15} /> Set featured</button>}
-                <button onClick={() => openRoom(room.id)}>Open <ArrowRight size={15} /></button>
+                {!featured && (
+                  <button onClick={() => setFeatured(room.id)}>
+                    <Star size={15} /> Set featured
+                  </button>
+                )}
+                <button onClick={() => openRoom(room.id)}>
+                  Open <ArrowRight size={15} />
+                </button>
                 <button
                   className="danger-icon"
                   aria-label={`Delete ${room.name}`}
                   onClick={() => {
-                    if (!window.confirm(`Delete demo “${room.name}”? Other rooms and the factory template will remain unchanged.`)) return;
+                    if (
+                      !window.confirm(
+                        `Delete demo “${room.name}”? Other rooms and the factory template will remain unchanged.`,
+                      )
+                    )
+                      return;
                     deleteRoom(room.id);
                   }}
                 >

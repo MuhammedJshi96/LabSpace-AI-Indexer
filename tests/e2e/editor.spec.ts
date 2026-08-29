@@ -594,11 +594,13 @@ test("the asset browser frames both large equipment and small instruments", asyn
   await page.goto("/asset-preview?asset=compound-microscope");
   await expect(page.getByRole("heading", { name: "Compound microscope" })).toBeVisible();
   await expect(page.locator(".asset-preview-canvas canvas")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Curated 15", exact: true })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "Full catalog 94", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".asset-preview-count")).toContainText("16 loaded · 96 validated");
+  await expect(page.locator(".asset-preview-count")).toContainText("94 active · 0 archived");
+  await expect(page.getByText("Straight wall", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Half-height wall", { exact: true })).toHaveCount(0);
   await expect(page.locator(".asset-preview-details")).toContainText("300 × 420 × 480 mm");
   await page.getByRole("button", { name: "Back", exact: true }).click();
   await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveAttribute(

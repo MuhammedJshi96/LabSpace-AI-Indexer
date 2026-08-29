@@ -1620,6 +1620,82 @@ export function drawAssetThumbnail(canvas: HTMLCanvasElement, asset: AssetDefini
 }
 
 const thumbnailCache = new Map<string, string>();
+const normalizedThumbnailCache = new Map<string, string>();
+
+/**
+ * Authored and procedural renders do not all carry the same transparent studio
+ * margins. CSS object-fit aligns the PNG canvases, not the visible objects, so
+ * a door can appear high while a bench appears low even inside equal cards.
+ * Reframe the alpha-bounded silhouette onto one shared, baseline-aligned canvas.
+ */
+function normalizeThumbnailSilhouette(image: HTMLImageElement, source: string) {
+  const cached = normalizedThumbnailCache.get(source);
+  if (cached) return cached;
+  if (!image.naturalWidth || !image.naturalHeight) return null;
+
+  const analysis = document.createElement("canvas");
+  analysis.width = image.naturalWidth;
+  analysis.height = image.naturalHeight;
+  const context = analysis.getContext("2d", { willReadFrequently: true });
+  if (!context) return null;
+  context.drawImage(image, 0, 0);
+
+  let pixels: Uint8ClampedArray;
+  try {
+    pixels = context.getImageData(0, 0, analysis.width, analysis.height).data;
+  } catch {
+    return null;
+  }
+  let minX = analysis.width;
+  let minY = analysis.height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < analysis.height; y += 1) {
+    for (let x = 0; x < analysis.width; x += 1) {
+      if (pixels[(y * analysis.width + x) * 4 + 3] <= 14) continue;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  if (maxX < minX || maxY < minY) return null;
+
+  const cropWidth = maxX - minX + 1;
+  const cropHeight = maxY - minY + 1;
+  const framed = document.createElement("canvas");
+  framed.width = 360;
+  framed.height = 300;
+  const framedContext = framed.getContext("2d");
+  if (!framedContext) return null;
+  const horizontalInset = 28;
+  const topInset = 22;
+  const baseline = framed.height - 25;
+  const scale = Math.min(
+    (framed.width - horizontalInset * 2) / cropWidth,
+    (baseline - topInset) / cropHeight,
+  );
+  const renderedWidth = cropWidth * scale;
+  const renderedHeight = cropHeight * scale;
+  const targetX = (framed.width - renderedWidth) / 2;
+  const targetY = baseline - renderedHeight;
+  framedContext.imageSmoothingEnabled = true;
+  framedContext.imageSmoothingQuality = "high";
+  framedContext.drawImage(
+    image,
+    minX,
+    minY,
+    cropWidth,
+    cropHeight,
+    targetX,
+    targetY,
+    renderedWidth,
+    renderedHeight,
+  );
+  const result = framed.toDataURL("image/png");
+  normalizedThumbnailCache.set(source, result);
+  return result;
+}
 
 export function AssetThumbnail({
   asset,
@@ -1630,6 +1706,10 @@ export function AssetThumbnail({
 }) {
   const [failedRenderSource, setFailedRenderSource] = useState<string | null>(null);
   const [loadedRenderSource, setLoadedRenderSource] = useState<string | null>(null);
+  const [normalizedRender, setNormalizedRender] = useState<{
+    source: string;
+    dataUrl: string;
+  } | null>(null);
   const renderSource = assetRenderSource(asset, "isometric");
   const renderImageFailed = failedRenderSource === renderSource;
   const fallbackSource = useMemo(() => {
@@ -1651,7 +1731,12 @@ export function AssetThumbnail({
     return dataUrl;
   }, [asset, renderImageFailed]);
   const renderedSource = !renderImageFailed ? renderSource : null;
-  const activeSource = renderedSource ?? fallbackSource ?? "";
+  const baseSource = renderedSource ?? fallbackSource ?? "";
+  const normalizedSource =
+    normalizedRender?.source === baseSource
+      ? normalizedRender.dataUrl
+      : normalizedThumbnailCache.get(baseSource);
+  const activeSource = normalizedSource ?? baseSource;
   const isLoaded = loadedRenderSource === activeSource;
   const renderKind = assetRenderKind(asset);
 
@@ -1665,15 +1750,25 @@ export function AssetThumbnail({
       draggable={false}
       loading="lazy"
       decoding="async"
-      onLoad={() => setLoadedRenderSource(activeSource)}
+      onLoad={(event) => {
+        if (!normalizedSource && activeSource === baseSource) {
+          const normalized = normalizeThumbnailSilhouette(event.currentTarget, baseSource);
+          if (normalized) {
+            setNormalizedRender({ source: baseSource, dataUrl: normalized });
+            return;
+          }
+        }
+        setLoadedRenderSource(activeSource);
+      }}
       onError={() => {
         setLoadedRenderSource(null);
-        setFailedRenderSource(renderSource);
+        if (activeSource === baseSource) setFailedRenderSource(renderSource);
       }}
       data-render-source={
         renderedSource ? (renderKind === "authored" ? "3d" : "procedural-3d") : "illustrated"
       }
       data-thumbnail-kind={assetThumbnailKind(asset)}
+      data-thumbnail-alignment="alpha-baseline"
     />
   );
 }

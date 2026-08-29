@@ -10558,27 +10558,87 @@ body:has(#procedural-catalog-capture) #root {
   font-size: 11px;
 }
 
+.facility-floor-view {
+  margin-top: 12px;
+}
+
+.facility-floor-groups {
+  display: grid;
+  gap: 9px;
+  min-height: 0;
+  margin: 2px 0 0;
+}
+
+.facility-floor-group {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+}
+
+.facility-floor-group > button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  color: #243b36;
+  text-align: left;
+  background: #f4f8f7;
+  border: 0;
+  border-bottom: 1px solid #dfe7e5;
+}
+
+.facility-floor-group > button > span {
+  display: grid;
+  width: 30px;
+  height: 26px;
+  place-items: center;
+  color: #0b7468;
+  font-family: Bahnschrift, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  background: #dff2ee;
+  border: 1px solid #b9ddd5;
+  border-radius: 5px;
+}
+
+.facility-floor-group > button > b {
+  font-size: 12px;
+}
+
+.facility-floor-group > button > small {
+  color: #6d7e7a;
+  font-size: 10px;
+}
+
+.facility-floor-group > button.active {
+  color: #075f55;
+  background: #e7f5f2;
+  box-shadow: inset 3px 0 #079987;
+}
+
 .facility-room-list {
-  gap: 7px;
+  gap: 0;
+  padding: 4px;
 }
 
 .facility-room-list button {
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 48px;
+  border-color: transparent;
+  border-radius: 5px;
 }
 
-.facility-level-number {
-  display: grid !important;
-  width: 26px;
-  height: 26px;
-  flex: 0 0 auto;
-  place-items: center;
-  color: #0a7568;
-  font-family: Bahnschrift, monospace;
-  font-size: 11px;
-  font-weight: 760;
-  background: #e1f3ef;
-  border: 1px solid #badfd7;
-  border-radius: 6px;
+.facility-room-list button + button {
+  border-top-color: #edf1f0;
+}
+
+.facility-room-list button:hover {
+  background: #f7faf9;
 }
 
 .facility-arrange-note {
@@ -10606,45 +10666,6 @@ body:has(#procedural-catalog-capture) #root {
 
 .facility-stack-canvas canvas {
   display: block;
-}
-
-.facility-stack-label {
-  display: grid;
-  width: max-content;
-  min-width: 176px;
-  gap: 2px;
-  padding: 9px 11px;
-  color: #1c2f2b;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(148, 174, 168, 0.82);
-  border-left: 4px solid #768985;
-  border-radius: 7px;
-  box-shadow: 0 8px 22px rgba(24, 50, 45, 0.12);
-  backdrop-filter: blur(8px);
-}
-
-.facility-stack-label.selected {
-  background: rgba(236, 251, 247, 0.96);
-  border-color: #77c8b9;
-  border-left-color: #078f7e;
-  box-shadow: 0 10px 28px rgba(8, 111, 98, 0.18);
-}
-
-.facility-stack-label small {
-  color: #08796b;
-  font-family: Bahnschrift, monospace;
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.04em;
-}
-
-.facility-stack-label b {
-  font-size: 14px;
-}
-
-.facility-stack-label span {
-  color: #63736f;
-  font-size: 11px;
 }
 
 .facility-stack-key {
@@ -10693,6 +10714,66 @@ body:has(#procedural-catalog-capture) #root {
   color: #657571;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.facility-floor-setter {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  color: #53615e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.facility-floor-setter select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 10px;
+  color: #172a26;
+  font: inherit;
+  background: #fff;
+  border: 1px solid #aebfba;
+  border-radius: 7px;
+}
+
+.facility-floor-suggestion {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: #086b60;
+  font-size: 12px;
+  font-weight: 750;
+  background: #edf8f5;
+  border: 1px solid #b7ddd5;
+  border-radius: 7px;
+}
+
+.facility-plan-coordinates {
+  margin-top: 14px;
+  padding: 0 11px;
+  background: #f6f8f7;
+  border: 1px solid #dce4e2;
+  border-radius: 7px;
+}
+
+.facility-plan-coordinates summary {
+  padding: 11px 0;
+  color: #435853;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.facility-plan-coordinates[open] {
+  padding-bottom: 11px;
+}
+
+.facility-plan-coordinates .facility-coordinate-grid {
+  margin-top: 0;
 }
 
 .inventory-registry-badge {
@@ -10750,7 +10831,7 @@ body:has(#procedural-catalog-capture) #root {
 .asset-thumbnail {
   height: 108px;
   min-height: 108px;
-  padding: 7px;
+  padding: 2px;
   object-fit: contain;
   object-position: center;
 }
@@ -10779,11 +10860,11 @@ body:has(#procedural-catalog-capture) #root {
 
 .asset-preview-thumbnail-frame {
   height: 126px;
-  padding: 6px;
+  padding: 4px;
 }
 
 .asset-preview-thumbnail-frame > .asset-thumbnail {
-  padding: 10px;
+  padding: 0;
 }
 
 .asset-preview-list b {

@@ -17,11 +17,15 @@ test("keeps room switching and facility management discoverable", async ({ page 
 
   await page.getByRole("link", { name: "Facility Manager" }).click();
   await expect(page).toHaveURL(/\/facility$/);
-  await expect(page.getByRole("heading", { name: "Facility stack" })).toBeVisible();
-  await expect(page.getByLabel("Three-dimensional facility room stack")).toBeVisible();
-  await expect(page.locator(".facility-stack-label")).not.toHaveCount(0);
-  await page.getByRole("button", { name: "Auto-stack rooms top to bottom" }).click();
-  await expect(page.getByText(/rooms arranged into a top-to-bottom facility stack/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Facility by floor" })).toBeVisible();
+  const floorStack = page.getByLabel("Three-dimensional facility floor stack");
+  await expect(floorStack).toBeVisible();
+  await expect(floorStack).toHaveAttribute("data-facility-render-mode", "material-aware");
+  await expect(page.locator(".facility-stack-label")).toHaveCount(0);
+  await expect(page.locator(".facility-stack-summary b")).toContainText(/occupied floor/);
+  await expect(page.locator(".facility-floor-setter select option")).toHaveCount(15);
+  await page.getByRole("button", { name: "Organize floors from room numbers" }).click();
+  await expect(page.getByText(/rooms organized across floors/)).toBeVisible();
 });
 
 test("uses one ordered Create menu and focused workspace forms", async ({ page }) => {
@@ -63,6 +67,7 @@ test("keeps construction primitives out of Asset Studio and contains thumbnails"
   const firstThumbnail = page.locator(".asset-preview-thumbnail-frame > img").first();
   await expect(firstThumbnail).toBeVisible();
   await expect(firstThumbnail).toHaveCSS("object-fit", "contain");
+  await expect(firstThumbnail).toHaveAttribute("data-thumbnail-alignment", "alpha-baseline");
 
   await page.getByRole("button", { name: "Standard laboratory bench Furniture" }).click();
   await page.getByRole("button", { name: "Archive from library" }).click();

@@ -118,6 +118,49 @@ describe("human-reviewed LabSpace move staging", () => {
     expect(JSON.stringify(result).length).toBeLessThan(1500);
   });
 
+  it("stages bench-connected equipment at the inferred work-surface elevation", () => {
+    const { first, second } = stagingFixture();
+    const state = useEditorStore.getState();
+    const room = state.project.rooms.find((entry) => entry.id === state.project.activeRoomId)!;
+    const rotary = {
+      ...first,
+      assetDefinitionId: "rotary-evaporator",
+      name: "Supported rotary evaporator",
+      position: { x: 1200, y: 1200, z: 0 },
+      dimensions: { width: 607, depth: 429, height: 947 },
+    };
+    const bench = {
+      ...second,
+      assetDefinitionId: "lab-bench",
+      objectType: "furniture" as const,
+      name: "Instrument bench",
+      position: { x: 3000, y: 3000, z: 0 },
+      dimensions: { width: 2400, depth: 750, height: 900 },
+    };
+    useEditorStore.setState({
+      project: {
+        ...state.project,
+        rooms: state.project.rooms.map((entry) =>
+          entry.id === room.id
+            ? { ...entry, scene: { ...entry.scene, objects: [rotary, bench] } }
+            : entry,
+        ),
+      },
+    });
+
+    const result = stageObjectMove({
+      objectId: rotary.id,
+      target: { xMm: bench.position.x, yMm: bench.position.y },
+    });
+
+    expect(result).toMatchObject({ staged: true, proposed: { zMm: 900 } });
+    expect(currentObject(rotary.id).position).toMatchObject({
+      x: bench.position.x,
+      y: bench.position.y,
+      z: 900,
+    });
+  });
+
   it("returns real conflicts and creates no preview for an invalid move", () => {
     const { project, first, second } = stagingFixture();
     const before = structuredClone(project);

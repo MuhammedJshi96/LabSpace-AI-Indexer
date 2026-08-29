@@ -15,7 +15,15 @@ import {
   Transformer,
 } from "react-konva";
 import { getAssetDefinition } from "../domain/assets";
-import { objectBounds, snapPoint, snapValue, validatePlacement } from "../domain/geometry";
+import {
+  findBenchSupport,
+  objectBounds,
+  requiresBenchSupport,
+  snapBenchObjectToAvailableSupport,
+  snapPoint,
+  snapValue,
+  validatePlacement,
+} from "../domain/geometry";
 import {
   getClosedWallFloorPolygon,
   getRoomFloorPlan,
@@ -223,6 +231,7 @@ function PlanObject({
   const commitPreview = useEditorStore((state) => state.commitPreview);
   const setGuides = useEditorStore((state) => state.setGuides);
   const updateObject = useEditorStore((state) => state.updateObject);
+  const pushToast = useEditorStore((state) => state.pushToast);
   const beforeRef = useRef<SceneObject | null>(null);
   const dragOffsetRef = useRef<{ x: number; y: number } | null>(null);
   const layer = room.scene.layers.find((entry) => entry.id === object.layerId);
@@ -296,12 +305,43 @@ function PlanObject({
             setGuides(snapped.guides);
           }
           event.target.position(next);
-          previewObject(object.id, {
-            position: { ...(beforeRef.current?.position ?? object.position), ...next },
-          });
+          let position = { ...(beforeRef.current?.position ?? object.position), ...next };
+          if (requiresBenchSupport(object)) {
+            const candidate = { ...object, position };
+            const support = findBenchSupport(room, candidate);
+            if (support) position = { ...position, z: support.elevationMm };
+          }
+          previewObject(object.id, { position });
         }}
         onDragEnd={() => {
-          if (beforeRef.current) commitPreview(beforeRef.current, `Move ${object.name}`);
+          if (beforeRef.current) {
+            if (requiresBenchSupport(object)) {
+              const currentState = useEditorStore.getState();
+              const currentRoom = currentState.project.rooms.find(
+                (entry) => entry.id === currentState.project.activeRoomId,
+              );
+              const currentObject = currentRoom?.scene.objects.find(
+                (entry) => entry.id === object.id,
+              );
+              const supported =
+                currentRoom && currentObject
+                  ? snapBenchObjectToAvailableSupport(currentRoom, currentObject)
+                  : null;
+              if (supported) {
+                previewObject(object.id, { position: supported.position });
+                if (
+                  supported.position.x !== currentObject?.position.x ||
+                  supported.position.y !== currentObject?.position.y
+                ) {
+                  pushToast(`${object.name} snapped to the nearest clear bench surface.`, "info");
+                }
+              } else {
+                previewObject(object.id, { position: beforeRef.current.position });
+                pushToast(`${object.name} must stay on a clear bench or table surface.`, "error");
+              }
+            }
+            commitPreview(beforeRef.current, `Move ${object.name}`);
+          }
           beforeRef.current = null;
           dragOffsetRef.current = null;
           setGuides([]);

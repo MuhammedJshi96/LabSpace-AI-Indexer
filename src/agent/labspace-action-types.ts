@@ -134,6 +134,7 @@ export type PlacementConflict = {
     | "object-collision"
     | "below-floor"
     | "above-room-height"
+    | "missing-support-surface"
     | "restricted-object";
   objectId?: string;
   indexCode?: string;
@@ -147,7 +148,7 @@ export type ValidateObjectMoveResult = {
   objectName: string;
   objectIndexCode: string;
   roomCode: string;
-  target: { xMm: number; yMm: number; rotationDeg: number };
+  target: { xMm: number; yMm: number; zMm: number; rotationDeg: number };
   conflicts: PlacementConflict[];
 };
 
@@ -160,7 +161,7 @@ export type RecommendObjectPlacementsInput = {
 
 export type RecommendedPlacement = {
   rank: number;
-  target: { xMm: number; yMm: number; rotationDeg: number };
+  target: { xMm: number; yMm: number; zMm: number; rotationDeg: number };
   distanceFromPreferredMm: number;
   nearestObjectGapMm: number | null;
   rationale: string[];
@@ -348,7 +349,7 @@ export type StageObjectMoveResult = {
   stageId: string | null;
   objectId: string;
   objectName: string;
-  proposed: { xMm: number; yMm: number; rotationDeg: number };
+  proposed: { xMm: number; yMm: number; zMm: number; rotationDeg: number };
   valid: boolean;
   persisted: false;
   requiresHumanApproval: boolean;

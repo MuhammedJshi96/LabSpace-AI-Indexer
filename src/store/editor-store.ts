@@ -2,6 +2,10 @@ import { create } from "zustand";
 import type { PendingAgentChange } from "../agent/labspace-action-types";
 import { getAssetDefinition } from "../domain/assets";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
+import {
+  requiresBenchSupport,
+  snapBenchObjectToAvailableSupport,
+} from "../domain/geometry";
 import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/layers";
 import { normalizeRaisedFromFloorMm } from "../domain/object-transforms";
 import { createBlankLaboratory, createBlankRoom } from "../domain/room-factory";
@@ -776,7 +780,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           : definition.id === "pegboard"
             ? 1200
             : 0;
-    const object: SceneObject = {
+    let object: SceneObject = {
       id: crypto.randomUUID(),
       indexCode: generateObjectIndexCode(
         room,
@@ -809,6 +813,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       childLocationIds: [],
       zIndex: Math.max(0, ...room.scene.objects.map((entry) => entry.zIndex)) + 1,
     };
+    if (requiresBenchSupport(object)) {
+      const supported = snapBenchObjectToAvailableSupport(room, object);
+      if (!supported) {
+        state.pushToast(
+          `Add or clear space on a laboratory bench before placing ${definition.shortName.toLowerCase()}.`,
+          "error",
+        );
+        return null;
+      }
+      object = supported;
+    }
     if (definition.objectType === "door" || definition.objectType === "window") {
       object.opening = transform.opening;
       const projection = findNearestWallProjection(
@@ -1071,6 +1086,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ...normalizedPatch,
       updatedAt: new Date().toISOString(),
     };
+    if (
+      requiresBenchSupport(after) &&
+      (patch.position || patch.rotation || patch.dimensions)
+    ) {
+      const supported = snapBenchObjectToAvailableSupport(room, after);
+      if (!supported) {
+        state.pushToast(
+          `${after.name} needs a clear laboratory bench or table surface.`,
+          "error",
+        );
+        return;
+      }
+      after = supported;
+    }
     if (after.opening) {
       const resolved = resolveHostedOpening(after, room.scene.objects);
       if (resolved) after = { ...after, ...hostOpeningAtPoint(after, resolved) };

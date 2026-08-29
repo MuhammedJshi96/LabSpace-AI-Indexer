@@ -72,11 +72,16 @@ describe("multi-laboratory project workspace", () => {
       },
     ];
     useEditorStore.getState().replaceProject(customProject);
-    const objectId = useEditorStore.getState().addAsset("benchtop-centrifuge");
+    expect(useEditorStore.getState().addAsset("benchtop-centrifuge")).toBeNull();
+    useEditorStore.getState().addAsset("lab-bench", { x: 3000, y: 3000 });
+    const objectId = useEditorStore
+      .getState()
+      .addAsset("benchtop-centrifuge", { x: 3000, y: 3000 });
     const current = useEditorStore.getState().project.rooms[0];
     expect(current.scene.objects.find((object) => object.id === objectId)?.layerId).toBe(
       "imported-instrument-layer",
     );
+    expect(current.scene.objects.find((object) => object.id === objectId)?.position.z).toBe(900);
     expect(useEditorStore.getState().deleteRoom(customProject.rooms[0].id)).toBe(false);
   });
 });

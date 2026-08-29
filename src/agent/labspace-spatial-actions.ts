@@ -1,4 +1,10 @@
-import { objectBounds, validatePlacement, type ValidationWarning } from "../domain/geometry";
+import {
+  findBenchSupport,
+  objectBounds,
+  requiresBenchSupport,
+  validatePlacement,
+  type ValidationWarning,
+} from "../domain/geometry";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import type { Project, Room, SceneObject } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
@@ -198,6 +204,7 @@ function warningType(warning: ValidationWarning): PlacementConflict["type"] | nu
   if (warning.id.startsWith("overlap-")) return "object-collision";
   if (warning.id.startsWith("below-floor-")) return "below-floor";
   if (warning.id.startsWith("above-ceiling-")) return "above-room-height";
+  if (warning.id.startsWith("unsupported-")) return "missing-support-surface";
   return null;
 }
 
@@ -233,10 +240,12 @@ function recordValidation(result: ValidateObjectMoveResult) {
 
 function candidateObjectGap(room: Room, candidate: SceneObject) {
   const candidateBounds = objectBounds(candidate);
+  const supportingObjectId = findBenchSupport(room, candidate)?.object.id ?? null;
   let minimum = Number.POSITIVE_INFINITY;
   for (const other of room.scene.objects) {
     if (
       other.id === candidate.id ||
+      other.id === supportingObjectId ||
       !other.visible ||
       ["wall", "door", "window", "label", "measurement"].includes(other.objectType) ||
       other.parentObjectId === candidate.id ||
@@ -345,7 +354,12 @@ export function recommendObjectPlacements(
       if (!validation.valid) continue;
       const candidate: SceneObject = {
         ...object,
-        position: { ...object.position, x: position.xMm, y: position.yMm },
+        position: {
+          ...object.position,
+          x: position.xMm,
+          y: position.yMm,
+          z: validation.target.zMm,
+        },
         rotation: { ...object.rotation, z: rotationDeg },
       };
       const distanceFromPreferredMm = Math.round(
@@ -356,11 +370,13 @@ export function recommendObjectPlacements(
       const clearanceCredit = Math.min(nearestObjectGapMm ?? 1_000, 1_000) * 0.2;
       evaluated.push({
         rank: 0,
-        target: { ...position, rotationDeg },
+        target: validation.target,
         distanceFromPreferredMm,
         nearestObjectGapMm,
         rationale: [
-          "Passes current room-boundary, overlap, elevation, and room-height rules.",
+          requiresBenchSupport(candidate)
+            ? `Passes current geometry rules on a ${validation.target.zMm} mm support surface.`
+            : "Passes current room-boundary, overlap, elevation, and room-height rules.",
           distanceFromPreferredMm === 0
             ? "Matches the preferred target."
             : `${distanceFromPreferredMm} mm from the preferred target.`,
@@ -422,6 +438,7 @@ export function validateObjectMove(
   const target = {
     xMm: normalized.target.xMm,
     yMm: normalized.target.yMm,
+    zMm: object.position.z,
     rotationDeg: normalized.rotationDeg ?? object.rotation.z,
   };
   const restriction = restrictedConflict(room, object);
@@ -437,11 +454,21 @@ export function validateObjectMove(
     });
   }
 
-  const candidate: SceneObject = {
+  let candidate: SceneObject = {
     ...object,
     position: { ...object.position, x: target.xMm, y: target.yMm },
     rotation: { ...object.rotation, z: target.rotationDeg },
   };
+  if (requiresBenchSupport(candidate)) {
+    const support = findBenchSupport(room, candidate);
+    if (support) {
+      target.zMm = support.elevationMm;
+      candidate = {
+        ...candidate,
+        position: { ...candidate.position, z: support.elevationMm },
+      };
+    }
+  }
   const hypotheticalRoom: Room = {
     ...room,
     scene: {

@@ -48,12 +48,13 @@ function sameObject(left: SceneObject | undefined, right: SceneObject) {
 function sameProposal(
   pending: PendingAgentMoveChange,
   objectId: string,
-  target: { xMm: number; yMm: number; rotationDeg: number },
+  target: { xMm: number; yMm: number; zMm: number; rotationDeg: number },
 ) {
   return (
     pending.objectId === objectId &&
     pending.proposed.position.x === target.xMm &&
     pending.proposed.position.y === target.yMm &&
+    pending.proposed.position.z === target.zMm &&
     pending.proposed.rotation.z === target.rotationDeg
   );
 }
@@ -328,6 +329,7 @@ export function stageObjectMove(input: unknown): StageObjectMoveResult {
       ...object.position,
       x: validation.target.xMm,
       y: validation.target.yMm,
+      z: validation.target.zMm,
     },
     rotation: { ...object.rotation, z: validation.target.rotationDeg },
   });

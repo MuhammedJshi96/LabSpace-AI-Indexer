@@ -146,12 +146,12 @@ export function AgentReviewPanel() {
               <div className="agent-review-route" aria-label="Proposed position change">
                 <span>
                   <small>Current</small>X {metres(pending.before.position.x)} · Y{" "}
-                  {metres(pending.before.position.y)}
+                  {metres(pending.before.position.y)} · Z {metres(pending.before.position.z)}
                 </span>
                 <ArrowRight size={18} aria-hidden="true" />
                 <span>
                   <small>Proposed</small>X {metres(pending.proposed.position.x)} · Y{" "}
-                  {metres(pending.proposed.position.y)}
+                  {metres(pending.proposed.position.y)} · Z {metres(pending.proposed.position.z)}
                 </span>
               </div>
             </>

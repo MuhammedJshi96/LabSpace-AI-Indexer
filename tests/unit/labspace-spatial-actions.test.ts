@@ -112,6 +112,36 @@ describe("LabSpace hypothetical move validation", () => {
     expect(result.conflicts).toEqual([expect.objectContaining({ type: "outside-room-boundary" })]);
   });
 
+  it("keeps bench equipment on a real support surface and rejects floating floor moves", () => {
+    const project = createSeedProject();
+    const room = project.rooms.find((entry) => entry.roomKind === "demo")!;
+    const rotary = room.scene.objects.find(
+      (entry) => entry.assetDefinitionId === "rotary-evaporator",
+    )!;
+
+    const supported = validateObjectMove(
+      {
+        objectId: rotary.id,
+        target: { xMm: rotary.position.x, yMm: rotary.position.y },
+      },
+      () => project,
+    );
+    expect(supported).toMatchObject({
+      valid: true,
+      target: { zMm: 900 },
+      conflicts: [],
+    });
+
+    const unsupported = validateObjectMove(
+      { objectId: rotary.id, target: { xMm: 7200, yMm: 1800 } },
+      () => project,
+    );
+    expect(unsupported.valid).toBe(false);
+    expect(unsupported.conflicts).toContainEqual(
+      expect.objectContaining({ type: "missing-support-surface" }),
+    );
+  });
+
   it("rejects locked and structural objects without running a mutation", () => {
     const lockedFixture = spatialFixture();
     const lockedRoom = lockedFixture.project.rooms.find(

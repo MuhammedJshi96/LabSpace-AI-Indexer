@@ -1,3 +1,4 @@
+import { ASSET_BY_ID } from "./assets";
 import type { Room, Scene, SceneObject } from "./schema";
 import { getClosedWallFloorPolygon, pointIsInsideFloorPolygon } from "./room-geometry";
 
@@ -135,6 +136,113 @@ export function objectBounds(object: SceneObject) {
   };
 }
 
+export function requiresBenchSupport(object: SceneObject): boolean {
+  return ASSET_BY_ID.get(object.assetDefinitionId)?.connection === "bench";
+}
+
+export function supportSurfaceElevation(object: SceneObject): number | null {
+  const explicitHeight = Number(object.metadata.supportSurfaceHeight);
+  if (Number.isFinite(explicitHeight)) return object.position.z + explicitHeight;
+
+  const profile = ASSET_BY_ID.get(object.assetDefinitionId)?.profile;
+  if (profile === "bench") return object.position.z + Math.min(900, object.dimensions.height);
+  if (profile === "table") return object.position.z + Math.min(760, object.dimensions.height);
+  if (profile === "workstation") return object.position.z + Math.min(740, object.dimensions.height);
+  return null;
+}
+
+function horizontalOverlapCoverage(support: SceneObject, placed: SceneObject): number {
+  const supportBounds = objectBounds(support);
+  const placedBounds = objectBounds(placed);
+  const width = Math.max(
+    0,
+    Math.min(supportBounds.right, placedBounds.right) -
+      Math.max(supportBounds.left, placedBounds.left),
+  );
+  const depth = Math.max(
+    0,
+    Math.min(supportBounds.bottom, placedBounds.bottom) -
+      Math.max(supportBounds.top, placedBounds.top),
+  );
+  const placedArea = Math.max(
+    1,
+    (placedBounds.right - placedBounds.left) * (placedBounds.bottom - placedBounds.top),
+  );
+  return (width * depth) / placedArea;
+}
+
+export function findBenchSupport(
+  room: Room,
+  placed: SceneObject,
+): { object: SceneObject; elevationMm: number; coverage: number } | null {
+  if (!requiresBenchSupport(placed)) return null;
+  const candidates = room.scene.objects
+    .filter((support) => support.id !== placed.id && support.visible)
+    .flatMap((support) => {
+      const elevationMm = supportSurfaceElevation(support);
+      if (elevationMm === null) return [];
+      const coverage = horizontalOverlapCoverage(support, placed);
+      return coverage >= 0.55 ? [{ object: support, elevationMm, coverage }] : [];
+    })
+    .sort(
+      (left, right) =>
+        right.coverage - left.coverage || left.elevationMm - right.elevationMm,
+    );
+  return candidates[0] ?? null;
+}
+
+export function snapBenchObjectToAvailableSupport(
+  room: Room,
+  placed: SceneObject,
+): SceneObject | null {
+  if (!requiresBenchSupport(placed)) return placed;
+  const placedAtOrigin = { ...placed, position: { ...placed.position, x: 0, y: 0 } };
+  const placedBounds = objectBounds(placedAtOrigin);
+  const halfWidth = (placedBounds.right - placedBounds.left) / 2;
+  const halfDepth = (placedBounds.bottom - placedBounds.top) / 2;
+  const clamp = (value: number, minimum: number, maximum: number) =>
+    Math.min(maximum, Math.max(minimum, value));
+
+  const candidates = room.scene.objects
+    .filter((support) => support.id !== placed.id && support.visible)
+    .flatMap((support) => {
+      const elevationMm = supportSurfaceElevation(support);
+      if (elevationMm === null) return [];
+      const bounds = objectBounds(support);
+      const minimumX = bounds.left + halfWidth;
+      const maximumX = bounds.right - halfWidth;
+      const minimumY = bounds.top + halfDepth;
+      const maximumY = bounds.bottom - halfDepth;
+      if (minimumX > maximumX || minimumY > maximumY) return [];
+      const x = clamp(placed.position.x, minimumX, maximumX);
+      const y = clamp(placed.position.y, minimumY, maximumY);
+      const candidate: SceneObject = {
+        ...placed,
+        position: { ...placed.position, x, y, z: elevationMm },
+      };
+      const resolvedSupport = findBenchSupport(room, candidate);
+      if (resolvedSupport?.object.id !== support.id) return [];
+      const collides = room.scene.objects.some(
+        (other) =>
+          other.id !== placed.id &&
+          other.id !== support.id &&
+          other.visible &&
+          !["wall", "door", "window", "label", "measurement"].includes(other.objectType) &&
+          objectsOverlap(candidate, other, 15),
+      );
+      if (collides) return [];
+      return [
+        {
+          candidate,
+          distance: Math.hypot(x - placed.position.x, y - placed.position.y),
+        },
+      ];
+    })
+    .sort((left, right) => left.distance - right.distance);
+
+  return candidates[0]?.candidate ?? null;
+}
+
 export function objectsOverlap(a: SceneObject, b: SceneObject, padding = 0): boolean {
   if (a.objectType === "wall" || b.objectType === "wall") return false;
   if (a.parentObjectId === b.id || b.parentObjectId === a.id) return false;
@@ -144,10 +252,16 @@ export function objectsOverlap(a: SceneObject, b: SceneObject, padding = 0): boo
   };
   if (explicitlyAllowsOverlap(a, b) || explicitlyAllowsOverlap(b, a)) return false;
   const restsOnSupportSurface = (support: SceneObject, placed: SceneObject) => {
-    const supportSurfaceHeight = Number(support.metadata.supportSurfaceHeight);
+    const explicitHeight = Number(support.metadata.supportSurfaceHeight);
+    const explicitElevation = Number.isFinite(explicitHeight)
+      ? support.position.z + explicitHeight
+      : null;
+    const elevationMm = explicitElevation ??
+      (requiresBenchSupport(placed) ? supportSurfaceElevation(support) : null);
     return (
-      Number.isFinite(supportSurfaceHeight) &&
-      Math.abs(placed.position.z - (support.position.z + supportSurfaceHeight)) <= padding
+      elevationMm !== null &&
+      horizontalOverlapCoverage(support, placed) >= 0.55 &&
+      Math.abs(placed.position.z - elevationMm) <= Math.max(padding, 20)
     );
   };
   if (restsOnSupportSurface(a, b) || restsOnSupportSurface(b, a)) return false;
@@ -219,6 +333,26 @@ export function validatePlacement(room: Room): ValidationWarning[] {
         title: "Above room height",
         message: `${object.name} extends above the ${room.wallHeight} mm room height.`,
       });
+    }
+    if (requiresBenchSupport(object)) {
+      const support = findBenchSupport(room, object);
+      if (!support) {
+        warnings.push({
+          id: `unsupported-${object.id}`,
+          severity: "error",
+          objectIds: [object.id],
+          title: "Bench support required",
+          message: `${object.name} must rest on a laboratory bench or table at this location.`,
+        });
+      } else if (Math.abs(object.position.z - support.elevationMm) > 20) {
+        warnings.push({
+          id: `unsupported-${object.id}-${support.object.id}`,
+          severity: "error",
+          objectIds: [object.id, support.object.id],
+          title: "Incorrect support elevation",
+          message: `${object.name} must rest at ${support.elevationMm} mm on ${support.object.name}.`,
+        });
+      }
     }
   }
   for (let index = 0; index < placed.length; index += 1) {

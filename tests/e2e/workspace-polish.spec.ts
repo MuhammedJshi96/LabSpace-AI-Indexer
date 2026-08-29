@@ -22,11 +22,26 @@ test("keeps room switching and facility management discoverable", async ({ page 
   await expect(floorStack).toBeVisible();
   await expect(floorStack).toHaveAttribute("data-facility-render-mode", "material-aware");
   await expect(floorStack).toHaveAttribute("data-facility-envelope", "cutaway");
+  await expect(floorStack).toHaveAttribute("data-building-frame", "continuous-section");
   await expect(page.locator(".facility-stack-label")).toHaveCount(0);
   await expect(page.locator(".facility-stack-summary b")).toContainText(/occupied floor/);
   await expect(page.locator(".facility-floor-setter select option")).toHaveCount(15);
   await page.getByRole("button", { name: "Organize floors from room numbers" }).click();
   await expect(page.getByText(/rooms organized across floors/)).toBeVisible();
+});
+
+test("opens the exact room selected in the Facility inspector", async ({ page, request }) => {
+  await page.goto("/facility");
+  await page.getByRole("button", { name: /Build Week Demo DEMO-01/ }).click();
+  await page.getByRole("button", { name: "Open room editor" }).click();
+
+  await expect(page).toHaveURL(/\/$/);
+  await expect(
+    page.getByRole("button", { name: /Switch room.*Build Week Demo.*DEMO-01/ }),
+  ).toBeVisible();
+  const project = await (await request.get("/api/project")).json();
+  const activeRoom = project.rooms.find((room: any) => room.id === project.activeRoomId);
+  expect(activeRoom).toMatchObject({ name: "Build Week Demo", code: "DEMO-01" });
 });
 
 test("keeps the complete desktop shell separated at capture width", async ({ page }) => {

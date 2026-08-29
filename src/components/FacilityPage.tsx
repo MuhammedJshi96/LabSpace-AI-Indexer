@@ -9,7 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { getAssetDefinition } from "../domain/assets";
 import {
@@ -18,6 +18,7 @@ import {
   inferFacilityFloorFromRoomCode,
   nextFacilityRoomPlacement,
   resolveFacilityFloorLayout,
+  type FacilityFloorBounds,
   type FacilityRoomLayoutEntry,
   type FacilityRoomLayoutInput,
 } from "../domain/facility";
@@ -104,20 +105,19 @@ function layoutRoomsOnFloor(rooms: Room[]): PositionedRoom[] {
 }
 
 function FacilityFloorEnvelope({
-  rooms,
+  buildingBounds,
   sectionY,
   selected,
 }: {
-  rooms: PositionedRoom[];
+  buildingBounds: FacilityFloorBounds;
   sectionY: number;
   selected: boolean;
 }) {
-  const bounds = facilityFloorBounds(rooms);
   const padding = 0.72;
-  const width = bounds.maxX - bounds.minX + padding * 2;
-  const depth = bounds.maxZ - bounds.minZ + padding * 2;
-  const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerZ = (bounds.minZ + bounds.maxZ) / 2;
+  const width = buildingBounds.maxX - buildingBounds.minX + padding * 2;
+  const depth = buildingBounds.maxZ - buildingBounds.minZ + padding * 2;
+  const centerX = (buildingBounds.minX + buildingBounds.maxX) / 2;
+  const centerZ = (buildingBounds.minZ + buildingBounds.maxZ) / 2;
   const wallThickness = 0.18;
   const wallHeight = 1.22;
   const cutawayHeight = 0.2;
@@ -149,6 +149,80 @@ function FacilityFloorEnvelope({
       <mesh position={[width / 2 - wallThickness / 2, cutawayHeight / 2, 0]} castShadow>
         <boxGeometry args={[wallThickness, cutawayHeight, depth]} />
         <meshStandardMaterial color="#879b96" metalness={0.24} roughness={0.4} />
+      </mesh>
+      <mesh position={[0, -0.035, depth / 2 + 0.025]}>
+        <boxGeometry args={[width, 0.1, 0.05]} />
+        <meshStandardMaterial
+          color={selected ? "#20b9a2" : "#6f827d"}
+          emissive={selected ? "#0b5d50" : "#000000"}
+          emissiveIntensity={selected ? 0.32 : 0}
+          metalness={0.42}
+          roughness={0.34}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function FacilityBuildingFrame({ bounds, topY }: { bounds: FacilityFloorBounds; topY: number }) {
+  const padding = 0.72;
+  const width = bounds.maxX - bounds.minX + padding * 2;
+  const depth = bounds.maxZ - bounds.minZ + padding * 2;
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerZ = (bounds.minZ + bounds.maxZ) / 2;
+  const bottomY = -0.32;
+  const height = topY - bottomY;
+  const columnSize = 0.16;
+  const rearZ = -depth / 2 + columnSize / 2;
+  const leftX = -width / 2 + columnSize / 2;
+  const rightX = width / 2 - columnSize / 2;
+  const frontZ = depth / 2 - columnSize / 2;
+
+  return (
+    <group position={[centerX, 0, centerZ]}>
+      <mesh position={[0, bottomY - 0.11, 0]} castShadow receiveShadow>
+        <boxGeometry args={[width + 0.28, 0.16, depth + 0.28]} />
+        <meshPhysicalMaterial color="#7e908c" metalness={0.32} roughness={0.42} />
+      </mesh>
+      {[
+        [leftX, rearZ],
+        [rightX, rearZ],
+        [leftX, frontZ],
+      ].map(([x, z]) => (
+        <mesh key={`${x}-${z}`} position={[x, bottomY + height / 2, z]} castShadow>
+          <boxGeometry args={[columnSize, height, columnSize]} />
+          <meshPhysicalMaterial color="#73847f" metalness={0.5} roughness={0.3} clearcoat={0.12} />
+        </mesh>
+      ))}
+      <mesh position={[0, bottomY + height / 2, rearZ]}>
+        <boxGeometry args={[width, height, 0.045]} />
+        <meshPhysicalMaterial
+          color="#c8dad5"
+          transparent
+          opacity={0.11}
+          depthWrite={false}
+          roughness={0.28}
+          metalness={0.08}
+        />
+      </mesh>
+      <mesh position={[leftX, bottomY + height / 2, 0]}>
+        <boxGeometry args={[0.045, height, depth]} />
+        <meshPhysicalMaterial
+          color="#c8dad5"
+          transparent
+          opacity={0.09}
+          depthWrite={false}
+          roughness={0.28}
+          metalness={0.08}
+        />
+      </mesh>
+      <mesh position={[0, topY, rearZ]} castShadow>
+        <boxGeometry args={[width, columnSize, columnSize]} />
+        <meshStandardMaterial color="#657772" metalness={0.46} roughness={0.33} />
+      </mesh>
+      <mesh position={[leftX, topY, 0]} castShadow>
+        <boxGeometry args={[columnSize, columnSize, depth]} />
+        <meshStandardMaterial color="#657772" metalness={0.46} roughness={0.33} />
       </mesh>
     </group>
   );
@@ -188,7 +262,7 @@ function RoomMiniature({ room, x, z, sectionY, selected, onSelect, onOpen }: Roo
         onClick={chooseRoom}
         onDoubleClick={(event) => {
           event.stopPropagation();
-          onOpen(room.id);
+          void onOpen(room.id);
         }}
       >
         <boxGeometry args={[width + 0.12, 0.07, depth + 0.12]} />
@@ -305,6 +379,8 @@ function FacilityStackView({
     ),
   );
   const stackHeight = Math.max(1.5, (floorScenes.length - 1) * 3.5);
+  const buildingBounds = facilityFloorBounds(floorScenes.flatMap((scene) => scene.rooms));
+  const buildingTopY = Math.max(1.45, ...floorScenes.map((scene) => scene.sectionY + 1.45));
   const singleFloor = floorScenes.length <= 1;
   const framingSpan = singleFloor
     ? Math.max(6.8, maxSpan * 0.76)
@@ -361,10 +437,11 @@ function FacilityStackView({
       />
       <directionalLight intensity={0.65} position={[-12, 10, -8]} color="#d5eee8" />
       <gridHelper args={[100, 100, "#adc7c1", "#d5e3df"]} position={[0, -0.22, 0]} />
+      <FacilityBuildingFrame bounds={buildingBounds} topY={buildingTopY} />
       {floorScenes.map((scene) => (
         <group key={`facility-floor-${scene.floor}`}>
           <FacilityFloorEnvelope
-            rooms={scene.rooms}
+            buildingBounds={buildingBounds}
             sectionY={scene.sectionY}
             selected={scene.rooms.some((entry) => entry.room.id === selectedRoomId)}
           />
@@ -409,6 +486,8 @@ export function FacilityPage() {
   const [laboratoryId, setLaboratoryId] = useState(activeRoom.laboratoryId);
   const [selectedRoomId, setSelectedRoomId] = useState(activeRoom.id);
   const [floorFilter, setFloorFilter] = useState<number | "all">("all");
+  const [openingRoomId, setOpeningRoomId] = useState<string | null>(null);
+  const openingRoomRef = useRef<string | null>(null);
 
   useEffect(() => void hydrate(), [hydrate]);
   useEffect(() => {
@@ -448,8 +527,42 @@ export function FacilityPage() {
   const selectedFloor = selectedRoom ? roomFloor(selectedRoom) : 1;
   const suggestedFloor = selectedRoom ? inferFacilityFloorFromRoomCode(selectedRoom.code) : null;
 
-  const openRoom = (roomId: string) => {
+  const openRoom = async (roomId: string) => {
+    if (openingRoomRef.current) return;
+    openingRoomRef.current = roomId;
+    setOpeningRoomId(roomId);
     switchRoom(roomId);
+    if (useEditorStore.getState().project.activeRoomId !== roomId) {
+      openingRoomRef.current = null;
+      setOpeningRoomId(null);
+      return;
+    }
+
+    const persisted = await new Promise<boolean>((resolve) => {
+      let settled = false;
+      let timeout = 0;
+      let unsubscribe: () => void = () => undefined;
+      const finish = (result: boolean) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        unsubscribe();
+        resolve(result);
+      };
+      unsubscribe = useEditorStore.subscribe((state) => {
+        if (state.project.activeRoomId !== roomId || state.saveStatus === "error") finish(false);
+        else if (state.saveStatus === "saved") finish(true);
+      });
+      timeout = window.setTimeout(() => finish(false), 12_000);
+      void useEditorStore.getState().saveNow();
+    });
+
+    if (!persisted) {
+      pushToast("The selected room could not be saved. Stay in Facility and try again.", "error");
+      openingRoomRef.current = null;
+      setOpeningRoomId(null);
+      return;
+    }
     window.location.assign("/");
   };
 
@@ -581,7 +694,7 @@ export function FacilityPage() {
                       key={room.id}
                       className={selectedRoom?.id === room.id ? "active" : ""}
                       onClick={() => selectRoom(room.id)}
-                      onDoubleClick={() => openRoom(room.id)}
+                      onDoubleClick={() => void openRoom(room.id)}
                     >
                       {room.roomKind === "demo" ? (
                         <PresentationChart size={17} />
@@ -612,19 +725,20 @@ export function FacilityPage() {
         <section className="facility-map-panel facility-stack-panel">
           <header>
             <span>
-              <small>Material-aware three-dimensional building section</small>
+              <small>Continuous material-aware cutaway</small>
               <b>
                 {laboratory?.name}
                 {floorFilter === "all" ? " · All floors" : ` · Floor ${floorFilter}`}
               </b>
             </span>
-            <em>Orbit · pan · zoom · select a room for details</em>
+            <em>Orbit · inspect · double-click a room to open</em>
           </header>
           <div
             className="facility-map facility-stack-canvas"
             aria-label="Three-dimensional facility floor stack"
             data-facility-render-mode="material-aware"
             data-facility-envelope="cutaway"
+            data-building-frame="continuous-section"
           >
             {laboratoryRooms.length ? (
               <FacilityStackView
@@ -646,7 +760,7 @@ export function FacilityPage() {
                 <i className="selected" /> Selected room slab
               </span>
               <span>
-                <i /> Cutaway building envelope
+                <i /> Continuous section frame
               </span>
             </div>
           </div>
@@ -732,8 +846,15 @@ export function FacilityPage() {
                   ))}
                 </div>
               </details>
-              <button className="facility-open-room" onClick={() => openRoom(selectedRoom.id)}>
-                Open room editor <ArrowRight size={17} />
+              <button
+                className="facility-open-room"
+                disabled={openingRoomId !== null}
+                onClick={() => void openRoom(selectedRoom.id)}
+              >
+                {openingRoomId === selectedRoom.id
+                  ? `Opening ${selectedRoom.code}…`
+                  : "Open room editor"}{" "}
+                <ArrowRight size={17} />
               </button>
             </>
           ) : null}

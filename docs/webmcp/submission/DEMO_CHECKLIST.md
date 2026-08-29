@@ -7,7 +7,7 @@
 - [ ] Confirm no pending staged change is present.
 - [ ] Confirm Agent Activity is clear/collapsed at the start.
 - [ ] Confirm the 2D/3D room and evidence images are fully loaded.
-- [ ] Confirm `document.modelContext.getTools()` returns sixteen unique LabSpace tools.
+- [ ] Confirm `document.modelContext.getTools()` returns seventeen unique LabSpace tools.
 - [ ] Confirm `/asset-preview` and `/procedural-asset-capture` expose no LabSpace tools.
 - [ ] Close private tabs, local paths, notifications, and unrelated consoles.
 

@@ -1,6 +1,6 @@
-# LabSpace AI Indexer asset and media licence
+# LabSpace AI Agent Twin asset and media licence
 
-Copyright 2026 LabSpace AI Indexer contributors. All rights reserved.
+Copyright 2026 LabSpace AI Agent Twin contributors. All rights reserved.
 
 ## Scope
 

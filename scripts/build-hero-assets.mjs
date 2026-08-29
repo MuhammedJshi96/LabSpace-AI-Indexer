@@ -53,6 +53,10 @@ const jobs = [
     script: "scripts/blender/lab_remaining_equipment_batch11.py",
     args: ["--output-dir", outputDir],
   },
+  {
+    script: "scripts/blender/lab_catalog_completion_batch12.py",
+    args: ["--output-dir", outputDir],
+  },
   { script: "scripts/blender/compress_hero_glbs.py", args: ["--model-dir", outputDir] },
   { script: "scripts/blender/render_hero_catalog.py", args: [] },
 ];

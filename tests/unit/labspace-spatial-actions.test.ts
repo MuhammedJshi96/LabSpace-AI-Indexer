@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  auditRoom,
   createLabSpaceSpatialActions,
   recommendObjectPlacements,
   validateObjectMove,
@@ -111,6 +112,44 @@ function hostedWindowFixture() {
   return { project, room, wall, left, right };
 }
 
+describe("LabSpace room readiness audit", () => {
+  it("summarizes the same deterministic room state without mutation", () => {
+    const project = createSeedProject();
+    const room = project.rooms.find((entry) => entry.roomKind === "demo")!;
+    const before = structuredClone(project);
+
+    const result = auditRoom({ roomCode: room.code }, () => project);
+
+    expect(result.room).toMatchObject({ id: room.id, code: room.code, name: room.name });
+    expect(result.summary).toMatchObject({
+      walls: expect.any(Number),
+      openings: expect.any(Number),
+      placedAssets: expect.any(Number),
+      inventory: room.scene.inventoryItems.length,
+      equipment: room.scene.equipmentRecords.length,
+    });
+    expect(result.summary.floorAreaM2).toBeGreaterThan(0);
+    expect(result.checks).toEqual({
+      closedFloorShell: expect.any(Boolean),
+      hostedOpenings: expect.any(Boolean),
+      supportedBenchEquipment: expect.any(Boolean),
+      objectsInsideBoundary: expect.any(Boolean),
+      uniqueIndexCodes: expect.any(Boolean),
+    });
+    expect(result.basis).toContainEqual(expect.stringContaining("not regulatory certification"));
+    expect(project).toEqual(before);
+  });
+
+  it("rejects hidden template rooms and unexpected input", () => {
+    const project = createSeedProject();
+    const template = project.rooms.find((entry) => entry.roomKind === "demo-template")!;
+    expect(() => auditRoom({ roomCode: template.code }, () => project)).toThrow(
+      "Editable room not found",
+    );
+    expect(() => auditRoom({ unexpected: true }, () => project)).toThrow("Unexpected input field");
+  });
+});
+
 describe("LabSpace hypothetical resize validation", () => {
   it("allows two hosted windows to meet exactly at the centre of their wall", () => {
     const { project, left, right } = hostedWindowFixture();
@@ -140,10 +179,8 @@ describe("LabSpace hypothetical resize validation", () => {
   it("rejects wall overflow, sibling overlap, excessive height, and hosted-opening depth changes", () => {
     const { project, left } = hostedWindowFixture();
     expect(
-      validateObjectResize(
-        { objectId: left.id, dimensions: { widthMm: 4200 } },
-        () => project,
-      ).conflicts,
+      validateObjectResize({ objectId: left.id, dimensions: { widthMm: 4200 } }, () => project)
+        .conflicts,
     ).toContainEqual(expect.objectContaining({ type: "opening-outside-wall" }));
     const overlappingProject = structuredClone(project);
     const overlappingRoom = overlappingProject.rooms.find((entry) => entry.id === left.roomId)!;
@@ -157,16 +194,12 @@ describe("LabSpace hypothetical resize validation", () => {
       ).conflicts,
     ).toContainEqual(expect.objectContaining({ type: "opening-overlap" }));
     expect(
-      validateObjectResize(
-        { objectId: left.id, dimensions: { heightMm: 2200 } },
-        () => project,
-      ).conflicts,
+      validateObjectResize({ objectId: left.id, dimensions: { heightMm: 2200 } }, () => project)
+        .conflicts,
     ).toContainEqual(expect.objectContaining({ type: "above-room-height" }));
     expect(
-      validateObjectResize(
-        { objectId: left.id, dimensions: { depthMm: 300 } },
-        () => project,
-      ).conflicts,
+      validateObjectResize({ objectId: left.id, dimensions: { depthMm: 300 } }, () => project)
+        .conflicts,
     ).toContainEqual(expect.objectContaining({ type: "restricted-object" }));
   });
 
@@ -183,10 +216,7 @@ describe("LabSpace hypothetical resize validation", () => {
       validateObjectResize({ objectId: left.id, dimensions: {} }, () => project),
     ).toThrow("At least one resize dimension");
     expect(() =>
-      validateObjectResize(
-        { objectId: left.id, dimensions: { widthMm: 2400 } },
-        () => project,
-      ),
+      validateObjectResize({ objectId: left.id, dimensions: { widthMm: 2400 } }, () => project),
     ).toThrow("must change");
   });
 });

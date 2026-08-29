@@ -1,14 +1,56 @@
 import { useState } from "react";
-import { ClockCounterClockwise, Robot, Trash, X } from "@phosphor-icons/react";
+import { Check, ClockCounterClockwise, Copy, Path, Robot, Trash, X } from "@phosphor-icons/react";
 import { useAgentActivityStore } from "../agent/agent-activity-store";
 import {
   executeReadOnlyToolCompat,
   type ExecutableModelContext,
 } from "../webmcp/execute-tool-compat";
 
-type InspectorTab = "activity" | "tools";
+type InspectorTab = "activity" | "workflows" | "tools";
+
+const WEBMCP_WORKFLOWS = [
+  {
+    id: "build",
+    mode: "Create",
+    title: "Build a complete room",
+    outcome: "Polygon shell · hosted openings · supported equipment",
+    prompt:
+      "Create a six-wall sample-preparation room on Floor 8, about 36 square metres. Add one inward-opening double door, two observation windows, two laboratory benches, storage, and a rotary evaporator on a real worktop. Use LabSpace catalog assets and complete the first validated blueprint.",
+  },
+  {
+    id: "evidence",
+    mode: "Trace",
+    title: "Find exact physical evidence",
+    outcome: "Canonical record · storage path · focused 3D scene",
+    prompt:
+      "Find Reference standards in LabSpace, inspect the exact canonical record, and focus its room and storage location. Explain the laboratory, room, cabinet, shelf or drawer path using only the returned evidence.",
+  },
+  {
+    id: "audit",
+    mode: "Audit",
+    title: "Audit and improve a room",
+    outcome: "Deterministic issues · ranked alternative · review preview",
+    prompt:
+      "Audit the active LabSpace room. Summarize its deterministic readiness, identify the highest-priority geometry issue, and—if it involves a movable object—find valid alternatives and stage the best grounded correction for my review. Do not approve it for me.",
+  },
+  {
+    id: "resize",
+    mode: "Review",
+    title: "Resize a hosted opening",
+    outcome: "Wall-fit validation · accurate preview · human approval",
+    prompt:
+      "Inspect the current room's observation windows. Calculate equal widths that fit their shared wall without overlap, validate the new dimensions, then stage the resize previews for my review. Do not approve any change.",
+  },
+] as const;
 
 const WEBMCP_TOOL_CATALOG = [
+  {
+    name: "labspace_audit_room",
+    label: "Audit room readiness",
+    mode: "Read",
+    description:
+      "Summarizes deterministic floor, boundary, support, opening, overlap, height, and identity checks.",
+  },
   {
     name: "labspace_create_room",
     label: "Create a blank room",
@@ -139,6 +181,7 @@ export function AgentActivityPanel() {
   const [tab, setTab] = useState<InspectorTab>("activity");
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [copiedWorkflow, setCopiedWorkflow] = useState<string | null>(null);
   const registeredCount = registeredTools.length;
 
   const runReadOnlyCheck = async () => {
@@ -161,6 +204,21 @@ export function AgentActivityPanel() {
       );
     } finally {
       setCheckingConnection(false);
+    }
+  };
+
+  const copyWorkflow = async (id: string, prompt: string) => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopiedWorkflow(id);
+      window.setTimeout(
+        () => setCopiedWorkflow((current) => (current === id ? null : current)),
+        1800,
+      );
+    } catch {
+      setConnectionError(
+        "The browser could not copy this prompt. Select the text and copy it manually.",
+      );
     }
   };
 
@@ -237,6 +295,9 @@ export function AgentActivityPanel() {
         <button role="tab" aria-selected={tab === "activity"} onClick={() => setTab("activity")}>
           Live activity <b>{events.length}</b>
         </button>
+        <button role="tab" aria-selected={tab === "workflows"} onClick={() => setTab("workflows")}>
+          Agent workflows <b>{WEBMCP_WORKFLOWS.length}</b>
+        </button>
         <button role="tab" aria-selected={tab === "tools"} onClick={() => setTab("tools")}>
           Registered tools <b>{registeredCount}</b>
         </button>
@@ -286,6 +347,50 @@ export function AgentActivityPanel() {
             ))
           )}
         </div>
+      ) : tab === "workflows" ? (
+        <div className="webmcp-workflows" role="tabpanel">
+          <header>
+            <span className="webmcp-workflow-mark" aria-hidden="true">
+              <Path size={22} weight="duotone" />
+            </span>
+            <span>
+              <b>Judge-ready human + agent journeys</b>
+              <small>
+                Copy one prompt into the browser-agent conversation controlling this page. LabSpace
+                shows every structured call here.
+              </small>
+            </span>
+          </header>
+          {WEBMCP_WORKFLOWS.map((workflow, index) => (
+            <article key={workflow.id}>
+              <span className="webmcp-workflow-number">0{index + 1}</span>
+              <div>
+                <span className="webmcp-workflow-mode">{workflow.mode}</span>
+                <strong>{workflow.title}</strong>
+                <small>{workflow.outcome}</small>
+                <p>{workflow.prompt}</p>
+              </div>
+              <button
+                onClick={() => void copyWorkflow(workflow.id, workflow.prompt)}
+                aria-label={`Copy ${workflow.title} prompt`}
+              >
+                {copiedWorkflow === workflow.id ? (
+                  <Check size={16} weight="bold" />
+                ) : (
+                  <Copy size={16} />
+                )}
+                {copiedWorkflow === workflow.id ? "Copied" : "Copy prompt"}
+              </button>
+            </article>
+          ))}
+          <footer>
+            <b>Human control remains visible</b>
+            <span>
+              Only a pristine room's first complete blueprint can auto-commit. Later layouts,
+              movement, resizing, and inventory remain previews until a researcher approves them.
+            </span>
+          </footer>
+        </div>
       ) : (
         <div className="webmcp-tools-list" role="tabpanel">
           {WEBMCP_TOOL_CATALOG.map((tool) => {
@@ -308,8 +413,8 @@ export function AgentActivityPanel() {
             <b>Safety boundary</b>
             <span>
               A new WebMCP-created room may auto-commit its first complete validated blueprint.
-              Existing-room changes, later placements, moves, resizes, and inventory still require the
-              researcher to approve or cancel them.
+              Existing-room changes, later placements, moves, resizes, and inventory still require
+              the researcher to approve or cancel them.
             </span>
           </footer>
         </div>

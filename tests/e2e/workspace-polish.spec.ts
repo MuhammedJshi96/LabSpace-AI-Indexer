@@ -29,7 +29,7 @@ test("keeps room switching and facility management discoverable", async ({ page 
   await expect(page.locator(".facility-stack-summary b")).toContainText(/occupied floor/);
   await expect(page.locator(".facility-floor-setter select option")).toHaveCount(15);
   await page.getByRole("button", { name: "Organize floors from room numbers" }).click();
-  await expect(page.getByText(/rooms organized across floors/)).toBeVisible();
+  await expect(page.getByRole("status")).toContainText(/rooms organized across floors/);
 });
 
 test("exposes blueprint conversion and selectable measurement evidence", async ({ page }) => {

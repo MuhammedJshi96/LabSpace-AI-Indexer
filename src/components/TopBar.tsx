@@ -52,7 +52,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
           aria-label="Open project workspace"
         >
           <img src="/labspace-mark.svg" alt="" />
-          <span className="brand-name-full">LabSpace AI Indexer</span>
+          <span className="brand-name-full">LabSpace AI Agent Twin</span>
           <span className="brand-name-compact">LabSpace AI</span>
         </button>
         <span className="top-divider" />

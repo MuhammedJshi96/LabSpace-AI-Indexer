@@ -1,7 +1,7 @@
 {
-  "name": "labspace-indexer",
+  "name": "labspace-ai-agent-twin",
   "version": "0.1.0",
-  "description": "A local-first laboratory layout editor with synchronized 2D/3D indexing.",
+  "description": "A browser-agent-ready laboratory spatial twin for design, indexing, audit, and exact-location workflows.",
   "private": true,
   "type": "module",
   "engines": {

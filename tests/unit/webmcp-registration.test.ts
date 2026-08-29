@@ -66,6 +66,7 @@ function fakeNavigationActions(): LabSpaceNavigationActions {
 
 function fakeSpatialActions(): LabSpaceSpatialActions {
   return {
+    auditRoom: vi.fn((input) => ({ source: "audit", input }) as never),
     validateObjectMove: vi.fn((input) => ({ source: "validate", input }) as never),
     validateObjectResize: vi.fn((input) => ({ source: "validate-resize", input }) as never),
     recommendObjectPlacements: vi.fn((input) => ({ source: "recommend", input }) as never),
@@ -154,7 +155,7 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(16);
+    expect(tools).toHaveLength(17);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
@@ -227,6 +228,7 @@ describe("LabSpace WebMCP registration", () => {
     await registration.ready;
     const signal = new AbortController().signal;
     const context = modelContext.activeTools.get("labspace_get_context")!;
+    const audit = modelContext.activeTools.get("labspace_audit_room")!;
     const focus = modelContext.activeTools.get("labspace_focus_record")!;
     const search = modelContext.activeTools.get("labspace_search_records")!;
     const inspect = modelContext.activeTools.get("labspace_inspect_record")!;
@@ -240,6 +242,7 @@ describe("LabSpace WebMCP registration", () => {
     const stageRoom = modelContext.activeTools.get("labspace_stage_room_plan")!;
 
     expect(await context.execute({}, { signal })).toEqual({ source: "context" });
+    expect(await audit.execute({}, { signal })).toEqual({ source: "audit", input: {} });
     expect(
       await createLabSpaceToolDefinitions(
         actions,
@@ -473,15 +476,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(16);
+    expect(modelContext.activeTools.size).toBe(17);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(16);
-    expect([...modelContext.activeTools]).toHaveLength(16);
+    expect(modelContext.activeTools.size).toBe(17);
+    expect([...modelContext.activeTools]).toHaveLength(17);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

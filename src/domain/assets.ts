@@ -288,6 +288,21 @@ function asset(
   });
 }
 
+function catalogCompletionModel(
+  id: string,
+  dimensions: [number, number, number],
+): NonNullable<AssetDefinition["model3d"]> {
+  return {
+    previewSrc: `/models/hero/${id}.glb`,
+    authoredDimensions: {
+      width: dimensions[0],
+      depth: dimensions[1],
+      height: dimensions[2],
+    },
+    revision: "catalog-completion-batch12-r2",
+  };
+}
+
 export const ASSET_CATALOG: AssetDefinition[] = [
   asset("straight-wall", "Straight wall", "Architecture", [2400, 150, 3000], {
     objectType: "wall",
@@ -306,6 +321,9 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   asset("structural-column", "Structural column", "Architecture", [450, 450, 3000], {
     profile: "column",
     indexingBehavior: "none",
+    description:
+      "Powder-coated laboratory structural column with chamfered enclosure, satin base and top plates, anchor hardware, access seams, and all-sided construction detail. This original planning model is editable and not structural-engineering certified.",
+    model3d: catalogCompletionModel("structural-column", [450, 450, 3000]),
   }),
   asset("single-door", "Solid laboratory door", "Architecture", [900, 120, 2100], {
     objectType: "door",
@@ -591,6 +609,9 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "corner",
     material: "dark",
     storageTemplate: standardBenchStorage(),
+    description:
+      "Manufactured L-shaped laboratory casework with a continuous black phenolic corner worktop, light powder-coated cabinet runs, drawers, paired doors, recessed plinths, consistent reveals, and satin-aluminum pulls.",
+    model3d: catalogCompletionModel("corner-lab-bench", [1500, 1500, 900]),
   }),
   asset("center-island-bench", "Center island bench", "Furniture", [3000, 1200, 900], {
     shortName: "Island bench",
@@ -612,15 +633,24 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       ...drawerBank("mobile-drawers", "Mobile bench", 3, -0.24, -0.46, 0.32),
       cabinetBay("mobile-cabinet", "Mobile bench cabinet", 0.24, -0.46, 0.34),
     ],
+    description:
+      "Mobile laboratory bench with black phenolic worktop, powder-coated drawer and cabinet casework, full manufactured face detail, push rail, four swivel casters, and rear construction.",
+    model3d: catalogCompletionModel("mobile-bench", [1200, 700, 900]),
   }),
   asset("office-desk", "Office desk", "Furniture", [1400, 700, 740], {
     profile: "table",
     material: "white",
+    description:
+      "Professional light-laminate office desk with anodized square-tube frame, modesty panel, cable grommet, pencil drawer, levelling feet, and fully modeled rear construction.",
+    model3d: catalogCompletionModel("office-desk", [1400, 700, 740]),
   }),
   asset("rectangular-table", "Rectangular table", "Furniture", [1600, 800, 740], {
     shortName: "Table",
     profile: "table",
     material: "white",
+    description:
+      "Clean laboratory meeting and preparation table with a light sealed work surface, satin-aluminum underframe, square-tube legs, modesty rail, cable grommet, and adjustable feet.",
+    model3d: catalogCompletionModel("rectangular-table", [1600, 800, 740]),
   }),
   asset("round-stool", "Round stool", "Furniture", [440, 440, 520], {
     shortName: "Stool",
@@ -720,6 +750,9 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   asset("wall-cabinet", "Wall cabinet", "Storage", [900, 350, 700], {
     connection: "wall",
     profile: "cabinet",
+    description:
+      "Wall-mounted powder-coated laboratory cabinet with framed glazed doors, real low-iron glass thickness, adjustable stainless shelves, slim pulls, rear cleats, and visible mounting hardware.",
+    model3d: catalogCompletionModel("wall-cabinet", [900, 350, 700]),
   }),
   asset("glass-wall-cabinet", "Glass-front wall cabinet", "Storage", [1200, 400, 720], {
     shortName: "Glass cabinet",
@@ -789,15 +822,24 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     shortName: "Chemical cabinet",
     profile: "tall",
     material: "blue",
+    description:
+      "Double-wall chemical storage cabinet with restrained light enclosure, two sealed doors, ventilation collars, louvered panels, spill-control plinth, vertical pulls, and a dedicated hazard-information field.",
+    model3d: catalogCompletionModel("chemical-cabinet", [900, 600, 1900]),
   }),
   asset("flammable-cabinet", "Flammable-material cabinet", "Storage", [900, 600, 1200], {
     shortName: "Flammable cabinet",
     profile: "cabinet",
     material: "yellow",
+    description:
+      "Safety-yellow flammable-material cabinet with a double-wall shell, twin self-closing-style doors, ventilation collars, louvered panels, recessed plinth, vertical pulls, and high-contrast label field.",
+    model3d: catalogCompletionModel("flammable-cabinet", [900, 600, 1200]),
   }),
   asset("mobile-drawer", "Mobile drawer unit", "Storage", [500, 550, 650], {
     profile: "cabinet",
     material: "steel",
+    description:
+      "Compact mobile laboratory drawer pedestal with four proportional drawer fronts, integrated satin pulls, stainless top, powder-coated carcass, and four modeled swivel casters.",
+    model3d: catalogCompletionModel("mobile-drawer", [500, 550, 650]),
   }),
   asset("open-shelving", "Open shelving unit", "Storage", [1400, 500, 2100], {
     shortName: "Shelf unit",
@@ -815,12 +857,24 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   asset("heavy-duty-rack", "Heavy-duty rack", "Storage", [1800, 600, 2200], {
     profile: "rack",
     material: "steel",
+    description:
+      "Heavy-duty open laboratory rack with perforated uprights, five stainless shelves, front load beams, rear anti-rack cross braces, anchor plates, and accessible all-sided frame construction.",
+    model3d: catalogCompletionModel("heavy-duty-rack", [1800, 600, 2200]),
   }),
-  asset("locker", "Locker", "Storage", [900, 500, 1900], { profile: "locker", material: "steel" }),
+  asset("locker", "Locker", "Storage", [900, 500, 1900], {
+    profile: "locker",
+    material: "steel",
+    description:
+      "Three-bay laboratory personnel locker with powder-coated carcass, individual ventilated doors, recessed locks, lower ventilation, consistent reveals, and a hygienic recessed plinth.",
+    model3d: catalogCompletionModel("locker", [900, 500, 1900]),
+  }),
   asset("pegboard", "Pegboard", "Storage", [1200, 80, 900], {
     connection: "wall",
     profile: "rack",
     material: "dark",
+    description:
+      "Wall-mounted aluminum-framed pegboard with a perforated powder-coated panel, stainless tool hooks, lower containment tray, and credible wall-depth construction.",
+    model3d: catalogCompletionModel("pegboard", [1200, 80, 900]),
   }),
   asset("laboratory-drying-rack", "Laboratory glassware drying rack", "Storage", [750, 320, 1200], {
     shortName: "Drying rack",
@@ -840,12 +894,18 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     shortName: "Cold storage",
     profile: "tall",
     material: "white",
+    description:
+      "Upright laboratory refrigerator-style storage with insulated enamel chassis, sealed door and gasket, vertical handle, digital control fascia, lower compressor ventilation, rear condenser, and levelling feet.",
+    model3d: catalogCompletionModel("refrigerator-storage", [750, 780, 1950]),
   }),
   asset("freezer-storage", "Freezer-style storage unit", "Storage", [750, 780, 1950], {
     shortName: "Frozen storage",
     profile: "tall",
     material: "white",
     accent: "#3d7590",
+    description:
+      "Upright laboratory freezer-style storage with insulated enamel chassis, sealed door and gasket, temperature-class marker, digital control fascia, compressor ventilation, rear condenser, and levelling feet.",
+    model3d: catalogCompletionModel("freezer-storage", [750, 780, 1950]),
   }),
   asset("slotted-angle-storage-rack", "Slotted-angle storage rack", "Storage", [1200, 500, 2100], {
     shortName: "Angle rack",
@@ -866,7 +926,8 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     material: "yellow",
     accent: "#67a34c",
     description:
-      "Room 809 photo-derived vertical organizer holding stacked ventilated plastic baskets in contrasting green and orange; dimensions are editable and not manufacturer-certified.",
+      "Mobile laboratory organizer with six removable washable baskets, formed side and front lips, label pulls, a satin-aluminum tower frame, sealed top, and four swivel casters.",
+    model3d: catalogCompletionModel("plastic-basket-tower", [450, 450, 1750]),
   }),
 
   asset("fume-hood", "Fume hood", "Laboratory equipment", [1500, 850, 2400], {
@@ -1401,11 +1462,17 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "workstation",
     material: "dark",
     accent: "#3f7b99",
+    description:
+      "Complete laboratory computer station with professional desk casework, cable management, monitor and stand, low-glare display, modeled keyboard, workstation tower, ventilation, and rear service detail.",
+    model3d: catalogCompletionModel("computer-workstation", [1400, 700, 1350]),
   }),
   asset("printer", "Printer", "Laboratory equipment", [500, 500, 350], {
     profile: "box",
     material: "white",
     accent: "#53666d",
+    description:
+      "Compact multifunction laboratory printer with sealed light enclosure, scanner body and lid, output bay and tray, angled control display, paper path, ventilation, and rear service construction.",
+    model3d: catalogCompletionModel("printer", [500, 500, 350]),
   }),
 
   asset("eyewash", "Emergency eyewash", "Safety", [450, 400, 1050], {
@@ -1425,6 +1492,9 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "safety",
     material: "yellow",
     accent: "#35a375",
+    description:
+      "Freestanding emergency shower and eyewash station with stainless riser and overhead arm, formed spray head, pull rod and ring, twin eyewash nozzles, bowl and drain, floor flange, and high-visibility identification panel.",
+    model3d: catalogCompletionModel("safety-shower", [900, 900, 2400]),
   }),
   asset("fire-extinguisher", "Fire extinguisher", "Safety", [220, 220, 650], {
     profile: "cylinder",
@@ -1437,12 +1507,21 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       revision: "support-batch9-r1",
     },
   }),
-  asset("waste-bin", "Waste bin", "Safety", [450, 450, 700], { profile: "box", material: "dark" }),
+  asset("waste-bin", "Waste bin", "Safety", [450, 450, 700], {
+    profile: "box",
+    material: "steel",
+    description:
+      "Tapered stainless general laboratory waste bin with formed upper rim, sealed lid, rear hinge, foot pedal, durable label field, and grounded all-sided construction.",
+    model3d: catalogCompletionModel("waste-bin", [450, 450, 700]),
+  }),
   asset("biological-waste-bin", "Biological waste bin", "Safety", [450, 450, 700], {
     shortName: "Bio waste",
     profile: "box",
     material: "yellow",
     accent: "#d8b22f",
+    description:
+      "Tapered biological-waste container with safety-red enclosure, sealed dark lid, rear hinge, foot pedal, high-contrast label plate, and a simple original hazard marker.",
+    model3d: catalogCompletionModel("biological-waste-bin", [450, 450, 700]),
   }),
 ];
 

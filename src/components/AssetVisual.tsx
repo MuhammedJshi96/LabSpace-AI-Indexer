@@ -22,9 +22,11 @@ const enhancedMaterials = new WeakSet<THREE.Material>();
 function enhanceAuthoredMaterial(material: THREE.Material) {
   if (enhancedMaterials.has(material) || !(material instanceof THREE.MeshStandardMaterial)) return;
   const name = material.name.toLowerCase();
-  const isPrimaryDarkWorktop = name.includes("phenolic worktop") || name.includes("phenolic exposed edge");
+  const isPrimaryDarkWorktop =
+    name.includes("phenolic worktop") || name.includes("phenolic exposed edge");
   const isPrimaryGraphitePanel = name.includes("graphite powder coat");
   const isPrimaryDarkPolymer = name.includes("black engineering polymer");
+  const isStudioReadableSatin = name.includes("studio-readable satin stainless steel");
   const isLightCaseworkPowder =
     name.includes("light gray powder coat") || name.includes("powder coat highlight");
   const isSatinMetal =
@@ -53,8 +55,7 @@ function enhanceAuthoredMaterial(material: THREE.Material) {
     if (texture) {
       material.map = texture;
       material.bumpMap = texture;
-      material.bumpScale =
-        materialKind === "powder" ? 0.00018 : 0.00008;
+      material.bumpScale = materialKind === "powder" ? 0.00018 : 0.00008;
       if (isPrimaryDarkWorktop) {
         // A phenolic material exists only on an authored work surface that is
         // intentionally black. Preserve that finish for benches, sink bases,
@@ -89,7 +90,14 @@ function enhanceAuthoredMaterial(material: THREE.Material) {
   // Strengthen their studio response at runtime so the same GLB reads as metal,
   // glass and liquid in the room rather than as uniformly shaded CAD plastic.
   material.envMapIntensity = isSatinMetal ? 1.55 : 1.18;
-  if (isSatinMetal) {
+  if (isStudioReadableSatin) {
+    // Open-frame furniture and emergency fixtures need to stay legible against
+    // both the pale CAD studio and the darker laboratory room. Preserve a
+    // satin-metal response without turning thin structural members black.
+    material.color.set("#d8e0de");
+    material.metalness = 0.14;
+    material.roughness = 0.36;
+  } else if (isSatinMetal) {
     material.metalness = Math.max(material.metalness, 0.82);
     material.roughness = Math.min(material.roughness, 0.25);
   }

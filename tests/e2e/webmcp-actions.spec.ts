@@ -1,7 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import type { RoomAuditResult } from "../../src/agent/labspace-action-types";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
 
 const WEBMCP_TOOL_NAMES = [
+  "labspace_audit_room",
   "labspace_create_room",
   "labspace_find_valid_placements",
   "labspace_focus_record",
@@ -162,7 +164,7 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly sixteen tools on product routes and excludes internal asset routes", async ({
+test("registers exactly seventeen tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin", "/inventory"]) {
@@ -177,6 +179,21 @@ test("registers exactly sixteen tools on product routes and excludes internal as
 
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+});
+
+test("audits canonical room readiness without changing the project", async ({ page }) => {
+  await page.goto("/");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  const before = await readProject(page);
+
+  const audit = await executeTool<RoomAuditResult>(page, "labspace_audit_room", {});
+
+  expect(audit.room.id).toBe(before.activeRoomId);
+  expect(["ready", "attention", "blocked"]).toContain(audit.status);
+  expect(audit.summary.walls).toBeGreaterThanOrEqual(0);
+  expect(audit.issues.length).toBeLessThanOrEqual(12);
+  expect(audit.basis.join(" ")).toContain("deterministic");
+  expect(await readProject(page)).toEqual(before);
 });
 
 test("keeps WebMCP evidence visible in the compact judge header", async ({ page }) => {

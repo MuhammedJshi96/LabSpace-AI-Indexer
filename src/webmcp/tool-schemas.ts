@@ -482,3 +482,17 @@ export const stageInventoryPlanSchema = {
   required: ["planId"],
   additionalProperties: false,
 } as const;
+
+export const auditRoomSchema = {
+  type: "object",
+  properties: {
+    roomCode: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      description:
+        "Optional exact editable room code. Defaults to the active room; hidden factory templates are excluded.",
+    },
+  },
+  additionalProperties: false,
+} as const;

@@ -202,7 +202,51 @@ export type RecommendObjectPlacementsResult = {
   basis: string[];
 };
 
+export type AuditRoomInput = {
+  roomCode?: string;
+};
+
+export type RoomAuditIssue = {
+  severity: "info" | "warning" | "error";
+  title: string;
+  message: string;
+  objectIds: string[];
+  indexCodes: string[];
+};
+
+export type RoomAuditResult = {
+  room: {
+    id: string;
+    name: string;
+    code: string;
+    laboratoryCode: string;
+    floor: number;
+  };
+  status: "ready" | "attention" | "blocked";
+  summary: {
+    floorAreaM2: number;
+    walls: number;
+    openings: number;
+    placedAssets: number;
+    inventory: number;
+    equipment: number;
+    errors: number;
+    warnings: number;
+    information: number;
+  };
+  checks: {
+    closedFloorShell: boolean;
+    hostedOpenings: boolean;
+    supportedBenchEquipment: boolean;
+    objectsInsideBoundary: boolean;
+    uniqueIndexCodes: boolean;
+  };
+  issues: RoomAuditIssue[];
+  basis: string[];
+};
+
 export type LabSpaceSpatialActions = {
+  auditRoom: (input: unknown) => RoomAuditResult;
   validateObjectMove: (input: unknown) => ValidateObjectMoveResult;
   validateObjectResize: (input: unknown) => ValidateObjectResizeResult;
   recommendObjectPlacements: (input: unknown) => RecommendObjectPlacementsResult;

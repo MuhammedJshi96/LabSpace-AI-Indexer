@@ -2,6 +2,7 @@ import {
   findBenchSupport,
   objectBounds,
   requiresBenchSupport,
+  roomArea,
   validatePlacement,
   type ValidationWarning,
 } from "../domain/geometry";
@@ -10,7 +11,9 @@ import { openingOverlapsSibling } from "../domain/wall-openings";
 import type { Project, Room, SceneObject } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
 import type {
+  AuditRoomInput,
   LabSpaceSpatialActions,
+  RoomAuditResult,
   PlacementConflict,
   RecommendObjectPlacementsInput,
   RecommendObjectPlacementsResult,
@@ -36,6 +39,108 @@ export type LabSpaceSpatialStateReader = () => Project;
 
 function readCurrentProject() {
   return useEditorStore.getState().project;
+}
+
+function normalizeAuditInput(input: unknown): AuditRoomInput {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new LabSpaceActionError("Tool input must be a JSON object.");
+  }
+  const record = input as Record<string, unknown>;
+  const unexpected = Object.keys(record).find((key) => key !== "roomCode");
+  if (unexpected) throw new LabSpaceActionError(`Unexpected input field: ${unexpected}.`);
+  if (record.roomCode === undefined) return {};
+  if (typeof record.roomCode !== "string") {
+    throw new LabSpaceActionError("Room code must be a string.");
+  }
+  const roomCode = record.roomCode.trim();
+  if (!roomCode) throw new LabSpaceActionError("Room code cannot be empty.");
+  if (roomCode.length > 40)
+    throw new LabSpaceActionError("Room code must be 40 characters or fewer.");
+  return { roomCode };
+}
+
+export function auditRoom(
+  input: unknown,
+  readProject: LabSpaceSpatialStateReader = readCurrentProject,
+): RoomAuditResult {
+  const normalized = normalizeAuditInput(input);
+  const project = readProject();
+  const room = normalized.roomCode
+    ? project.rooms.find(
+        (entry) =>
+          entry.roomKind !== "demo-template" &&
+          entry.code.localeCompare(normalized.roomCode!, undefined, { sensitivity: "accent" }) ===
+            0,
+      )
+    : project.rooms.find((entry) => entry.id === project.activeRoomId);
+  if (!room || room.roomKind === "demo-template") {
+    throw new LabSpaceActionError("Editable room not found in the current LabSpace project.");
+  }
+  const laboratory = project.laboratories.find((entry) => entry.id === room.laboratoryId);
+  if (!laboratory) throw new LabSpaceActionError("The room laboratory could not be resolved.");
+
+  const warnings = validatePlacement(room);
+  const objectsById = new Map(room.scene.objects.map((object) => [object.id, object]));
+  const count = (severity: "info" | "warning" | "error") =>
+    warnings.filter((warning) => warning.severity === severity).length;
+  const errors = count("error");
+  const warningCount = count("warning");
+  const information = count("info");
+  const openings = room.scene.objects.filter((object) =>
+    ["door", "window"].includes(object.objectType),
+  );
+  const placedAssets = room.scene.objects.filter(
+    (object) =>
+      object.visible &&
+      !["wall", "door", "window", "label", "measurement"].includes(object.objectType),
+  );
+  const hasIssue = (prefix: string) => warnings.some((warning) => warning.id.startsWith(prefix));
+
+  return {
+    room: {
+      id: room.id,
+      name: room.name,
+      code: room.code,
+      laboratoryCode: laboratory.code,
+      floor: room.facilityPlacement?.floor ?? 1,
+    },
+    status: errors > 0 ? "blocked" : warningCount > 0 ? "attention" : "ready",
+    summary: {
+      floorAreaM2: Number(roomArea(room).toFixed(2)),
+      walls: room.scene.objects.filter((object) => object.objectType === "wall").length,
+      openings: openings.length,
+      placedAssets: placedAssets.length,
+      inventory: room.scene.inventoryItems.length,
+      equipment: room.scene.equipmentRecords.length,
+      errors,
+      warnings: warningCount,
+      information,
+    },
+    checks: {
+      closedFloorShell: getClosedWallFloorPolygon(room.scene.objects) !== null,
+      hostedOpenings: openings.every((object) => Boolean(object.opening)),
+      supportedBenchEquipment:
+        !hasIssue("unsupported-") && !hasIssue("below-floor-") && !hasIssue("above-ceiling-"),
+      objectsInsideBoundary: !hasIssue("outside-"),
+      uniqueIndexCodes: !hasIssue("duplicate-code-"),
+    },
+    issues: warnings.slice(0, 12).map((warning) => ({
+      severity: warning.severity,
+      title: warning.title,
+      message: warning.message,
+      objectIds: warning.objectIds,
+      indexCodes: warning.objectIds
+        .map((id) => objectsById.get(id)?.indexCode)
+        .filter((code): code is string => Boolean(code)),
+    })),
+    basis: [
+      "Uses the same deterministic boundary, overlap, support, hosted-opening, height, and identifier checks as the visible Layout Editor.",
+      "This is a planning-readiness audit, not regulatory certification or a substitute for laboratory safety review.",
+      warnings.length > 12
+        ? `${warnings.length - 12} additional issues remain available in the Layout Editor validation panel.`
+        : "All current deterministic issues are included in this compact result.",
+    ],
+  };
 }
 
 function requireFiniteNumber(value: unknown, label: string, minimum: number, maximum: number) {
@@ -100,7 +205,11 @@ function normalizeResizeInput(input: unknown): ValidateObjectResizeInput {
   if (objectId.length > MAX_OBJECT_ID_LENGTH) {
     throw new LabSpaceActionError(`Object ID must be ${MAX_OBJECT_ID_LENGTH} characters or fewer.`);
   }
-  if (!record.dimensions || typeof record.dimensions !== "object" || Array.isArray(record.dimensions)) {
+  if (
+    !record.dimensions ||
+    typeof record.dimensions !== "object" ||
+    Array.isArray(record.dimensions)
+  ) {
     throw new LabSpaceActionError("Resize dimensions must be a JSON object.");
   }
   const dimensions = record.dimensions as Record<string, unknown>;
@@ -678,7 +787,8 @@ export function validateObjectResize(
           objectId: object.id,
           indexCode: object.indexCode,
           name: object.name,
-          message: "Hosted opening depth follows wall construction and cannot be resized by an agent.",
+          message:
+            "Hosted opening depth follows wall construction and cannot be resized by an agent.",
         },
       ],
     };
@@ -727,6 +837,7 @@ export function createLabSpaceSpatialActions(
   readProject: LabSpaceSpatialStateReader,
 ): LabSpaceSpatialActions {
   return {
+    auditRoom: (input) => auditRoom(input, readProject),
     validateObjectMove: (input) => validateObjectMove(input, readProject),
     validateObjectResize: (input) => validateObjectResize(input, readProject),
     recommendObjectPlacements: (input) => recommendObjectPlacements(input, readProject),

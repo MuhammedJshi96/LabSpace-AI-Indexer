@@ -28,7 +28,7 @@ describe("asset library thumbnails", () => {
 
   it("keeps authored GLB assets on their material-aware isometric renders", () => {
     const authoredAssets = ASSET_CATALOG.filter((asset) => asset.model3d);
-    expect(authoredAssets).toHaveLength(74);
+    expect(authoredAssets).toHaveLength(94);
     for (const asset of authoredAssets) {
       const source = authoredAssetRenderSource(asset, "isometric");
       expect(source).toMatch(/models\/hero\/renders\/.*-isometric\.png/);
@@ -144,9 +144,12 @@ describe("asset library thumbnails", () => {
     }
   });
 
-  it("resolves every non-authored asset to same-geometry static isometric and top renders", () => {
+  it("keeps only hidden wall-drawing primitives on same-geometry procedural renders", () => {
     const proceduralAssets = ASSET_CATALOG.filter((asset) => !asset.model3d);
-    expect(proceduralAssets).toHaveLength(22);
+    expect(proceduralAssets.map((asset) => asset.id)).toEqual([
+      "straight-wall",
+      "half-height-wall",
+    ]);
     for (const asset of proceduralAssets) {
       for (const view of ["isometric", "top"] as const) {
         const source = assetRenderSource(asset, view);

@@ -1,4 +1,4 @@
-# LabSpace Agent Twin architecture
+# LabSpace AI Agent Twin architecture
 
 LabSpace exposes a semantic laboratory digital twin through the browser-native WebMCP Imperative API. WebMCP is an adapter over the same canonical actions used by the interface; it does not contain a second copy of search, camera, validation, history, or persistence logic.
 
@@ -6,7 +6,7 @@ LabSpace exposes a semantic laboratory digital twin through the browser-native W
 Browser agent
     |
     v
-document.modelContext (sixteen bounded WebMCP tools)
+document.modelContext (seventeen bounded WebMCP tools)
     |
     v
 LabSpace schema/error adapter
@@ -63,7 +63,7 @@ There is deliberately no agent-accessible approve, delete, reset, import, or unr
 
 ## Registration lifecycle
 
-The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Each mount registers exactly sixteen tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools.
+The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Each mount registers exactly seventeen tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools.
 
 ## Grounding and safety
 

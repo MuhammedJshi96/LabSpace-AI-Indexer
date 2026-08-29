@@ -20,6 +20,7 @@ import type {
   LabSpaceWorkspaceActions,
 } from "../agent/labspace-action-types";
 import {
+  auditRoomSchema,
   createRoomSchema,
   emptyObjectSchema,
   focusRecordSchema,
@@ -40,6 +41,7 @@ import {
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
 export const LABSPACE_WEBMCP_TOOL_NAMES = [
+  "labspace_audit_room",
   "labspace_create_room",
   "labspace_find_valid_placements",
   "labspace_focus_record",
@@ -71,29 +73,33 @@ function completeControlledExecution(
   const status: AgentActivityStatus =
     toolName === "labspace_create_room" || resultRecord.autoCommitted === true
       ? "committed"
-      : toolName === "labspace_stage_object_move" ||
-          toolName === "labspace_stage_resize" ||
-          toolName === "labspace_stage_room_plan" ||
-          toolName === "labspace_stage_inventory_plan"
-        ? "pending"
-        : toolName === "labspace_find_valid_placements"
-          ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
-            ? "found"
-            : "blocked"
-          : toolName === "labspace_plan_room"
-            ? Number(resultRecord.plannedObjects) > 0
+      : toolName === "labspace_audit_room"
+        ? resultRecord.status === "blocked"
+          ? "blocked"
+          : "valid"
+        : toolName === "labspace_stage_object_move" ||
+            toolName === "labspace_stage_resize" ||
+            toolName === "labspace_stage_room_plan" ||
+            toolName === "labspace_stage_inventory_plan"
+          ? "pending"
+          : toolName === "labspace_find_valid_placements"
+            ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
               ? "found"
               : "blocked"
-            : toolName === "labspace_validate_object_move" ||
-                toolName === "labspace_validate_resize"
-              ? resultRecord.valid === false
-                ? "blocked"
-                : "valid"
-              : toolName === "labspace_focus_record"
-                ? "focused"
-                : toolName === "labspace_search_records"
-                  ? "found"
-                  : "read";
+            : toolName === "labspace_plan_room"
+              ? Number(resultRecord.plannedObjects) > 0
+                ? "found"
+                : "blocked"
+              : toolName === "labspace_validate_object_move" ||
+                  toolName === "labspace_validate_resize"
+                ? resultRecord.valid === false
+                  ? "blocked"
+                  : "valid"
+                : toolName === "labspace_focus_record"
+                  ? "focused"
+                  : toolName === "labspace_search_records"
+                    ? "found"
+                    : "read";
   const subject =
     typeof resultRecord.objectName === "string"
       ? resultRecord.objectName
@@ -153,6 +159,22 @@ export function createLabSpaceToolDefinitions(
   workspaceActions: LabSpaceWorkspaceActions = labSpaceWorkspaceActions,
 ): WebMCP.ModelContextTool[] {
   return [
+    {
+      name: "labspace_audit_room",
+      title: "Audit LabSpace room readiness",
+      description:
+        "Summarize the active or selected editable room using LabSpace's deterministic floor, boundary, overlap, support, opening, height, and identity checks without changing project state.",
+      inputSchema: auditRoomSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_audit_room",
+          "Room readiness audit",
+          input,
+          () => spatialActions.auditRoom(input),
+        ),
+    },
     {
       name: "labspace_create_room",
       title: "Create a blank LabSpace room",

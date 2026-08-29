@@ -24,6 +24,7 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 ## What was added during the WebMCP Challenge
 
 - Browser-native registration through `document.modelContext` on the editor, Digital Twin, and Inventory routes.
+- A compact read-only room-readiness audit that reuses the canonical floor, boundary, overlap, support, opening, height, and identity checks instead of inventing agent-only rules.
 - Bounded blank-room creation with laboratory selection, persisted room identity, and Floor 1–15 assignment/inference.
 - Three canonical read tools for context, search, and inspection.
 - Shared focus action used by both the visible UI and `labspace_focus_record`.
@@ -37,16 +38,17 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - A one-use, fail-closed capability that auto-commits only the first complete blueprint of a newly WebMCP-created pristine room as one undoable update.
 - Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP inspector that lists the sixteen browser registrations, their Read/View/Simulate/Create/Review modes, and a ready-to-use room-planning prompt.
+- A visible in-product WebMCP mission-control inspector that lists the seventeen browser registrations, their Read/View/Simulate/Create/Review modes, four copy-ready compositional workflows, and bounded live evidence.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
-- Twenty-one expected-call eval cases plus deterministic contract tests.
+- Twenty-four expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration, compact-header evidence, automatic first-room construction, and the complete human-reviewed later-change workflow.
 - Isolated four-hour public judge workspaces so simultaneous reviewers cannot overwrite one another.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
+- A complete visible Asset Library conversion: 94 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.
 
 ## Challenge commits
 
@@ -84,10 +86,10 @@ The challenge did not replace or relabel pre-existing product features as new ag
 ## Verification evidence
 
 - `npm run release:check`: lint, TypeScript, 96-asset validation, unit/integration tests, and production build.
-- `tests/e2e/webmcp-actions.spec.ts`: seven independent browser workflow tests, including visible inspector evidence, first-room auto-commit, later-change review, room-blueprint approval, and reversal.
-- `docs/webmcp/evals/cases.json`: 21 direct, compositional, room-planning, invalid, recommendation, and safety-oriented tool-selection cases.
+- `tests/e2e/webmcp-actions.spec.ts`: eight independent browser workflow tests, including route registration, read-only room audit, visible inspector evidence, first-room auto-commit, later-change review, room-blueprint approval, and reversal.
+- `docs/webmcp/evals/cases.json`: 24 direct, compositional, room-planning, audit, invalid, recommendation, and safety-oriented tool-selection cases.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 
 ## Historical test note
 
-The pre-WebMCP baseline documented a stale historical Spatial Index serial E2E assumption. Final full-suite comparison also showed an existing legacy drag-to fixture failure and a software-WebGL full-sequence timing flake that passes alone. The independent WebMCP E2E suite is green; no production behavior was weakened to rewrite historical expectations.
+The pre-WebMCP baseline documented a stale historical Spatial Index serial E2E assumption. The final 36-test regression sweep reproduced only that known project-state leak: its serial file stopped the following nine cases after the search saw three records instead of the pristine-seed expectation of one. The same sweep exposed one ambiguous test locator after facility organization; that test-only locator was narrowed to its status region and verified independently. All eight WebMCP E2E workflows are green, and no production behavior was weakened to rewrite the historical Spatial Index expectation.

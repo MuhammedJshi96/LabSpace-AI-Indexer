@@ -1,6 +1,7 @@
 {
   "version": 1,
   "toolSet": [
+    "labspace_audit_room",
     "labspace_create_room",
     "labspace_find_valid_placements",
     "labspace_get_context",
@@ -19,6 +20,14 @@
     "labspace_stage_resize"
   ],
   "cases": [
+    {
+      "id": "audit-active-room-readiness",
+      "prompt": "Audit the active room and summarize its current deterministic planning readiness without changing anything.",
+      "expectedTools": ["labspace_audit_room"],
+      "forbiddenTools": ["labspace_stage_object_move", "labspace_stage_room_plan"],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Return compact room identity, geometry counts, readiness checks, and bounded current issues from the same deterministic validator used by the visible editor without mutating project state."
+    },
     {
       "id": "create-initial-student-office",
       "prompt": "Create room 812 named Office for Students in the current laboratory, give it a six-wall 32 square metre shell, four paired desks and chairs, one inward-facing cabinet, one door, and one observation window.",

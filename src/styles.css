@@ -17,6 +17,12 @@
   --teal-soft: #e4f4f1;
   --danger: #c8585f;
   --warning: #c4892f;
+  --lab-enamel: #063c35;
+  --instrument-teal: #00a995;
+  --glass-cyan: #66dad0;
+  --porcelain: #f4f8f7;
+  --stainless: #c7d3d0;
+  --graphite: #172522;
   --shadow: 0 12px 30px rgba(22, 31, 33, 0.14);
   --type-ui: 14px;
   --type-label: 13px;
@@ -326,8 +332,8 @@ body {
   z-index: 3200;
   display: grid;
   grid-template-rows: auto auto auto auto minmax(0, 1fr);
-  width: min(440px, calc(100vw - 32px));
-  max-height: min(680px, calc(100vh - 112px));
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(720px, calc(100vh - 112px));
   color: var(--ink);
   background: rgba(251, 252, 252, 0.98);
   border: 1px solid #c4cfcc;
@@ -508,7 +514,7 @@ body {
 
 .webmcp-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   padding: 0 10px;
   background: #ffffff;
   border-bottom: 1px solid #dce4e2;
@@ -810,6 +816,161 @@ body {
 .webmcp-tools-list footer span {
   font-size: 11px;
   line-height: 1.4;
+}
+
+.webmcp-workflows {
+  min-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: linear-gradient(180deg, rgba(102, 218, 208, 0.08), transparent 150px), #f8faf9;
+}
+
+.webmcp-workflows > header {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid #dce5e2;
+}
+
+.webmcp-workflow-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: #e9fffb;
+  background: var(--lab-enamel);
+  border: 1px solid rgba(102, 218, 208, 0.45);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(6, 60, 53, 0.14);
+}
+
+.webmcp-workflows > header > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.webmcp-workflows > header b {
+  color: var(--graphite);
+  font-size: 13px;
+}
+
+.webmcp-workflows > header small {
+  color: #63726e;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.webmcp-workflows > article {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  margin: 10px 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(23, 37, 34, 0.055);
+}
+
+.webmcp-workflow-number {
+  color: #159b89;
+  font-family: "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.webmcp-workflows article > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.webmcp-workflow-mode {
+  width: max-content;
+  padding: 2px 6px;
+  color: #096d61;
+  background: #e7f6f2;
+  border: 1px solid #c8e6df;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.webmcp-workflows article strong {
+  margin-top: 2px;
+  color: #23332f;
+  font-size: 13px;
+}
+
+.webmcp-workflows article small {
+  color: #74817e;
+  font-size: 10px;
+}
+
+.webmcp-workflows article p {
+  margin: 7px 0 0;
+  color: #44534f;
+  font-size: 11px;
+  line-height: 1.48;
+}
+
+.webmcp-workflows article > button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 9px;
+  color: #086c60;
+  background: #f5fbf9;
+  border: 1px solid #9ccfc5;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.webmcp-workflows article > button:hover {
+  background: #eaf7f4;
+  border-color: #60b8a8;
+}
+
+.webmcp-workflows > footer {
+  display: grid;
+  gap: 3px;
+  margin-top: 12px;
+  padding: 13px 14px;
+  color: #dffaf4;
+  background: var(--lab-enamel);
+  border-top: 1px solid #135f55;
+}
+
+.webmcp-workflows > footer b {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.webmcp-workflows > footer span {
+  color: #b9ddd5;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 620px) {
+  .webmcp-workflows > article {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .webmcp-workflows article > button {
+    grid-column: 2;
+    justify-self: start;
+  }
 }
 
 .agent-review-actions button:hover {
@@ -11252,8 +11413,7 @@ body:has(#procedural-catalog-capture) #root {
   overflow: hidden;
   background:
     linear-gradient(rgba(61, 104, 95, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(61, 104, 95, 0.04) 1px, transparent 1px),
-    #e6eeeb;
+    linear-gradient(90deg, rgba(61, 104, 95, 0.04) 1px, transparent 1px), #e6eeeb;
   background-size: 22px 22px;
 }
 
@@ -11305,7 +11465,9 @@ body:has(#procedural-catalog-capture) #root {
 
 .blueprint-outline-point text {
   fill: #075f55;
-  font: 800 13px Bahnschrift, sans-serif;
+  font:
+    800 13px Bahnschrift,
+    sans-serif;
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;

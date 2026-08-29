@@ -1,4 +1,4 @@
-# LabSpace Agent Twin — judge guide
+# LabSpace AI Agent Twin — judge guide
 
 **WebMCP for the physical laboratory.** This guide demonstrates the complete challenge flow in about three minutes.
 
@@ -12,9 +12,10 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all sixteen live tools and their safety modes.
-3. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
-4. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
+2. Select **Registered tools** to see all seventeen live tools and their safety modes.
+3. Select **Agent workflows** to copy a complete build, exact-evidence, audit, or resize request.
+4. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
+5. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
 This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
 
@@ -46,7 +47,7 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ## Expected visible workflow
 
-1. The agent discovers sixteen structured LabSpace tools.
+1. The agent discovers seventeen structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
@@ -60,6 +61,7 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ```text
 labspace_get_context
+labspace_audit_room
 labspace_create_room
 labspace_search_assets
 labspace_plan_room
@@ -95,7 +97,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly sixteen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+Expected: exactly seventeen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 

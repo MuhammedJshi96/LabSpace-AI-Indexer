@@ -21,7 +21,7 @@ Open `http://127.0.0.1:3004/`, `/digital-twin`, or `/inventory`.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
 
-## Discover the sixteen tools
+## Discover the seventeen tools
 
 In Chrome DevTools Console:
 
@@ -34,6 +34,7 @@ tools.map(({ name, title, annotations }) => ({ name, title, annotations }));
 Expected names (Chrome normally sorts them alphabetically):
 
 ```text
+labspace_audit_room
 labspace_create_room
 labspace_find_valid_placements
 labspace_focus_record
@@ -52,7 +53,7 @@ labspace_validate_object_move
 labspace_validate_resize
 ```
 
-There should be sixteen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+There should be seventeen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## Manual tool calls
 
@@ -65,6 +66,8 @@ const tools = await document.modelContext.getTools();
 const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
 
 await document.modelContext.executeTool(byName.labspace_get_context, "{}");
+
+await document.modelContext.executeTool(byName.labspace_audit_room, "{}");
 
 const searchJson = await document.modelContext.executeTool(
   byName.labspace_search_records,
@@ -216,7 +219,7 @@ npm run test:e2e:webmcp
 npm run test:e2e
 ```
 
-The 23 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
+The 24 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
 
 If `document.modelContext` is `undefined`, confirm the Chrome flag, browser relaunch, top-level route, and secure/same-origin context. LabSpace itself should continue to work normally.
 

@@ -21,7 +21,7 @@ Open `http://127.0.0.1:3004/`, `/digital-twin`, or `/inventory`.
 
 Do not enable the flag automatically in application code. ChatGPT's in-app browser supports WebMCP directly; Chrome currently requires its experimental flag or an applicable origin trial.
 
-## Discover the fourteen tools
+## Discover the sixteen tools
 
 In Chrome DevTools Console:
 
@@ -46,11 +46,13 @@ labspace_search_assets
 labspace_search_records
 labspace_stage_object_move
 labspace_stage_inventory_plan
+labspace_stage_resize
 labspace_stage_room_plan
 labspace_validate_object_move
+labspace_validate_resize
 ```
 
-There should be fourteen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+There should be sixteen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## Manual tool calls
 
@@ -189,6 +191,22 @@ The last call shows a reversible preview in LabSpace. Use the visible **Approve 
 
 The exact UUIDs above belong to the source-controlled DEMO-01 seed. For any edited project, discover current IDs through search rather than copying them.
 
+For a wall-hosted window resize, use the window object's current canonical ID from the project or editor selection:
+
+```js
+await document.modelContext.executeTool(
+  byName.labspace_validate_resize,
+  JSON.stringify({ objectId: "<window-object-id>", dimensions: { widthMm: 4000 } }),
+);
+
+await document.modelContext.executeTool(
+  byName.labspace_stage_resize,
+  JSON.stringify({ objectId: "<window-object-id>", dimensions: { widthMm: 4000 } }),
+);
+```
+
+Validation preserves the wall-relative centre and checks wall bounds, sill plus height, and neighboring hosted openings. Two windows may meet exactly without being reported as overlapping. Staging shows **Review agent resize**; only **Approve resize** commits one undoable update and normal autosave.
+
 ## Automated verification
 
 ```powershell
@@ -198,7 +216,7 @@ npm run test:e2e:webmcp
 npm run test:e2e
 ```
 
-The 21 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
+The 23 expected-call eval cases live in `docs/webmcp/evals/cases.json` and are checked by `tests/unit/webmcp-evals.test.ts`.
 
 If `document.modelContext` is `undefined`, confirm the Chrome flag, browser relaunch, top-level route, and secure/same-origin context. LabSpace itself should continue to work normally.
 

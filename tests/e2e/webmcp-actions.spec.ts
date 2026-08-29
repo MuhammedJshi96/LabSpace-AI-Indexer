@@ -14,8 +14,10 @@ const WEBMCP_TOOL_NAMES = [
   "labspace_search_records",
   "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
+  "labspace_stage_resize",
   "labspace_stage_room_plan",
   "labspace_validate_object_move",
+  "labspace_validate_resize",
 ];
 
 async function installModelContext(page: Page) {
@@ -160,7 +162,7 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly fourteen tools on product routes and excludes internal asset routes", async ({
+test("registers exactly sixteen tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin", "/inventory"]) {
@@ -440,6 +442,39 @@ test("creates a blank room and auto-commits only its first complete WebMCP bluep
       room.scene.objects.some((wall) => wall.id === object.opening?.wallId),
     ),
   ).toBe(true);
+
+  const window = openings.find((object) => object.objectType === "window")!;
+  const resizeValidation = await executeTool<{
+    valid: boolean;
+    current: { widthMm: number };
+    proposed: { widthMm: number };
+  }>(page, "labspace_validate_resize", {
+    objectId: window.id,
+    dimensions: { widthMm: 4000 },
+  });
+  expect(resizeValidation).toMatchObject({
+    valid: true,
+    current: { widthMm: window.dimensions.width },
+    proposed: { widthMm: 4000 },
+  });
+  const resizeStage = await executeTool<{
+    staged: boolean;
+    requiresHumanApproval: boolean;
+  }>(page, "labspace_stage_resize", {
+    objectId: window.id,
+    dimensions: { widthMm: 4000 },
+  });
+  expect(resizeStage).toMatchObject({ staged: true, requiresHumanApproval: true });
+  const resizeReview = page.getByTestId("agent-change-review");
+  await expect(resizeReview).toContainText("Review agent resize");
+  await resizeReview.getByRole("button", { name: "Approve resize" }).click();
+  await expect
+    .poll(async () => {
+      const current = currentObject(await readProject(page), created.roomId, window.id);
+      return { width: current.dimensions.width, openingWidth: current.opening?.width };
+    })
+    .toEqual({ width: 4000, openingWidth: 4000 });
+  await expect(page.getByText("All changes saved", { exact: true }).first()).toBeVisible();
 
   const laterPlan = await executeTool<{ planId: string }>(page, "labspace_plan_room", {
     assets: [{ assetId: "round-stool", quantity: 1, placement: "open" }],

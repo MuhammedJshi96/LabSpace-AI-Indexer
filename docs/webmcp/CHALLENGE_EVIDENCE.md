@@ -37,7 +37,7 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - A one-use, fail-closed capability that auto-commits only the first complete blueprint of a newly WebMCP-created pristine room as one undoable update.
 - Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP inspector that lists the fourteen browser registrations, their Read/View/Simulate/Create/Review modes, and a ready-to-use room-planning prompt.
+- A visible in-product WebMCP inspector that lists the sixteen browser registrations, their Read/View/Simulate/Create/Review modes, and a ready-to-use room-planning prompt.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.

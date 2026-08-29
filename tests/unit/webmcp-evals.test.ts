@@ -45,6 +45,7 @@ describe("LabSpace WebMCP evaluation fixture", () => {
       expect(entry.expectedTools.filter((tool) => entry.forbiddenTools.includes(tool))).toEqual([]);
       if (
         entry.expectedTools.includes("labspace_stage_object_move") ||
+        entry.expectedTools.includes("labspace_stage_resize") ||
         (entry.expectedTools.includes("labspace_stage_room_plan") &&
           !entry.expectedTools.includes("labspace_create_room"))
       ) {

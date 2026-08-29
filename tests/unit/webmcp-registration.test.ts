@@ -67,6 +67,7 @@ function fakeNavigationActions(): LabSpaceNavigationActions {
 function fakeSpatialActions(): LabSpaceSpatialActions {
   return {
     validateObjectMove: vi.fn((input) => ({ source: "validate", input }) as never),
+    validateObjectResize: vi.fn((input) => ({ source: "validate-resize", input }) as never),
     recommendObjectPlacements: vi.fn((input) => ({ source: "recommend", input }) as never),
   };
 }
@@ -74,6 +75,7 @@ function fakeSpatialActions(): LabSpaceSpatialActions {
 function fakeStagingActions(): LabSpaceStagingActions {
   return {
     stageObjectMove: vi.fn((input) => ({ source: "stage", input }) as never),
+    stageObjectResize: vi.fn((input) => ({ source: "stage-resize", input }) as never),
     stageRoomLayout: vi.fn((input) => ({ source: "stage-layout", input }) as never),
     stageInventoryPlan: vi.fn((input) => ({ source: "stage-inventory", input }) as never),
     approveStagedObjectMove: vi.fn(),
@@ -152,7 +154,7 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(14);
+    expect(tools).toHaveLength(16);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
@@ -161,6 +163,7 @@ describe("LabSpace WebMCP registration", () => {
           "labspace_create_room",
           "labspace_stage_inventory_plan",
           "labspace_stage_object_move",
+          "labspace_stage_resize",
           "labspace_stage_room_plan",
         ].includes(tool.name),
       );
@@ -230,6 +233,8 @@ describe("LabSpace WebMCP registration", () => {
     const validate = modelContext.activeTools.get("labspace_validate_object_move")!;
     const recommend = modelContext.activeTools.get("labspace_find_valid_placements")!;
     const stage = modelContext.activeTools.get("labspace_stage_object_move")!;
+    const validateResize = modelContext.activeTools.get("labspace_validate_resize")!;
+    const stageResize = modelContext.activeTools.get("labspace_stage_resize")!;
     const searchAssets = modelContext.activeTools.get("labspace_search_assets")!;
     const planRoom = modelContext.activeTools.get("labspace_plan_room")!;
     const stageRoom = modelContext.activeTools.get("labspace_stage_room_plan")!;
@@ -298,6 +303,24 @@ describe("LabSpace WebMCP registration", () => {
       source: "validate",
       input: { objectId: "object-1", target: { xMm: 1000, yMm: 2000 } },
     });
+    expect(
+      await validateResize.execute(
+        { objectId: "window-1", dimensions: { widthMm: 4000 } },
+        { signal },
+      ),
+    ).toEqual({
+      source: "validate-resize",
+      input: { objectId: "window-1", dimensions: { widthMm: 4000 } },
+    });
+    expect(
+      await stageResize.execute(
+        { objectId: "window-1", dimensions: { widthMm: 4000 } },
+        { signal },
+      ),
+    ).toEqual({
+      source: "stage-resize",
+      input: { objectId: "window-1", dimensions: { widthMm: 4000 } },
+    });
     expect(actions.getLabContext).toHaveBeenCalledOnce();
     expect(navigationActions.focusLabRecord).toHaveBeenCalledWith({ recordId: "record-1" });
     expect(actions.searchLabRecords).toHaveBeenCalledWith({ query: "evaporator" });
@@ -306,6 +329,10 @@ describe("LabSpace WebMCP registration", () => {
       objectId: "object-1",
       target: { xMm: 1000, yMm: 2000 },
     });
+    expect(spatialActions.validateObjectResize).toHaveBeenCalledWith({
+      objectId: "window-1",
+      dimensions: { widthMm: 4000 },
+    });
     expect(spatialActions.recommendObjectPlacements).toHaveBeenCalledWith({
       objectId: "object-1",
       preferredTarget: { xMm: 1000, yMm: 2000 },
@@ -313,6 +340,10 @@ describe("LabSpace WebMCP registration", () => {
     expect(stagingActions.stageObjectMove).toHaveBeenCalledWith({
       objectId: "object-1",
       target: { xMm: 1000, yMm: 2000 },
+    });
+    expect(stagingActions.stageObjectResize).toHaveBeenCalledWith({
+      objectId: "window-1",
+      dimensions: { widthMm: 4000 },
     });
     expect(layoutActions.searchLabAssets).toHaveBeenCalledWith({ query: "bench" });
     expect(layoutActions.planRoomLayout).toHaveBeenCalledWith({
@@ -442,15 +473,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(14);
+    expect(modelContext.activeTools.size).toBe(16);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(14);
-    expect([...modelContext.activeTools]).toHaveLength(14);
+    expect(modelContext.activeTools.size).toBe(16);
+    expect([...modelContext.activeTools]).toHaveLength(16);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

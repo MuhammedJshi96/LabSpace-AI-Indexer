@@ -20,7 +20,7 @@ The trust boundary is risk-based. `labspace_create_room` saves only a blank room
 
 Open the **WebMCP** status control in the LabSpace header. Its inspector makes the browser integration visible without DevTools:
 
-1. **Registered tools** shows the fourteen live browser tools and their Read, View, Simulate, Create, or Review boundary.
+1. **Registered tools** shows the sixteen live browser tools and their Read, View, Simulate, Create, or Review boundary.
 2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
 3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
 
@@ -28,7 +28,7 @@ Type the suggested request in the ChatGPT/browser-agent conversation that opened
 
 The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity. The one-time initial build is recorded as an automatic commit; subsequent staged changes still require separate human approval or cancellation.
 
-### Fourteen browser-native tools
+### Sixteen browser-native tools
 
 | Tool                             | Capability                                                                          | Saved-data behavior                                                      |
 | -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -44,6 +44,8 @@ The trace is intentionally evidence, not hidden model reasoning. Ordinary resear
 | `labspace_find_valid_placements` | Rank diverse valid alternatives near a preferred area using current geometry        | Read-only                                                                |
 | `labspace_validate_object_move`  | Test a hypothetical position with current geometry                                  | Read-only                                                                |
 | `labspace_stage_object_move`     | Show a reversible valid-move preview                                                | Not persisted; human approval required                                   |
+| `labspace_validate_resize`       | Test dimensions, hosted-wall fit, sill height, and opening overlap                  | Read-only                                                                |
+| `labspace_stage_resize`          | Show a reversible dimension-accurate preview                                        | Not persisted; human approval required                                   |
 | `labspace_stage_inventory_plan`  | Show a human-reviewable inventory proposal                                          | Not persisted; human approval required                                   |
 | `labspace_stage_room_plan`       | Apply a complete blueprint                                                          | First pristine created-room plan auto-commits; otherwise review required |
 
@@ -129,7 +131,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
 
-There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's fourteen structured tools, while the canonical catalog, room planner, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
+There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's sixteen structured tools, while the canonical catalog, room planner, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
 
 The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 96-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
 
@@ -213,7 +215,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-The result should contain exactly the fourteen tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
+The result should contain exactly the sixteen tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
 The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. The public service gives each browser an isolated four-hour in-memory judge workspace seeded from the same source-controlled project, so simultaneous reviewers cannot overwrite one another. Render free instances still restart after inactivity; use JSON export for work that must outlive a browser session. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 

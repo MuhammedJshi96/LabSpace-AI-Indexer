@@ -133,6 +133,47 @@ export const validateObjectMoveSchema = {
 
 export const stageObjectMoveSchema = validateObjectMoveSchema;
 
+export const validateObjectResizeSchema = {
+  type: "object",
+  properties: {
+    objectId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description: "Canonical LabSpace scene-object ID to resize.",
+    },
+    dimensions: {
+      type: "object",
+      properties: {
+        widthMm: {
+          type: "number",
+          minimum: 100,
+          maximum: 20000,
+          description: "Proposed object width in millimetres.",
+        },
+        depthMm: {
+          type: "number",
+          minimum: 100,
+          maximum: 20000,
+          description: "Proposed object depth in millimetres.",
+        },
+        heightMm: {
+          type: "number",
+          minimum: 100,
+          maximum: 6000,
+          description: "Proposed object height in millimetres.",
+        },
+      },
+      minProperties: 1,
+      additionalProperties: false,
+    },
+  },
+  required: ["objectId", "dimensions"],
+  additionalProperties: false,
+} as const;
+
+export const stageObjectResizeSchema = validateObjectResizeSchema;
+
 export const recommendObjectPlacementsSchema = {
   type: "object",
   properties: {

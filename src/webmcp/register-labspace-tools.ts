@@ -33,7 +33,9 @@ import {
   stageRoomLayoutSchema,
   stageInventoryPlanSchema,
   stageObjectMoveSchema,
+  stageObjectResizeSchema,
   validateObjectMoveSchema,
+  validateObjectResizeSchema,
 } from "./tool-schemas";
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
@@ -50,8 +52,10 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_search_records",
   "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
+  "labspace_stage_resize",
   "labspace_stage_room_plan",
   "labspace_validate_object_move",
+  "labspace_validate_resize",
 ] as const;
 
 function completeControlledExecution(
@@ -68,6 +72,7 @@ function completeControlledExecution(
     toolName === "labspace_create_room" || resultRecord.autoCommitted === true
       ? "committed"
       : toolName === "labspace_stage_object_move" ||
+          toolName === "labspace_stage_resize" ||
           toolName === "labspace_stage_room_plan" ||
           toolName === "labspace_stage_inventory_plan"
         ? "pending"
@@ -79,7 +84,8 @@ function completeControlledExecution(
             ? Number(resultRecord.plannedObjects) > 0
               ? "found"
               : "blocked"
-            : toolName === "labspace_validate_object_move"
+            : toolName === "labspace_validate_object_move" ||
+                toolName === "labspace_validate_resize"
               ? resultRecord.valid === false
                 ? "blocked"
                 : "valid"
@@ -356,6 +362,22 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_stage_resize",
+      title: "Stage LabSpace object resize",
+      description:
+        "Validate and display a reversible dimension preview for explicit human approval. Hosted doors and windows keep their wall relationship and are checked against wall bounds and sibling openings.",
+      inputSchema: stageObjectResizeSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_stage_resize",
+          "Resize staging",
+          input,
+          () => stagingActions.stageObjectResize(input),
+        ),
+    },
+    {
       name: "labspace_validate_object_move",
       title: "Validate LabSpace object move",
       description:
@@ -369,6 +391,22 @@ export function createLabSpaceToolDefinitions(
           "Move validation",
           input,
           () => spatialActions.validateObjectMove(input),
+        ),
+    },
+    {
+      name: "labspace_validate_resize",
+      title: "Validate LabSpace object resize",
+      description:
+        "Evaluate hypothetical object dimensions without changing project state. Hosted openings are checked against their wall, sill height, and neighboring doors or windows.",
+      inputSchema: validateObjectResizeSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_validate_resize",
+          "Resize validation",
+          input,
+          () => spatialActions.validateObjectResize(input),
         ),
     },
   ];

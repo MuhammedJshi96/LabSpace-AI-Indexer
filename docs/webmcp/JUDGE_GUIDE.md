@@ -12,7 +12,7 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all fourteen live tools and their safety modes.
+2. Select **Registered tools** to see all sixteen live tools and their safety modes.
 3. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
 4. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
@@ -46,7 +46,7 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ## Expected visible workflow
 
-1. The agent discovers fourteen structured LabSpace tools.
+1. The agent discovers sixteen structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
@@ -80,6 +80,10 @@ labspace_validate_object_move  (blocked target)
 labspace_find_valid_placements (three ranked alternatives)
 labspace_stage_object_move
 human: Approve move or Cancel
+
+labspace_validate_resize
+labspace_stage_resize
+human: Approve resize or Cancel preview
 ```
 
 The agent cannot approve its own later proposal. No WebMCP tool can reset, delete, import, or perform an unrestricted project save. `labspace_create_room` is restricted to one blank room, and its initial-build capability cannot move or overwrite existing content.
@@ -91,7 +95,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly fourteen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+Expected: exactly sixteen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 

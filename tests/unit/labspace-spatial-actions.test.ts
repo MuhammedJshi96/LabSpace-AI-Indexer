@@ -3,6 +3,7 @@ import {
   createLabSpaceSpatialActions,
   recommendObjectPlacements,
   validateObjectMove,
+  validateObjectResize,
 } from "../../src/agent/labspace-spatial-actions";
 import { createSeedProject } from "../../src/domain/seed";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
@@ -56,6 +57,139 @@ function spatialFixture() {
   };
   return { project: preparedProject, room: preparedRoom, first, second };
 }
+
+function hostedWindowFixture() {
+  const fixture = spatialFixture();
+  const base = fixture.first;
+  const wall: SceneObject = {
+    ...structuredClone(base),
+    id: "back-wall",
+    name: "Back wall",
+    objectType: "wall",
+    dimensions: { width: 8000, depth: 150, height: 3000 },
+    position: { x: 4000, y: 6000, z: 0 },
+    wall: {
+      start: { x: 0, y: 6000 },
+      end: { x: 8000, y: 6000 },
+      thickness: 150,
+      height: 3000,
+      halfHeight: false,
+    },
+  };
+  const makeWindow = (id: string, offset: number): SceneObject => ({
+    ...structuredClone(base),
+    id,
+    name: id === "window-left" ? "Left three-pane window" : "Right three-pane window",
+    objectType: "window",
+    assetDefinitionId: "wide-three-pane-window",
+    locked: false,
+    dimensions: { width: 2400, depth: 150, height: 1200 },
+    position: { x: offset, y: 6000, z: 900 },
+    opening: {
+      wallId: wall.id,
+      offset,
+      width: 2400,
+      sillHeight: 900,
+      height: 1200,
+      handing: "left",
+      swing: "inward",
+    },
+  });
+  const left = makeWindow("window-left", 2000);
+  const right = makeWindow("window-right", 6000);
+  const room: Room = {
+    ...fixture.room,
+    width: 8000,
+    depth: 6000,
+    wallHeight: 3000,
+    scene: { ...fixture.room.scene, objects: [wall, left, right] },
+  };
+  const project: Project = {
+    ...fixture.project,
+    rooms: fixture.project.rooms.map((entry) => (entry.id === room.id ? room : entry)),
+  };
+  return { project, room, wall, left, right };
+}
+
+describe("LabSpace hypothetical resize validation", () => {
+  it("allows two hosted windows to meet exactly at the centre of their wall", () => {
+    const { project, left, right } = hostedWindowFixture();
+    const leftResult = validateObjectResize(
+      { objectId: left.id, dimensions: { widthMm: 4000 } },
+      () => project,
+    );
+    expect(leftResult).toMatchObject({ valid: true, proposed: { widthMm: 4000 }, conflicts: [] });
+
+    const room = project.rooms.find((entry) => entry.id === left.roomId)!;
+    room.scene.objects = room.scene.objects.map((entry) =>
+      entry.id === left.id
+        ? {
+            ...entry,
+            dimensions: { ...entry.dimensions, width: 4000 },
+            opening: { ...entry.opening!, width: 4000 },
+          }
+        : entry,
+    );
+    const rightResult = validateObjectResize(
+      { objectId: right.id, dimensions: { widthMm: 4000 } },
+      () => project,
+    );
+    expect(rightResult).toMatchObject({ valid: true, proposed: { widthMm: 4000 }, conflicts: [] });
+  });
+
+  it("rejects wall overflow, sibling overlap, excessive height, and hosted-opening depth changes", () => {
+    const { project, left } = hostedWindowFixture();
+    expect(
+      validateObjectResize(
+        { objectId: left.id, dimensions: { widthMm: 4200 } },
+        () => project,
+      ).conflicts,
+    ).toContainEqual(expect.objectContaining({ type: "opening-outside-wall" }));
+    const overlappingProject = structuredClone(project);
+    const overlappingRoom = overlappingProject.rooms.find((entry) => entry.id === left.roomId)!;
+    const right = overlappingRoom.scene.objects.find((entry) => entry.id === "window-right")!;
+    right.opening = { ...right.opening!, offset: 3500 };
+    right.position = { ...right.position, x: 3500 };
+    expect(
+      validateObjectResize(
+        { objectId: left.id, dimensions: { widthMm: 4000 } },
+        () => overlappingProject,
+      ).conflicts,
+    ).toContainEqual(expect.objectContaining({ type: "opening-overlap" }));
+    expect(
+      validateObjectResize(
+        { objectId: left.id, dimensions: { heightMm: 2200 } },
+        () => project,
+      ).conflicts,
+    ).toContainEqual(expect.objectContaining({ type: "above-room-height" }));
+    expect(
+      validateObjectResize(
+        { objectId: left.id, dimensions: { depthMm: 300 } },
+        () => project,
+      ).conflicts,
+    ).toContainEqual(expect.objectContaining({ type: "restricted-object" }));
+  });
+
+  it("is read-only and rejects malformed or no-op resize requests", () => {
+    const { project, left } = hostedWindowFixture();
+    const before = structuredClone(project);
+    const result = validateObjectResize(
+      { objectId: left.id, dimensions: { widthMm: 4000 } },
+      () => project,
+    );
+    expect(result.current.widthMm).toBe(2400);
+    expect(project).toEqual(before);
+    expect(() =>
+      validateObjectResize({ objectId: left.id, dimensions: {} }, () => project),
+    ).toThrow("At least one resize dimension");
+    expect(() =>
+      validateObjectResize(
+        { objectId: left.id, dimensions: { widthMm: 2400 } },
+        () => project,
+      ),
+    ).toThrow("must change");
+  });
+});
 
 describe("LabSpace hypothetical move validation", () => {
   it("returns a clean valid result without mutating the source project", () => {

@@ -92,7 +92,9 @@ export function AgentReviewPanel() {
               ? "Review room shell and layout"
               : pending.tool === "inventory"
                 ? "Review inventory creation"
-                : "Review agent move"}
+                : pending.tool === "resize"
+                  ? "Review agent resize"
+                  : "Review agent move"}
           </h2>
           {pending.tool === "layout" ? (
             <>
@@ -172,6 +174,25 @@ export function AgentReviewPanel() {
                 <span><small>Commit</small>Canonical room inventory after approval</span>
               </div>
             </>
+          ) : pending.tool === "resize" ? (
+            <>
+              <p id="agent-review-summary">
+                <b>{pending.objectName}</b> <code>{pending.objectIndexCode}</code>
+              </p>
+              <div className="agent-review-route" aria-label="Proposed dimension change">
+                <span>
+                  <small>Current</small>
+                  {metres(pending.before.dimensions.width)} W ×{" "}
+                  {metres(pending.before.dimensions.height)} H
+                </span>
+                <Ruler size={18} aria-hidden="true" />
+                <span>
+                  <small>Proposed</small>
+                  {metres(pending.proposed.dimensions.width)} W ×{" "}
+                  {metres(pending.proposed.dimensions.height)} H
+                </span>
+              </div>
+            </>
           ) : (
             <>
               <p id="agent-review-summary">
@@ -204,7 +225,9 @@ export function AgentReviewPanel() {
               ? "Approve room plan"
               : pending.tool === "inventory"
                 ? "Approve inventory"
-                : "Approve move"}
+                : pending.tool === "resize"
+                  ? "Approve resize"
+                  : "Approve move"}
           </button>
         </div>
       </section>

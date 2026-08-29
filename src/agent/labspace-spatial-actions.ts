@@ -6,6 +6,7 @@ import {
   type ValidationWarning,
 } from "../domain/geometry";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
+import { openingOverlapsSibling } from "../domain/wall-openings";
 import type { Project, Room, SceneObject } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
 import type {
@@ -16,6 +17,8 @@ import type {
   RecommendedPlacement,
   ValidateObjectMoveInput,
   ValidateObjectMoveResult,
+  ValidateObjectResizeInput,
+  ValidateObjectResizeResult,
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
 
@@ -27,6 +30,7 @@ const MAX_RECOMMENDATION_EVALUATIONS = 1_600;
 const RECOMMENDATION_GRID_MM = 500;
 const RECOMMENDATION_DIVERSITY_MM = 750;
 const MOVABLE_OBJECT_TYPES = new Set(["furniture", "storage", "equipment"]);
+const RESIZABLE_OBJECT_TYPES = new Set(["furniture", "storage", "equipment", "door", "window"]);
 
 export type LabSpaceSpatialStateReader = () => Project;
 
@@ -78,6 +82,50 @@ function normalizeMoveInput(input: unknown): ValidateObjectMoveInput {
     ...(record.rotationDeg === undefined
       ? {}
       : { rotationDeg: requireFiniteNumber(record.rotationDeg, "Rotation", -360, 360) }),
+  };
+}
+
+function normalizeResizeInput(input: unknown): ValidateObjectResizeInput {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new LabSpaceActionError("Tool input must be a JSON object.");
+  }
+  const record = input as Record<string, unknown>;
+  const unexpected = Object.keys(record).find((key) => !["objectId", "dimensions"].includes(key));
+  if (unexpected) throw new LabSpaceActionError(`Unexpected input field: ${unexpected}.`);
+  if (typeof record.objectId !== "string") {
+    throw new LabSpaceActionError("Object ID must be a string.");
+  }
+  const objectId = record.objectId.trim();
+  if (!objectId) throw new LabSpaceActionError("Object ID cannot be empty.");
+  if (objectId.length > MAX_OBJECT_ID_LENGTH) {
+    throw new LabSpaceActionError(`Object ID must be ${MAX_OBJECT_ID_LENGTH} characters or fewer.`);
+  }
+  if (!record.dimensions || typeof record.dimensions !== "object" || Array.isArray(record.dimensions)) {
+    throw new LabSpaceActionError("Resize dimensions must be a JSON object.");
+  }
+  const dimensions = record.dimensions as Record<string, unknown>;
+  const unexpectedDimension = Object.keys(dimensions).find(
+    (key) => !["widthMm", "depthMm", "heightMm"].includes(key),
+  );
+  if (unexpectedDimension) {
+    throw new LabSpaceActionError(`Unexpected dimensions field: ${unexpectedDimension}.`);
+  }
+  if (Object.keys(dimensions).length === 0) {
+    throw new LabSpaceActionError("At least one resize dimension is required.");
+  }
+  return {
+    objectId,
+    dimensions: {
+      ...(dimensions.widthMm === undefined
+        ? {}
+        : { widthMm: requireFiniteNumber(dimensions.widthMm, "Width", 100, 20_000) }),
+      ...(dimensions.depthMm === undefined
+        ? {}
+        : { depthMm: requireFiniteNumber(dimensions.depthMm, "Depth", 100, 20_000) }),
+      ...(dimensions.heightMm === undefined
+        ? {}
+        : { heightMm: requireFiniteNumber(dimensions.heightMm, "Height", 100, 6_000) }),
+    },
   };
 }
 
@@ -199,6 +247,29 @@ function restrictedConflict(room: Room, object: SceneObject): PlacementConflict 
   return null;
 }
 
+function resizeRestriction(room: Room, object: SceneObject): PlacementConflict | null {
+  const layer = room.scene.layers.find((entry) => entry.id === object.layerId);
+  if (object.locked || layer?.locked) {
+    return {
+      type: "restricted-object",
+      objectId: object.id,
+      indexCode: object.indexCode,
+      name: object.name,
+      message: `${object.name} is locked and cannot be resized by an agent.`,
+    };
+  }
+  if (!RESIZABLE_OBJECT_TYPES.has(object.objectType)) {
+    return {
+      type: "restricted-object",
+      objectId: object.id,
+      indexCode: object.indexCode,
+      name: object.name,
+      message: `${object.name} is structural or annotation geometry and cannot be resized by an agent.`,
+    };
+  }
+  return null;
+}
+
 function warningType(warning: ValidationWarning): PlacementConflict["type"] | null {
   if (warning.id.startsWith("outside-")) return "outside-room-boundary";
   if (warning.id.startsWith("overlap-")) return "object-collision";
@@ -236,6 +307,77 @@ function placementConflicts(room: Room, candidate: SceneObject): PlacementConfli
 
 function recordValidation(result: ValidateObjectMoveResult) {
   return result;
+}
+
+function dimensionsMm(object: SceneObject) {
+  return {
+    widthMm: object.dimensions.width,
+    depthMm: object.dimensions.depth,
+    heightMm: object.dimensions.height,
+  };
+}
+
+function hostedOpeningConflicts(room: Room, object: SceneObject): PlacementConflict[] {
+  if (!object.opening) return [];
+  const wall = room.scene.objects.find(
+    (entry) => entry.id === object.opening?.wallId && entry.wall,
+  );
+  if (!wall?.wall) {
+    return [
+      {
+        type: "opening-outside-wall",
+        objectId: object.id,
+        indexCode: object.indexCode,
+        name: object.name,
+        message: `${object.name} no longer has a valid host wall.`,
+      },
+    ];
+  }
+  const length = Math.hypot(
+    wall.wall.end.x - wall.wall.start.x,
+    wall.wall.end.y - wall.wall.start.y,
+  );
+  const conflicts: PlacementConflict[] = [];
+  const start = object.opening.offset - object.dimensions.width / 2;
+  const end = object.opening.offset + object.dimensions.width / 2;
+  if (start < -0.001 || end > length + 0.001) {
+    conflicts.push({
+      type: "opening-outside-wall",
+      objectId: wall.id,
+      indexCode: wall.indexCode,
+      name: wall.name,
+      message: `${object.name} is ${object.dimensions.width} mm wide and does not fit at its current offset on the ${Math.round(length)} mm host wall.`,
+    });
+  }
+  if (
+    openingOverlapsSibling(
+      room.scene.objects,
+      wall.id,
+      object.opening.offset,
+      object.dimensions.width,
+      object.id,
+      0,
+    )
+  ) {
+    conflicts.push({
+      type: "opening-overlap",
+      objectId: wall.id,
+      indexCode: wall.indexCode,
+      name: wall.name,
+      message: `${object.name} would overlap another hosted door or window on ${wall.name}.`,
+    });
+  }
+  const wallHeight = wall.wall.height || room.wallHeight;
+  if (object.opening.sillHeight + object.dimensions.height > wallHeight + 0.001) {
+    conflicts.push({
+      type: "above-room-height",
+      objectId: wall.id,
+      indexCode: wall.indexCode,
+      name: wall.name,
+      message: `${object.name} would extend above the ${Math.round(wallHeight)} mm host wall.`,
+    });
+  }
+  return conflicts.slice(0, MAX_CONFLICTS);
 }
 
 function candidateObjectGap(room: Room, candidate: SceneObject) {
@@ -488,11 +630,105 @@ export function validateObjectMove(
   });
 }
 
+export function validateObjectResize(
+  input: unknown,
+  readProject: LabSpaceSpatialStateReader = readCurrentProject,
+): ValidateObjectResizeResult {
+  const normalized = normalizeResizeInput(input);
+  const project = readProject();
+  const { room, object } = resolveObject(project, normalized.objectId);
+  const current = dimensionsMm(object);
+  const proposed = {
+    widthMm: normalized.dimensions.widthMm ?? current.widthMm,
+    depthMm: normalized.dimensions.depthMm ?? current.depthMm,
+    heightMm: normalized.dimensions.heightMm ?? current.heightMm,
+  };
+  const restriction = resizeRestriction(room, object);
+  if (restriction) {
+    return {
+      valid: false,
+      objectId: object.id,
+      objectName: object.name,
+      objectIndexCode: object.indexCode,
+      roomCode: room.code,
+      current,
+      proposed,
+      conflicts: [restriction],
+    };
+  }
+  if (
+    current.widthMm === proposed.widthMm &&
+    current.depthMm === proposed.depthMm &&
+    current.heightMm === proposed.heightMm
+  ) {
+    throw new LabSpaceActionError("Resize must change at least one object dimension.");
+  }
+  if (object.opening && proposed.depthMm !== current.depthMm) {
+    return {
+      valid: false,
+      objectId: object.id,
+      objectName: object.name,
+      objectIndexCode: object.indexCode,
+      roomCode: room.code,
+      current,
+      proposed,
+      conflicts: [
+        {
+          type: "restricted-object",
+          objectId: object.id,
+          indexCode: object.indexCode,
+          name: object.name,
+          message: "Hosted opening depth follows wall construction and cannot be resized by an agent.",
+        },
+      ],
+    };
+  }
+
+  const candidate: SceneObject = {
+    ...object,
+    dimensions: {
+      width: proposed.widthMm,
+      depth: proposed.depthMm,
+      height: proposed.heightMm,
+    },
+    ...(object.opening
+      ? {
+          opening: {
+            ...object.opening,
+            width: proposed.widthMm,
+            height: proposed.heightMm,
+          },
+        }
+      : {}),
+  };
+  const hypotheticalRoom: Room = {
+    ...room,
+    scene: {
+      ...room.scene,
+      objects: room.scene.objects.map((entry) => (entry.id === candidate.id ? candidate : entry)),
+    },
+  };
+  const conflicts = candidate.opening
+    ? hostedOpeningConflicts(hypotheticalRoom, candidate)
+    : placementConflicts(hypotheticalRoom, candidate);
+  return {
+    valid: conflicts.length === 0,
+    objectId: object.id,
+    objectName: object.name,
+    objectIndexCode: object.indexCode,
+    roomCode: room.code,
+    current,
+    proposed,
+    conflicts,
+  };
+}
+
 export function createLabSpaceSpatialActions(
   readProject: LabSpaceSpatialStateReader,
 ): LabSpaceSpatialActions {
   return {
     validateObjectMove: (input) => validateObjectMove(input, readProject),
+    validateObjectResize: (input) => validateObjectResize(input, readProject),
     recommendObjectPlacements: (input) => recommendObjectPlacements(input, readProject),
   };
 }

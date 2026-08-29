@@ -47,6 +47,12 @@ const WEBMCP_TOOL_CATALOG = [
     description: "Runs deterministic boundary and overlap checks without changing the room.",
   },
   {
+    name: "labspace_validate_resize",
+    label: "Validate a proposed resize",
+    mode: "Simulate",
+    description: "Checks dimensions, hosted-wall fit, sill height, and neighboring openings.",
+  },
+  {
     name: "labspace_find_valid_placements",
     label: "Find valid placements",
     mode: "Simulate",
@@ -98,6 +104,12 @@ const WEBMCP_TOOL_CATALOG = [
     label: "Stage a move for review",
     mode: "Review",
     description: "Shows a reversible preview. Only a human can approve and save it.",
+  },
+  {
+    name: "labspace_stage_resize",
+    label: "Stage a resize for review",
+    mode: "Review",
+    description: "Shows a dimension-accurate preview. Only a human can approve and save it.",
   },
 ] as const;
 
@@ -296,7 +308,7 @@ export function AgentActivityPanel() {
             <b>Safety boundary</b>
             <span>
               A new WebMCP-created room may auto-commit its first complete validated blueprint.
-              Existing-room changes, later placements, moves, and inventory still require the
+              Existing-room changes, later placements, moves, resizes, and inventory still require the
               researcher to approve or cancel them.
             </span>
           </footer>

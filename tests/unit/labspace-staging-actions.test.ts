@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   approveStagedObjectMove,
+  approveStagedChange,
   cancelStagedObjectMove,
+  cancelStagedChange,
   stageObjectMove,
+  stageObjectResize,
 } from "../../src/agent/labspace-staging-actions";
 import { createSeedProject } from "../../src/domain/seed";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
@@ -77,6 +80,65 @@ function currentObject(id: string) {
   return state.project.rooms
     .find((room) => room.id === state.project.activeRoomId)!
     .scene.objects.find((object) => object.id === id)!;
+}
+
+function windowStagingFixture() {
+  const fixture = stagingFixture();
+  const state = useEditorStore.getState();
+  const wall: SceneObject = {
+    ...structuredClone(fixture.first),
+    id: "resize-wall",
+    name: "Back wall",
+    objectType: "wall",
+    dimensions: { width: 8000, depth: 150, height: 3000 },
+    position: { x: 4000, y: 6000, z: 0 },
+    wall: {
+      start: { x: 0, y: 6000 },
+      end: { x: 8000, y: 6000 },
+      thickness: 150,
+      height: 3000,
+      halfHeight: false,
+    },
+  };
+  const makeWindow = (id: string, offset: number): SceneObject => ({
+    ...structuredClone(fixture.first),
+    id,
+    name: id === "resize-window-left" ? "Left three-pane window" : "Right three-pane window",
+    objectType: "window",
+    assetDefinitionId: "wide-three-pane-window",
+    locked: false,
+    dimensions: { width: 2400, depth: 150, height: 1200 },
+    position: { x: offset, y: 6000, z: 900 },
+    opening: {
+      wallId: wall.id,
+      offset,
+      width: 2400,
+      sillHeight: 900,
+      height: 1200,
+      handing: "left",
+      swing: "inward",
+    },
+  });
+  const left = makeWindow("resize-window-left", 2000);
+  const right = makeWindow("resize-window-right", 6000);
+  const room = state.project.rooms.find((entry) => entry.id === state.project.activeRoomId)!;
+  useEditorStore.setState({
+    project: {
+      ...state.project,
+      rooms: state.project.rooms.map((entry) =>
+        entry.id === room.id
+          ? {
+              ...entry,
+              width: 8000,
+              depth: 6000,
+              wallHeight: 3000,
+              scene: { ...entry.scene, objects: [wall, left, right] },
+            }
+          : entry,
+      ),
+    },
+  });
+  return { wall, left, right };
 }
 
 afterEach(() => {
@@ -308,5 +370,64 @@ describe("human-reviewed LabSpace move staging", () => {
     ).toThrow("finish saving current human edits");
     expect(useEditorStore.getState().pendingAgentChange).toBeNull();
     expect(currentObject(first.id).position).toEqual(first.position);
+  });
+});
+
+describe("human-reviewed LabSpace resize staging", () => {
+  it("previews a hosted window resize without persistence and cancel restores it exactly", () => {
+    const { left } = windowStagingFixture();
+    const before = structuredClone(useEditorStore.getState().project);
+    const staged = stageObjectResize({ objectId: left.id, dimensions: { widthMm: 4000 } });
+
+    expect(staged).toMatchObject({
+      staged: true,
+      valid: true,
+      persisted: false,
+      requiresHumanApproval: true,
+      current: { widthMm: 2400 },
+      proposed: { widthMm: 4000 },
+    });
+    expect(currentObject(left.id).dimensions.width).toBe(4000);
+    expect(currentObject(left.id).opening).toMatchObject({
+      wallId: left.opening!.wallId,
+      offset: 2000,
+      width: 4000,
+    });
+    expect(useEditorStore.getState().history).toEqual([]);
+    expect(useEditorStore.getState().dirtyRevision).toBe(7);
+
+    cancelStagedChange(staged.stageId!);
+    expect(useEditorStore.getState().project).toEqual(before);
+    expect(useEditorStore.getState().pendingAgentChange).toBeNull();
+  });
+
+  it("commits one undoable resize only after explicit approval", () => {
+    const { left } = windowStagingFixture();
+    const staged = stageObjectResize({ objectId: left.id, dimensions: { widthMm: 4000 } });
+    const result = approveStagedChange(staged.stageId!);
+
+    expect(result).toMatchObject({ status: "approved", persisted: false });
+    expect(currentObject(left.id).dimensions.width).toBe(4000);
+    expect(currentObject(left.id).opening?.width).toBe(4000);
+    expect(useEditorStore.getState().history).toHaveLength(1);
+    expect(useEditorStore.getState().history[0].label).toBe("Approve agent resize");
+    expect(useEditorStore.getState().dirtyRevision).toBe(8);
+    expect(useEditorStore.getState().saveStatus).toBe("unsaved");
+
+    useEditorStore.getState().undo();
+    expect(currentObject(left.id).dimensions.width).toBe(2400);
+    useEditorStore.getState().redo();
+    expect(currentObject(left.id).dimensions.width).toBe(4000);
+  });
+
+  it("returns wall conflicts without creating a preview", () => {
+    const { left } = windowStagingFixture();
+    const result = stageObjectResize({ objectId: left.id, dimensions: { widthMm: 6000 } });
+    expect(result).toMatchObject({ staged: false, valid: false, stageId: null });
+    expect(result.conflicts).toContainEqual(
+      expect.objectContaining({ type: "opening-outside-wall" }),
+    );
+    expect(currentObject(left.id).dimensions.width).toBe(2400);
+    expect(useEditorStore.getState().pendingAgentChange).toBeNull();
   });
 });

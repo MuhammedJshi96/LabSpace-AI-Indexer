@@ -135,6 +135,8 @@ export type PlacementConflict = {
     | "below-floor"
     | "above-room-height"
     | "missing-support-surface"
+    | "opening-outside-wall"
+    | "opening-overlap"
     | "restricted-object";
   objectId?: string;
   indexCode?: string;
@@ -149,6 +151,28 @@ export type ValidateObjectMoveResult = {
   objectIndexCode: string;
   roomCode: string;
   target: { xMm: number; yMm: number; zMm: number; rotationDeg: number };
+  conflicts: PlacementConflict[];
+};
+
+export type ObjectDimensionsMm = {
+  widthMm: number;
+  depthMm: number;
+  heightMm: number;
+};
+
+export type ValidateObjectResizeInput = {
+  objectId: string;
+  dimensions: Partial<ObjectDimensionsMm>;
+};
+
+export type ValidateObjectResizeResult = {
+  valid: boolean;
+  objectId: string;
+  objectName: string;
+  objectIndexCode: string;
+  roomCode: string;
+  current: ObjectDimensionsMm;
+  proposed: ObjectDimensionsMm;
   conflicts: PlacementConflict[];
 };
 
@@ -180,6 +204,7 @@ export type RecommendObjectPlacementsResult = {
 
 export type LabSpaceSpatialActions = {
   validateObjectMove: (input: unknown) => ValidateObjectMoveResult;
+  validateObjectResize: (input: unknown) => ValidateObjectResizeResult;
   recommendObjectPlacements: (input: unknown) => RecommendObjectPlacementsResult;
 };
 
@@ -473,8 +498,31 @@ export type PendingAgentMoveChange = {
   };
 };
 
+export type PendingAgentResizeChange = {
+  stageId: string;
+  tool: "resize";
+  roomId: string;
+  objectId: string;
+  objectName: string;
+  objectIndexCode: string;
+  before: SceneObject;
+  proposed: SceneObject;
+  validation: ValidateObjectResizeResult;
+  baselineDirtyRevision: number;
+  createdAt: string;
+  status: "pending";
+  timestamps: {
+    projectUpdatedAt: string;
+    roomUpdatedAt: string;
+    sceneUpdatedAt: string;
+  };
+};
+
 export type PendingAgentChange =
-  PendingAgentMoveChange | PendingAgentLayoutChange | PendingAgentInventoryChange;
+  | PendingAgentMoveChange
+  | PendingAgentResizeChange
+  | PendingAgentLayoutChange
+  | PendingAgentInventoryChange;
 
 export type StageObjectMoveResult = {
   staged: boolean;
@@ -482,6 +530,19 @@ export type StageObjectMoveResult = {
   objectId: string;
   objectName: string;
   proposed: { xMm: number; yMm: number; zMm: number; rotationDeg: number };
+  valid: boolean;
+  persisted: false;
+  requiresHumanApproval: boolean;
+  conflicts: PlacementConflict[];
+};
+
+export type StageObjectResizeResult = {
+  staged: boolean;
+  stageId: string | null;
+  objectId: string;
+  objectName: string;
+  current: ObjectDimensionsMm;
+  proposed: ObjectDimensionsMm;
   valid: boolean;
   persisted: false;
   requiresHumanApproval: boolean;
@@ -498,6 +559,7 @@ export type AgentMoveReviewResult = {
 
 export type LabSpaceStagingActions = {
   stageObjectMove: (input: unknown) => StageObjectMoveResult;
+  stageObjectResize: (input: unknown) => StageObjectResizeResult;
   stageRoomLayout: (input: unknown) => StageRoomLayoutResult;
   stageInventoryPlan: (input: unknown) => StageInventoryPlanResult;
   approveStagedObjectMove: (stageId: string) => AgentMoveReviewResult;

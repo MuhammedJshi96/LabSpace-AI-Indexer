@@ -24,17 +24,23 @@ import type {
   PendingAgentInventoryChange,
   PendingAgentLayoutChange,
   PendingAgentMoveChange,
+  PendingAgentResizeChange,
   PlannedWallSegment,
   StageRoomLayoutResult,
   StageInventoryPlanResult,
   StageObjectMoveResult,
+  StageObjectResizeResult,
 } from "./labspace-action-types";
 import { LabSpaceActionError } from "./labspace-read-actions";
-import { validateObjectMove } from "./labspace-spatial-actions";
+import { validateObjectMove, validateObjectResize } from "./labspace-spatial-actions";
 import { agentActivityActions } from "./agent-activity-store";
 import { getStoredRoomPlan } from "./labspace-layout-actions";
 import { getStoredInventoryPlan } from "./labspace-inventory-actions";
-import { hostOpeningAtPoint, projectPointToWall } from "../domain/wall-openings";
+import {
+  hostOpeningAtPoint,
+  projectPointToWall,
+  resolveHostedOpening,
+} from "../domain/wall-openings";
 import {
   consumeInitialRoomPlanAutoCommit,
   isInitialRoomPlanAutoCommitEligible,
@@ -64,6 +70,19 @@ function sameProposal(
     pending.proposed.position.y === target.yMm &&
     pending.proposed.position.z === target.zMm &&
     pending.proposed.rotation.z === target.rotationDeg
+  );
+}
+
+function sameResizeProposal(
+  pending: PendingAgentResizeChange,
+  objectId: string,
+  proposed: { widthMm: number; depthMm: number; heightMm: number },
+) {
+  return (
+    pending.objectId === objectId &&
+    pending.proposed.dimensions.width === proposed.widthMm &&
+    pending.proposed.dimensions.depth === proposed.depthMm &&
+    pending.proposed.dimensions.height === proposed.heightMm
   );
 }
 
@@ -398,6 +417,139 @@ export function stageObjectMove(input: unknown): StageObjectMoveResult {
   };
   useEditorStore.setState({ pendingAgentChange: change });
   return stagedResult(change);
+}
+
+function stagedResizeResult(change: PendingAgentResizeChange): StageObjectResizeResult {
+  return {
+    staged: true,
+    stageId: change.stageId,
+    objectId: change.objectId,
+    objectName: change.objectName,
+    current: change.validation.current,
+    proposed: change.validation.proposed,
+    valid: true,
+    persisted: false,
+    requiresHumanApproval: true,
+    conflicts: [],
+  };
+}
+
+function invalidResizeResult(
+  validation: ReturnType<typeof validateObjectResize>,
+): StageObjectResizeResult {
+  return {
+    staged: false,
+    stageId: null,
+    objectId: validation.objectId,
+    objectName: validation.objectName,
+    current: validation.current,
+    proposed: validation.proposed,
+    valid: false,
+    persisted: false,
+    requiresHumanApproval: false,
+    conflicts: validation.conflicts,
+  };
+}
+
+export function stageObjectResize(input: unknown): StageObjectResizeResult {
+  const validation = validateObjectResize(input);
+  if (!validation.valid) return invalidResizeResult(validation);
+
+  const state = useEditorStore.getState();
+  const existing = state.pendingAgentChange;
+  if (existing) {
+    if (
+      existing.tool === "resize" &&
+      sameResizeProposal(existing, validation.objectId, validation.proposed)
+    ) {
+      return stagedResizeResult(existing);
+    }
+    throw new LabSpaceActionError(
+      "Another agent change is awaiting human review. Approve or cancel it before staging a new resize.",
+    );
+  }
+  if (state.saveStatus !== "saved") {
+    throw new LabSpaceActionError(
+      "LabSpace must finish saving current human edits before an agent resize can be staged.",
+    );
+  }
+
+  const { room, object } = resolveObject(state.project, validation.objectId);
+  const stageId = crypto.randomUUID();
+  const record = buildDigitalTwinIndex(state.project).find(
+    (entry) => entry.roomId === room.id && entry.objectId === object.id,
+  );
+  const focused = state.applySpatialFocus({
+    requestId: crypto.randomUUID(),
+    recordId: record?.id ?? `agent-resize:${stageId}`,
+    roomId: room.id,
+    objectId: object.id,
+    locationId: null,
+    showStorageAccess: false,
+  });
+  if (!focused) throw new LabSpaceActionError("LabSpace could not present this resize for review.");
+
+  const before = structuredClone(object);
+  let candidate: SceneObject = {
+    ...object,
+    dimensions: {
+      width: validation.proposed.widthMm,
+      depth: validation.proposed.depthMm,
+      height: validation.proposed.heightMm,
+    },
+    ...(object.opening
+      ? {
+          opening: {
+            ...object.opening,
+            width: validation.proposed.widthMm,
+            height: validation.proposed.heightMm,
+          },
+        }
+      : {}),
+  };
+  if (candidate.opening) {
+    const projection = resolveHostedOpening(candidate, room.scene.objects);
+    if (!projection) {
+      throw new LabSpaceActionError("The hosted opening could not be resolved on its wall.");
+    }
+    candidate = { ...candidate, ...hostOpeningAtPoint(candidate, projection) };
+  }
+  useEditorStore.getState().previewObject(object.id, {
+    dimensions: candidate.dimensions,
+    ...(candidate.opening
+      ? {
+          position: candidate.position,
+          rotation: candidate.rotation,
+          opening: candidate.opening,
+        }
+      : {}),
+  });
+  const previewState = useEditorStore.getState();
+  const previewRoom = previewState.project.rooms.find((entry) => entry.id === room.id)!;
+  const proposed = structuredClone(
+    previewRoom.scene.objects.find((entry) => entry.id === object.id)!,
+  );
+  const change: PendingAgentResizeChange = {
+    stageId,
+    tool: "resize",
+    roomId: room.id,
+    objectId: object.id,
+    objectName: object.name,
+    objectIndexCode: object.indexCode,
+    before,
+    proposed,
+    validation,
+    baselineDirtyRevision: previewState.dirtyRevision,
+    createdAt: new Date().toISOString(),
+    status: "pending",
+    timestamps: {
+      projectUpdatedAt: state.project.updatedAt,
+      roomUpdatedAt: room.updatedAt,
+      sceneUpdatedAt: room.scene.updatedAt,
+    },
+  };
+  useEditorStore.setState({ pendingAgentChange: change });
+  return stagedResizeResult(change);
 }
 
 function normalizeStageRoomLayoutInput(input: unknown) {
@@ -765,6 +917,92 @@ function approveMove(pending: PendingAgentMoveChange): AgentMoveReviewResult {
   };
 }
 
+function cancelResize(pending: PendingAgentResizeChange): AgentMoveReviewResult {
+  const state = useEditorStore.getState();
+  const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
+  const current = room?.scene.objects.find((entry) => entry.id === pending.objectId);
+  if (room && sameObject(current, pending.proposed)) {
+    useEditorStore.setState({
+      project: {
+        ...state.project,
+        updatedAt: pending.timestamps.projectUpdatedAt,
+        rooms: state.project.rooms.map((entry) =>
+          entry.id === room.id
+            ? {
+                ...entry,
+                updatedAt: pending.timestamps.roomUpdatedAt,
+                scene: {
+                  ...entry.scene,
+                  updatedAt: pending.timestamps.sceneUpdatedAt,
+                  objects: entry.scene.objects.map((object) =>
+                    object.id === pending.objectId ? pending.before : object,
+                  ),
+                },
+              }
+            : entry,
+        ),
+      },
+      pendingAgentChange: null,
+    });
+  } else {
+    useEditorStore.setState({ pendingAgentChange: null });
+  }
+  useEditorStore.getState().pushToast("Agent resize cancelled. The layout was not saved.", "info");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Resize rejected",
+    subject: pending.objectName,
+    status: "rejected",
+    evidence: "Preview removed · project data unchanged",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.objectId,
+    status: "cancelled",
+    persisted: false,
+  };
+}
+
+function approveResize(pending: PendingAgentResizeChange): AgentMoveReviewResult {
+  const state = useEditorStore.getState();
+  const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
+  const current = room?.scene.objects.find((entry) => entry.id === pending.objectId);
+  if (
+    state.dirtyRevision !== pending.baselineDirtyRevision ||
+    !sameObject(current, pending.proposed)
+  ) {
+    cancelResize(pending);
+    throw new LabSpaceActionError(
+      "The staged resize became stale because the layout changed. It was not committed.",
+    );
+  }
+  useEditorStore.setState({ pendingAgentChange: null });
+  useEditorStore.getState().commitPreview(pending.before, "Approve agent resize");
+  useEditorStore
+    .getState()
+    .pushToast("Agent resize approved. LabSpace is saving the change.", "success");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Resize approved",
+    subject: pending.objectName,
+    status: "approved",
+    evidence: "Explicit researcher approval",
+  });
+  agentActivityActions.record({
+    actor: "LabSpace",
+    action: "Change committed",
+    subject: pending.objectName,
+    status: "committed",
+    evidence: "One history entry · Undo available",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.objectId,
+    status: "approved",
+    persisted: false,
+  };
+}
+
 function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
   const state = useEditorStore.getState();
   const room = state.project.rooms.find((entry) => entry.id === pending.roomId);
@@ -1034,7 +1272,9 @@ export function cancelStagedChange(stageId: string): AgentMoveReviewResult {
     ? cancelLayout(pending)
     : pending.tool === "inventory"
       ? cancelInventory(pending)
-      : cancelMove(pending);
+      : pending.tool === "resize"
+        ? cancelResize(pending)
+        : cancelMove(pending);
 }
 
 export function approveStagedChange(stageId: string): AgentMoveReviewResult {
@@ -1043,7 +1283,9 @@ export function approveStagedChange(stageId: string): AgentMoveReviewResult {
     ? approveLayout(pending)
     : pending.tool === "inventory"
       ? approveInventory(pending)
-      : approveMove(pending);
+      : pending.tool === "resize"
+        ? approveResize(pending)
+        : approveMove(pending);
 }
 
 export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {
@@ -1060,6 +1302,7 @@ export function approveStagedObjectMove(stageId: string): AgentMoveReviewResult 
 
 export const labSpaceStagingActions: LabSpaceStagingActions = {
   stageObjectMove,
+  stageObjectResize,
   stageRoomLayout,
   stageInventoryPlan,
   approveStagedObjectMove,

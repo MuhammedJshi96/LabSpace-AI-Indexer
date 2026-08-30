@@ -702,6 +702,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({
       selectedIds: additive ? Array.from(new Set([...state.selectedIds, ...ids])) : ids,
       panel: ids.length ? "properties" : state.panel,
+      ...(!additive && !ids.length
+        ? {
+            selectedLocationId: null,
+            spatialFocus: null,
+            digitalTwinSelectedRecordId: null,
+            hoveredId: null,
+          }
+        : {}),
     })),
   setHovered: (hoveredId) => set({ hoveredId }),
   setSelectedLocation: (selectedLocationId) => {

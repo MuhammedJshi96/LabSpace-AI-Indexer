@@ -1,0 +1,349 @@
+{
+  "wall-cabinet": {
+    "parts": [
+      {
+        "id": "wall cabinet left door",
+        "kind": "hinge",
+        "bay": "wall cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": -0.2449999983443155,
+          "y": 0.06000000021287374,
+          "z": 0.31071466975186335,
+          "width": 0.46999999006589294,
+          "height": 0.900000003193106
+        }
+      },
+      {
+        "id": "wall cabinet right door",
+        "kind": "hinge",
+        "bay": "wall cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": 0.2449999983443155,
+          "y": 0.06000000021287374,
+          "z": 0.31071466975186335,
+          "width": 0.46999999006589294,
+          "height": 0.900000003193106
+        }
+      }
+    ],
+    "shelfLevels": [0.66, 0.34]
+  },
+  "base-cabinet": {
+    "parts": [
+      {
+        "id": "Shimadzu base cabinet lower door 1",
+        "kind": "hinge",
+        "bay": "Shimadzu base cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": -0.23194442807156318,
+          "y": 0.15294119482634466,
+          "z": 0.44333332008785725,
+          "width": 0.45055554510634593,
+          "height": 0.5482353237755996
+        }
+      },
+      {
+        "id": "Shimadzu base cabinet lower door 2",
+        "kind": "hinge",
+        "bay": "Shimadzu base cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": 0.23194442807156318,
+          "y": 0.15294119482634466,
+          "z": 0.44333332008785725,
+          "width": 0.45055554510634593,
+          "height": 0.5482353237755996
+        }
+      },
+      {
+        "id": "Shimadzu base cabinet top drawer 1",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.3720000147819519,
+        "region": {
+          "x": -0.23194442807156318,
+          "y": 0.7200000168295475,
+          "z": 0.44333332008785725,
+          "width": 0.45055554510634593,
+          "height": 0.20941174210149016
+        }
+      },
+      {
+        "id": "Shimadzu base cabinet top drawer 2",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.3720000147819519,
+        "region": {
+          "x": 0.23194442807156318,
+          "y": 0.7200000168295475,
+          "z": 0.44333332008785725,
+          "width": 0.45055554510634593,
+          "height": 0.20941174210149016
+        }
+      }
+    ],
+    "shelfLevels": []
+  },
+  "base-drawer-cabinet": {
+    "parts": [
+      {
+        "id": "Three-drawer bank drawer 1",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.3720000147819519,
+        "region": {
+          "x": 0,
+          "y": 0.15176472180442482,
+          "z": 0.44333332008785725,
+          "width": 0.871666635208661,
+          "height": 0.20235293903152826
+        }
+      },
+      {
+        "id": "Three-drawer bank drawer 2",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.3720000147819519,
+        "region": {
+          "x": 0,
+          "y": 0.3635294099497547,
+          "z": 0.44333332008785725,
+          "width": 0.871666635208661,
+          "height": 0.24941175472365076
+        }
+      },
+      {
+        "id": "Three-drawer bank drawer 3",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.3720000147819519,
+        "region": {
+          "x": 0,
+          "y": 0.6223529488487642,
+          "z": 0.44333332008785725,
+          "width": 0.871666635208661,
+          "height": 0.3058823545911321
+        }
+      }
+    ],
+    "shelfLevels": []
+  },
+  "lab-bench": {
+    "parts": [
+      {
+        "id": "Bench center paired-door cabinet lower door 1",
+        "kind": "hinge",
+        "bay": "Bench center paired-door cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": -0.10416666942614103,
+          "y": 0.1444444499633928,
+          "z": 0.4479999939600627,
+          "width": 0.20166668333389184,
+          "height": 0.517777763428512
+        }
+      },
+      {
+        "id": "Bench center paired-door cabinet lower door 2",
+        "kind": "hinge",
+        "bay": "Bench center paired-door cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": 0.10416666942614103,
+          "y": 0.1444444499633928,
+          "z": 0.4479999939600627,
+          "width": 0.20166668333389184,
+          "height": 0.517777763428512
+        }
+      },
+      {
+        "id": "Bench center paired-door cabinet top drawer 1",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": -0.10416666942614103,
+          "y": 0.6799999602635717,
+          "z": 0.4479999939600627,
+          "width": 0.20166668333389184,
+          "height": 0.19777774024892886
+        }
+      },
+      {
+        "id": "Bench center paired-door cabinet top drawer 2",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": 0.10416666942614103,
+          "y": 0.6799999602635717,
+          "z": 0.4479999939600627,
+          "width": 0.20166668333389184,
+          "height": 0.19777774024892886
+        }
+      },
+      {
+        "id": "Bench left three-drawer bank drawer 1",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": -0.338888905813665,
+          "y": 0.14333333664470235,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.2888888668130954
+        }
+      },
+      {
+        "id": "Bench left three-drawer bank drawer 2",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": -0.338888905813665,
+          "y": 0.44111111000732145,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.23555555997071426
+        }
+      },
+      {
+        "id": "Bench left three-drawer bank drawer 3",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": -0.338888905813665,
+          "y": 0.6855555103001789,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.19111115967785677
+        }
+      },
+      {
+        "id": "Bench right three-drawer bank drawer 1",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": 0.338888905813665,
+          "y": 0.14333333664470235,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.2888888668130954
+        }
+      },
+      {
+        "id": "Bench right three-drawer bank drawer 2",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": 0.338888905813665,
+          "y": 0.44111111000732145,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.23555555997071426
+        }
+      },
+      {
+        "id": "Bench right three-drawer bank drawer 3",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": 0.338888905813665,
+          "y": 0.6855555103001789,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.19111115967785677
+        }
+      }
+    ],
+    "shelfLevels": []
+  },
+  "mobile-bench": {
+    "parts": [
+      {
+        "id": "mobile cabinet left door",
+        "kind": "hinge",
+        "bay": "mobile cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": -0.22485740051179084,
+          "y": 0.15777777121289063,
+          "z": 0.45428570601404916,
+          "width": 0.43166080824773206,
+          "height": 0.46222221088998083
+        }
+      },
+      {
+        "id": "mobile cabinet right door",
+        "kind": "hinge",
+        "bay": "mobile cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "region": {
+          "x": 0.21339366257667386,
+          "y": 0.15777777121289063,
+          "z": 0.45428570601404916,
+          "width": 0.43166080824773206,
+          "height": 0.46222221088998083
+        }
+      },
+      {
+        "id": "mobile drawer 1",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": -0.005731868967558494,
+          "y": 0.793333340161095,
+          "z": 0.45428570601404916,
+          "width": 0.8699118713361967,
+          "height": 0.15555554378179826
+        }
+      },
+      {
+        "id": "mobile drawer 2",
+        "kind": "drawer",
+        "bay": "",
+        "angle": 0,
+        "travel": 0.42,
+        "region": {
+          "x": -0.005731868967558494,
+          "y": 0.6288888892410841,
+          "z": 0.45428570601404916,
+          "width": 0.8699118713361967,
+          "height": 0.15555554378179826
+        }
+      }
+    ],
+    "shelfLevels": []
+  }
+}

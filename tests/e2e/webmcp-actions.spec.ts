@@ -337,6 +337,66 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
   await expect(inspector).toContainText("DevTools is a debugger, not an AI chat");
 });
 
+test("keeps dialogs above the header and inspector at narrow and short viewport sizes", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  const before = await readProject(page);
+  await page.getByRole("button", { name: /Open WebMCP Inspector/ }).click();
+
+  for (const viewport of [
+    { width: 1078, height: 912 },
+    { width: 1280, height: 720 },
+    { width: 1078, height: 640 },
+    { width: 1920, height: 1080 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.getByRole("button", { name: "Open project workspace", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "Laboratories and rooms", exact: true });
+    await expect(dialog).toBeVisible();
+    const coverage = await dialog.evaluate((element) => {
+      const backdrop = element.closest(".modal-backdrop")!;
+      const box = element.getBoundingClientRect();
+      const heading = element.querySelector("header")!.getBoundingClientRect();
+      return {
+        headerCovered: backdrop.contains(document.elementFromPoint(40, 35)),
+        inspectorCovered: backdrop.contains(document.elementFromPoint(innerWidth - 20, 150)),
+        titleUnobscured: element.contains(
+          document.elementFromPoint(heading.x + 30, heading.y + 15),
+        ),
+        withinViewport:
+          box.left >= 16 &&
+          box.top >= 16 &&
+          box.right <= innerWidth - 16 &&
+          box.bottom <= innerHeight - 16,
+      };
+    });
+    expect(coverage).toEqual({
+      headerCovered: true,
+      inspectorCovered: true,
+      titleUnobscured: true,
+      withinViewport: true,
+    });
+    await dialog.getByRole("button", { name: "Close dialog", exact: true }).click({ trial: true });
+    if (viewport.width === 1078 && viewport.height === 912) {
+      await page.screenshot({ path: testInfo.outputPath("project-dialog-1078.png") });
+    }
+    await dialog.getByRole("button", { name: "Rename project", exact: true }).click();
+    const rename = page.getByRole("dialog", { name: "Rename project", exact: true });
+    await expect(rename).toBeVisible();
+    await rename.getByRole("button", { name: "Cancel", exact: true }).click();
+    await dialog.getByRole("button", { name: "Close dialog", exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+  }
+
+  await page.getByRole("button", { name: "Application settings", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Editor settings" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Editor settings" })).toHaveCount(0);
+  expect(await readProject(page)).toEqual(before);
+});
+
 test("searches, plans, previews, approves, persists, and reverses a reviewed room blueprint", async ({
   page,
 }) => {
@@ -655,6 +715,171 @@ test("searches and focuses canonical indexed evidence across rooms", async ({ pa
   }>(page, "labspace_get_context", {});
   expect(context.room.code).toBe("DEMO-01");
   expect(context.selection.storageLocationId).toBeTruthy();
+});
+
+test("dismisses exact-location selection without reloading or changing room data", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  // This isolated test DB fixture keeps the real indexed cabinet and shelf,
+  // without compiling every unrelated hero asset for each focus interaction.
+  const fixture = await readProject(page);
+  const demo = eligibleDemoRoom(fixture);
+  const item = demo.scene.inventoryItems.find((entry) => entry.name === "Reference standards")!;
+  const location = demo.scene.storageLocations.find(
+    (entry) => entry.id === item.storageLocationId,
+  )!;
+  demo.scene.objects = demo.scene.objects.filter((entry) => entry.id === location.objectId);
+  demo.scene.storageLocations = demo.scene.storageLocations.filter(
+    (entry) => entry.objectId === location.objectId,
+  );
+  demo.scene.inventoryItems = [item];
+  demo.scene.equipmentRecords = [];
+  fixture.activeRoomId = demo.id;
+  expect(
+    (await page.request.put(`/api/project/${fixture.id}`, { data: fixture })).ok(),
+  ).toBeTruthy();
+  await page.goto("/digital-twin");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  await page.getByRole("button", { name: "2D fallback", exact: true }).click();
+  const before = await readProject(page);
+  const search = await executeTool<{
+    results: Array<{ recordId: string; roomCode: string; name: string }>;
+  }>(page, "labspace_search_records", { query: "Reference standards" });
+  const reference = search.results.find(
+    (record) => record.name === "Reference standards" && record.roomCode === "DEMO-01",
+  )!;
+  const focus = async () => {
+    await executeTool(page, "labspace_focus_record", { recordId: reference.recordId });
+    await page.getByRole("button", { name: "2D fallback", exact: true }).click({ timeout: 10000 });
+    await expect(page.getByRole("button", { name: "Clear selection", exact: true })).toBeVisible();
+  };
+  const expectClear = async () => {
+    await expect(page.getByText("Select an indexed record", { exact: true })).toBeVisible();
+    const context = await executeTool<{
+      selection: { objectIds: string[]; storageLocationId: string | null };
+    }>(page, "labspace_get_context", {});
+    expect(context.selection).toEqual({ objectIds: [], storageLocationId: null });
+  };
+  await focus();
+  await page.getByRole("button", { name: "Clear selection", exact: true }).click();
+  await expectClear();
+  await focus();
+  await page.getByRole("button", { name: "Clear selection", exact: true }).focus();
+  await page.keyboard.press("Escape");
+  await expectClear();
+  await page.getByRole("button", { name: /^Inventory \d+$/ }).click();
+  const result = page
+    .locator(".twin-result-list > button")
+    .filter({ has: page.locator(".twin-result-name", { hasText: /^Reference standards$/ }) })
+    .first();
+  await result.dblclick({ timeout: 10000 });
+  await page.getByRole("button", { name: "2D fallback", exact: true }).click({ timeout: 10000 });
+  await expect(result).toHaveAttribute("aria-pressed", "true");
+  await result.click({ timeout: 10000 });
+  await expect(result).toHaveAttribute("aria-pressed", "false");
+  await expectClear();
+  expect((await readProject(page)).rooms).toEqual(before.rooms);
+});
+
+test("opens real cabinet doors and drawers without changing saved room data", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const fixture = await readProject(page);
+  const demo = eligibleDemoRoom(fixture);
+  const item = demo.scene.inventoryItems.find((entry) => entry.name === "Reference standards")!;
+  const shelf = demo.scene.storageLocations.find((entry) => entry.id === item.storageLocationId)!;
+  const cabinet = demo.scene.objects.find((entry) => entry.id === shelf.objectId)!;
+  demo.scene.objects = [cabinet];
+  demo.scene.storageLocations = demo.scene.storageLocations.filter(
+    (entry) => entry.objectId === cabinet.id,
+  );
+  demo.scene.inventoryItems = [item];
+  demo.scene.equipmentRecords = [];
+  fixture.activeRoomId = demo.id;
+  expect(
+    (await page.request.put(`/api/project/${fixture.id}`, { data: fixture })).ok(),
+  ).toBeTruthy();
+  await page.goto("/digital-twin");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  const before = await readProject(page);
+  await page.getByRole("textbox", { name: "Search spatial index" }).fill("Reference standards");
+  await page.getByRole("button", { name: "Find indexed records" }).click();
+  const open = page.getByRole("button", { name: "Show access preview", exact: true });
+  await expect(open).toHaveAttribute("aria-pressed", "false");
+  await expect(open).toHaveAttribute(
+    "data-storage-parts",
+    "wall cabinet left door|wall cabinet right door",
+  );
+  await expect(page.locator("#storage-access-note")).toContainText("2 fixed internal shelves");
+  await open.click();
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "true");
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true");
+  await page
+    .getByTestId("3d-view")
+    .screenshot({ path: "test-results/storage-wall-cabinet-open.png" });
+  await page.getByRole("button", { name: "Close access preview", exact: true }).click();
+  await expect(open).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "false");
+  await open.click();
+  await page.getByRole("button", { name: "Clear selection", exact: true }).click();
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "false");
+  expect((await readProject(page)).rooms).toEqual(before.rooms);
+
+  // Same isolated fixture, now a physical three-drawer cabinet. This changes
+  // only the test database; the user's local project is never reset or edited.
+  cabinet.assetDefinitionId = "base-drawer-cabinet";
+  cabinet.dimensions = { width: 600, depth: 600, height: 850 };
+  cabinet.position.z = 0;
+  shelf.type = "drawer";
+  shelf.name = "Drawer 01";
+  expect(
+    (await page.request.put(`/api/project/${fixture.id}`, { data: fixture })).ok(),
+  ).toBeTruthy();
+  await page.reload();
+  await page.getByRole("textbox", { name: "Search spatial index" }).fill("Reference standards");
+  await page.getByRole("button", { name: "Find indexed records" }).click();
+  await expect(open).toHaveAttribute("data-storage-parts", "Three-drawer bank drawer 3");
+  await open.click();
+  await expect(page.locator("#storage-access-note")).toContainText("1 drawer");
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "true");
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true");
+  await page.getByTestId("3d-view").screenshot({ path: "test-results/storage-drawer-open.png" });
+  await page.getByRole("button", { name: "Close access preview", exact: true }).click();
+  await expect(open).toHaveAttribute("aria-pressed", "false");
+});
+
+test("fits named authored assets and resets preview views at a narrow desktop size", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1078, height: 912 });
+  await page.goto("/asset-preview?asset=corner-lab-bench");
+  const before = await readProject(page);
+  const preview = page.locator(".asset-preview-canvas");
+  for (const [id, name] of [
+    ["corner-lab-bench", "Corner laboratory bench Furniture"],
+    ["computer-workstation", "Computer workstation Laboratory equipment"],
+    ["mobile-bench", "Mobile bench Furniture"],
+    ["office-desk", "Office desk Furniture"],
+    ["lab-bench", "Standard laboratory bench Furniture"],
+    ["stainless-wash-basin", "Open stainless laboratory wash basin Furniture"],
+  ]) {
+    await page.getByRole("button", { name, exact: true }).click();
+    await expect(preview).toHaveAttribute("data-asset-id", id);
+    await expect(preview).toHaveAttribute("data-model-ready", "true");
+    await expect(preview.locator("canvas")).toBeVisible();
+    for (const view of ["Front", "Back", "Top", "Iso"]) {
+      await page.getByRole("button", { name: view, exact: true }).click();
+      await expect(page.getByRole("button", { name: view, exact: true })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    }
+    await page.getByRole("button", { name: "Fit", exact: true }).click();
+    await preview.screenshot({ path: `test-results/asset-polish-${id}.png` });
+  }
+  expect((await readProject(page)).rooms).toEqual(before.rooms);
 });
 
 test("finds ranked valid placements without changing the canonical room", async ({ page }) => {

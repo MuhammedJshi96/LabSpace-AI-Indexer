@@ -170,10 +170,27 @@ describe("LabSpace spatial record focus", () => {
     expect(result.roomCode).toBe("CURRENT-ROOM");
   });
 
+  it("clears record, storage and camera focus together when the canvas selection is dismissed", () => {
+    const state = useEditorStore.getState();
+    const record = eligibleRecord(state.project, "inventory");
+    focusLabRecord({ recordId: record.id });
+    const before = useEditorStore.getState();
+    useEditorStore.getState().setSelected([]);
+    const after = useEditorStore.getState();
+    expect(after.selectedIds).toEqual([]);
+    expect(after.selectedLocationId).toBeNull();
+    expect(after.digitalTwinSelectedRecordId).toBeNull();
+    expect(after.spatialFocus).toBeNull();
+    expect(after.project).toBe(before.project);
+    expect(after.history).toBe(before.history);
+    expect(after.dirtyRevision).toBe(before.dirtyRevision);
+  });
+
   it("applies exact selection and camera focus without dirtying project data or history", () => {
     const beforeState = useEditorStore.getState();
     const record = buildDigitalTwinIndex(beforeState.project).find(
-      (entry) => entry.roomId === beforeState.project.activeRoomId && entry.objectId && entry.locationId,
+      (entry) =>
+        entry.roomId === beforeState.project.activeRoomId && entry.objectId && entry.locationId,
     )!;
     const projectBefore = beforeState.project;
 

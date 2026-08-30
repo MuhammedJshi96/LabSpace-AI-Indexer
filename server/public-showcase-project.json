@@ -35,18 +35,18 @@
         "cameraPreset": "isometric",
         "presentation": "split",
         "floorVisible": true,
-        "wallTransparent": false,
+        "wallTransparent": true,
         "environmentContextVisible": false,
         "cameraPose": {
           "position": {
-            "x": -5.977808873808961,
-            "y": 9.319726962584227,
-            "z": 9.9630147896816
+            "x": 8.905401515849846,
+            "y": 9.455401515846708,
+            "z": 8.905401515687425
           },
           "target": {
-            "x": 0,
-            "y": 0.78,
-            "z": 0
+            "x": 5.107883629158362e-53,
+            "y": 0.55,
+            "z": -8.731433894766312e-52
           }
         }
       },
@@ -54,8 +54,8 @@
       "width": 8635.088565005668,
       "depth": 8705.013412784381,
       "wallHeight": 3000,
-      "floorFinish": "warm-welded-vinyl",
-      "wallFinish": "light-ceramic-tile",
+      "floorFinish": "ivory-porcelain",
+      "wallFinish": "pale-oak-accent",
       "notes": "Storage-first Build Week demonstration based on Room 809, staged as a simple equipment-to-cabinet Digital Twin workflow. New rooms remain blank.",
       "scene": {
         "schemaVersion": 2,
@@ -1087,19 +1087,19 @@
             "assetDefinitionId": "office-desk",
             "objectType": "furniture",
             "position": {
-              "x": 1467.3916199895605,
-              "y": 5592.319524934714,
+              "x": 1467.3916199895611,
+              "y": 5592.3195249347245,
               "z": 0
             },
             "dimensions": {
-              "width": 1400,
-              "depth": 700,
+              "width": 1399.9999999999998,
+              "depth": 700.0000000000031,
               "height": 850
             },
             "rotation": {
               "x": 0,
               "y": 0,
-              "z": 0
+              "z": 180
             },
             "layerId": "layer-furniture-003",
             "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
@@ -1108,7 +1108,7 @@
             "visible": true,
             "metadata": {},
             "createdAt": "2026-07-19T02:55:15.765Z",
-            "updatedAt": "2026-07-19T02:57:43.755Z",
+            "updatedAt": "2026-08-30T05:53:36.415Z",
             "parentObjectId": null,
             "childLocationIds": [],
             "zIndex": 136,
@@ -1122,19 +1122,19 @@
             "assetDefinitionId": "office-desk",
             "objectType": "furniture",
             "position": {
-              "x": 428.4218175079302,
-              "y": 4546.742107729388,
+              "x": 428.42181750795254,
+              "y": 4546.7421077293975,
               "z": 0
             },
             "dimensions": {
-              "width": 1399.9999999999914,
-              "depth": 699.9999999999962,
+              "width": 1399.9999999999905,
+              "depth": 700.0000000000018,
               "height": 850
             },
             "rotation": {
               "x": 0,
               "y": 0,
-              "z": 90
+              "z": -90.0000000000002
             },
             "layerId": "layer-furniture-003",
             "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
@@ -1143,7 +1143,7 @@
             "visible": true,
             "metadata": {},
             "createdAt": "2026-07-19T02:55:23.963Z",
-            "updatedAt": "2026-07-19T02:57:39.455Z",
+            "updatedAt": "2026-08-30T05:54:03.936Z",
             "parentObjectId": null,
             "childLocationIds": [],
             "zIndex": 137,
@@ -1157,8 +1157,8 @@
             "assetDefinitionId": "office-chair",
             "objectType": "furniture",
             "position": {
-              "x": 1151.840917616699,
-              "y": 4876.660133316371,
+              "x": 1202.2373035075989,
+              "y": 4800,
               "z": 0
             },
             "dimensions": {
@@ -1178,10 +1178,10 @@
             "visible": true,
             "metadata": {},
             "createdAt": "2026-07-19T02:56:10.941Z",
-            "updatedAt": "2026-07-19T02:56:47.219Z",
+            "updatedAt": "2026-08-30T05:55:04.691Z",
             "parentObjectId": null,
             "childLocationIds": [],
-            "zIndex": 138,
+            "zIndex": -2,
             "flipHorizontal": false,
             "flipVertical": false
           },
@@ -1995,7 +1995,7 @@
             "assetDefinitionId": "laboratory-chair",
             "objectType": "furniture",
             "position": {
-              "x": 1202.2373035075989,
+              "x": 1142.7251383987234,
               "y": 2455.1957566195424,
               "z": 0
             },
@@ -2016,10 +2016,45 @@
             "visible": true,
             "metadata": {},
             "createdAt": "2026-07-19T13:05:11.999Z",
-            "updatedAt": "2026-08-25T04:31:28.340Z",
+            "updatedAt": "2026-08-30T05:54:28.738Z",
             "parentObjectId": null,
             "childLocationIds": [],
             "zIndex": 161,
+            "flipHorizontal": false,
+            "flipVertical": false
+          },
+          {
+            "id": "3a0bcb59-1588-4d62-86d1-e1425f0044df",
+            "indexCode": "LAB-01-DEMO-01-Z01-OBJ-025",
+            "name": "Round stool",
+            "assetDefinitionId": "round-stool",
+            "objectType": "furniture",
+            "position": {
+              "x": 7749.259068870999,
+              "y": 4532.587614375268,
+              "z": 0
+            },
+            "dimensions": {
+              "width": 440,
+              "depth": 440,
+              "height": 520
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "layerId": "layer-furniture-003",
+            "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
+            "zoneId": "dc0f5515-6a6c-4e90-b9f0-9b591776bbd5",
+            "locked": false,
+            "visible": true,
+            "metadata": {},
+            "createdAt": "2026-08-30T05:55:18.401Z",
+            "updatedAt": "2026-08-30T05:55:22.223Z",
+            "parentObjectId": null,
+            "childLocationIds": [],
+            "zIndex": 162,
             "flipHorizontal": false,
             "flipVertical": false
           }
@@ -2670,10 +2705,10 @@
             "showDescription": false
           }
         ],
-        "updatedAt": "2026-08-29T15:32:13.834Z"
+        "updatedAt": "2026-08-30T05:55:22.223Z"
       },
       "createdAt": "2026-07-19T02:37:32.319Z",
-      "updatedAt": "2026-08-29T17:31:08.514Z"
+      "updatedAt": "2026-08-30T05:55:31.450Z"
     },
     {
       "id": "8267c32d-537c-49c9-8bbc-85b35e2fec16",
@@ -7977,9 +8012,9 @@
       "name": "Office for Students",
       "code": "812",
       "facilityPlacement": {
-        "floor": 7,
-        "x": -9665,
-        "y": -3499,
+        "floor": 6,
+        "x": 0,
+        "y": 0,
         "rotation": 0
       },
       "viewState": {
@@ -7990,13 +8025,13 @@
         "environmentContextVisible": false,
         "cameraPose": {
           "position": {
-            "x": 4.336912959960236,
-            "y": 10.658562253155091,
-            "z": 6.976065479883528
+            "x": -3.719534979055872,
+            "y": 6.093621398651241,
+            "z": 6.199224965093119
           },
           "target": {
             "x": 0,
-            "y": 0.55,
+            "y": 0.78,
             "z": 0
           }
         }
@@ -8751,10 +8786,10 @@
         "updatedAt": "2026-08-29T17:32:42.640Z"
       },
       "createdAt": "2026-08-29T16:50:59.223Z",
-      "updatedAt": "2026-08-29T17:32:42.640Z"
+      "updatedAt": "2026-08-30T03:59:03.260Z"
     }
   ],
-  "activeRoomId": "f5479caf-2fc5-44ad-89be-e358c44563d0",
+  "activeRoomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
   "createdAt": "2026-07-19T02:37:27.390Z",
-  "updatedAt": "2026-08-29T17:32:44.208Z"
+  "updatedAt": "2026-08-30T05:55:32.390Z"
 }

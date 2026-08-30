@@ -3,6 +3,7 @@ import {
   cameraCommandKey,
   digitalTwinCameraApproach,
   editorInitialIsometricPosition,
+  isCameraFocusClear,
 } from "../../src/domain/camera-command";
 
 describe("3D camera command identity", () => {
@@ -13,6 +14,16 @@ describe("3D camera command identity", () => {
     focusObjectId: null,
     focusLocationId: null,
   };
+
+  it("preserves the viewpoint only when focus is dismissed in the same view", () => {
+    const focused = { ...command, focusObjectId: "cabinet", focusLocationId: "shelf" };
+    expect(isCameraFocusClear(focused, command)).toBe(true);
+    expect(isCameraFocusClear(null, command)).toBe(false);
+    expect(isCameraFocusClear(command, command)).toBe(false);
+    expect(isCameraFocusClear(focused, { ...command, roomId: "another-room" })).toBe(false);
+    expect(isCameraFocusClear(focused, { ...command, preset: "top" })).toBe(false);
+    expect(isCameraFocusClear(focused, { ...command, presentation: "digital-twin" })).toBe(false);
+  });
 
   it("does not include mutable scene geometry", () => {
     const beforeObjectMove = cameraCommandKey(command);

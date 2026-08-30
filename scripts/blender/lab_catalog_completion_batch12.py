@@ -227,33 +227,160 @@ def add_casework_face(prefix: str, width: float, front: float, height: float, z0
 def build_corner_bench(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
-    run = w * 0.55
-    box("corner bench long base", (-w * 0.19, d * 0.27, h * 0.44), (w * 0.62, d * 0.45, h * 0.76), m["powder"], bevel=0.012, category="casework")
-    box("corner bench return base", (w * 0.275, -d * 0.17, h * 0.44), (w * 0.45, d * 0.58, h * 0.76), m["powder"], bevel=0.012, category="casework")
-    box("corner phenolic long top", (-w * 0.19, d * 0.27, h * 0.96), (w * 0.62, d * 0.48, h * 0.06), m["phenolic"], bevel=0.012, category="worktop")
-    box("corner phenolic return top", (w * 0.275, -d * 0.17, h * 0.96), (w * 0.48, d * 0.58, h * 0.06), m["phenolic"], bevel=0.012, category="worktop")
-    add_casework_face("corner long", w * 0.56, d * 0.035, h * 0.70)
-    for x in (-w * 0.41, w * 0.37):
-        box("corner recessed plinth", (x, d * 0.31, 0.06), (run * 0.12, d * 0.31, 0.12), m["shadow"], bevel=0.006, category="plinth")
+    # One manufactured L slab, not two intersecting/floating rectangular tops.
+    # Kewaunee steel-casework cues: folded gables, flush fronts, recessed toe space.
+    outline = [(-w / 2, 0.10), (0.10, 0.10), (0.10, -d / 2),
+               (w / 2, -d / 2), (w / 2, d / 2), (-w / 2, d / 2)]
+    vertices = [(x, y, z) for z in (h - 0.038, h) for x, y in outline]
+    faces = [tuple(reversed(range(6))), tuple(range(6, 12))]
+    faces += [(i, (i + 1) % 6, (i + 1) % 6 + 6, i + 6) for i in range(6)]
+    mesh = bpy.data.meshes.new("continuous L phenolic slab")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    slab = bpy.data.objects.new("continuous L-shaped phenolic worktop", mesh)
+    bpy.context.collection.objects.link(slab)
+    furniture.assign_material(slab, m["phenolic"])
+    furniture.parent_to_root(slab, "worktop")
+    bevel = slab.modifiers.new("Soft manufactured slab edge", "BEVEL")
+    bevel.width, bevel.segments = 0.004, 4
+    bevel.harden_normals = True
+
+    def cabinet_run(center: tuple[float, float], angle: float, drawers: bool) -> None:
+        before = set(bpy.data.objects)
+        bw, bd, base, top = 0.840, 0.570, 0.105, h - 0.038
+        front = -bd / 2
+        box("folded run bottom", (0, 0, base + 0.011), (bw, bd, 0.022), m["powder_light"], bevel=0.003)
+        box("worktop bearing rail", (0, 0, top - 0.013), (bw, bd, 0.026), m["powder_light"], bevel=0.003)
+        for side in (-1, 1):
+            box("manufactured end gable", (side * (bw / 2 - 0.010), 0, (base + top) / 2),
+                (0.020, bd, top - base), m["powder_light"], bevel=0.003)
+        box("removable cabinet back", (0, bd / 2 - 0.009, (base + top) / 2),
+            (bw - 0.040, 0.018, top - base - 0.008), m["powder"], bevel=0.003, category="rear service")
+        box("recessed toe kick", (0, 0.038, base / 2), (bw - 0.025, bd - 0.076, base), m["powder"], bevel=0.003, category="plinth")
+        if drawers:
+            upper = top - 0.008
+            for index, height in enumerate((0.172, 0.228, 0.309)):
+                z = upper - height / 2
+                box(f"corner run drawer {index + 1}", (0, front - 0.004, z), (bw - 0.036, 0.020, height), m["powder_light"], bevel=0.003, category="drawer")
+                furniture.add_recessed_pull(f"corner drawer {index + 1}", 0, front - 0.014, z + height / 2 - 0.044, bw - 0.036, -1)
+                upper -= height + 0.008
+        else:
+            drawer_z = top - 0.008 - 0.086
+            box("return utility drawer", (0, front - 0.004, drawer_z), (bw - 0.036, 0.020, 0.172), m["powder_light"], bevel=0.003, category="drawer")
+            furniture.add_recessed_pull("return drawer", 0, front - 0.014, drawer_z + 0.042, bw - 0.036, -1)
+            door_top, door_bottom = top - 0.196, base + 0.012
+            leaf_w = (bw - 0.044) / 2
+            for side in (-1, 1):
+                x = side * (leaf_w + 0.008) / 2
+                box("return cabinet leaf", (x, front - 0.004, (door_top + door_bottom) / 2),
+                    (leaf_w, 0.020, door_top - door_bottom), m["powder_light"], bevel=0.003, category="door")
+                furniture.add_vertical_door_pull("return satin pull", side * 0.034, front - 0.014, door_top - 0.12, -1)
+        for obj in set(bpy.data.objects) - before:
+            x, y = obj.location.x, obj.location.y
+            obj.location.x = center[0] + x * math.cos(angle) - y * math.sin(angle)
+            obj.location.y = center[1] + x * math.sin(angle) + y * math.cos(angle)
+            obj.rotation_euler.z += angle
+
+    cabinet_run((-0.280, 0.425), 0, True)
+    cabinet_run((0.425, -0.280), -math.pi / 2, False)
+    # Enclosed blind corner joins the two runs beneath the shared work surface.
+    box("blind-corner body", (0.425, 0.425, 0.4835), (0.570, 0.570, 0.757), m["powder"], bevel=0.004)
+    box("blind-corner recessed plinth", (0.463, 0.463, 0.0525), (0.494, 0.494, 0.105), m["powder"], bevel=0.003, category="plinth")
+    # Present the two functional inner faces in the catalog's standard orbit.
+    for obj in furniture.ROOT.children:
+        x, y = obj.location.x, obj.location.y
+        obj.location.x, obj.location.y = -y, x
+        obj.rotation_euler.z += math.pi / 2
 
 
 def build_mobile_bench(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
-    front = -d / 2
-    box("mobile bench chassis", (0, 0, h * 0.48), (w * 0.92, d * 0.86, h * 0.72), m["powder"], bevel=0.016, category="mobile casework")
-    box("mobile bench phenolic top", (0, 0, h * 0.95), (w * 0.98, d * 0.95, h * 0.07), m["phenolic"], bevel=0.013, category="worktop")
-    add_casework_face("mobile bench", w * 0.86, front - 0.012, h * 0.68, z0=0.14)
-    add_casters(w, d)
-    tube("mobile bench push rail", [(-w * 0.44, d * 0.42, h * 0.68), (-w * 0.52, d * 0.48, h * 0.68), (-w * 0.52, d * 0.48, h * 0.82)], 0.014, m["stainless"], category="push handle")
+    bottom, top = 0.132, h - 0.038
+    body_w, body_d = w - 0.10, d - 0.08
+    front = -body_d / 2 - 0.008
+    box("mobile phenolic worktop", (0, 0, h - 0.019), (w, d, 0.038), m["phenolic"], bevel=0.006, category="worktop")
+    box("mobile chassis base", (0, 0, bottom + 0.012), (body_w, body_d, 0.024), m["powder"], bevel=0.004, category="chassis")
+    box("worktop support frame", (0, 0, top - 0.018), (body_w, body_d, 0.036), m["powder"], bevel=0.004, category="worktop support")
+    for side in (-1, 1):
+        box("folded cabinet end", (side * (body_w / 2 - 0.010), 0, (bottom + top) / 2),
+            (0.020, body_d, top - bottom), m["porcelain"], bevel=0.004, category="casework")
+    box("removable rear panel", (0, body_d / 2 - 0.009, (bottom + top) / 2),
+        (body_w - 0.044, 0.018, top - bottom - 0.012), m["powder_light"], bevel=0.004, category="rear service")
+    face_w = body_w - 0.044
+    drawer_h, gap = 0.140, 0.008
+    for index in range(2):
+        z = top - gap - drawer_h / 2 - index * (drawer_h + gap)
+        box(f"mobile drawer {index + 1}", (0, front, z), (face_w, 0.022, drawer_h), m["porcelain"], bevel=0.003, category="drawer")
+        furniture.add_recessed_pull(f"mobile drawer {index + 1}", 0, front - 0.008, z + 0.040, face_w, -1)
+    door_top = top - gap - 2 * (drawer_h + gap)
+    door_bottom = bottom + 0.010
+    for side in (-1, 1):
+        leaf_w = (face_w - gap) / 2
+        x = side * (leaf_w + gap) / 2
+        prefix = "mobile cabinet " + ("left" if side < 0 else "right") + " door"
+        box(prefix, (x, front, (door_bottom + door_top) / 2),
+            (leaf_w, 0.022, door_top - door_bottom), m["porcelain"], bevel=0.003, category="door")
+        furniture.add_vertical_door_pull(prefix + " pull", side * 0.035, front - 0.008,
+                                         door_top - 0.11, -1)
+    for x in (-body_w * 0.40, body_w * 0.40):
+        for y in (-body_d * 0.36, body_d * 0.36):
+            box("caster mounting plate", (x, y, 0.125), (0.085, 0.072, 0.014), m["zinc"], bevel=0.003, category="caster")
+            cylinder("swivel bearing", (x, y, 0.107), 0.030, 0.027, m["steel_visible"], vertices=32, category="caster")
+            for side in (-1, 1):
+                box("caster fork cheek", (x + side * 0.023, y, 0.075), (0.008, 0.045, 0.064), m["steel_visible"], bevel=0.004, category="caster")
+            cylinder("rubber caster tire", (x, y, 0.048), 0.048, 0.034, m["rubber"], axis=(1, 0, 0), vertices=40, category="caster")
+            cylinder("caster axle hub", (x, y, 0.048), 0.018, 0.052, m["zinc"], axis=(1, 0, 0), vertices=28, category="caster")
+            if y < 0:
+                box("caster brake pedal", (x, y - 0.032, 0.094), (0.052, 0.038, 0.009), m["steel_visible"], bevel=0.003, category="caster brake")
+    rail_x = body_w / 2 + 0.026
+    tube("continuous side push handle", [(body_w / 2, -0.20, top - 0.10), (rail_x, -0.20, top - 0.10),
+        (rail_x, 0.20, top - 0.10), (body_w / 2, 0.20, top - 0.10)], 0.011, m["steel_visible"], category="push handle")
+    assert abs((top + 0.038) - h) < 1e-8
 
 
 def build_desk(spec: AssetSpec, *, office: bool) -> None:
+    if not office:
+        build_rectangular_table(spec)
+        return
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
     top_material = m["desk_surface"] if office else m["powder_light"]
-    box("work surface", (0, 0, h * 0.96), (w * 0.98, d * 0.96, h * 0.08), top_material, bevel=0.018, category="work surface")
-    # Open knee space: structural rails, never a solid slab below the desktop.
+    top_thickness, leg_bottom = 0.028, 0.025
+    underside = h - top_thickness
+    rail_height = 0.052
+    leg_x, leg_y = w / 2 - 0.080, d / 2 - 0.080
+    frame = m["powder_light"]
+    box("continuous laminate desktop", (0, 0, h - top_thickness / 2), (w, d, top_thickness), top_material, bevel=0.006, category="work surface")
+    # Legs, aprons and corner brackets share the same underside datum: no gaps.
+    for y in (-leg_y, leg_y):
+        box("desk apron rail", (0, y, underside - rail_height / 2), (2 * leg_x, 0.035, rail_height), frame, bevel=0.003, category="frame")
+    for x in (-leg_x, leg_x):
+        box("desk side rail", (x, 0, underside - rail_height / 2), (0.050, 2 * leg_y, rail_height), frame, bevel=0.003, category="frame")
+        for y in (-leg_y, leg_y):
+            box("square tube leg", (x, y, (underside + leg_bottom) / 2), (0.050, 0.050, underside - leg_bottom), frame, bevel=0.004, category="frame")
+            box("leg mounting bracket", (x, y, underside - 0.005), (0.090, 0.080, 0.010), m["steel_visible"], bevel=0.003, category="joinery")
+            cylinder("leveling foot", (x, y, leg_bottom / 2), 0.028, leg_bottom, m["rubber"], vertices=32, category="foot")
+    panel_top, panel_bottom = underside - 0.045, h * 0.48
+    box("rear modesty panel", (0, leg_y, (panel_top + panel_bottom) / 2), (2 * leg_x - 0.05, 0.018, panel_top - panel_bottom), frame, bevel=0.003, category="modesty panel")
+    for x in (-leg_x + 0.055, leg_x - 0.055):
+        box("modesty panel bracket", (x, leg_y - 0.012, panel_top), (0.065, 0.035, 0.065), m["steel_visible"], bevel=0.003, category="joinery")
+    cylinder("flush cable grommet rim", (w * 0.34, d * 0.24, h - 0.002), 0.033, 0.004, m["steel_visible"], vertices=48, category="cable management")
+    cylinder("cable grommet insert", (w * 0.34, d * 0.24, h - 0.0005), 0.027, 0.003, m["rubber"], vertices=48, category="cable management")
+    if office:
+        drawer_x, drawer_y = w * 0.30, -d * 0.08
+        box("underslung pencil drawer", (drawer_x, drawer_y, underside - 0.043), (w * 0.24, d * 0.52, 0.048), m["porcelain"], bevel=0.003, category="drawer")
+        for side in (-1, 1):
+            box("pencil drawer runner", (drawer_x + side * w * 0.115, drawer_y, underside - 0.017), (0.014, d * 0.48, 0.034), m["steel_visible"], bevel=0.002, category="drawer runner")
+        furniture.add_recessed_pull("pencil drawer", drawer_x, drawer_y - d * 0.26, underside - 0.041, w * 0.24, -1)
+    assert abs(underside + top_thickness - h) < 1e-8
+
+
+def build_rectangular_table(spec: AssetSpec) -> None:
+    """Preserve the approved, unrelated table while named desks are revised."""
+    m = furniture.MATERIALS
+    w, d, h = spec.width, spec.depth, spec.height
+    box("work surface", (0, 0, h * 0.96), (w * 0.98, d * 0.96, h * 0.08), m["powder_light"], bevel=0.018, category="work surface")
     for y in (-d * 0.35, d * 0.35):
         box("desk apron rail", (0, y, h * 0.90), (w * 0.86, 0.028, 0.036), m["steel_visible"], bevel=0.006, category="frame")
     for x in (-w * 0.42, w * 0.42):
@@ -264,23 +391,29 @@ def build_desk(spec: AssetSpec, *, office: bool) -> None:
             cylinder("leveling foot", (x, y, 0.018), 0.040, 0.030, m["rubber"], vertices=28, category="foot")
     box("rear modesty panel", (0, d * 0.40, h * 0.50), (w * 0.78, 0.020, h * 0.44), m["powder_light"], bevel=0.008, category="modesty panel")
     cylinder("cable grommet", (w * 0.34, d * 0.24, h + 0.004), 0.040, 0.012, m["black"], vertices=40, category="cable management")
-    if office:
-        box("desk pencil drawer", (w * 0.34, -d * 0.12, h * 0.84), (w * 0.22, d * 0.42, h * 0.075), m["porcelain"], bevel=0.009, category="drawer")
-        add_pull("desk drawer pull", w * 0.34, -d * 0.34, h * 0.84, w * 0.13)
 
 
 def build_wall_cabinet(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
     front = -d / 2
-    box("wall cabinet carcass", (0, 0, h / 2), (w, d, h), m["powder"], bevel=0.014, category="cabinet carcass")
+    # A real hollow carcass, not an opaque block behind the glass and shelves.
+    for side in (-1, 1):
+        box("wall cabinet end gable", (side * (w / 2 - 0.009), 0, h / 2), (0.018, d, h), m["powder"], bevel=0.003, category="cabinet carcass")
+    for z in (0.009, h - 0.009):
+        box("wall cabinet top bottom", (0, 0, z), (w - 0.036, d, 0.018), m["powder"], bevel=0.003, category="cabinet carcass")
+    box("wall cabinet back", (0, d / 2 - 0.009, h / 2), (w - 0.036, 0.018, h - 0.036), m["powder"], bevel=0.003, category="cabinet carcass")
     for z in (h * 0.34, h * 0.66):
         box("wall cabinet shelf", (0, -0.01, z), (w * 0.90, d * 0.82, 0.020), m["stainless"], bevel=0.004, category="shelf")
     for side in (-1, 1):
         x = side * w * 0.245
-        box("wall cabinet framed door", (x, front - 0.012, h * 0.51), (w * 0.47, 0.030, h * 0.90), m["porcelain"], bevel=0.010, category="cabinet door")
-        box("wall cabinet glass insert", (x, front - 0.031, h * 0.56), (w * 0.36, 0.008, h * 0.64), m["glass"], bevel=0.009, category="door glazing")
-        add_pull("wall cabinet pull", x - side * w * 0.17, front - 0.035, h * 0.46, h * 0.20)
+        prefix = "wall cabinet " + ("left" if side < 0 else "right") + " door"
+        for edge in (-1, 1):
+            box(prefix + " stile", (x + edge * w * 0.215, front - 0.012, h * 0.51), (w * 0.04, 0.030, h * 0.90), m["porcelain"], bevel=0.003, category="cabinet door")
+        for z, label in ((h * 0.08, "lower"), (h * 0.94, "upper")):
+            box(prefix + " " + label + " rail", (x, front - 0.012, z), (w * 0.47, 0.030, h * 0.04), m["porcelain"], bevel=0.003, category="cabinet door")
+        box(prefix + " glass insert", (x, front - 0.013, h * 0.51), (w * 0.39, 0.008, h * 0.82), m["glass"], bevel=0.002, category="door glazing")
+        add_pull(prefix + " pull", x - side * w * 0.17, front - 0.035, h * 0.46, h * 0.20)
     for x in (-w * 0.36, w * 0.36):
         box("wall mounting cleat", (x, d * 0.47, h * 0.52), (0.08, 0.025, h * 0.68), m["zinc"], bevel=0.004, category="wall mounting")
 
@@ -404,25 +537,72 @@ def build_workstation(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
     desk_h = 0.74
-    build_desk(AssetSpec(spec.asset_id, w, d, desk_h), office=True)
-    box("workstation widescreen aluminum shell", (0, d * 0.18, 1.155), (0.64, 0.026, 0.38), m["aluminum"], bevel=0.012, category="monitor")
-    box("workstation slim display bezel", (0, d * 0.158, 1.155), (0.625, 0.008, 0.366), m["powder_dark"], bevel=0.010, category="display bezel")
-    box("workstation display glass", (0, d * 0.15, 1.157), (0.606, 0.004, 0.341), m["screen"], bevel=0.006, category="display")
-    box("monitor stand", (0, d * 0.21, desk_h + 0.17), (0.045, 0.038, 0.30), m["aluminum"], bevel=0.009, category="monitor stand")
-    box("monitor base", (0, d * 0.10, desk_h + 0.035), (w * 0.22, d * 0.22, 0.025), m["aluminum"], bevel=0.009, category="monitor stand")
-    box("keyboard", (0, -d * 0.20, desk_h + 0.045), (w * 0.34, d * 0.20, 0.025), m["powder_dark"], bevel=0.008, rotation=(math.radians(3), 0, 0), category="keyboard")
-    for col in range(10):
-        for row in range(3):
-            box("keyboard key", (-w * 0.13 + col * w * 0.029, -d * 0.23 + row * d * 0.040, desk_h + 0.063), (w * 0.022, d * 0.025, 0.006), m["powder_light"], bevel=0.002, category="keyboard")
-    box("computer tower", (w * 0.34, d * 0.18, desk_h * 0.43), (w * 0.18, d * 0.52, desk_h * 0.66), m["porcelain"], bevel=0.015, category="computer chassis")
-    add_vent_slots("computer tower", w * 0.34, -d * 0.085, desk_h * 0.30, w * 0.10, rows=6)
-    box("mouse pad", (w * 0.26, -d * 0.22, desk_h + 0.010), (0.22, 0.20, 0.004), m["powder_dark"], bevel=0.012, category="input devices")
-    box("wireless mouse", (w * 0.26, -d * 0.22, desk_h + 0.030), (0.058, 0.102, 0.031), m["powder_light"], bevel=0.015, category="input devices")
-    box("mouse split seam", (w * 0.26, -d * 0.24, desk_h + 0.047), (0.0015, 0.047, 0.001), m["shadow"], category="input devices")
-    tube("monitor cable to grommet", [(0, d * 0.22, 1.02), (0.03, d * 0.30, 0.79), (w * 0.34, d * 0.24, 0.748)], 0.004, m["rubber"], category="cable management")
-    box("rear monitor mount", (0, d * 0.205, 1.12), (0.12, 0.025, 0.12), m["powder_light"], bevel=0.008, category="rear service")
-    add_vent_slots("monitor rear vents", 0, d * 0.202, 1.28, 0.40, rows=3)
-    cylinder("tower power button", (w * 0.34, -d * 0.09, desk_h * 0.66), 0.011, 0.004, m["aluminum"], axis=(0, -1, 0), vertices=32, category="computer chassis")
+    # Original T-leg workstation; construction/cable routing informed by
+    # Herman Miller Everywhere specifications, not downloaded product geometry.
+    box("laminate desktop", (0, 0, 0.726), (w, d, 0.028), m["desk_surface"], bevel=0.006, category="work surface")
+    for x in (-0.590, 0.590):
+        box("formed T foot", (x, 0, 0.040), (0.082, 0.620, 0.050), m["powder_light"], bevel=0.010, category="frame")
+        for y in (-0.260, 0.260):
+            cylinder("adjustable desk glide", (x, y, 0.0075), 0.026, 0.015, m["rubber"], vertices=32, category="foot")
+        box("upright steel column", (x, 0.095, 0.379), (0.065, 0.070, 0.628), m["powder_light"], bevel=0.005, category="frame")
+        box("desktop support arm", (x, 0, 0.693), (0.065, 0.570, 0.038), m["powder_light"], bevel=0.004, category="frame")
+        for y in (-0.210, 0.210):
+            box("desktop fixing pad", (x, y, 0.709), (0.110, 0.065, 0.006), m["steel_visible"], bevel=0.002, category="joinery")
+    box("frame cross member", (0, 0.095, 0.670), (1.180, 0.050, 0.055), m["powder_light"], bevel=0.004, category="frame")
+    box("rear modesty panel", (0, 0.245, 0.500), (1.100, 0.018, 0.285), m["powder_light"], bevel=0.003, category="modesty panel")
+    for x in (-0.505, 0.505):
+        box("modesty panel fixing", (x, 0.230, 0.674), (0.025, 0.040, 0.080), m["steel_visible"], bevel=0.003, category="joinery")
+    box("underdesk cable trough", (0, 0.245, 0.661), (0.880, 0.110, 0.035), m["powder_light"], bevel=0.003, category="cable management")
+    cylinder("flush cable port", (0.440, 0.245, 0.740), 0.031, 0.003, m["rubber"], vertices=48, category="cable management")
+
+    monitor_x, monitor_y = -0.090, 0.160
+    box("slim monitor aluminum shell", (monitor_x, monitor_y, 1.165), (0.650, 0.024, 0.370), m["aluminum"], bevel=0.008, category="monitor")
+    box("monitor perimeter gasket", (monitor_x, monitor_y - 0.014, 1.165), (0.636, 0.006, 0.356), m["rubber"], bevel=0.005, category="display bezel")
+    box("low-glare display glass", (monitor_x, monitor_y - 0.018, 1.167), (0.620, 0.003, 0.336), m["screen"], bevel=0.004, category="display")
+    box("monitor weighted base", (monitor_x, 0.130, 0.750), (0.270, 0.185, 0.020), m["steel_visible"], bevel=0.007, category="monitor stand")
+    box("monitor height column", (monitor_x, 0.185, 0.932), (0.055, 0.036, 0.344), m["aluminum"], bevel=0.006, category="monitor stand")
+    box("rear VESA cover", (monitor_x, 0.183, 1.106), (0.115, 0.025, 0.110), m["powder_light"], bevel=0.006, category="rear service")
+    cylinder("monitor tilt hinge", (monitor_x, 0.201, 1.106), 0.025, 0.090, m["steel_visible"], axis=(1, 0, 0), vertices=40, category="monitor stand")
+    for col in range(16):
+        box("rear monitor cooling slot", (monitor_x - 0.235 + col * 0.031, 0.173, 1.278), (0.012, 0.003, 0.040), m["shadow"], bevel=0.002, category="rear service")
+    cylinder("monitor power indicator", (monitor_x + 0.280, 0.140, 1.000), 0.002, 0.003, m["teal"], axis=(0, -1, 0), vertices=20, category="display")
+    box("keyboard lower shell", (-0.090, -0.145, 0.746), (0.450, 0.142, 0.012), m["steel_visible"], bevel=0.005, category="keyboard")
+    for row in range(5):
+        for col in range(15):
+            if row == 0 and 3 <= col <= 9:
+                continue
+            box("low-profile keycap", (-0.290 + col * 0.028, -0.199 + row * 0.025, 0.754), (0.023, 0.020, 0.005), m["porcelain"], bevel=0.002, category="keyboard")
+    box("keyboard spacebar", (-0.122, -0.199, 0.754), (0.190, 0.020, 0.005), m["porcelain"], bevel=0.002, category="keyboard")
+    box("mouse mat", (0.310, -0.140, 0.742), (0.220, 0.200, 0.004), m["powder_dark"], bevel=0.010, category="input devices")
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, location=(0.310, -0.140, 0.761))
+    mouse = bpy.context.object
+    mouse.name, mouse.scale = "sculpted wireless mouse", (0.030, 0.053, 0.017)
+    furniture.assign_material(mouse, m["porcelain"])
+    furniture.smooth(mouse)
+    furniture.parent_to_root(mouse, "input devices")
+    cylinder("mouse scroll wheel", (0.310, -0.158, 0.775), 0.008, 0.007, m["rubber"], axis=(1, 0, 0), vertices=32, category="input devices")
+
+    # A genuine underdesk cradle supports the tower; no floating chassis.
+    box("CPU support tray", (0.465, 0.045, 0.120), (0.254, 0.405, 0.020), m["steel_visible"], bevel=0.004, category="CPU cradle")
+    for x in (0.344, 0.586):
+        box("CPU suspension bracket", (x, 0.110, 0.421), (0.012, 0.065, 0.582), m["steel_visible"], bevel=0.002, category="CPU cradle")
+    for x in (0.390, 0.540):
+        for y in (-0.090, 0.170):
+            cylinder("computer isolation foot", (x, y, 0.135), 0.012, 0.010, m["rubber"], vertices=24, category="computer chassis")
+    box("computer enamel enclosure", (0.465, 0.045, 0.335), (0.220, 0.370, 0.390), m["porcelain"], bevel=0.009, category="computer chassis")
+    box("tower front inset", (0.465, -0.142, 0.335), (0.201, 0.012, 0.365), m["powder_light"], bevel=0.005, category="computer chassis")
+    for row in range(14):
+        box("tower intake grille", (0.465, -0.149, 0.215 + row * 0.014), (0.164, 0.003, 0.005), m["shadow"], bevel=0.001, category="ventilation")
+    for x in (0.420, 0.450):
+        box("front USB port", (x, -0.149, 0.477), (0.015, 0.004, 0.006), m["shadow"], bevel=0.001, category="computer ports")
+    cylinder("tower power button", (0.518, -0.150, 0.477), 0.008, 0.003, m["aluminum"], axis=(0, -1, 0), vertices=32, category="computer ports")
+    box("rear I/O panel", (0.465, 0.232, 0.386), (0.174, 0.004, 0.150), m["steel_visible"], bevel=0.003, category="rear service")
+    for row in range(4):
+        box("rear connection socket", (0.420, 0.235, 0.343 + row * 0.023), (0.035, 0.004, 0.009), m["shadow"], bevel=0.001, category="rear service")
+    tube("monitor cable harness", [(monitor_x, 0.181, 1.055), (monitor_x, 0.212, 0.940),
+        (monitor_x, 0.225, 0.772), (0.120, 0.265, 0.750), (0.440, 0.245, 0.741)], 0.0035, m["rubber"], category="cable management")
+    tube("CPU cable to trough", [(0.480, 0.235, 0.410), (0.500, 0.270, 0.470),
+        (0.500, 0.270, 0.635), (0.420, 0.260, 0.660)], 0.0035, m["rubber"], category="cable management")
 
 
 def build_printer(spec: AssetSpec) -> None:
@@ -512,7 +692,7 @@ def build_one(spec: AssetSpec, output_dir: Path, save_blend_dir: Path | None) ->
 
     if furniture.ROOT is not None:
         furniture.ROOT["display_name"] = spec.asset_id.replace("-", " ").title()
-        furniture.ROOT["revision"] = "catalog-completion-batch12-r3" if spec.asset_id in {"office-desk", "rectangular-table", "computer-workstation"} else "catalog-completion-batch12-r2"
+        furniture.ROOT["revision"] = "catalog-completion-batch12-r5" if spec.asset_id in {"mobile-bench", "office-desk", "corner-lab-bench", "computer-workstation"} else "catalog-completion-batch12-r2"
         furniture.ROOT["planning_model"] = True
         furniture.ROOT["manufacturer_certified"] = False
         furniture.ROOT["source_note"] = (

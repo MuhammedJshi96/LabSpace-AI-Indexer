@@ -6,6 +6,18 @@ export type CameraCommandInput = {
   focusLocationId?: string | null;
 };
 
+export function isCameraFocusClear(previous: CameraCommandInput | null, next: CameraCommandInput) {
+  return Boolean(
+    previous &&
+      previous.roomId === next.roomId &&
+      previous.presentation === next.presentation &&
+      previous.preset === next.preset &&
+      (previous.focusObjectId || previous.focusLocationId) &&
+      !next.focusObjectId &&
+      !next.focusLocationId,
+  );
+}
+
 export type DigitalTwinCameraApproachInput = {
   roomWidthMm: number;
   roomDepthMm: number;

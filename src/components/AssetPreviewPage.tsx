@@ -18,6 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import * as THREE from "three";
 import { ASSET_CATALOG } from "../domain/assets";
+import { assetPreviewCameraDistance } from "../domain/asset-preview-camera";
 import { BUILD_WEEK_DEMO_ASSET_IDS } from "../domain/build-week-demo";
 import { resolveLayerIdForObjectType } from "../domain/layers";
 import { createBlankRoom } from "../domain/room-factory";
@@ -47,34 +48,44 @@ function PreviewCameraRig({
   view,
   extent,
   height,
+  width,
+  depth,
+  resetKey,
 }: {
   view: PreviewView;
   extent: number;
   height: number;
+  width: number;
+  depth: number;
+  resetKey: number;
 }) {
   const invalidate = useThree((state) => state.invalidate);
+  const size = useThree((state) => state.size);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const controls = useRef<any>(null);
 
   useEffect(() => {
     const camera = cameraRef.current;
     if (!camera) return;
-    const eyeHeight = Math.max(extent * 0.65, height * 0.58);
+    const distance = assetPreviewCameraDistance({ width, depth, height }, size.width / size.height);
+    const target = new THREE.Vector3(0, height / 2, 0);
     const positions: Record<PreviewView, [number, number, number]> = {
-      isometric: [extent * 2.15, Math.max(extent * 1.65, height * 2.1), extent * 2.3],
-      front: [0, eyeHeight, extent * 3],
-      back: [0, eyeHeight, -extent * 3],
-      left: [-extent * 3, eyeHeight, 0],
-      right: [extent * 3, eyeHeight, 0],
-      top: [0, extent * 3.2, 0.01],
+      isometric: [1.25, 0.9, 1.6],
+      front: [0, 0, 1],
+      back: [0, 0, -1],
+      left: [-1, 0, 0],
+      right: [1, 0, 0],
+      top: [0, 1, 0.0001],
     };
-    camera.position.set(...positions[view]);
-    camera.lookAt(0, height * 0.48, 0);
+    camera.position.copy(
+      new THREE.Vector3(...positions[view]).normalize().multiplyScalar(distance).add(target),
+    );
+    camera.lookAt(target);
     camera.updateProjectionMatrix();
-    controls.current?.target.set(0, height * 0.48, 0);
+    controls.current?.target.copy(target);
     controls.current?.update();
     invalidate();
-  }, [extent, height, invalidate, view]);
+  }, [width, depth, height, invalidate, view, size.width, size.height, resetKey]);
 
   return (
     <>
@@ -98,6 +109,8 @@ export function AssetPreviewPage() {
   const restoreAsset = useEditorStore((state) => state.restoreAsset);
   const [query, setQuery] = useState("");
   const [previewView, setPreviewView] = useState<PreviewView>("isometric");
+  const [cameraResetKey, setCameraResetKey] = useState(0);
+  const [readyAssetId, setReadyAssetId] = useState<string | null>(null);
   const requestedAssetId = new URLSearchParams(window.location.search).get("asset");
   const curatedAssetIdSet = useMemo(() => new Set<string>(BUILD_WEEK_DEMO_ASSET_IDS), []);
   const [showFullCatalog, setShowFullCatalog] = useState(
@@ -266,10 +279,10 @@ export function AssetPreviewPage() {
           </details>
         </aside>
         <section className="asset-preview-stage">
-          <div className="asset-preview-canvas">
+          <div className="asset-preview-canvas" data-asset-id={asset.id} data-model-ready={readyAssetId === asset.id}>
             <Canvas
-              shadows={{ type: THREE.PCFShadowMap }}
-              dpr={[1, 1.5]}
+              shadows={{ type: THREE.PCFSoftShadowMap }}
+              dpr={[1, 2]}
               frameloop="demand"
               gl={{ antialias: true, powerPreference: "high-performance" }}
               onCreated={({ gl }) => {
@@ -278,7 +291,14 @@ export function AssetPreviewPage() {
                 gl.outputColorSpace = THREE.SRGBColorSpace;
               }}
             >
-              <PreviewCameraRig view={previewView} extent={previewExtent} height={previewHeight} />
+              <PreviewCameraRig
+                view={previewView}
+                extent={previewExtent}
+                height={previewHeight}
+                width={previewWidth}
+                depth={previewDepth}
+                resetKey={cameraResetKey}
+              />
               <color attach="background" args={["#eef2f1"]} />
               <Environment resolution={128} frames={1}>
                 <Lightformer
@@ -316,8 +336,11 @@ export function AssetPreviewPage() {
                 selected={false}
                 hovered={false}
                 detail="preview"
+                interactive={false}
+                onReady={() => setReadyAssetId(asset.id)}
               />
               <ContactShadows
+                key={asset.id}
                 position={[0, 0.012, 0]}
                 opacity={0.42}
                 scale={Math.max(2.4, previewExtent * 3.2)}
@@ -343,11 +366,20 @@ export function AssetPreviewPage() {
                   key={view.value}
                   className={previewView === view.value ? "active" : ""}
                   aria-pressed={previewView === view.value}
-                  onClick={() => setPreviewView(view.value)}
+                  onClick={() => {
+                    setPreviewView(view.value);
+                    setCameraResetKey((key) => key + 1);
+                  }}
                 >
                   {view.label}
                 </button>
               ))}
+              <button
+                onClick={() => setCameraResetKey((key) => key + 1)}
+                title="Fit the complete asset in view"
+              >
+                Fit
+              </button>
             </div>
             <div className="asset-preview-chip">
               <Cube size={16} weight="duotone" />

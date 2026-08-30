@@ -1,10 +1,11 @@
-import { Component, Suspense, useEffect, useMemo, type ReactNode } from "react";
-import { Clone, useGLTF } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useGLTF } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { AssetDefinition } from "../domain/schema";
 import { getLaboratoryMaterialTexture } from "../lib/laboratory-material-textures";
 import { ProceduralAssetModel } from "./ProceduralAssetModel";
+import { applyStoragePose, cloneStorageScene } from "../lib/storage-articulation";
 
 type DetailLevel = "room" | "preview";
 
@@ -15,6 +16,7 @@ type AssetVisualProps = {
   height: number;
   detail?: DetailLevel;
   onReady?: () => void;
+  openStorageParts?: readonly string[];
 };
 
 const enhancedMaterials = new WeakSet<THREE.Material>();
@@ -163,6 +165,7 @@ function AuthoredAssetModel({
   height,
   detail = "room",
   onReady,
+  openStorageParts = [],
 }: AssetVisualProps) {
   const model = definition.model3d!;
   const source = `${detail === "room" && model.roomSrc ? model.roomSrc : model.previewSrc}?v=${encodeURIComponent(model.revision)}`;
@@ -180,8 +183,35 @@ function AuthoredAssetModel({
       const materials = Array.isArray(object.material) ? object.material : [object.material];
       materials.forEach((material) => enhanceAuthoredMaterial(material));
     });
-    return scene;
+    return cloneStorageScene(scene);
   }, [scene]);
+
+  const reducedMotion = useMemo(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+  const openParts = useMemo(() => new Set(openStorageParts), [openStorageParts]);
+  const animationProgress = useRef(new Map<string, number>());
+  useEffect(() => invalidate(), [invalidate, openParts]);
+  useFrame((_, delta) => {
+    for (const part of enhancedScene.parts) {
+      const target = openParts.has(part.mechanism.id) ? 1 : 0;
+      const progress = animationProgress.current.get(part.mechanism.id) ?? 0;
+      if (Math.abs(progress - target) < 0.001) {
+        if (progress !== target) {
+          animationProgress.current.set(part.mechanism.id, target);
+          applyStoragePose(part, target);
+        }
+        continue;
+      }
+      const next = reducedMotion
+        ? target
+        : THREE.MathUtils.damp(progress, target, 12, Math.min(delta, 0.05));
+      animationProgress.current.set(part.mechanism.id, next);
+      applyStoragePose(part, next);
+      invalidate();
+    }
+  });
 
   useEffect(() => {
     invalidate();
@@ -197,7 +227,7 @@ function AuthoredAssetModel({
         depth / (authored.depth / 1000),
       ]}
     >
-      <Clone object={enhancedScene} castShadow receiveShadow />
+      <primitive object={enhancedScene.scene} />
     </group>
   );
 }

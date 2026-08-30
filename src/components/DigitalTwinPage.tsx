@@ -21,6 +21,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { getAssetDefinition } from "../domain/assets";
+import { resolveStorageAccess } from "../domain/storage-access";
 import {
   buildDigitalTwinIndex,
   filterDigitalTwinIndex,
@@ -208,9 +209,25 @@ export function DigitalTwinPage() {
   );
   const focusedObjectId = focusMatchesSelectedRecord ? (spatialFocus?.objectId ?? null) : null;
   const storageAccessOpen = Boolean(focusMatchesSelectedRecord && spatialFocus?.showStorageAccess);
+  const accessRoom = project.rooms.find((entry) => entry.id === selectedRecord?.roomId);
+  const accessObject = accessRoom?.scene.objects.find(
+    (entry) => entry.id === selectedRecord?.objectId,
+  );
+  const storageAccess =
+    accessObject && selectedRecord?.locationId && accessRoom
+      ? resolveStorageAccess(
+          accessObject.assetDefinitionId,
+          accessObject.id,
+          selectedRecord.locationId,
+          accessRoom.scene.storageLocations,
+        )
+      : null;
 
   useEffect(() => {
-    if (!shouldAutoFocusDigitalTwinResult(query, selectedRecord)) return;
+    // An explicit focus/access action wins over a pending search debounce.
+    // Otherwise the timer can silently close a drawer just opened by the user.
+    if (focusMatchesSelectedRecord || !shouldAutoFocusDigitalTwinResult(query, selectedRecord))
+      return;
     const handle = window.setTimeout(() => {
       setSpatialMode("3d");
       if (selectedRecord) {
@@ -221,7 +238,7 @@ export function DigitalTwinPage() {
       }
     }, 320);
     return () => window.clearTimeout(handle);
-  }, [query, selectedRecord, setSpatialMode]);
+  }, [focusMatchesSelectedRecord, query, selectedRecord, setSpatialMode]);
 
   useEffect(() => {
     let active = true;
@@ -500,7 +517,10 @@ export function DigitalTwinPage() {
                   presentation="digital-twin"
                   wallTransparentOverride={wallCutaway}
                   showStorageAccess={Boolean(
-                    storageAccessOpen && focusedObjectId && selectedRecord?.locationId,
+                    storageAccessOpen &&
+                    focusedObjectId &&
+                    selectedRecord?.locationId &&
+                    storageAccess?.parts.length,
                   )}
                 />
               </TwinRendererBoundary>
@@ -541,7 +561,11 @@ export function DigitalTwinPage() {
                   <button
                     key={record.id}
                     className={selectedRecord?.id === record.id ? "selected" : ""}
-                    onClick={() => selectRecord(record)}
+                    onClick={(event) => {
+                      if (event.detail > 1) return;
+                      if (selectedRecord?.id === record.id) setSelected([]);
+                      else selectRecord(record);
+                    }}
                     aria-pressed={selectedRecord?.id === record.id}
                     data-testid="digital-twin-record"
                   >
@@ -613,7 +637,17 @@ export function DigitalTwinPage() {
                   </small>
                   <h1>{selectedRecord.name}</h1>
                 </span>
-                <StatusPill record={selectedRecord} />
+                <div className="twin-detail-heading-actions">
+                  <StatusPill record={selectedRecord} />
+                  <button
+                    className="twin-clear-selection"
+                    onClick={() => setSelected([])}
+                    aria-label="Clear selection"
+                    title="Clear selection (Escape)"
+                  >
+                    <X size={17} /> Clear
+                  </button>
+                </div>
               </header>
               <div className="twin-detail-scroll">
                 <RecordImage record={selectedRecord} />
@@ -671,15 +705,31 @@ export function DigitalTwinPage() {
                   <ArrowRight size={17} />
                 </button>
                 {selectedRecord.locationId && selectedRecord.objectId && (
-                  <button
-                    className="storage-preview-toggle"
-                    type="button"
-                    onClick={() => setSpatialStorageAccess(!storageAccessOpen)}
-                    aria-pressed={storageAccessOpen}
-                  >
-                    <Cube size={17} weight="duotone" />
-                    {storageAccessOpen ? "Close access preview" : "Show access preview"}
-                  </button>
+                  <>
+                    <button
+                      className="storage-preview-toggle"
+                      type="button"
+                      disabled={!storageAccess?.parts.length}
+                      onClick={() => {
+                        setSpatialMode("3d");
+                        setSpatialStorageAccess(!storageAccessOpen);
+                      }}
+                      aria-pressed={storageAccessOpen && Boolean(storageAccess?.parts.length)}
+                      aria-describedby="storage-access-note"
+                      data-storage-parts={
+                        storageAccess?.parts.map((part) => part.id).join("|") ?? ""
+                      }
+                    >
+                      <Cube size={17} weight="duotone" />
+                      {storageAccessOpen && storageAccess?.parts.length
+                        ? "Close access preview"
+                        : "Show access preview"}
+                    </button>
+                    <p id="storage-access-note" className="storage-access-note">
+                      {storageAccess?.reason ??
+                        `${storageAccess?.description}. Visual preview only; no inventory or room data changes.`}
+                    </p>
+                  </>
                 )}
                 <a
                   href={`/?room=${encodeURIComponent(selectedRecord.roomId)}&object=${encodeURIComponent(selectedRecord.objectId ?? "")}&location=${encodeURIComponent(selectedRecord.locationId ?? "")}&panel=${selectedRecord.kind === "location" ? "index" : "properties"}`}

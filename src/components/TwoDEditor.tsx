@@ -298,9 +298,7 @@ function OpeningMeasurements({ objects, scale }: { objects: SceneObject[]; scale
   return (
     <Group name="automatic-opening-measurements" listening={false}>
       {objects
-        .filter(
-          (object) => object.visible && ["door", "window"].includes(object.objectType),
-        )
+        .filter((object) => object.visible && ["door", "window"].includes(object.objectType))
         .map((object) => {
           const hosted = resolveHostedOpening(object, objects);
           const point = hosted?.point ?? object.position;
@@ -308,7 +306,10 @@ function OpeningMeasurements({ objects, scale }: { objects: SceneObject[]; scale
           const radians = (angle * Math.PI) / 180;
           const normal = { x: -Math.sin(radians), y: Math.cos(radians) };
           const type = object.objectType === "door" ? "D" : "W";
-          const sill = object.objectType === "window" ? ` · sill ${(object.position.z / 1000).toFixed(2)}` : "";
+          const sill =
+            object.objectType === "window"
+              ? ` · sill ${(object.position.z / 1000).toFixed(2)}`
+              : "";
           return (
             <ScreenLabel
               key={`opening-measure-${object.id}`}
@@ -352,19 +353,27 @@ function selectedClearanceSpans(
     entry.right > target.left && entry.left < target.right;
   const leftEdge = Math.max(
     bounds.minX,
-    ...obstacles.filter((entry) => overlapsVertically(entry) && entry.right <= target.left).map((entry) => entry.right),
+    ...obstacles
+      .filter((entry) => overlapsVertically(entry) && entry.right <= target.left)
+      .map((entry) => entry.right),
   );
   const rightEdge = Math.min(
     bounds.maxX,
-    ...obstacles.filter((entry) => overlapsVertically(entry) && entry.left >= target.right).map((entry) => entry.left),
+    ...obstacles
+      .filter((entry) => overlapsVertically(entry) && entry.left >= target.right)
+      .map((entry) => entry.left),
   );
   const topEdge = Math.max(
     bounds.minY,
-    ...obstacles.filter((entry) => overlapsHorizontally(entry) && entry.bottom <= target.top).map((entry) => entry.bottom),
+    ...obstacles
+      .filter((entry) => overlapsHorizontally(entry) && entry.bottom <= target.top)
+      .map((entry) => entry.bottom),
   );
   const bottomEdge = Math.min(
     bounds.maxY,
-    ...obstacles.filter((entry) => overlapsHorizontally(entry) && entry.top >= target.bottom).map((entry) => entry.top),
+    ...obstacles
+      .filter((entry) => overlapsHorizontally(entry) && entry.top >= target.bottom)
+      .map((entry) => entry.top),
   );
   const centerX = (target.left + target.right) / 2;
   const centerY = (target.top + target.bottom) / 2;
@@ -404,7 +413,8 @@ function ClearanceMeasurements({
           x: (span.start.x + span.end.x) / 2,
           y: (span.start.y + span.end.y) / 2,
         };
-        const horizontal = Math.abs(span.end.x - span.start.x) >= Math.abs(span.end.y - span.start.y);
+        const horizontal =
+          Math.abs(span.end.x - span.start.x) >= Math.abs(span.end.y - span.start.y);
         return (
           <Group key={`clearance-${span.id}`}>
             <Arrow
@@ -1402,6 +1412,7 @@ export function TwoDEditor() {
         return;
       }
       if (event.key === "Escape") {
+        if (!isEditableTarget(event.target) && !useEditorStore.getState().dialog) setSelected([]);
         drawStartRef.current = null;
         lastWallClickRef.current = null;
         wallDoubleClickEligibleRef.current = false;
@@ -1419,7 +1430,7 @@ export function TwoDEditor() {
       window.removeEventListener("keydown", keyDown);
       window.removeEventListener("keyup", keyUp);
     };
-  }, [setGuides, setPan, setTool, tool]);
+  }, [setGuides, setPan, setSelected, setTool, tool]);
 
   useEffect(() => {
     const stopMiddlePan = () => {
@@ -1507,8 +1518,8 @@ export function TwoDEditor() {
       const previousClick = lastWallClickRef.current;
       wallDoubleClickEligibleRef.current = Boolean(
         previousClick &&
-          Math.hypot(point.x - previousClick.x, point.y - previousClick.y) <=
-            Math.max(40, snapTolerance),
+        Math.hypot(point.x - previousClick.x, point.y - previousClick.y) <=
+          Math.max(40, snapTolerance),
       );
       lastWallClickRef.current = point;
       const { nextStart, segment } = advanceWallChain(drawStartRef.current, point);
@@ -1933,15 +1944,12 @@ export function TwoDEditor() {
           <span>
             {selectedPlacementWarnings.length > 1
               ? `${selectedPlacementWarnings.length} checks need attention`
-              : (selectedPlacementWarnings[0]?.message ?? "Placement clear · no boundary or overlap conflicts")}
+              : (selectedPlacementWarnings[0]?.message ??
+                "Placement clear · no boundary or overlap conflicts")}
           </span>
         </div>
       )}
-      <div
-        className="canvas-coordinates"
-        aria-label={coordinateLabel}
-        style={{ fontSize: 0 }}
-      >
+      <div className="canvas-coordinates" aria-label={coordinateLabel} style={{ fontSize: 0 }}>
         <span className="canvas-coordinate-value">{coordinateLabel}</span>
         {pointer
           ? `X ${(pointer.x / 1000).toFixed(2)} m  ·  Y ${(pointer.y / 1000).toFixed(2)} m`

@@ -864,7 +864,7 @@ def add_lab_bench(spec: AssetSpec) -> None:
         front_y,
         0.450,
         -1.0,
-        (0.180, 0.220, 0.268),
+        (0.268, 0.220, 0.180),
         include_labels=False,
     )
     add_double_door_cabinet_with_top_drawers(
@@ -876,12 +876,19 @@ def add_lab_bench(spec: AssetSpec) -> None:
         front_y,
         0.450,
         -1.0,
-        (0.180, 0.220, 0.268),
+        (0.268, 0.220, 0.180),
         include_labels=False,
     )
 
     # A recessed kick shadow makes the casework read as folded steel rather
     # than a monolithic box.
+    for side in (-1, 1):
+        add_box("Folded front gable return", (side * 0.847, -0.324, 0.470),
+                (0.020, 0.028, 0.710), MATERIALS["powder_light"], bevel=0.003,
+                category="manufactured edge")
+        add_box("Satin plinth end cap", (side * 0.824, -0.008, 0.070),
+                (0.018, 0.550, 0.098), MATERIALS["aluminum"], bevel=0.003,
+                category="plinth")
     add_box(
         "Bench continuous front toe shadow",
         (0.0, -0.326, 0.079),
@@ -1289,6 +1296,11 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
     representation is consolidated to approximately one draw call per material
     without changing any evaluated geometry or shading.
     """
+    script_directory = str(Path(__file__).resolve().parent)
+    if script_directory not in sys.path:
+        sys.path.insert(0, script_directory)
+    import storage_articulation
+    storage_articulation.prepare(sys.modules[__name__])
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     source_parts = len(meshes)
 
@@ -1304,7 +1316,7 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
     groups: dict[str, list[bpy.types.Object]] = {}
     for obj in meshes:
         material = obj.data.materials[0] if obj.data.materials else None
-        key = material.name if material is not None else "__unassigned__"
+        key = ("__moving__" + obj.parent.name) if obj.parent and "storageMechanism" in obj.parent else (material.name if material is not None else "__unassigned__")
         groups.setdefault(key, []).append(obj)
 
     for material_name, objects in sorted(groups.items()):
@@ -1312,6 +1324,7 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
         for obj in objects:
             obj.select_set(True)
         active = objects[0]
+        parent = active.parent
         bpy.context.view_layer.objects.active = active
         if len(objects) > 1:
             bpy.ops.object.join()
@@ -1320,7 +1333,7 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
         active.name = f"Runtime batch - {material_name}"
         active["part_category"] = "static material batch"
         active["source_part_count"] = len(objects)
-        active.parent = ROOT
+        active.parent = parent if parent and "storageMechanism" in parent else ROOT
         # Joining objects that reference the same material can leave redundant
         # slots in some Blender versions. Remove them to preserve one primitive.
         bpy.ops.object.material_slot_remove_unused()
@@ -1387,7 +1400,8 @@ def validate_statistics(spec: AssetSpec, stats: dict[str, object], *, imported: 
         errors.append(
             f"footprint center ({center_x:.6f}, {center_y:.6f}) is not at origin"
         )
-    if stats["mesh_objects"] > 25:
+    moving_count = sum("storageMechanism" in obj for obj in bpy.context.scene.objects)
+    if stats["mesh_objects"] > 25 + moving_count:
         errors.append(
             f"{stats['mesh_objects']} runtime mesh batches exceeds the 25 draw-call target"
         )

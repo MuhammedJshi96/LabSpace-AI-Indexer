@@ -299,9 +299,11 @@ function catalogCompletionModel(
       depth: dimensions[1],
       height: dimensions[2],
     },
-    revision: ["office-desk", "rectangular-table", "computer-workstation"].includes(id)
-      ? "catalog-completion-batch12-r3"
-      : "catalog-completion-batch12-r2",
+    revision: ["wall-cabinet", "mobile-bench"].includes(id)
+      ? "storage-articulation-r1"
+      : ["office-desk", "corner-lab-bench", "computer-workstation"].includes(id)
+        ? "catalog-completion-batch12-r5"
+        : "catalog-completion-batch12-r2",
   };
 }
 
@@ -499,7 +501,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     model3d: {
       previewSrc: "/models/hero/lab-bench.glb",
       authoredDimensions: { width: 1800, depth: 750, height: 900 },
-      revision: "casework-proportion-r7",
+      revision: "storage-articulation-r1",
     },
   }),
   asset("lab-bench-sink", "Laboratory bench with sink", "Furniture", [1800, 750, 1200], {
@@ -557,7 +559,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       model3d: {
         previewSrc: "/models/hero/stainless-wash-basin.glb",
         authoredDimensions: { width: 1800, depth: 700, height: 1300 },
-        revision: "casework-proportion-r7",
+        revision: "wash-frame-r8",
       },
     },
   ),
@@ -643,7 +645,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "table",
     material: "white",
     description:
-      "Professional light-laminate office desk with anodized square-tube frame, modesty panel, cable grommet, pencil drawer, levelling feet, and fully modeled rear construction.",
+      "Professional light-laminate office desk with a connected powder-coated square-tube frame, satin-metal fixing brackets, modesty panel, flush cable grommet, pencil drawer, levelling feet, and fully modeled rear construction.",
     model3d: catalogCompletionModel("office-desk", [1400, 700, 740]),
   }),
   asset("rectangular-table", "Rectangular table", "Furniture", [1600, 800, 740], {
@@ -724,7 +726,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     model3d: {
       previewSrc: "/models/hero/base-cabinet.glb",
       authoredDimensions: { width: 900, depth: 600, height: 850 },
-      revision: "casework-proportion-r7",
+      revision: "storage-articulation-r1",
     },
   }),
   asset("base-drawer-cabinet", "Base drawer cabinet", "Storage", [600, 600, 850], {
@@ -735,7 +737,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     model3d: {
       previewSrc: "/models/hero/base-drawer-cabinet.glb",
       authoredDimensions: { width: 600, depth: 600, height: 850 },
-      revision: "casework-proportion-r7",
+      revision: "storage-articulation-r1",
     },
   }),
   asset("sink-cabinet", "Sink cabinet", "Storage", [1200, 650, 1150], {
@@ -1465,7 +1467,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     material: "white",
     accent: "#3f7b99",
     description:
-      "Complete laboratory computer station with professional desk casework, cable management, monitor and stand, low-glare display, modeled keyboard, workstation tower, ventilation, and rear service detail.",
+      "Professional T-leg computer workstation with a light laminate desktop, connected frame and levelling glides, concealed cable trough, supported CPU cradle, slim pivot-mounted monitor, low-profile keyboard, sculpted mouse, and all-sided service detail.",
     model3d: catalogCompletionModel("computer-workstation", [1400, 700, 1350]),
   }),
   asset("printer", "Printer", "Laboratory equipment", [500, 500, 350], {

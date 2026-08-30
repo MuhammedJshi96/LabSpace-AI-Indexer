@@ -32,6 +32,8 @@ import {
   cameraCommandKey,
   digitalTwinCameraApproach,
   editorInitialIsometricPosition,
+  isCameraFocusClear,
+  type CameraCommandInput,
 } from "../domain/camera-command";
 import { shouldCutawayWall } from "../domain/digital-twin-cutaway";
 import { mmToMetres, wallAngle, wallLength } from "../domain/geometry";
@@ -39,21 +41,12 @@ import { hasLaboratoryEnvironmentProfile } from "../domain/laboratory-environmen
 import { wallFinishForObject } from "../domain/laboratory-wall-materials";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import { waitForLaboratoryMaterialTextures } from "../lib/laboratory-material-textures";
-import type { Room, SceneObject, StorageLocationType } from "../domain/schema";
-import {
-  storageAccessContentStyle,
-  storageLocationHighlight,
-  storageLocationSupportsAccessPreview,
-  type StorageAccessContentStyle,
-} from "../domain/storage-highlight";
+import type { Room, SceneObject } from "../domain/schema";
+import { storageLocationHighlight } from "../domain/storage-highlight";
+import { resolveStorageAccess } from "../domain/storage-access";
 import { resolveHostedOpening } from "../domain/wall-openings";
 import { selectActiveRoom, useEditorStore, type CameraPreset } from "../store/editor-store";
-import {
-  ModelBox as Box,
-  ModelCylinder as Cylinder,
-  ProceduralAssetModel,
-  SelectionBounds,
-} from "./ProceduralAssetModel";
+import { ModelBox as Box, ProceduralAssetModel, SelectionBounds } from "./ProceduralAssetModel";
 import { AssetVisual } from "./AssetVisual";
 import { LaboratoryEnvironment } from "./LaboratoryEnvironment";
 import { RoomFloor3D } from "./RoomFloor3D";
@@ -334,7 +327,8 @@ function Opening3D({
       scale={[flipHorizontal ? -1 : 1, 1, flipVertical ? -1 : 1]}
       onClick={(event) => {
         event.stopPropagation();
-        setSelected([object.id], event.shiftKey);
+        if (event.detail > 1) return;
+        setSelected(selected && !event.shiftKey ? [] : [object.id], event.shiftKey);
       }}
     >
       {definition.model3d ? (
@@ -359,301 +353,6 @@ function Opening3D({
   );
 }
 
-function StoragePreviewContents({
-  style,
-  width,
-  height,
-  depth,
-}: {
-  style: StorageAccessContentStyle;
-  width: number;
-  height: number;
-  depth: number;
-}) {
-  const usableWidth = width * 0.82;
-  const usableDepth = depth * 0.68;
-  const itemHeight = Math.min(0.12, Math.max(0.04, height * 0.34));
-
-  if (style === "vials") {
-    return (
-      <group>
-        <Box
-          position={[0, 0.018, 0]}
-          scale={[usableWidth, 0.025, usableDepth]}
-          color="#dbe3e0"
-          materialKind="powder"
-          roughness={0.4}
-          edgeRadius={0.004}
-        />
-        {Array.from({ length: 12 }, (_, index) => {
-          const column = index % 4;
-          const row = Math.floor(index / 4);
-          const x = -usableWidth * 0.36 + column * usableWidth * 0.24;
-          const z = -usableDepth * 0.28 + row * usableDepth * 0.28;
-          const diameter = Math.min(0.045, usableWidth / 7.8);
-          return (
-            <group key={`vial-${index}`} position={[x, 0.04, z]}>
-              <Cylinder
-                position={[0, itemHeight * 0.42, 0]}
-                scale={[diameter, itemHeight * 0.72, diameter]}
-                color="#d5e7e6"
-                materialKind="glass"
-                opacity={0.55}
-                roughness={0.08}
-                castShadow={false}
-              />
-              <Cylinder
-                position={[0, itemHeight * 0.84, 0]}
-                scale={[diameter * 1.16, itemHeight * 0.14, diameter * 1.16]}
-                color="#236fa7"
-                roughness={0.36}
-                castShadow={false}
-              />
-              <Cylinder
-                position={[0, itemHeight * 0.48, 0]}
-                scale={[diameter * 1.04, itemHeight * 0.16, diameter * 1.04]}
-                color="#f4f5f1"
-                roughness={0.62}
-                castShadow={false}
-              />
-            </group>
-          );
-        })}
-      </group>
-    );
-  }
-
-  if (style === "glassware" || style === "bottles") {
-    const count = style === "glassware" ? 4 : 5;
-    return (
-      <group>
-        {Array.from({ length: count }, (_, index) => {
-          const x = -usableWidth * 0.4 + (usableWidth * 0.8 * index) / Math.max(1, count - 1);
-          const diameter = Math.min(0.085, usableWidth / (count * 1.45));
-          const isGlass = style === "glassware" || index % 2 === 0;
-          return (
-            <group key={`${style}-${index}`} position={[x, 0.03, index % 2 ? 0.025 : -0.025]}>
-              <Cylinder
-                position={[0, itemHeight * 0.42, 0]}
-                scale={[diameter, itemHeight * 0.72, diameter]}
-                color={isGlass ? "#d6e7e5" : "#76502c"}
-                materialKind="glass"
-                opacity={isGlass ? 0.5 : 0.76}
-                roughness={0.1}
-                castShadow={false}
-              />
-              <Cylinder
-                position={[0, itemHeight * 0.79, 0]}
-                scale={[diameter * 0.48, itemHeight * 0.2, diameter * 0.48]}
-                color={isGlass ? "#d6e7e5" : "#76502c"}
-                materialKind="glass"
-                opacity={isGlass ? 0.5 : 0.76}
-                roughness={0.1}
-                castShadow={false}
-              />
-              <Cylinder
-                position={[0, itemHeight * 0.93, 0]}
-                scale={[diameter * 0.58, itemHeight * 0.1, diameter * 0.58]}
-                color={style === "bottles" ? (index % 3 === 0 ? "#2672a9" : "#e8edeb") : "#aebbb8"}
-                roughness={0.4}
-                castShadow={false}
-              />
-              {style === "bottles" && (
-                <Cylinder
-                  position={[0, itemHeight * 0.46, 0]}
-                  scale={[diameter * 1.03, itemHeight * 0.2, diameter * 1.03]}
-                  color="#f2f3ef"
-                  roughness={0.62}
-                  castShadow={false}
-                />
-              )}
-            </group>
-          );
-        })}
-      </group>
-    );
-  }
-
-  return (
-    <group>
-      {Array.from({ length: 6 }, (_, index) => {
-        const column = index % 3;
-        const row = Math.floor(index / 3);
-        const boxWidth = usableWidth * 0.27;
-        const boxDepth = usableDepth * 0.38;
-        const x = -usableWidth * 0.31 + column * usableWidth * 0.31;
-        const z = -usableDepth * 0.22 + row * usableDepth * 0.46;
-        return (
-          <group key={`box-${index}`} position={[x, 0.026, z]}>
-            <Box
-              position={[0, itemHeight * 0.28, 0]}
-              scale={[boxWidth, itemHeight * 0.5, boxDepth]}
-              color="#edf1ef"
-              materialKind="powder"
-              roughness={0.46}
-              edgeRadius={0.004}
-            />
-            <Box
-              position={[0, itemHeight * 0.56, 0]}
-              scale={[boxWidth * 0.96, itemHeight * 0.08, boxDepth * 0.94]}
-              color={index % 3 === 1 ? "#54a69a" : "#4f91ac"}
-              roughness={0.38}
-              edgeRadius={0.002}
-              castShadow={false}
-            />
-            <Box
-              position={[0, itemHeight * 0.3, boxDepth / 2 + 0.003]}
-              scale={[boxWidth * 0.55, itemHeight * 0.12, 0.006]}
-              color="#ffffff"
-              roughness={0.68}
-              sharp
-              castShadow={false}
-            />
-          </group>
-        );
-      })}
-    </group>
-  );
-}
-
-function StorageAccessPreview({
-  position,
-  width,
-  depth,
-  height,
-  locationType,
-  contentStyle,
-}: {
-  position: [number, number, number];
-  width: number;
-  depth: number;
-  height: number;
-  locationType: StorageLocationType;
-  contentStyle: StorageAccessContentStyle;
-}) {
-  const openingWidth = Math.max(0.1, width * 0.94);
-  const openingHeight = Math.max(0.08, height * 0.88);
-  const frontZ = position[2] + depth / 2 + 0.014;
-  const pullOut = Math.min(0.48, Math.max(0.24, depth * 0.72));
-  const drawerLike = locationType === "drawer" || locationType === "bin";
-  if (!storageLocationSupportsAccessPreview(locationType)) return null;
-
-  return (
-    <group name={`Selected ${locationType} access preview`} dispose={null}>
-      <Box
-        position={[position[0], position[1] + height / 2, frontZ]}
-        scale={[openingWidth, openingHeight, 0.028]}
-        color="#4e5956"
-        metalness={0.16}
-        roughness={0.58}
-        sharp
-      />
-      {drawerLike ? (
-        <group position={[position[0], position[1], frontZ + pullOut / 2 + 0.035]}>
-          <Box
-            position={[0, openingHeight * 0.16, 0]}
-            scale={[openingWidth * 0.92, 0.035, pullOut]}
-            color={locationType === "bin" ? "#8caeb8" : "#b9c4c1"}
-            materialKind="stainless"
-            metalness={locationType === "bin" ? 0.08 : 0.68}
-            roughness={0.3}
-            edgeRadius={0.005}
-          />
-          {[-1, 1].map((side) => (
-            <Box
-              key={side}
-              position={[side * openingWidth * 0.44, openingHeight * 0.38, 0]}
-              scale={[0.025, openingHeight * 0.48, pullOut]}
-              color="#d7dfdc"
-              metalness={0.14}
-              roughness={0.34}
-              edgeRadius={0.004}
-            />
-          ))}
-          <Box
-            position={[0, openingHeight * 0.38, -pullOut * 0.48]}
-            scale={[openingWidth * 0.9, openingHeight * 0.48, 0.025]}
-            color="#d7dfdc"
-            metalness={0.14}
-            roughness={0.34}
-            edgeRadius={0.004}
-          />
-          <group position={[0, openingHeight * 0.21, pullOut * 0.02]}>
-            <StoragePreviewContents
-              style={contentStyle}
-              width={openingWidth}
-              height={openingHeight}
-              depth={pullOut}
-            />
-          </group>
-          <Box
-            position={[0, openingHeight * 0.5, pullOut / 2 + 0.022]}
-            scale={[openingWidth, openingHeight, 0.044]}
-            color="#dce3e0"
-            materialKind="powder"
-            metalness={0.08}
-            roughness={0.3}
-            edgeRadius={0.006}
-          />
-          <Box
-            position={[0, openingHeight * 0.5, pullOut / 2 + 0.052]}
-            scale={[openingWidth * 0.42, Math.min(0.025, openingHeight * 0.13), 0.022]}
-            color="#82908d"
-            materialKind="aluminum"
-            metalness={0.64}
-            roughness={0.24}
-            edgeRadius={0.003}
-          />
-          <SelectionBounds width={openingWidth} depth={pullOut + 0.08} height={openingHeight} />
-        </group>
-      ) : (
-        <>
-          <group
-            position={[position[0] - openingWidth / 2, position[1], frontZ + 0.02]}
-            rotation={[0, -Math.PI * 0.38, 0]}
-          >
-            <Box
-              position={[openingWidth / 2, openingHeight / 2, 0]}
-              scale={[openingWidth, openingHeight, 0.042]}
-              color="#dce3e0"
-              materialKind="powder"
-              metalness={0.08}
-              roughness={0.3}
-              edgeRadius={0.006}
-            />
-            <Box
-              position={[openingWidth * 0.82, openingHeight * 0.52, 0.032]}
-              scale={[0.026, openingHeight * 0.34, 0.022]}
-              color="#82908d"
-              materialKind="aluminum"
-              metalness={0.64}
-              roughness={0.24}
-              edgeRadius={0.003}
-            />
-          </group>
-          <group position={[position[0], position[1] + openingHeight * 0.18, frontZ + 0.06]}>
-            <Box
-              position={[0, 0.01, 0]}
-              scale={[openingWidth * 0.88, 0.025, Math.min(depth * 0.66, 0.34)]}
-              color="#aebbb8"
-              materialKind="stainless"
-              metalness={0.7}
-              roughness={0.26}
-              edgeRadius={0.003}
-            />
-            <StoragePreviewContents
-              style={contentStyle}
-              width={openingWidth * 0.88}
-              height={openingHeight}
-              depth={Math.min(depth * 0.66, 0.34)}
-            />
-          </group>
-        </>
-      )}
-    </group>
-  );
-}
-
 export function Asset3D({
   object,
   room,
@@ -663,6 +362,7 @@ export function Asset3D({
   presentation = "editor",
   showStorageAccess = false,
   onReady,
+  interactive = true,
 }: {
   object: SceneObject;
   room: Room;
@@ -672,6 +372,7 @@ export function Asset3D({
   presentation?: "editor" | "digital-twin";
   showStorageAccess?: boolean;
   onReady?: (objectId: string) => void;
+  interactive?: boolean;
 }) {
   const definition = getAssetDefinition(object.assetDefinitionId);
   const setSelected = useEditorStore((state) => state.setSelected);
@@ -684,27 +385,36 @@ export function Asset3D({
   const z = mmToMetres(object.position.y - room.depth / 2);
   const elevation = mmToMetres(object.position.z);
   const highlight = selected || hovered;
-  const selectedLocation = selected
-    ? room.scene.storageLocations.find(
-        (location) => location.id === selectedLocationId && location.objectId === object.id,
-      )
-    : undefined;
-  const storageHighlight = selected
-    ? storageLocationHighlight(
-        selectedLocationId,
-        object.id,
-        room.scene.storageLocations,
-        object.dimensions,
-      )
-    : null;
-  const accessContentStyle = storageAccessContentStyle(
-    selectedLocationId,
+  const access = resolveStorageAccess(
+    definition.id,
+    object.id,
+    selected ? selectedLocationId : null,
     room.scene.storageLocations,
-    room.scene.inventoryItems,
   );
+  const storageHighlight =
+    selected && access.region
+      ? {
+          position: [
+            access.region.x * width,
+            access.region.y * height,
+            access.region.z * depth,
+          ] as [number, number, number],
+          width: access.region.width * width,
+          height: access.region.height * height,
+          depth: 0,
+        }
+      : selected
+        ? storageLocationHighlight(
+            selectedLocationId,
+            object.id,
+            room.scene.storageLocations,
+            object.dimensions,
+          )
+        : null;
   const click = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
-    setSelected([object.id], event.shiftKey);
+    if (event.detail > 1) return;
+    setSelected(selected && !event.shiftKey ? [] : [object.id], event.shiftKey);
   };
   const common = {
     onClick: click,
@@ -720,7 +430,7 @@ export function Asset3D({
       position={[x, elevation, z]}
       rotation={[0, -THREE.MathUtils.degToRad(object.rotation.z), 0]}
       scale={[object.flipHorizontal ? -1 : 1, 1, object.flipVertical ? -1 : 1]}
-      {...common}
+      {...(interactive ? common : {})}
     >
       <AssetVisual
         definition={definition}
@@ -728,6 +438,11 @@ export function Asset3D({
         depth={depth}
         height={height}
         detail={detail}
+        openStorageParts={
+          presentation === "digital-twin" && showStorageAccess
+            ? access.parts.map((part) => part.id)
+            : []
+        }
         onReady={() => onReady?.(object.id)}
       />
       {highlight && !storageHighlight && (
@@ -763,19 +478,6 @@ export function Asset3D({
             />
           </group>
         ))}
-      {presentation === "digital-twin" &&
-        showStorageAccess &&
-        storageHighlight &&
-        selectedLocation && (
-          <StorageAccessPreview
-            position={storageHighlight.position}
-            width={storageHighlight.width}
-            depth={storageHighlight.depth}
-            height={storageHighlight.height}
-            locationType={selectedLocation.type}
-            contentStyle={accessContentStyle}
-          />
-        )}
     </group>
   );
 }
@@ -819,6 +521,7 @@ function CameraRig({
     focusLocationId,
     presentation,
   });
+  const previousCommandRef = useRef<CameraCommandInput | null>(null);
   useLayoutEffect(() => {
     commandDataRef.current = { room, preset, focusObjectId, focusLocationId, presentation };
   }, [focusLocationId, focusObjectId, presentation, preset, room]);
@@ -872,6 +575,21 @@ function CameraRig({
       focusLocationId: commandFocusLocationId,
       presentation: commandPresentation,
     } = commandDataRef.current;
+    const command = {
+      roomId: commandRoom.id,
+      preset: commandPreset,
+      focusObjectId: commandFocusObjectId,
+      focusLocationId: commandFocusLocationId,
+      presentation: commandPresentation,
+    };
+    const clearingFocus = isCameraFocusClear(previousCommandRef.current, command);
+    previousCommandRef.current = command;
+    if (clearingFocus) {
+      // Dismissing evidence removes its trace, not the user's current viewpoint.
+      transition.current = null;
+      invalidate();
+      return;
+    }
     const savedPose = commandRoom.viewState?.cameraPose;
     if (
       initializedRoomId.current !== commandRoom.id &&
@@ -1373,6 +1091,21 @@ export function ThreeDView({
   const modelProgress = useProgress();
   const room = useEditorStore(selectActiveRoom);
   const spatialFocus = useEditorStore((state) => state.spatialFocus);
+  useEffect(() => {
+    const clear = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (event.key !== "Escape" || event.defaultPrevented || useEditorStore.getState().dialog)
+        return;
+      if (
+        target instanceof HTMLElement &&
+        target.closest("input, textarea, select, [contenteditable='true']")
+      )
+        return;
+      useEditorStore.getState().setSelected([]);
+    };
+    window.addEventListener("keydown", clear);
+    return () => window.removeEventListener("keydown", clear);
+  }, []);
   const focusObjectId =
     focusObjectIdOverride === undefined
       ? spatialFocus?.roomId === room.id
@@ -1470,6 +1203,7 @@ export function ThreeDView({
       data-focus-object-id={focusObjectId ?? undefined}
       data-focus-location-id={focusLocationId ?? undefined}
       data-storage-access-open={showStorageAccess ? "true" : "false"}
+      data-scene-ready={sceneReady && materialMapsReady && !modelProgress.active ? "true" : "false"}
       data-visible-asset-count={visibleAssetIds.length}
       data-scene-scope="full"
       data-floor-state={hasClosedFloor ? "wall-derived" : "awaiting-closed-walls"}

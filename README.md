@@ -167,6 +167,14 @@ For a non-technical Windows walkthrough, see [SETUP.md](SETUP.md).
 
 ### Latest competition polish
 
+Storage access now opens the **actual authored door leaves and drawer trays**,
+with correct hinge sides, internal shelves, per-instance animation and a safe
+explanation when saved storage does not match a model. It never overlays an
+invented door or fabricates stored contents. Five verified casework families are
+covered; see [model-aware storage access](docs/assets/storage-access-2026-08-30.md).
+This release also includes the scoped furniture refinements, viewport-fitted
+Asset Studio, dismissible spatial selection, and dialogs above the header.
+
 The live release now includes a one-call reviewed inventory tool, material-list grounding, and a visible Next/Previous collection guide; richer floor/wall finishes; chair-to-desk knee-space snapping; and upgraded authored workstation/desk models. See [Inventory and collection workflows](docs/webmcp/INVENTORY_AND_COLLECTION.md) for exact tool arguments and examples. The guide is a grounded collection itinerary, not an experiment protocol or certified walking route.
 
 The public service uses the explicitly published local five-room project snapshot. Local fresh installations continue to use the blank starter plus separate DEMO-01 seed described below. Neither path overwrites the developer's existing SQLite workspace.

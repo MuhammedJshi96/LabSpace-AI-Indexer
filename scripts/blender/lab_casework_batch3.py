@@ -657,8 +657,8 @@ def add_open_wash_frame(width: float, depth: float) -> None:
     ):
         furniture.add_box(
             f"Wash frame leg {index}",
-            (x, y, 0.39),
-            (0.055, 0.055, 0.78),
+            (x, y, 0.4325),
+            (0.055, 0.055, 0.815),
             m["stainless"],
             bevel=0.009,
             category="frame",
@@ -686,23 +686,41 @@ def add_open_wash_frame(width: float, depth: float) -> None:
         "Wash station lower shelf",
         (0.0, 0.0, 0.17),
         (width - 0.11, depth - 0.11, 0.035),
-        m["stainless_dark"],
+        m["stainless"],
         bevel=0.010,
         category="lower shelf",
     )
     for y in (-depth / 2.0 + 0.055, depth / 2.0 - 0.055):
         furniture.add_box(
             f"Wash frame lower rail {y:+.2f}",
-            (0.0, y, 0.26),
+            (0.0, y, 0.145),
             (width - 0.11, 0.040, 0.040),
             m["aluminum"],
             bevel=0.006,
             category="frame",
         )
+        furniture.add_box(
+            "Wash frame upper longitudinal rail", (0, y, 0.812),
+            (width - 0.11, 0.040, 0.042), m["stainless"],
+            bevel=0.004, category="worktop support",
+        )
+    for x in (-width / 2 + 0.055, width / 2 - 0.055):
+        furniture.add_box(
+            "Wash frame upper end rail", (x, 0, 0.812),
+            (0.040, depth - 0.11, 0.042), m["stainless"],
+            bevel=0.004, category="worktop support",
+        )
 
 
 def build_stainless_wash_basin(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
+    # Local to this requested asset. Never retune shared runtime metal finishes.
+    for key, color, metal, rough in (
+        ("stainless", (0.62, 0.69, 0.68, 1), 0.34, 0.32),
+        ("stainless_bright", (0.74, 0.80, 0.79, 1), 0.42, 0.27),
+    ):
+        finish = "body" if key == "stainless" else "surface"
+        m[key] = furniture.make_material(f"Open wash satin alloy {finish}", color, metallic=metal, roughness=rough, coat=0.12)
     add_open_wash_frame(spec.width, spec.depth)
     sink_x = -0.23
     sink_y = -0.015
@@ -746,7 +764,7 @@ def build_stainless_wash_basin(spec: AssetSpec) -> None:
         (sink_width, sink_length),
         0.894,
         depth=0.30,
-        water=True,
+        water=False,
     )
     for index in range(8):
         x = 0.39 + index * 0.065
@@ -754,14 +772,14 @@ def build_stainless_wash_basin(spec: AssetSpec) -> None:
             f"Drainboard ridge {index + 1}",
             (x, -0.02, 0.896),
             (0.012, 0.48, 0.008),
-            m["stainless_dark"],
+            m["stainless"],
             bevel=0.003,
             category="drainboard",
         )
     furniture.add_box(
         "Wash station rear splashback",
-        (0.0, spec.depth / 2.0 - 0.018, 0.86),
-        (spec.width, 0.036, 0.08),
+        (0.0, spec.depth / 2.0 - 0.018, 0.965),
+        (spec.width, 0.036, 0.17),
         m["stainless"],
         bevel=0.006,
         category="splashback",
@@ -806,17 +824,14 @@ def build_stainless_wash_basin(spec: AssetSpec) -> None:
         bevel=0.004,
         category="label",
     )
-    furniture.add_box(
-        "Wash station black drain trap",
-        (-0.23, 0.0, 0.49),
-        (0.05, 0.05, 0.18),
-        m["black"],
-        bevel=0.010,
-        category="plumbing",
-    )
+    add_curve_tube("Basin drain and P-trap", [(-0.23, 0, 0.605), (-0.23, 0, 0.45),
+        (-0.23, 0.07, 0.40), (-0.23, 0.14, 0.45), (-0.23, 0.14, 0.51),
+        (-0.23, 0.30, 0.51)], 0.022, m["stainless"], category="plumbing")
+    furniture.add_box("Rear service box mounting bracket", (0.55, 0.235, 0.52),
+        (0.22, 0.13, 0.026), m["stainless"], bevel=0.004, category="service mounting")
     furniture.add_box(
         "Wash station powder-coated service box",
-        (0.55, 0.0, 0.45),
+        (0.55, 0.245, 0.42),
         (0.18, 0.12, 0.18),
         m["powder_light"],
         bevel=0.012,
@@ -824,7 +839,7 @@ def build_stainless_wash_basin(spec: AssetSpec) -> None:
     )
     furniture.add_box(
         "Wash station interior service panel",
-        (0.55, 0.065, 0.45),
+        (0.55, 0.310, 0.42),
         (0.15, 0.015, 0.14),
         m["interior"],
         bevel=0.004,
@@ -832,7 +847,7 @@ def build_stainless_wash_basin(spec: AssetSpec) -> None:
     )
     furniture.add_box(
         "Wash station shadow reveal",
-        (0.55, -0.066, 0.45),
+        (0.55, 0.179, 0.42),
         (0.15, 0.012, 0.025),
         m["shadow"],
         bevel=0.003,

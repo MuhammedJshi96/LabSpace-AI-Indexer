@@ -101,7 +101,10 @@ def export_compressed(path: Path) -> None:
         export_cameras=False,
         export_lights=False,
         export_extras=True,
-        export_shared_accessors=True,
+        # Articulated assemblies contain multiple material primitives. Give
+        # Draco independent accessors for those primitives (the Blender 4.5
+        # encoder cannot safely preserve their shared triangle-index buffers).
+        export_shared_accessors=not any("storageMechanism" in obj for obj in bpy.context.scene.objects),
         export_draco_mesh_compression_enable=True,
         export_draco_mesh_compression_level=6,
         export_draco_position_quantization=14,

@@ -32,6 +32,10 @@
   --leading-ui: 1.35;
   --control-height: 36px;
   --control-height-compact: 32px;
+  /* Global dialogs cover the header, its popovers, and the WebMCP panels. */
+  --layer-modal: 7000;
+  --layer-toast: 7100;
+  --layer-loading: 8000;
 }
 
 * {
@@ -4864,7 +4868,7 @@ button.danger:hover,
 
 .modal-backdrop {
   position: fixed;
-  z-index: 100;
+  z-index: var(--layer-modal);
   inset: 0;
   display: grid;
   padding: 28px;
@@ -4876,7 +4880,8 @@ button.danger:hover,
 .modal-card {
   display: grid;
   width: min(520px, 92vw);
-  max-height: min(820px, 92vh);
+  max-width: calc(100vw - 56px);
+  max-height: min(820px, calc(100dvh - 56px));
   overflow: hidden;
   background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -5836,7 +5841,7 @@ button.danger:hover,
 
 .toast-stack {
   position: fixed;
-  z-index: 150;
+  z-index: var(--layer-toast);
   right: 14px;
   bottom: 45px;
   display: flex;
@@ -5879,7 +5884,7 @@ button.danger:hover,
 
 .app-loading {
   position: fixed;
-  z-index: 200;
+  z-index: var(--layer-loading);
   inset: 0;
   display: flex;
   align-items: center;
@@ -6551,6 +6556,7 @@ button.danger:hover,
   .modal-card.wide {
     display: block;
     width: 100%;
+    max-width: none;
     max-height: none;
     overflow: visible;
     border: 0;
@@ -7574,6 +7580,31 @@ body:has(#procedural-catalog-capture) #root {
   min-width: 0;
 }
 
+.twin-detail-heading-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.twin-clear-selection {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 8px;
+  color: #43615b;
+  font-size: 12px;
+  background: #f4f8f7;
+  border: 1px solid #cad8d4;
+  border-radius: 5px;
+}
+
+.twin-clear-selection:hover {
+  color: #075f54;
+  background: #e4f4f1;
+}
+
 .twin-detail-heading small,
 .twin-notes small,
 .twin-location-card small {
@@ -7946,6 +7977,18 @@ body:has(#procedural-catalog-capture) #root {
   background: #f3faf8;
   border: 1px solid #b9d8d2;
   border-radius: 6px;
+}
+
+.storage-access-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted, #596d6b);
+}
+
+.twin-detail-actions .storage-preview-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .twin-detail-actions .storage-preview-toggle:hover,
@@ -11328,7 +11371,7 @@ body:has(#procedural-catalog-capture) #root {
 }
 
 .blueprint-backdrop {
-  z-index: 500;
+  z-index: var(--layer-modal);
   padding: 18px;
   background: rgba(6, 24, 21, 0.62);
   backdrop-filter: blur(5px);

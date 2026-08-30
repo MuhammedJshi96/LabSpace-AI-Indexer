@@ -1,0 +1,360 @@
+.inventory-page-shell .inventory-studio-header {
+  align-items: center;
+}
+.inventory-page-shell .inventory-studio-header h1 {
+  font-family: Bahnschrift, "Segoe UI", sans-serif;
+}
+.inventory-page-shell .inventory-studio-header p {
+  max-width: 440px;
+  line-height: 1.45;
+}
+.inventory-page-shell .inventory-filter-rail {
+  overflow: auto;
+}
+.inventory-page-shell .inventory-search input {
+  width: 100%;
+}
+.inventory-page-shell .inventory-status-filters button {
+  align-items: center;
+  font-size: 13px;
+}
+.inventory-page-shell .inventory-status-filters em {
+  line-height: 18px;
+  font-size: 12px;
+}
+.inventory-page-shell .inventory-record-list {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+.inventory-page-shell .inventory-record-list > header {
+  min-height: 48px;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-block: 8px;
+  font-size: 13px;
+}
+.inventory-page-shell .inventory-record-list > header small {
+  font-size: 12px;
+  margin-left: auto;
+}
+.inventory-page-shell .inventory-record-scroll {
+  padding: 0 10px 10px;
+}
+.inventory-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 48px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--porcelain);
+  font-size: 13px;
+}
+.inventory-selection-bar.has-selection {
+  background: #e5f5ee;
+}
+.inventory-selection-bar > label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+.inventory-selection-bar small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.inventory-selection-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+.inventory-clear-selection {
+  color: var(--teal-dark);
+  border: 0;
+  background: transparent;
+  margin-left: auto;
+}
+.inventory-bulk-assign {
+  color: white;
+  border: 1px solid var(--teal-dark);
+  background: var(--teal-dark);
+  padding: 6px 9px;
+}
+.inventory-page-shell input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--teal-dark);
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.inventory-column-labels {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px 80px;
+  gap: 12px;
+  padding: 10px 10px 10px 42px;
+  background: white;
+  border-bottom: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 12px;
+}
+.inventory-column-labels span:not(:first-child) {
+  text-align: center;
+}
+.inventory-registry-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--rule);
+  padding-left: 7px;
+  border-radius: 6px;
+}
+.inventory-registry-row.is-selected {
+  background: #f0f9f5;
+  border-color: #b3dacc;
+  box-shadow: inset 3px 0 var(--instrument-teal);
+}
+.inventory-registry-row.is-checked {
+  background: #e7f4ee;
+}
+.inventory-record-open {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 76px 80px;
+  gap: 12px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 92px;
+  padding: 12px 9px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  text-align: left;
+}
+.inventory-record-open:hover {
+  background: #063c3505;
+}
+.inventory-page-shell .inventory-record-copy {
+  gap: 4px;
+}
+.inventory-page-shell .inventory-record-copy b {
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.inventory-page-shell .inventory-record-copy small,
+.inventory-page-shell .inventory-record-copy em {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.inventory-page-shell .inventory-record-copy small {
+  white-space: normal;
+}
+.inventory-page-shell .inventory-record-status {
+  font-size: 11px;
+  text-transform: capitalize;
+  font-weight: 600;
+  justify-self: center;
+  padding: 4px 7px;
+}
+.inventory-stock {
+  display: grid;
+  text-align: center;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.inventory-stock > span {
+  font:
+    600 16px Bahnschrift,
+    "Segoe UI",
+    sans-serif;
+}
+.inventory-stock small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.inventory-item-photo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 7px;
+  border: 1px solid #dde5e1;
+  color: var(--teal-dark);
+  background: #f5f8f6;
+  overflow: hidden;
+}
+.inventory-item-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+.inventory-storage-names {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.inventory-storage-names summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--teal-dark);
+  cursor: pointer;
+  padding: 5px 0;
+}
+.inventory-storage-names p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.inventory-storage-names > div {
+  padding: 8px 0;
+}
+.inventory-storage-names > div > small {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+.inventory-page-shell .inventory-detail-panel {
+  min-width: 0;
+}
+@media (max-width: 1400px) {
+  .inventory-page-shell .inventory-studio-body {
+    grid-template-columns: 190px minmax(0, 1fr) 310px;
+  }
+  .inventory-page-shell .inventory-create-control {
+    gap: 6px;
+  }
+  .inventory-page-shell .inventory-studio-header {
+    gap: 14px;
+  }
+}
+@media (max-width: 1150px) {
+  .inventory-page-shell .inventory-studio-body {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .inventory-page-shell .inventory-filter-rail {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .inventory-page-shell .inventory-search {
+    margin: 0;
+    flex: 1 1 220px;
+  }
+  .inventory-page-shell .inventory-filter-rail > label:not(.inventory-search) {
+    flex: 1 1 200px;
+  }
+  .inventory-page-shell .inventory-status-filters {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    flex: 1 1 360px;
+  }
+  .inventory-page-shell .inventory-status-filters > span {
+    display: none;
+  }
+  .inventory-page-shell .inventory-status-filters button {
+    flex: 1;
+    gap: 6px;
+    padding: 0 7px;
+  }
+  .inventory-page-shell .inventory-studio-header {
+    align-items: start;
+  }
+  .inventory-page-shell .inventory-create-control {
+    max-width: 440px;
+  }
+  .inventory-page-shell .inventory-registry-badge {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .inventory-page-shell .top-bar {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  .inventory-page-shell .top-bar > * {
+    flex: 0 0 auto;
+  }
+  .inventory-page-shell .inventory-studio {
+    display: block;
+    overflow: auto;
+  }
+  .inventory-page-shell .inventory-studio-header {
+    display: block;
+  }
+  .inventory-page-shell .inventory-create-control {
+    max-width: none;
+    justify-content: start;
+    margin: 10px 0;
+  }
+  .inventory-page-shell .inventory-studio-body {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+  .inventory-page-shell .inventory-filter-rail {
+    flex: 0 0 auto;
+  }
+  .inventory-page-shell .inventory-status-filters {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .inventory-page-shell .inventory-record-scroll {
+    max-height: 470px;
+  }
+  .inventory-page-shell .inventory-detail-panel {
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .inventory-page-shell .inventory-record-open {
+    grid-template-columns: 38px minmax(0, 1fr) 55px;
+    gap: 8px;
+  }
+  .inventory-page-shell .inventory-record-open .inventory-record-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .inventory-page-shell .inventory-record-open .inventory-stock {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+  .inventory-page-shell .inventory-item-photo {
+    width: 38px;
+    height: 42px;
+  }
+  .inventory-column-labels {
+    grid-template-columns: minmax(0, 1fr) 55px;
+  }
+  .inventory-column-labels > span:last-child {
+    display: none;
+  }
+}
+/* The inventory workspace can reflow independently of the CAD editor's
+   1100px document minimum; do not change the editor's canvas constraints. */
+body:has(.inventory-page-shell) {
+  min-width: 0;
+}

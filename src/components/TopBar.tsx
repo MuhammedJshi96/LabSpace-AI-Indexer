@@ -15,6 +15,7 @@ import {
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { WebMCPHeaderButton } from "./AgentActivityPanel";
 import { RoomNavigator } from "./RoomNavigator";
+import { navigateWorkspace } from "../lib/workspace-navigation";
 
 type TopBarProps = {
   activeArea?: "facility" | "layout" | "digital-twin" | "inventory" | "asset-studio";
@@ -60,7 +61,30 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
         <span className="editable-badge">{contextLabel}</span>
       </div>
 
-      <nav className="primary-navigation" aria-label="Primary application navigation">
+      <nav
+        className="primary-navigation"
+        aria-label="Primary application navigation"
+        onClick={(event) => {
+          const anchor = (event.target as HTMLElement).closest("a");
+          const path = anchor?.getAttribute("href");
+          if (
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey ||
+            !path
+          )
+            return;
+          if (
+            ["/", "/inventory"].includes(path) &&
+            ["/", "/inventory"].includes(window.location.pathname)
+          ) {
+            event.preventDefault();
+            navigateWorkspace(path);
+          }
+        }}
+      >
         <a
           className={activeArea === "layout" ? "active" : ""}
           href="/"

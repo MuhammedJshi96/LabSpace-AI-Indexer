@@ -6,7 +6,6 @@ import {
   MagnifyingGlass,
   MapPin,
   Package,
-  PencilSimple,
   X,
 } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -15,6 +14,8 @@ import { getAssetDefinition } from "../domain/assets";
 import { storagePath, type InventoryReference } from "../domain/inventory-organization";
 import { useEditorStore } from "../store/editor-store";
 import { AssetThumbnail } from "./AssetThumbnail";
+import { StorageMap } from "./StorageMap";
+import { StorageNameEditor } from "./StorageNameEditor";
 import "./InventoryOrganizer.css";
 
 function OrganizerDialog({
@@ -22,13 +23,11 @@ function OrganizerDialog({
   subtitle,
   onClose,
   children,
-  compact = false,
 }: {
   title: string;
   subtitle: string;
   onClose: () => void;
   children: ReactNode;
-  compact?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -37,16 +36,15 @@ function OrganizerDialog({
     dialog?.showModal();
     const input = dialog?.querySelector("input");
     input?.focus();
-    if (input && compact) input.select();
     return () => {
       dialog?.close();
       if (previous instanceof HTMLElement && previous.isConnected) previous.focus();
     };
-  }, [compact]);
+  }, []);
   return createPortal(
     <dialog
       ref={ref}
-      className={`inventory-organizer ${compact ? "is-compact" : ""}`}
+      className="inventory-organizer"
       aria-label={title}
       onCancel={(event) => {
         event.preventDefault();
@@ -75,84 +73,6 @@ function OrganizerDialog({
   );
 }
 
-export function StorageRenameDialog({
-  roomId,
-  locationId,
-  onClose,
-}: {
-  roomId: string;
-  locationId: string;
-  onClose: () => void;
-}) {
-  const project = useEditorStore((state) => state.project);
-  const rename = useEditorStore((state) => state.renameStorageLocation);
-  const room = project.rooms.find((entry) => entry.id === roomId);
-  const location = room?.scene.storageLocations.find((entry) => entry.id === locationId);
-  const [name, setName] = useState(location?.name ?? "");
-  const [error, setError] = useState("");
-  return (
-    <OrganizerDialog
-      compact
-      title={`Rename ${location?.type ?? "storage"}`}
-      subtitle="Use a name that makes sense to your team."
-      onClose={onClose}
-    >
-      <form
-        className="storage-rename-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (rename(roomId, locationId, name)) onClose();
-          else setError("The name could not be saved. Check the location and try again.");
-        }}
-      >
-        <div className="organizer-address">
-          <MapPin size={19} />
-          <span>
-            {room?.name} /{" "}
-            {room
-              ? storagePath(room.scene.storageLocations, locationId)
-                  .map((entry) => entry.name)
-                  .join(" / ")
-              : "Location unavailable"}
-          </span>
-        </div>
-        <label className="organizer-field">
-          <span>Storage name</span>
-          <input
-            autoFocus
-            required
-            maxLength={100}
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value);
-              setError("");
-            }}
-            placeholder="For example: Student supplies"
-          />
-        </label>
-        <p className="organizer-help">
-          Your name appears in Inventory, Spatial Index and WebMCP. The location code, assigned
-          items and opening mechanism stay unchanged.
-        </p>
-        {error && (
-          <p role="alert" className="organizer-error">
-            {error}
-          </p>
-        )}
-        <footer className="organizer-footer">
-          <button type="button" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="primary-action" disabled={!location || !name.trim()} type="submit">
-            <Check size={17} />
-            Save name
-          </button>
-        </footer>
-      </form>
-    </OrganizerDialog>
-  );
-}
-
 export type InventoryOrganizerOptions = {
   mode?: "assign" | "names";
   initialItems?: InventoryReference[];
@@ -166,7 +86,8 @@ export function InventoryOrganizer({
   initialRoomId,
   initialLocationId,
   onClose,
-}: InventoryOrganizerOptions & { onClose: () => void }) {
+  onAssigned,
+}: InventoryOrganizerOptions & { onClose: () => void; onAssigned?: () => void }) {
   const project = useEditorStore((state) => state.project);
   const assign = useEditorStore((state) => state.assignInventoryItems);
   const rooms = project.rooms.filter((room) => room.roomKind !== "demo-template");
@@ -181,10 +102,12 @@ export function InventoryOrganizer({
   const [query, setQuery] = useState("");
   const [itemQuery, setItemQuery] = useState("");
   const [selected, setSelected] = useState<InventoryReference[]>(initialItems);
-  const [renameId, setRenameId] = useState<string | null>(null);
+  const [view, setView] = useState<"visual" | "list">("visual");
   const [error, setError] = useState("");
   const selectedLocation = locations.find((entry) => entry.id === locationId);
   const object = room?.scene.objects.find((entry) => entry.id === selectedLocation?.objectId);
+  const contents =
+    room?.scene.inventoryItems.filter((item) => item.storageLocationId === locationId) ?? [];
   const laboratory = project.laboratories.find((entry) => entry.id === room?.laboratoryId);
   const path = storagePath(locations, locationId);
   const browsePath = storagePath(locations, parentId);
@@ -337,10 +260,29 @@ export function InventoryOrganizer({
               </div>
             </section>
           )}
-          <section className="organizer-locations" aria-label="Choose storage location">
+          <section
+            className={`organizer-locations ${view === "visual" && object ? "has-visual-map" : ""}`}
+            aria-label="Choose storage location"
+          >
             <div className="organizer-section-heading">
               <MapPin size={19} />
               <b>{mode === "names" ? "Browse storage" : "Choose a destination"}</b>
+              <div className="organizer-view-switch" role="group" aria-label="Storage view">
+                <button
+                  type="button"
+                  aria-pressed={view === "visual"}
+                  onClick={() => setView("visual")}
+                >
+                  Visual
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={view === "list"}
+                  onClick={() => setView("list")}
+                >
+                  List
+                </button>
+              </div>
             </div>
             <div className="organizer-location-filters">
               <label className="organizer-field">
@@ -392,61 +334,96 @@ export function InventoryOrganizer({
                 </span>
               ))}
             </nav>
-            <div className="organizer-location-list">
-              {visibleLocations.map((location) => {
-                const children = locations.filter((entry) => entry.parentId === location.id);
-                const contents =
-                  room?.scene.inventoryItems.filter(
-                    (item) => item.storageLocationId === location.id,
-                  ).length ?? 0;
-                return (
-                  <button
-                    type="button"
-                    key={location.id}
-                    className={`organizer-location ${locationId === location.id ? "is-selected" : ""}`}
-                    aria-label={`Choose ${location.name}`}
-                    aria-pressed={locationId === location.id}
-                    onClick={() => {
-                      choose(location.id);
-                      if (children.length) browse(location.id);
-                      else if (term) {
-                        setParentId(location.parentId);
-                        setQuery("");
-                      }
-                    }}
-                  >
-                    <Archive size={21} weight="duotone" />
-                    <span>
-                      <b>{location.name}</b>
-                      <small>
-                        {term
-                          ? storagePath(locations, location.id)
-                              .slice(0, -1)
-                              .map((entry) => entry.name)
-                              .join(" / ")
-                          : `${location.type} · ${contents} assigned ${contents === 1 ? "item" : "items"}`}
-                      </small>
-                      <code>{location.indexCode}</code>
-                    </span>
-                    {children.length ? (
-                      <span className="organizer-child-count">
-                        {children.length}
-                        <CaretRight size={17} />
+            <div
+              className={`organizer-storage-workspace ${view === "visual" && object ? "has-map" : ""}`}
+            >
+              <div
+                className={`organizer-location-list ${!parentId && !term && view === "visual" ? "is-cabinet-gallery" : ""}`}
+              >
+                {visibleLocations.map((location) => {
+                  const children = locations.filter((entry) => entry.parentId === location.id);
+                  const cabinetObject = !location.parentId
+                    ? room?.scene.objects.find((entry) => entry.id === location.objectId)
+                    : null;
+                  const contents =
+                    room?.scene.inventoryItems.filter(
+                      (item) => item.storageLocationId === location.id,
+                    ).length ?? 0;
+                  return (
+                    <button
+                      type="button"
+                      key={location.id}
+                      className={`organizer-location ${locationId === location.id ? "is-selected" : ""}`}
+                      aria-label={`Choose ${location.name}`}
+                      aria-pressed={locationId === location.id}
+                      onClick={() => {
+                        choose(location.id);
+                        if (children.length) browse(location.id);
+                        else if (term) {
+                          setParentId(location.parentId);
+                          setQuery("");
+                        }
+                      }}
+                    >
+                      {cabinetObject && view === "visual" ? (
+                        <span className="organizer-cabinet-thumbnail">
+                          <AssetThumbnail
+                            asset={getAssetDefinition(cabinetObject.assetDefinitionId)}
+                          />
+                        </span>
+                      ) : (
+                        <Archive size={21} weight="duotone" />
+                      )}
+                      <span>
+                        <b>{location.name}</b>
+                        <small>
+                          {term
+                            ? storagePath(locations, location.id)
+                                .slice(0, -1)
+                                .map((entry) => entry.name)
+                                .join(" / ")
+                            : `${location.type} · ${contents} assigned ${contents === 1 ? "item" : "items"}`}
+                        </small>
+                        <code>{location.indexCode}</code>
                       </span>
-                    ) : locationId === location.id ? (
-                      <Check size={19} />
-                    ) : null}
-                  </button>
-                );
-              })}
-              {!visibleLocations.length && (
-                <p className="organizer-empty">
-                  {term
-                    ? "No matching storage names. Try a shorter search."
-                    : parentId
-                      ? "This is an exact storage location. You can use it or return to its parent."
-                      : "No storage is set up in this room. Add a cabinet or complete its storage in the Layout Editor."}
-                </p>
+                      {children.length ? (
+                        <span className="organizer-child-count">
+                          {children.length}
+                          <CaretRight size={17} />
+                        </span>
+                      ) : locationId === location.id ? (
+                        <Check size={19} />
+                      ) : null}
+                    </button>
+                  );
+                })}
+                {!visibleLocations.length && (
+                  <p className="organizer-empty">
+                    {term
+                      ? "No matching storage names. Try a shorter search."
+                      : parentId
+                        ? "This is an exact storage location. You can use it or return to its parent."
+                        : "No storage is set up in this room. Add a cabinet or complete its storage in the Layout Editor."}
+                  </p>
+                )}
+              </div>
+              {view === "visual" && object && room && (
+                <StorageMap
+                  key={object.id}
+                  room={room}
+                  object={object}
+                  selectedId={locationId}
+                  onChoose={(id) => {
+                    choose(id);
+                    const target = locations.find((entry) => entry.id === id);
+                    setParentId(
+                      locations.some((entry) => entry.parentId === id)
+                        ? id
+                        : (target?.parentId ?? null),
+                    );
+                    setQuery("");
+                  }}
+                />
               )}
             </div>
             <div className="organizer-location-summary">
@@ -459,19 +436,32 @@ export function InventoryOrganizer({
                 <small>
                   {selectedLocation ? `Selected ${selectedLocation.type}` : "Selected destination"}
                 </small>
-                <b>
-                  {selectedLocation?.name ??
-                    (chosen ? "Unassigned in this room" : "Choose a location above")}
-                </b>
+                {selectedLocation && room ? (
+                  <StorageNameEditor
+                    key={selectedLocation.id}
+                    roomId={room.id}
+                    locationId={selectedLocation.id}
+                  />
+                ) : (
+                  <b>
+                    {chosen ? "Unassigned in this room" : "Choose a cabinet to explore its storage"}
+                  </b>
+                )}
                 {selectedLocation && (
-                  <button
-                    type="button"
-                    className="organizer-rename"
-                    onClick={() => setRenameId(selectedLocation.id)}
-                  >
-                    <PencilSimple size={15} />
-                    Rename {selectedLocation.type}
-                  </button>
+                  <span className="organizer-contents-summary" aria-live="polite">
+                    {contents.length ? (
+                      <>
+                        {contents.length} assigned {contents.length === 1 ? "item" : "items"}:{" "}
+                        {contents
+                          .slice(0, 3)
+                          .map((item) => `${item.name} (${item.quantity} ${item.unit})`)
+                          .join(" · ")}
+                        {contents.length > 3 ? ` · +${contents.length - 3} more` : ""}
+                      </>
+                    ) : (
+                      "No items assigned to this exact location."
+                    )}
+                  </span>
                 )}
               </div>
               {mode === "assign" && (
@@ -505,8 +495,10 @@ export function InventoryOrganizer({
               className="primary-action"
               disabled={!room || !chosen || !selected.length}
               onClick={() => {
-                if (assign(selected, room!.id, locationId)) onClose();
-                else
+                if (assign(selected, room!.id, locationId)) {
+                  onAssigned?.();
+                  onClose();
+                } else
                   setError(
                     "The assignment could not be completed. Check your selection or any pending agent preview.",
                   );
@@ -518,13 +510,6 @@ export function InventoryOrganizer({
           )}
         </footer>
       </OrganizerDialog>
-      {renameId && room && (
-        <StorageRenameDialog
-          roomId={room.id}
-          locationId={renameId}
-          onClose={() => setRenameId(null)}
-        />
-      )}
     </>
   );
 }

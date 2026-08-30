@@ -25,6 +25,8 @@ export type SceneCommand =
       id: string;
       label: string;
       kind: "scene";
+      roomId?: string;
+      scope?: "storage";
       before: Scene;
       after: Scene;
       roomBefore?: RoomPlanSize & { wallHeight?: number };
@@ -60,7 +62,67 @@ function replaceAffectedObjects(
   return nextObjects;
 }
 
+/** Storage history changes locations/links only, never rolls back later stock edits or geometry. */
+function applyStorageDelta(scene: Scene, before: Scene, after: Scene): Scene {
+  const now = new Date().toISOString();
+  const removed = new Set(
+    before.storageLocations
+      .filter((entry) => !after.storageLocations.some((value) => value.id === entry.id))
+      .map((entry) => entry.id),
+  );
+  const locations = scene.storageLocations
+    .filter((entry) => !removed.has(entry.id))
+    .map((entry) => {
+      const previous = before.storageLocations.find((value) => value.id === entry.id);
+      const next = after.storageLocations.find((value) => value.id === entry.id);
+      if (!previous || !next || JSON.stringify(previous) === JSON.stringify(next)) return entry;
+      const changes = Object.fromEntries(
+        Object.keys({ ...previous, ...next })
+          .filter(
+            (key) =>
+              key !== "updatedAt" &&
+              JSON.stringify(previous[key as keyof typeof previous]) !==
+                JSON.stringify(next[key as keyof typeof next]),
+          )
+          .map((key) => [key, next[key as keyof typeof next]]),
+      );
+      return { ...entry, ...changes, updatedAt: next.updatedAt };
+    });
+  for (const entry of after.storageLocations) {
+    if (
+      !before.storageLocations.some((value) => value.id === entry.id) &&
+      !locations.some((value) => value.id === entry.id)
+    )
+      locations.push(entry);
+  }
+  return {
+    ...scene,
+    storageLocations: locations,
+    objects: scene.objects.map((object) => {
+      const previous = before.objects.find((value) => value.id === object.id);
+      const next = after.objects.find((value) => value.id === object.id);
+      return previous &&
+        next &&
+        JSON.stringify(previous.childLocationIds) !== JSON.stringify(next.childLocationIds)
+        ? { ...object, childLocationIds: next.childLocationIds, updatedAt: next.updatedAt }
+        : object;
+    }),
+    inventoryItems: scene.inventoryItems.map((item) => {
+      if (item.storageLocationId && removed.has(item.storageLocationId))
+        return { ...item, storageLocationId: null, updatedAt: now };
+      const previous = before.inventoryItems.find((value) => value.id === item.id);
+      const next = after.inventoryItems.find((value) => value.id === item.id);
+      return previous && next && previous.storageLocationId !== next.storageLocationId
+        ? { ...item, storageLocationId: next.storageLocationId, updatedAt: now }
+        : item;
+    }),
+    updatedAt: now,
+  };
+}
+
 export function applyCommand(scene: Scene, command: SceneCommand): Scene {
+  if (command.kind === "scene" && command.scope === "storage")
+    return applyStorageDelta(scene, command.before, command.after);
   if (command.kind === "scene") return { ...command.after, updatedAt: new Date().toISOString() };
   if (command.kind === "add")
     return {
@@ -83,6 +145,8 @@ export function applyCommand(scene: Scene, command: SceneCommand): Scene {
 }
 
 export function revertCommand(scene: Scene, command: SceneCommand): Scene {
+  if (command.kind === "scene" && command.scope === "storage")
+    return applyStorageDelta(scene, command.after, command.before);
   if (command.kind === "scene") return { ...command.before, updatedAt: new Date().toISOString() };
   if (command.kind === "add")
     return {

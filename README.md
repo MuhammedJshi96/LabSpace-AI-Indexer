@@ -80,7 +80,7 @@ The complete planning workspace combines the searchable 94-asset library, materi
 
 The Spatial Index Finder searches canonical equipment, inventory, rooms, and storage paths, then navigates from the selected record to precise room and cabinet evidence.
 
-Inventory now has a name-first **Assign inventory** chooser for one or many records across laboratories, plus **Storage names** for researcher-defined cabinet, drawer, shelf, and bin names. The Storage inspector also offers **Assign inventory here**. Assignments and renames are undoable; canonical codes, stock quantities, and physical opening links are preserved. See the [inventory organization guide](docs/INVENTORY_ORGANIZATION.md).
+**Inventory → Storage** opens a full-size workspace with a searchable cabinet rail, anatomy-derived **storage map**, inline naming, readable contents and an opt-in **3D access preview** using the original models and materials. Assign existing stock or add a record at an exact shelf; custom/unlinked locations remain available through the complete location directory. The Layout Editor's Storage Inspector is now a contextual summary with **Manage storage**, and returning preserves the editor view and selection. Inventory rows show images, quantities, units and batch-selection checkboxes. Assignments, renames and storage configuration are undoable without rolling back newer stock quantities. See the [inventory organization guide](docs/INVENTORY_ORGANIZATION.md).
 
 <table>
   <tr>

@@ -205,17 +205,17 @@ type EditorState = {
   deleteLayer: (id: string) => void;
   updateRoom: (patch: Partial<Room>) => void;
   initializeStorageForObject: (objectId: string) => void;
-  completeRoomStorage: () => void;
-  addStorageChild: (parentId: string, type: StorageLocationType) => void;
-  removeStorageLocation: (id: string) => void;
-  updateStorageLocation: (id: string, patch: Partial<StorageLocation>) => void;
+  completeRoomStorage: (roomId?: string) => void;
+  addStorageChild: (parentId: string, type: StorageLocationType, roomId?: string) => string | null;
+  removeStorageLocation: (id: string, roomId?: string) => void;
+  updateStorageLocation: (id: string, patch: Partial<StorageLocation>, roomId?: string) => void;
   renameStorageLocation: (roomId: string, locationId: string, name: string) => boolean;
   assignInventoryItems: (
     items: InventoryReference[],
     roomId: string,
     locationId: string | null,
   ) => boolean;
-  bindStorageAnatomy: (id: string, anatomyKey: string | null) => void;
+  bindStorageAnatomy: (id: string, anatomyKey: string | null, roomId?: string) => void;
   addInventoryItem: (locationId: string | null, name?: string) => void;
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
   removeInventoryItem: (id: string) => void;
@@ -613,7 +613,13 @@ function applyHistoryCommandToProject(
 ) {
   if (command.kind === "inventory-assignment" || command.kind === "storage-name")
     return applyOrganizationCommand(project, command, direction);
-  const room = activeRoom(project);
+  const room =
+    command.kind === "scene" && command.roomId
+      ? project.rooms.find(
+          (entry) => entry.id === command.roomId && entry.roomKind !== "demo-template",
+        )
+      : activeRoom(project);
+  if (!room) throw new Error("The room for this change is no longer available.");
   const roomSize =
     command.kind === "batch" || command.kind === "scene"
       ? direction === "apply"
@@ -623,6 +629,36 @@ function applyHistoryCommandToProject(
   const scene =
     direction === "apply" ? applyCommand(room.scene, command) : revertCommand(room.scene, command);
   return replaceRoom(project, roomWithScene({ ...room, ...roomSize }, scene));
+}
+
+function editableStorageRoom(state: EditorState, roomId = state.project.activeRoomId) {
+  if (state.pendingAgentChange) {
+    state.pushToast("Approve or cancel the agent preview first.", "info");
+    return null;
+  }
+  return (
+    state.project.rooms.find((room) => room.id === roomId && room.roomKind !== "demo-template") ??
+    null
+  );
+}
+
+function storageSceneChange(state: EditorState, room: Room, after: Scene, label: string) {
+  const command: SceneCommand = {
+    id: commandId(),
+    kind: "scene",
+    scope: "storage",
+    roomId: room.id,
+    label,
+    before: room.scene,
+    after,
+  };
+  return {
+    project: replaceRoom(state.project, roomWithScene(room, after)),
+    history: [...state.history, command],
+    future: [],
+    saveStatus: "unsaved" as const,
+    dirtyRevision: state.dirtyRevision + 1,
+  };
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -1515,9 +1551,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     );
   },
 
-  completeRoomStorage: () => {
+  completeRoomStorage: (roomId) => {
     const state = get();
-    const room = activeRoom(state.project);
+    const room = editableStorageRoom(state, roomId);
+    if (!room) return;
     if (state.pendingAgentChange) {
       state.pushToast("Approve or cancel the agent preview first.", "info");
       return;
@@ -1550,11 +1587,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       id: commandId(),
       kind: "scene",
       label: "Complete room storage",
+      scope: "storage",
+      roomId: room.id,
       before: room.scene,
       after,
     };
     set({
-      project: updateSceneInProject(state.project, () => after),
+      project: replaceRoom(state.project, roomWithScene(room, after)),
       history: [...state.history, command],
       future: [],
       saveStatus: "unsaved",
@@ -1566,11 +1605,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     );
   },
 
-  addStorageChild: (parentId, type) => {
+  addStorageChild: (parentId, type, roomId) => {
     const state = get();
-    const room = activeRoom(state.project);
+    const room = editableStorageRoom(state, roomId);
+    if (!room) return null;
     const parent = room.scene.storageLocations.find((location) => location.id === parentId);
-    if (!parent) return;
+    if (!parent) return null;
     const allowed: Record<StorageLocationType, StorageLocationType[]> = {
       cabinet: ["compartment", "shelf", "drawer"],
       compartment: ["shelf", "bin"],
@@ -1580,7 +1620,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     };
     if (!allowed[parent.type].includes(type)) {
       state.pushToast(`A ${type} cannot be added inside a ${parent.type}.`, "error");
-      return;
+      return null;
     }
     const siblings = room.scene.storageLocations.filter(
       (entry) => entry.parentId === parent.id && entry.type === type,
@@ -1600,27 +1640,34 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       createdAt: now,
       updatedAt: now,
     };
-    set({
-      project: updateSceneInProject(state.project, (scene) => ({
-        ...scene,
-        storageLocations: [
-          ...scene.storageLocations.map((location) =>
-            location.id === parent.id
-              ? { ...location, childIds: [...location.childIds, child.id], updatedAt: now }
-              : location,
-          ),
-          child,
-        ],
-        updatedAt: now,
-      })),
-      selectedLocationId: child.id,
-      saveStatus: "unsaved",
-      dirtyRevision: state.dirtyRevision + 1,
-    });
+    set(
+      storageSceneChange(
+        state,
+        room,
+        {
+          ...room.scene,
+          storageLocations: [
+            ...room.scene.storageLocations.map((location) =>
+              location.id === parent.id
+                ? { ...location, childIds: [...location.childIds, child.id], updatedAt: now }
+                : location,
+            ),
+            child,
+          ],
+          updatedAt: now,
+        },
+        `Add ${type}`,
+      ),
+    );
+    if (!roomId) set({ selectedLocationId: child.id });
+    return child.id;
   },
-  removeStorageLocation: (id) => {
+  removeStorageLocation: (id, roomId) => {
     const state = get();
-    const room = activeRoom(state.project);
+    const room = editableStorageRoom(state, roomId);
+    if (!room) return;
+    const target = room.scene.storageLocations.find((entry) => entry.id === id);
+    if (!target?.parentId) return;
     const descendants = new Set<string>([id]);
     let changed = true;
     while (changed) {
@@ -1635,34 +1682,38 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           changed = true;
         }
     }
-    set({
-      project: updateSceneInProject(state.project, (scene) => ({
-        ...scene,
-        storageLocations: scene.storageLocations
-          .filter((location) => !descendants.has(location.id))
-          .map((location) => ({
-            ...location,
-            childIds: location.childIds.filter((childId) => !descendants.has(childId)),
-          })),
-        inventoryItems: scene.inventoryItems.map((item) =>
-          item.storageLocationId && descendants.has(item.storageLocationId)
-            ? { ...item, storageLocationId: null }
-            : item,
-        ),
-        updatedAt: new Date().toISOString(),
-      })),
-      selectedLocationId: null,
-      saveStatus: "unsaved",
-      dirtyRevision: state.dirtyRevision + 1,
-    });
+    set(
+      storageSceneChange(
+        state,
+        room,
+        {
+          ...room.scene,
+          storageLocations: room.scene.storageLocations
+            .filter((location) => !descendants.has(location.id))
+            .map((location) => ({
+              ...location,
+              childIds: location.childIds.filter((childId) => !descendants.has(childId)),
+            })),
+          inventoryItems: room.scene.inventoryItems.map((item) =>
+            item.storageLocationId && descendants.has(item.storageLocationId)
+              ? { ...item, storageLocationId: null }
+              : item,
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+        "Remove storage location",
+      ),
+    );
+    if (!roomId) set({ selectedLocationId: null });
   },
-  bindStorageAnatomy: (id, anatomyKey) => {
+  bindStorageAnatomy: (id, anatomyKey, roomId) => {
     const state = get();
     if (state.pendingAgentChange) {
       state.pushToast("Approve or cancel the agent preview first.", "info");
       return;
     }
-    const room = activeRoom(state.project);
+    const room = editableStorageRoom(state, roomId);
+    if (!room) return;
     const location = room.scene.storageLocations.find((entry) => entry.id === id);
     const object = room.scene.objects.find((entry) => entry.id === location?.objectId);
     if (!location || !object || (location.anatomyKey ?? null) === anatomyKey) return;
@@ -1682,11 +1733,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       id: commandId(),
       kind: "scene",
       label: "Link storage access",
+      scope: "storage",
+      roomId: room.id,
       before: room.scene,
       after,
     };
     set({
-      project: updateSceneInProject(state.project, () => after),
+      project: replaceRoom(state.project, roomWithScene(room, after)),
       history: [...state.history, command],
       future: [],
       saveStatus: "unsaved",
@@ -1754,20 +1807,34 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return false;
     }
   },
-  updateStorageLocation: (id, patch) =>
-    set((state) => ({
-      project: updateSceneInProject(state.project, (scene) => ({
-        ...scene,
-        storageLocations: scene.storageLocations.map((location) =>
-          location.id === id
-            ? { ...location, ...patch, updatedAt: new Date().toISOString() }
-            : location,
-        ),
-        updatedAt: new Date().toISOString(),
-      })),
-      saveStatus: "unsaved",
-      dirtyRevision: state.dirtyRevision + 1,
-    })),
+  updateStorageLocation: (id, patch, roomId) => {
+    const state = get();
+    const room = editableStorageRoom(state, roomId);
+    if (!room || !room.scene.storageLocations.some((location) => location.id === id)) return;
+    set(
+      storageSceneChange(
+        state,
+        room,
+        {
+          ...room.scene,
+          storageLocations: room.scene.storageLocations.map((location) =>
+            location.id === id
+              ? {
+                  ...location,
+                  ...(patch.indexCode !== undefined ? { indexCode: patch.indexCode } : {}),
+                  ...(patch.capacityNotes !== undefined
+                    ? { capacityNotes: patch.capacityNotes }
+                    : {}),
+                  updatedAt: new Date().toISOString(),
+                }
+              : location,
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+        "Update storage details",
+      ),
+    );
+  },
   addInventoryItem: (locationId, name = "New inventory item") =>
     set((state) => ({
       project: updateSceneInProject(state.project, (scene) => ({

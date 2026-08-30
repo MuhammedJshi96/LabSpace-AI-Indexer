@@ -80,6 +80,8 @@ The complete planning workspace combines the searchable 94-asset library, materi
 
 The Spatial Index Finder searches canonical equipment, inventory, rooms, and storage paths, then navigates from the selected record to precise room and cabinet evidence.
 
+Inventory now has a name-first **Assign inventory** chooser for one or many records across laboratories, plus **Storage names** for researcher-defined cabinet, drawer, shelf, and bin names. The Storage inspector also offers **Assign inventory here**. Assignments and renames are undoable; canonical codes, stock quantities, and physical opening links are preserved. See the [inventory organization guide](docs/INVENTORY_ORGANIZATION.md).
+
 <table>
   <tr>
     <td width="50%">

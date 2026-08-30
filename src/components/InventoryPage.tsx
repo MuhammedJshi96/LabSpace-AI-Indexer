@@ -6,6 +6,9 @@ import {
   MapPin,
   Package,
   Plus,
+  PencilSimple,
+  ArrowCounterClockwise,
+  ArrowClockwise,
   Trash,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
@@ -13,6 +16,7 @@ import type { InventoryItem, Room, StorageLocation } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
 import { Dialogs, Toasts } from "./Dialogs";
 import { TopBar } from "./TopBar";
+import { InventoryOrganizer, type InventoryOrganizerOptions } from "./InventoryOrganizer";
 
 type InventoryRow = {
   room: Room;
@@ -55,7 +59,10 @@ export function InventoryPage() {
   const project = useEditorStore((state) => state.project);
   const addItem = useEditorStore((state) => state.addInventoryItemToRoom);
   const updateItem = useEditorStore((state) => state.updateInventoryItemInRoom);
-  const moveItem = useEditorStore((state) => state.moveInventoryItemToRoom);
+  const undo = useEditorStore((state) => state.undo);
+  const redo = useEditorStore((state) => state.redo);
+  const canUndo = useEditorStore((state) => state.history.length > 0 && !state.pendingAgentChange);
+  const canRedo = useEditorStore((state) => state.future.length > 0 && !state.pendingAgentChange);
   const removeItem = useEditorStore((state) => state.removeInventoryItemFromRoom);
   const switchRoom = useEditorStore((state) => state.switchRoom);
   const [query, setQuery] = useState("");
@@ -64,6 +71,7 @@ export function InventoryPage() {
     "all",
   );
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [organizer, setOrganizer] = useState<InventoryOrganizerOptions | null>(null);
 
   useEffect(() => void hydrate(), [hydrate]);
   useEffect(() => {
@@ -113,9 +121,6 @@ export function InventoryPage() {
   });
   const selected =
     rows.find((row) => row.item.id === selectedItemId) ?? filteredRows[0] ?? rows[0] ?? null;
-  const selectedLaboratoryRooms = selected
-    ? editableRooms.filter((room) => room.laboratoryId === selected.room.laboratoryId)
-    : [];
 
   const createItem = () => {
     const room =
@@ -138,6 +143,23 @@ export function InventoryPage() {
             </p>
           </div>
           <div className="inventory-create-control">
+            <button
+              className="inventory-secondary-action"
+              onClick={() =>
+                setOrganizer({
+                  mode: "names",
+                  initialRoomId: selected?.room.id,
+                  initialLocationId: selected?.location?.id,
+                })
+              }
+            >
+              <PencilSimple size={17} />
+              Storage names
+            </button>
+            <button className="inventory-secondary-action" onClick={() => setOrganizer({})}>
+              <MapPin size={17} />
+              Assign inventory
+            </button>
             <span className="inventory-registry-badge">
               <Buildings size={17} weight="duotone" />
               <span>
@@ -212,6 +234,24 @@ export function InventoryPage() {
                 {rows.length} shared records · {project.laboratories.length} laboratories ·{" "}
                 {editableRooms.length} rooms
               </small>
+              <div className="inventory-history-actions">
+                <button
+                  aria-label="Undo last change"
+                  title="Undo last change"
+                  disabled={!canUndo}
+                  onClick={undo}
+                >
+                  <ArrowCounterClockwise size={17} />
+                </button>
+                <button
+                  aria-label="Redo last change"
+                  title="Redo last change"
+                  disabled={!canRedo}
+                  onClick={redo}
+                >
+                  <ArrowClockwise size={17} />
+                </button>
+              </div>
             </header>
             <div className="inventory-record-scroll">
               {filteredRows.map((row) => {
@@ -318,62 +358,29 @@ export function InventoryPage() {
                   <div className="inventory-assignment-heading wide">
                     <span className="eyebrow">Physical assignment</span>
                     <p>
-                      The record stays in the universal registry when its laboratory or room
-                      changes.
+                      Choose a named cabinet, drawer or shelf in any laboratory. The same inventory
+                      record moves with you.
                     </p>
                   </div>
-                  <label className="wide">
-                    <span>Laboratory</span>
-                    <select
-                      value={selected.room.laboratoryId}
-                      onChange={(event) => {
-                        const targetRoom = editableRooms.find(
-                          (room) => room.laboratoryId === event.target.value,
-                        );
-                        if (targetRoom) moveItem(selected.room.id, selected.item.id, targetRoom.id);
-                      }}
-                    >
-                      {project.laboratories.map((laboratory) => (
-                        <option key={laboratory.id} value={laboratory.id}>
-                          {laboratory.name} · {laboratory.code}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="wide">
-                    <span>Room assignment</span>
-                    <select
-                      value={selected.room.id}
-                      onChange={(event) =>
-                        moveItem(selected.room.id, selected.item.id, event.target.value)
-                      }
-                    >
-                      {selectedLaboratoryRooms.map((room) => (
-                        <option key={room.id} value={room.id}>
-                          {room.name} · {room.code}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="wide">
-                    <span>Storage location</span>
-                    <select
-                      value={selected.item.storageLocationId ?? ""}
-                      onChange={(event) =>
-                        updateItem(selected.room.id, selected.item.id, {
-                          storageLocationId: event.target.value || null,
-                        })
-                      }
-                    >
-                      <option value="">Unassigned</option>
-                      {selected.room.scene.storageLocations.map((location) => (
-                        <option key={location.id} value={location.id}>
-                          {location.indexCode} ·{" "}
-                          {locationPath(selected.room, location.id).join(" / ")}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <button
+                    className="inventory-choose-location wide"
+                    onClick={() =>
+                      setOrganizer({
+                        initialItems: [{ roomId: selected.room.id, itemId: selected.item.id }],
+                        initialRoomId: selected.room.id,
+                        initialLocationId: selected.item.storageLocationId,
+                      })
+                    }
+                  >
+                    <MapPin size={18} />
+                    <span>
+                      {selected.location ? "Change location" : "Choose location"}
+                      <small>
+                        {selected.laboratoryName} · {selected.room.code}
+                      </small>
+                    </span>
+                    <ArrowRight size={18} />
+                  </button>
                   <label className="wide">
                     <span>Evidence image URL</span>
                     <input
@@ -443,6 +450,7 @@ export function InventoryPage() {
         </section>
       </main>
       <Dialogs />
+      {organizer && <InventoryOrganizer {...organizer} onClose={() => setOrganizer(null)} />}
       <Toasts />
     </div>
   );

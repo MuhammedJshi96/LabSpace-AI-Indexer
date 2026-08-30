@@ -5,6 +5,14 @@ import { completeObjectStorage } from "../domain/storage-templates";
 import { STORAGE_RIGS } from "../domain/storage-access";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
 import {
+  applyOrganizationCommand,
+  inventoryAssignmentCommand,
+  storageRenameCommand,
+  type InventoryReference,
+  type OrganizationCommand,
+} from "../domain/inventory-organization";
+type EditorCommand = SceneCommand | OrganizationCommand;
+import {
   requiresBenchSupport,
   snapBenchObjectToAvailableSupport,
   snapChairToDesk,
@@ -136,8 +144,8 @@ type EditorState = {
   digitalTwinSelectedRecordId: string | null;
   digitalTwinSpatialMode: "3d" | "2d";
   pendingAgentChange: PendingAgentChange | null;
-  history: SceneCommand[];
-  future: SceneCommand[];
+  history: EditorCommand[];
+  future: EditorCommand[];
   clipboard: SceneObject[];
   saveStatus: SaveStatus;
   saveError: string | null;
@@ -201,6 +209,12 @@ type EditorState = {
   addStorageChild: (parentId: string, type: StorageLocationType) => void;
   removeStorageLocation: (id: string) => void;
   updateStorageLocation: (id: string, patch: Partial<StorageLocation>) => void;
+  renameStorageLocation: (roomId: string, locationId: string, name: string) => boolean;
+  assignInventoryItems: (
+    items: InventoryReference[],
+    roomId: string,
+    locationId: string | null,
+  ) => boolean;
   bindStorageAnatomy: (id: string, anatomyKey: string | null) => void;
   addInventoryItem: (locationId: string | null, name?: string) => void;
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
@@ -594,9 +608,11 @@ function updateSceneInProject(
 
 function applyHistoryCommandToProject(
   project: Project,
-  command: SceneCommand,
+  command: EditorCommand,
   direction: "apply" | "revert",
 ) {
+  if (command.kind === "inventory-assignment" || command.kind === "storage-name")
+    return applyOrganizationCommand(project, command, direction);
   const room = activeRoom(project);
   const roomSize =
     command.kind === "batch" || command.kind === "scene"
@@ -1331,8 +1347,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     const command = state.history.at(-1);
     if (!command) return;
+    let project: Project;
+    try {
+      project = applyHistoryCommandToProject(state.project, command, "revert");
+    } catch (error) {
+      state.pushToast(
+        error instanceof Error ? error.message : "This change can no longer be undone.",
+        "error",
+      );
+      return;
+    }
     set({
-      project: applyHistoryCommandToProject(state.project, command, "revert"),
+      project,
       history: state.history.slice(0, -1),
       future: [command, ...state.future],
       saveStatus: "unsaved",
@@ -1347,8 +1373,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     const command = state.future[0];
     if (!command) return;
+    let project: Project;
+    try {
+      project = applyHistoryCommandToProject(state.project, command, "apply");
+    } catch (error) {
+      state.pushToast(
+        error instanceof Error ? error.message : "This change can no longer be redone.",
+        "error",
+      );
+      return;
+    }
     set({
-      project: applyHistoryCommandToProject(state.project, command, "apply"),
+      project,
       history: [...state.history, command],
       future: state.future.slice(1),
       saveStatus: "unsaved",
@@ -1660,6 +1696,63 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       "Physical access link updated. Inventory and location IDs are unchanged.",
       "success",
     );
+  },
+  renameStorageLocation: (roomId, locationId, name) => {
+    const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview first.", "info");
+      return false;
+    }
+    try {
+      const command = storageRenameCommand(state.project, roomId, locationId, name);
+      if (command.kind === "storage-name" && command.before === command.after) return true;
+      set({
+        project: applyOrganizationCommand(state.project, command, "apply"),
+        history: [...state.history, command],
+        future: [],
+        saveStatus: "unsaved",
+        dirtyRevision: state.dirtyRevision + 1,
+      });
+      state.pushToast(
+        "Storage name saved. Codes, contents and opening links are unchanged.",
+        "success",
+      );
+      return true;
+    } catch (error) {
+      state.pushToast(
+        error instanceof Error ? error.message : "Could not rename storage.",
+        "error",
+      );
+      return false;
+    }
+  },
+  assignInventoryItems: (items, roomId, locationId) => {
+    const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview first.", "info");
+      return false;
+    }
+    try {
+      const command = inventoryAssignmentCommand(state.project, items, roomId, locationId);
+      set({
+        project: applyOrganizationCommand(state.project, command, "apply"),
+        history: [...state.history, command],
+        future: [],
+        saveStatus: "unsaved",
+        dirtyRevision: state.dirtyRevision + 1,
+      });
+      state.pushToast(
+        `${items.length} ${items.length === 1 ? "item" : "items"} assigned. Undo is available.`,
+        "success",
+      );
+      return true;
+    } catch (error) {
+      state.pushToast(
+        error instanceof Error ? error.message : "Could not assign inventory.",
+        "error",
+      );
+      return false;
+    }
   },
   updateStorageLocation: (id, patch) =>
     set((state) => ({

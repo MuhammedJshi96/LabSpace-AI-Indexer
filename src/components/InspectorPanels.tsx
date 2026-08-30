@@ -15,6 +15,7 @@ import {
   MagnifyingGlass,
   MapPin,
   Package,
+  PencilSimple,
   Plus,
   Printer,
   Selection,
@@ -48,6 +49,11 @@ import type {
   StorageLocationType,
 } from "../domain/schema";
 import { selectActiveRoom, useEditorStore, type InspectorPanel } from "../store/editor-store";
+import {
+  InventoryOrganizer,
+  StorageRenameDialog,
+  type InventoryOrganizerOptions,
+} from "./InventoryOrganizer";
 
 const panelTabs: Array<{ id: InspectorPanel; label: string; icon: typeof Info }> = [
   { id: "room", label: "Room", icon: Info },
@@ -475,6 +481,8 @@ const childOptions: Record<StorageLocationType, StorageLocationType[]> = {
 
 function IndexPanel() {
   const room = useEditorStore(selectActiveRoom);
+  const [organizer, setOrganizer] = useState<InventoryOrganizerOptions | null>(null);
+  const [renameId, setRenameId] = useState<string | null>(null);
   const completeRoomStorage = useEditorStore((state) => state.completeRoomStorage);
   const missingCount = room.scene.objects.reduce(
     (count, object) =>
@@ -555,7 +563,9 @@ function IndexPanel() {
     );
   }
   return (
-    <div className="inspector-scroll index-inspector">
+    <div
+      className={`inspector-scroll index-inspector${missingCount > 0 ? " has-storage-setup" : ""}`}
+    >
       {missingCount > 0 && (
         <section className="inspector-section storage-config">
           <b>Storage setup available</b>
@@ -627,7 +637,12 @@ function IndexPanel() {
                     <button
                       className="unassigned-row"
                       key={item.id}
-                      onClick={() => setDialog("inventory")}
+                      onClick={() =>
+                        setOrganizer({
+                          initialItems: [{ roomId: room.id, itemId: item.id }],
+                          initialRoomId: room.id,
+                        })
+                      }
                     >
                       <Package size={16} />
                       <span>
@@ -679,12 +694,21 @@ function IndexPanel() {
                   </span>
                 ))}
               </div>
+              <div className="storage-naming-actions">
+                <button onClick={() => setRenameId(selected.id)}>
+                  <PencilSimple size={16} />
+                  Rename {selected.type}
+                </button>
+                <button
+                  onClick={() =>
+                    setOrganizer({ initialRoomId: room.id, initialLocationId: selected.id })
+                  }
+                >
+                  <Package size={16} />
+                  Assign inventory here
+                </button>
+              </div>
               <div className="property-grid two">
-                <TextField
-                  label="Location name"
-                  value={selected.name}
-                  onChange={(name) => updateLocation(selected.id, { name })}
-                />
                 <TextField
                   label="Index code"
                   value={selected.indexCode}
@@ -792,6 +816,14 @@ function IndexPanel() {
           )}
         </section>
       </div>
+      {organizer && <InventoryOrganizer {...organizer} onClose={() => setOrganizer(null)} />}
+      {renameId && (
+        <StorageRenameDialog
+          roomId={room.id}
+          locationId={renameId}
+          onClose={() => setRenameId(null)}
+        />
+      )}
     </div>
   );
 }
@@ -807,6 +839,7 @@ function InventoryPanel() {
   const [search, setSearch] = useState("");
   const [scope, setScope] = useState<"all" | "assigned" | "unassigned">("all");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [organizer, setOrganizer] = useState<InventoryOrganizerOptions | null>(null);
   const locationById = useMemo(
     () => new Map(room.scene.storageLocations.map((location) => [location.id, location])),
     [room.scene.storageLocations],
@@ -908,6 +941,7 @@ function InventoryPanel() {
               if (selectedItemId !== item.id) selectInventoryItem(item.id);
             }}
             onKeyDown={(event) => {
+              if (event.target !== event.currentTarget) return;
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
                 selectInventoryItem(item.id);
@@ -970,24 +1004,26 @@ function InventoryPanel() {
                 />
               </label>
             </div>
-            <label className="inventory-location-field">
+            <div className="inventory-location-field">
               <span>Exact storage location</span>
-              <select
-                value={item.storageLocationId ?? ""}
-                onChange={(event) =>
-                  updateInventoryItem(item.id, {
-                    storageLocationId: event.target.value || null,
+              <button
+                className="inventory-choose-location"
+                onClick={() =>
+                  setOrganizer({
+                    initialItems: [{ roomId: room.id, itemId: item.id }],
+                    initialRoomId: room.id,
+                    initialLocationId: item.storageLocationId,
                   })
                 }
               >
-                <option value="">Unassigned</option>
-                {room.scene.storageLocations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {assignmentLabel(location.id)} · {location.indexCode}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <MapPin size={17} />
+                <span>
+                  {assignmentLabel(item.storageLocationId)}
+                  <small>Choose or change location</small>
+                </span>
+                <CaretRight size={17} />
+              </button>
+            </div>
             <div className="inventory-assignment-evidence">
               <span className={item.storageLocationId ? "assigned" : "unassigned"}>
                 {item.storageLocationId ? "Assigned" : "Needs location"}
@@ -1013,6 +1049,7 @@ function InventoryPanel() {
           </div>
         )}
       </section>
+      {organizer && <InventoryOrganizer {...organizer} onClose={() => setOrganizer(null)} />}
     </div>
   );
 }

@@ -4815,7 +4815,8 @@ button.danger:hover,
 }
 
 .presentation-2d .spatial-pane {
-  grid-template-rows: 40px minmax(0, 1fr);
+  /* The 2D pane contains only the Inspector, not the retired action strip. */
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .presentation-3d .workspace-surface {
@@ -10263,8 +10264,13 @@ body:has(#procedural-catalog-capture) #root {
   display: grid;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
-  grid-template-rows: auto minmax(0, 1fr);
+  overflow-x: hidden;
+  overflow-y: auto;
+  grid-template-rows: auto minmax(230px, 1fr);
+}
+
+.index-inspector.has-storage-setup {
+  grid-template-rows: auto auto minmax(230px, 1fr);
 }
 
 .index-inspector > .index-overview {
@@ -10413,6 +10419,10 @@ body:has(#procedural-catalog-capture) #root {
   .index-inspector {
     overflow-y: auto;
     grid-template-rows: auto auto;
+  }
+
+  .index-inspector.has-storage-setup {
+    grid-template-rows: auto auto auto;
   }
 
   .index-workspace {

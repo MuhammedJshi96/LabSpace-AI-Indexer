@@ -1299,8 +1299,8 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
     script_directory = str(Path(__file__).resolve().parent)
     if script_directory not in sys.path:
         sys.path.insert(0, script_directory)
-    import storage_articulation
-    storage_articulation.prepare(sys.modules[__name__])
+    import storage_anatomy
+    storage_anatomy.prepare(sys.modules[__name__])
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     source_parts = len(meshes)
 

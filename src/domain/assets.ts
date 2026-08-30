@@ -4,6 +4,7 @@ import {
   type AssetDefinition,
   type Dimensions,
 } from "./schema";
+import { authoredStorageTemplate } from "./storage-templates";
 
 type AssetOptions = Partial<
   Pick<
@@ -269,13 +270,14 @@ function asset(
       new Set([name.toLowerCase(), category.toLowerCase(), ...name.toLowerCase().split(/\s|\//)]),
     ),
     connection: options.connection ?? "floor",
-    indexingBehavior:
-      options.indexingBehavior ??
-      (category === "Storage"
-        ? "storage"
-        : category === "Laboratory equipment"
-          ? "equipment"
-          : "object"),
+    indexingBehavior: authoredStorageTemplate(id)?.length
+      ? "storage"
+      : (options.indexingBehavior ??
+        (category === "Storage"
+          ? "storage"
+          : category === "Laboratory equipment"
+            ? "equipment"
+            : "object")),
     anchor: options.anchor ?? "center",
     profile: options.profile ?? "box",
     material,
@@ -283,8 +285,11 @@ function asset(
     description:
       options.description ??
       `Parametric planning representation of ${name.toLowerCase()}; dimensions are editable and not manufacturer-certified.`,
-    storageTemplate: options.storageTemplate,
-    model3d: options.model3d,
+    storageTemplate: authoredStorageTemplate(id) ?? options.storageTemplate,
+    model3d:
+      options.model3d && authoredStorageTemplate(id)?.length
+        ? { ...options.model3d, revision: "storage-anatomy-r2" }
+        : options.model3d,
   });
 }
 

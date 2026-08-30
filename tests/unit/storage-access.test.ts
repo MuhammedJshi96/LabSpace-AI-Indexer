@@ -36,7 +36,7 @@ describe("authored storage access", () => {
     const access = resolveStorageAccess("wall-cabinet", "object", "shelf", locations);
     expect(access.parts).toHaveLength(2);
     expect(access.parts.map((part) => Math.sign(part.angle))).toEqual([-1, 1]);
-    expect(access.region?.y).toBeCloseTo(0.676);
+    expect(access.region?.y).toBeCloseTo(rigs["wall-cabinet"].shelfLevels[0] + 0.016);
     expect(access.description).toContain("2 fixed internal shelves");
     expect(JSON.stringify(locations)).toBe(before);
   });
@@ -64,9 +64,7 @@ describe("authored storage access", () => {
     expect(resolveStorageAccess("base-cabinet", "object", "drawer-2", drawers).reason).toContain(
       "does not match",
     );
-    expect(resolveStorageAccess("glass-wall-cabinet", "object", "root", [root]).parts).toHaveLength(
-      0,
-    );
+    expect(resolveStorageAccess("unknown-cabinet", "object", "root", [root]).parts).toHaveLength(0);
     const shelves = [root, ...[0, 1, 2].map((n) => location(`shelf-${n}`, "shelf", n))];
     expect(resolveStorageAccess("wall-cabinet", "object", "shelf-2", shelves).reason).toContain(
       "shelf count",
@@ -86,7 +84,7 @@ describe("authored storage access", () => {
       const parts = gltf.nodes.flatMap((node: { extras?: { storageMechanism?: unknown } }) =>
         node.extras?.storageMechanism ? [node.extras.storageMechanism] : [],
       );
-      expect(parts).toEqual(rig.parts);
+      expect(JSON.parse(JSON.stringify(parts))).toEqual(rig.parts);
       expect(new Set(rig.parts.map((part) => part.id)).size).toBe(parts.length);
       expect(gltf.extensionsUsed).toContain("KHR_draco_mesh_compression");
     }

@@ -14,7 +14,7 @@ export function cloneStorageScene(source: THREE.Object3D) {
   }> = [];
   scene.traverse((node) => {
     const mechanism = node.userData.storageMechanism as StorageMechanism | undefined;
-    if (mechanism && ["hinge", "drawer"].includes(mechanism.kind)) {
+    if (mechanism && ["hinge", "drawer", "slide"].includes(mechanism.kind)) {
       parts.push({
         node,
         mechanism,
@@ -39,6 +39,7 @@ export function applyStoragePose(
   if (part.mechanism.kind === "hinge") {
     part.node.quaternion.multiply(turn.setFromAxisAngle(hingeAxis, part.mechanism.angle * amount));
   } else {
-    part.node.position.z += part.mechanism.travel * amount;
+    const translation = part.mechanism.translation ?? [0, 0, part.mechanism.travel];
+    part.node.position.addScaledVector(new THREE.Vector3(...translation), amount);
   }
 }

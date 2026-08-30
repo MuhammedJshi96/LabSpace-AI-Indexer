@@ -26,7 +26,8 @@ import type { SceneObject } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
 import { AssetThumbnail } from "./AssetThumbnail";
 import { Toasts } from "./Dialogs";
-import { Asset3D } from "./ThreeDView";
+import { AssetVisual } from "./AssetVisual";
+import { STORAGE_RIGS, storageOpeningParts } from "../domain/storage-access";
 
 type PreviewView = "isometric" | "front" | "back" | "left" | "right" | "top";
 
@@ -111,6 +112,8 @@ export function AssetPreviewPage() {
   const [previewView, setPreviewView] = useState<PreviewView>("isometric");
   const [cameraResetKey, setCameraResetKey] = useState(0);
   const [readyAssetId, setReadyAssetId] = useState<string | null>(null);
+  const [storagePreview, setStoragePreview] = useState({ assetId: "", key: "" });
+  const [panelId, setPanelId] = useState("");
   const requestedAssetId = new URLSearchParams(window.location.search).get("asset");
   const curatedAssetIdSet = useMemo(() => new Set<string>(BUILD_WEEK_DEMO_ASSET_IDS), []);
   const [showFullCatalog, setShowFullCatalog] = useState(
@@ -150,6 +153,17 @@ export function AssetPreviewPage() {
     : fallbackAsset.id;
   const asset =
     ASSET_STUDIO_CATALOG.find((entry) => entry.id === effectiveAssetId) ?? fallbackAsset;
+  const storageSlots = STORAGE_RIGS[asset.id]?.locations ?? [];
+  const selectedSlot =
+    storagePreview.assetId === asset.id
+      ? storageSlots.find((slot) => slot.key === storagePreview.key)
+      : undefined;
+  const slotParts =
+    STORAGE_RIGS[asset.id]?.parts.filter((part) => selectedSlot?.partIds.includes(part.id)) ?? [];
+  const openParts =
+    slotParts[0]?.kind === "slide" && slotParts.some((part) => part.id === panelId)
+      ? slotParts.filter((part) => part.id === panelId)
+      : storageOpeningParts(slotParts);
   const previewSource = asset.model3d
     ? `${asset.model3d.previewSrc}?v=${encodeURIComponent(asset.model3d.revision)}`
     : null;
@@ -279,7 +293,11 @@ export function AssetPreviewPage() {
           </details>
         </aside>
         <section className="asset-preview-stage">
-          <div className="asset-preview-canvas" data-asset-id={asset.id} data-model-ready={readyAssetId === asset.id}>
+          <div
+            className="asset-preview-canvas"
+            data-asset-id={asset.id}
+            data-model-ready={readyAssetId === asset.id}
+          >
             <Canvas
               shadows={{ type: THREE.PCFSoftShadowMap }}
               dpr={[1, 2]}
@@ -330,13 +348,13 @@ export function AssetPreviewPage() {
                 shadow-normalBias={0.02}
               />
               <directionalLight position={[-4, 3, -3]} color="#d7ece8" intensity={0.48} />
-              <Asset3D
-                object={object}
-                room={room}
-                selected={false}
-                hovered={false}
+              <AssetVisual
+                definition={asset}
+                width={object.dimensions.width / 1000}
+                depth={object.dimensions.depth / 1000}
+                height={object.dimensions.height / 1000}
                 detail="preview"
-                interactive={false}
+                openStorageParts={openParts.map((part) => part.id)}
                 onReady={() => setReadyAssetId(asset.id)}
               />
               <ContactShadows
@@ -387,6 +405,56 @@ export function AssetPreviewPage() {
             </div>
           </div>
           <div className="asset-preview-details">
+            {storageSlots.length > 0 && (
+              <section className="asset-visibility-card" aria-label="Storage anatomy preview">
+                <b>Explore storage · {storageSlots.length} locations</b>
+                <p>
+                  Open an actual drawer or door. Shelves stay fixed; this preview never changes your
+                  room or inventory.
+                </p>
+                <label>
+                  Storage location
+                  <select
+                    aria-label="Preview storage location"
+                    value={selectedSlot?.key ?? ""}
+                    onChange={(event) =>
+                      setStoragePreview({ assetId: asset.id, key: event.target.value })
+                    }
+                  >
+                    <option value="">Closed · exterior view</option>
+                    {storageSlots.map((slot) => (
+                      <option key={slot.key} value={slot.key}>
+                        {slot.name}
+                        {slot.parentKey
+                          ? ` — ${storageSlots.find((parent) => parent.key === slot.parentKey)?.name}`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {slotParts[0]?.kind === "slide" && (
+                  <label>
+                    Opening panel
+                    <select
+                      aria-label="Opening panel"
+                      value={openParts[0]?.id ?? ""}
+                      onChange={(event) => setPanelId(event.target.value)}
+                    >
+                      {slotParts.map((part, index) => (
+                        <option key={part.id} value={part.id}>
+                          {part.region.z < 0 ? "Rear" : "Front"} · panel {index + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {selectedSlot && (
+                  <button onClick={() => setStoragePreview({ assetId: asset.id, key: "" })}>
+                    Close storage preview
+                  </button>
+                )}
+              </section>
+            )}
             <div>
               <div className="asset-source-row">
                 <span className="eyebrow">{asset.category}</span>

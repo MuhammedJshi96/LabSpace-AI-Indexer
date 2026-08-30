@@ -411,6 +411,7 @@ export function Asset3D({
             object.dimensions,
           )
         : null;
+  const sideAccess = Boolean(access.region && (access.region.depth ?? 0) > access.region.width * 3);
   const click = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
     if (event.detail > 1) return;
@@ -456,6 +457,7 @@ export function Asset3D({
       {storageHighlight &&
         (presentation === "digital-twin" ? (
           <group
+            rotation={sideAccess ? [0, Math.PI / 2, 0] : [0, 0, 0]}
             position={[
               storageHighlight.position[0],
               storageHighlight.position[1],
@@ -463,7 +465,7 @@ export function Asset3D({
             ]}
           >
             <SelectionBounds
-              width={storageHighlight.width}
+              width={sideAccess ? (access.region?.depth ?? 0) * depth : storageHighlight.width}
               depth={0.018}
               height={storageHighlight.height}
               precision

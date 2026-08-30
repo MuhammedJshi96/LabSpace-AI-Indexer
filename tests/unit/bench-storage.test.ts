@@ -44,19 +44,19 @@ describe("reference-based bench storage", () => {
     expect(locations.filter((location) => location.type === "drawer")).toHaveLength(20);
     expect(locations.filter((location) => location.type === "compartment")).toHaveLength(7);
     expect(locations.filter((location) => location.type === "shelf")).toHaveLength(6);
-    expect(locations.some((location) => location.name === "Rear central upper drawer 4")).toBe(
-      true,
-    );
     expect(
-      locations.some((location) => location.name === "Service bridge bay 3 shelf 2"),
+      locations
+        .filter((location) => location.type === "drawer")
+        .every((location) => location.anatomyKey),
     ).toBe(true);
+    expect(locations.some((location) => location.name === "Service bridge bay 3")).toBe(true);
   });
 
   it("creates indexable storage on the plain center island", () => {
     const objectId = useEditorStore.getState().addAsset("center-island-bench")!;
     const locations = locationsFor(objectId);
 
-    expect(locations.filter((location) => location.type === "drawer")).toHaveLength(12);
+    expect(locations.filter((location) => location.type === "drawer")).toHaveLength(20);
     expect(locations.filter((location) => location.type === "compartment")).toHaveLength(4);
   });
 });

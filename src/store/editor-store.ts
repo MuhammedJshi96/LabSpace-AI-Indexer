@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { PendingAgentChange } from "../agent/labspace-action-types";
 import { getAssetDefinition } from "../domain/assets";
+import { completeObjectStorage } from "../domain/storage-templates";
+import { STORAGE_RIGS } from "../domain/storage-access";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
 import {
   requiresBenchSupport,
@@ -195,9 +197,11 @@ type EditorState = {
   deleteLayer: (id: string) => void;
   updateRoom: (patch: Partial<Room>) => void;
   initializeStorageForObject: (objectId: string) => void;
+  completeRoomStorage: () => void;
   addStorageChild: (parentId: string, type: StorageLocationType) => void;
   removeStorageLocation: (id: string) => void;
   updateStorageLocation: (id: string, patch: Partial<StorageLocation>) => void;
+  bindStorageAnatomy: (id: string, anatomyKey: string | null) => void;
   addInventoryItem: (locationId: string | null, name?: string) => void;
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
   removeInventoryItem: (id: string) => void;
@@ -567,6 +571,7 @@ function defaultStorageLocations(
       capacityNotes: entry.capacityNotes ?? "",
       childIds: [],
       normalizedBounds: entry.normalizedBounds,
+      anatomyKey: entry.anatomyKey,
       createdAt: now,
       updatedAt: now,
     };
@@ -1418,31 +1423,109 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   initializeStorageForObject: (objectId) => {
     const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview first.", "info");
+      return;
+    }
     const room = activeRoom(state.project);
     const sourceObject = room.scene.objects.find((object) => object.id === objectId);
     if (!sourceObject) return;
-    if (room.scene.storageLocations.some((location) => location.objectId === objectId)) return;
     const definition = getAssetDefinition(sourceObject.assetDefinitionId);
     if (definition.indexingBehavior !== "storage") {
       state.pushToast("This asset does not define indexable storage compartments.", "info");
       return;
     }
     const now = new Date().toISOString();
-    const object = { ...sourceObject, childLocationIds: [], updatedAt: now };
-    const storageLocations = defaultStorageLocations(definition, object, room.id, now);
+    const object: SceneObject = { ...sourceObject, childLocationIds: [], updatedAt: now };
+    const completed = completeObjectStorage(
+      definition,
+      object,
+      room.id,
+      room.scene.storageLocations,
+      now,
+    );
+    const storageLocations = completed.locations;
+    object.childLocationIds = Array.from(
+      new Set([...sourceObject.childLocationIds, completed.rootId]),
+    );
+    if (!completed.added && !completed.linked) {
+      state.pushToast("Storage already matches the authored model.", "info");
+      return;
+    }
+    const after = {
+      ...room.scene,
+      objects: room.scene.objects.map((entry) => (entry.id === objectId ? object : entry)),
+      storageLocations,
+      updatedAt: now,
+    };
+    const command: SceneCommand = {
+      id: commandId(),
+      kind: "scene",
+      label: `Complete ${object.name} storage`,
+      before: room.scene,
+      after,
+    };
     set({
-      project: updateSceneInProject(state.project, (scene) => ({
-        ...scene,
-        objects: scene.objects.map((entry) => (entry.id === objectId ? object : entry)),
-        storageLocations: [...scene.storageLocations, ...storageLocations],
-        updatedAt: now,
-      })),
-      selectedLocationId: storageLocations[0]?.id ?? null,
+      project: updateSceneInProject(state.project, () => after),
+      history: [...state.history, command],
+      future: [],
+      selectedLocationId: completed.rootId,
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     });
     state.pushToast(
-      `${storageLocations.length - 1} reference-based storage locations added.`,
+      `${completed.added} missing locations added; ${completed.linked} existing locations linked. Inventory preserved.`,
+      "success",
+    );
+  },
+
+  completeRoomStorage: () => {
+    const state = get();
+    const room = activeRoom(state.project);
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview first.", "info");
+      return;
+    }
+    const now = new Date().toISOString();
+    let locations = room.scene.storageLocations,
+      added = 0,
+      linked = 0;
+    const objects = room.scene.objects.map((object) => {
+      const definition = getAssetDefinition(object.assetDefinitionId);
+      if (!definition.storageTemplate?.length) return object;
+      const result = completeObjectStorage(definition, object, room.id, locations, now);
+      locations = result.locations;
+      added += result.added;
+      linked += result.linked;
+      return result.added || result.linked
+        ? {
+            ...object,
+            childLocationIds: Array.from(new Set([...object.childLocationIds, result.rootId])),
+            updatedAt: now,
+          }
+        : object;
+    });
+    if (!added && !linked) {
+      state.pushToast("All room storage matches the authored models.", "info");
+      return;
+    }
+    const after = { ...room.scene, objects, storageLocations: locations, updatedAt: now };
+    const command: SceneCommand = {
+      id: commandId(),
+      kind: "scene",
+      label: "Complete room storage",
+      before: room.scene,
+      after,
+    };
+    set({
+      project: updateSceneInProject(state.project, () => after),
+      history: [...state.history, command],
+      future: [],
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast(
+      `${added} missing storage locations added; ${linked} existing locations linked. Inventory preserved.`,
       "success",
     );
   },
@@ -1536,6 +1619,47 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       saveStatus: "unsaved",
       dirtyRevision: state.dirtyRevision + 1,
     });
+  },
+  bindStorageAnatomy: (id, anatomyKey) => {
+    const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview first.", "info");
+      return;
+    }
+    const room = activeRoom(state.project);
+    const location = room.scene.storageLocations.find((entry) => entry.id === id);
+    const object = room.scene.objects.find((entry) => entry.id === location?.objectId);
+    if (!location || !object || (location.anatomyKey ?? null) === anatomyKey) return;
+    const slot = STORAGE_RIGS[object.assetDefinitionId]?.locations?.find(
+      (entry) => entry.key === anatomyKey && entry.type === location.type,
+    );
+    if (anatomyKey && !slot) return;
+    const now = new Date().toISOString();
+    const after = {
+      ...room.scene,
+      storageLocations: room.scene.storageLocations.map((entry) =>
+        entry.id === id ? { ...entry, anatomyKey: anatomyKey ?? undefined, updatedAt: now } : entry,
+      ),
+      updatedAt: now,
+    };
+    const command: SceneCommand = {
+      id: commandId(),
+      kind: "scene",
+      label: "Link storage access",
+      before: room.scene,
+      after,
+    };
+    set({
+      project: updateSceneInProject(state.project, () => after),
+      history: [...state.history, command],
+      future: [],
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    state.pushToast(
+      "Physical access link updated. Inventory and location IDs are unchanged.",
+      "success",
+    );
   },
   updateStorageLocation: (id, patch) =>
     set((state) => ({

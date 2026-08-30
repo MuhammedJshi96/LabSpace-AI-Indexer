@@ -23,6 +23,8 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 import { getAssetDefinition } from "../domain/assets";
+import { missingStorageCount } from "../domain/storage-templates";
+import { STORAGE_RIGS } from "../domain/storage-access";
 import { LABORATORY_MATERIAL_TEXTURES } from "../lib/laboratory-material-textures";
 import { validatePlacement } from "../domain/geometry";
 import { getLocationPath, indexingStats } from "../domain/indexing";
@@ -473,11 +475,23 @@ const childOptions: Record<StorageLocationType, StorageLocationType[]> = {
 
 function IndexPanel() {
   const room = useEditorStore(selectActiveRoom);
+  const completeRoomStorage = useEditorStore((state) => state.completeRoomStorage);
+  const missingCount = room.scene.objects.reduce(
+    (count, object) =>
+      count +
+      missingStorageCount(
+        getAssetDefinition(object.assetDefinitionId),
+        object.id,
+        room.scene.storageLocations,
+      ),
+    0,
+  );
   const selectedLocationId = useEditorStore((state) => state.selectedLocationId);
   const setDialog = useEditorStore((state) => state.setDialog);
   const addChild = useEditorStore((state) => state.addStorageChild);
   const removeLocation = useEditorStore((state) => state.removeStorageLocation);
   const updateLocation = useEditorStore((state) => state.updateStorageLocation);
+  const bindStorageAnatomy = useEditorStore((state) => state.bindStorageAnatomy);
   const addInventory = useEditorStore((state) => state.addInventoryItem);
   const presentation = useEditorStore((state) => state.presentation);
   const setPresentation = useEditorStore((state) => state.setPresentation);
@@ -497,6 +511,12 @@ function IndexPanel() {
     (location) => location.id === selectedLocationId,
   );
   const path = selected ? getLocationPath(room.scene, selected.id) : [];
+  const selectedObject = room.scene.objects.find((object) => object.id === selected?.objectId);
+  const physicalSlots = selectedObject
+    ? (STORAGE_RIGS[selectedObject.assetDefinitionId]?.locations ?? []).filter(
+        (slot) => slot.type === selected?.type,
+      )
+    : [];
   const roots = room.scene.storageLocations.filter(
     (location) =>
       !location.parentId &&
@@ -530,11 +550,24 @@ function IndexPanel() {
           trail.
         </span>
         <button onClick={() => setPresentation("2d")}>Return to the layout</button>
+        {missingCount > 0 && <button onClick={completeRoomStorage}>Complete room storage</button>}
       </div>
     );
   }
   return (
     <div className="inspector-scroll index-inspector">
+      {missingCount > 0 && (
+        <section className="inspector-section storage-config">
+          <b>Storage setup available</b>
+          <p>
+            Link or add the model's drawers, cabinet compartments and shelves. Existing inventory
+            stays assigned. Undo is available.
+          </p>
+          <button onClick={completeRoomStorage}>
+            <TreeStructure size={16} /> Complete room storage
+          </button>
+        </section>
+      )}
       <section className="inspector-section index-overview">
         <div className="section-heading-row">
           <div>
@@ -666,6 +699,30 @@ function IndexPanel() {
                 multiline
                 onChange={(capacityNotes) => updateLocation(selected.id, { capacityNotes })}
               />
+              {physicalSlots.length > 0 && (
+                <div className="storage-access-binding">
+                  <label className="property-field">
+                    <span>Physical access target</span>
+                    <select
+                      value={selected.anatomyKey ?? ""}
+                      onChange={(event) =>
+                        bindStorageAnatomy(selected.id, event.target.value || null)
+                      }
+                    >
+                      <option value="">Legacy location · not explicitly linked</option>
+                      {physicalSlots.map((slot) => (
+                        <option key={slot.key} value={slot.key}>
+                          {slot.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p>
+                    Choose the real {selected.type} this label refers to. This only links its access
+                    preview; inventory, names and IDs stay unchanged. Undo is available.
+                  </p>
+                </div>
+              )}
               <div className="section-heading-row tight">
                 <span>
                   <span className="eyebrow">Assigned inventory</span>
@@ -1491,24 +1548,26 @@ function ObjectProperties({ object }: { object: SceneObject }) {
           )}
         </section>
       )}
-      {definition.indexingBehavior === "storage" && !root && (
-        <section className="inspector-section storage-config">
-          <div className="section-heading-row">
-            <div>
-              <span className="eyebrow">Storage configuration</span>
-              <h3>Reference compartments available</h3>
+      {definition.indexingBehavior === "storage" &&
+        missingStorageCount(definition, object.id, room.scene.storageLocations) > 0 && (
+          <section className="inspector-section storage-config">
+            <div className="section-heading-row">
+              <div>
+                <span className="eyebrow">Storage configuration</span>
+                <h3>{root ? "Complete storage setup" : "Authored storage available"}</h3>
+              </div>
             </div>
-          </div>
-          <p className="muted-copy">
-            Add the authored drawers, cabinets, and shelves for this exact bench or storage family
-            so every location can be indexed in the Spatial Index.
-          </p>
-          <button onClick={() => initializeStorageForObject(object.id)}>
-            <TreeStructure size={16} />
-            Set up {definition.storageTemplate?.length ?? 0} compartments
-          </button>
-        </section>
-      )}
+            <p className="muted-copy">
+              Add the authored drawers, cabinets, and shelves for this exact bench or storage family
+              so every location can be indexed in the Spatial Index. Existing records and inventory
+              assignments are kept. This action can be undone.
+            </p>
+            <button onClick={() => initializeStorageForObject(object.id)}>
+              <TreeStructure size={16} />
+              {root ? "Complete missing storage" : "Set up storage locations"}
+            </button>
+          </section>
+        )}
       {root && (
         <section className="inspector-section storage-config">
           <div className="section-heading-row">

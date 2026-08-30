@@ -1,37 +1,4 @@
 {
-  "wall-cabinet": {
-    "parts": [
-      {
-        "id": "wall cabinet left door",
-        "kind": "hinge",
-        "bay": "wall cabinet",
-        "angle": -1.7453292519943295,
-        "travel": 0,
-        "region": {
-          "x": -0.2449999983443155,
-          "y": 0.06000000021287374,
-          "z": 0.31071466975186335,
-          "width": 0.46999999006589294,
-          "height": 0.900000003193106
-        }
-      },
-      {
-        "id": "wall cabinet right door",
-        "kind": "hinge",
-        "bay": "wall cabinet",
-        "angle": 1.7453292519943295,
-        "travel": 0,
-        "region": {
-          "x": 0.2449999983443155,
-          "y": 0.06000000021287374,
-          "z": 0.31071466975186335,
-          "width": 0.46999999006589294,
-          "height": 0.900000003193106
-        }
-      }
-    ],
-    "shelfLevels": [0.66, 0.34]
-  },
   "base-cabinet": {
     "parts": [
       {
@@ -40,12 +7,18 @@
         "bay": "Shimadzu base cabinet",
         "angle": -1.7453292519943295,
         "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": -0.23194442807156318,
           "y": 0.15294119482634466,
           "z": 0.44333332008785725,
           "width": 0.45055554510634593,
-          "height": 0.5482353237755996
+          "height": 0.5482353237755996,
+          "depth": 0.03666668984624982
         }
       },
       {
@@ -54,91 +27,4551 @@
         "bay": "Shimadzu base cabinet",
         "angle": 1.7453292519943295,
         "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": 0.23194442807156318,
           "y": 0.15294119482634466,
           "z": 0.44333332008785725,
           "width": 0.45055554510634593,
-          "height": 0.5482353237755996
+          "height": 0.5482353237755996,
+          "depth": 0.03666668984624982
         }
       },
       {
         "id": "Shimadzu base cabinet top drawer 1",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Shimadzu base cabinet top drawer 1",
         "angle": 0,
-        "travel": 0.3720000147819519,
+        "travel": 0.34800002428169824,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": -0.23194442807156318,
           "y": 0.7200000168295475,
           "z": 0.44333332008785725,
           "width": 0.45055554510634593,
-          "height": 0.20941174210149016
+          "height": 0.20941174210149016,
+          "depth": 0.03666668984624982
         }
       },
       {
         "id": "Shimadzu base cabinet top drawer 2",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Shimadzu base cabinet top drawer 2",
         "angle": 0,
-        "travel": 0.3720000147819519,
+        "travel": 0.34800002428169824,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": 0.23194442807156318,
           "y": 0.7200000168295475,
           "z": 0.44333332008785725,
           "width": 0.45055554510634593,
-          "height": 0.20941174210149016
+          "height": 0.20941174210149016,
+          "depth": 0.03666668984624982
         }
       }
     ],
-    "shelfLevels": []
+    "shelfLevels": [
+      0.43235
+    ],
+    "locations": [
+      {
+        "key": "drawer:Shimadzu base cabinet top drawer 1",
+        "name": "Shimadzu base cabinet top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.23194442807156318,
+          "y": 0.7200000168295475,
+          "z": 0.44333332008785725,
+          "width": 0.45055554510634593,
+          "height": 0.20941174210149016,
+          "depth": 0.03666668984624982
+        },
+        "partIds": [
+          "Shimadzu base cabinet top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Shimadzu base cabinet top drawer 2",
+        "name": "Shimadzu base cabinet top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.23194442807156318,
+          "y": 0.7200000168295475,
+          "z": 0.44333332008785725,
+          "width": 0.45055554510634593,
+          "height": 0.20941174210149016,
+          "depth": 0.03666668984624982
+        },
+        "partIds": [
+          "Shimadzu base cabinet top drawer 2"
+        ]
+      },
+      {
+        "key": "bay:Shimadzu base cabinet",
+        "name": "Shimadzu base cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.15294119482634466,
+          "z": 0.44333332008785725,
+          "width": 0.9144444012494723,
+          "height": 0.5482353237755997,
+          "depth": 0.03666668984624988
+        },
+        "partIds": [
+          "Shimadzu base cabinet lower door 1",
+          "Shimadzu base cabinet lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Shimadzu base cabinet:shelf:Adjustable interior shelf",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.43235293272044795,
+          "z": 0.44333332008785725,
+          "width": 0.8944444760864172,
+          "height": 0.1,
+          "depth": 0.03666668984624988
+        },
+        "partIds": [
+          "Shimadzu base cabinet lower door 1",
+          "Shimadzu base cabinet lower door 2"
+        ],
+        "parentKey": "bay:Shimadzu base cabinet"
+      }
+    ]
   },
   "base-drawer-cabinet": {
     "parts": [
       {
         "id": "Three-drawer bank drawer 1",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Three-drawer bank drawer 1",
         "angle": 0,
-        "travel": 0.3720000147819519,
+        "travel": 0.34800002428169824,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": 0,
           "y": 0.15176472180442482,
           "z": 0.44333332008785725,
           "width": 0.871666635208661,
-          "height": 0.20235293903152826
+          "height": 0.20235293903152826,
+          "depth": 0.03666668984624982
         }
       },
       {
         "id": "Three-drawer bank drawer 2",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Three-drawer bank drawer 2",
         "angle": 0,
-        "travel": 0.3720000147819519,
+        "travel": 0.34800002428169824,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": 0,
           "y": 0.3635294099497547,
           "z": 0.44333332008785725,
           "width": 0.871666635208661,
-          "height": 0.24941175472365076
+          "height": 0.24941175472365076,
+          "depth": 0.03666668984624982
         }
       },
       {
         "id": "Three-drawer bank drawer 3",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Three-drawer bank drawer 3",
         "angle": 0,
-        "travel": 0.3720000147819519,
+        "travel": 0.34800002428169824,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
         "region": {
           "x": 0,
           "y": 0.6223529488487642,
           "z": 0.44333332008785725,
           "width": 0.871666635208661,
-          "height": 0.3058823545911321
+          "height": 0.3058823545911321,
+          "depth": 0.03666668984624982
         }
       }
     ],
-    "shelfLevels": []
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Three-drawer bank drawer 3",
+        "name": "Three-drawer bank drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.6223529488487642,
+          "z": 0.44333332008785725,
+          "width": 0.871666635208661,
+          "height": 0.3058823545911321,
+          "depth": 0.03666668984624982
+        },
+        "partIds": [
+          "Three-drawer bank drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Three-drawer bank drawer 2",
+        "name": "Three-drawer bank drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.3635294099497547,
+          "z": 0.44333332008785725,
+          "width": 0.871666635208661,
+          "height": 0.24941175472365076,
+          "depth": 0.03666668984624982
+        },
+        "partIds": [
+          "Three-drawer bank drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Three-drawer bank drawer 1",
+        "name": "Three-drawer bank drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.15176472180442482,
+          "z": 0.44333332008785725,
+          "width": 0.871666635208661,
+          "height": 0.20235293903152826,
+          "depth": 0.03666668984624982
+        },
+        "partIds": [
+          "Three-drawer bank drawer 1"
+        ]
+      }
+    ]
+  },
+  "center-island-bench": {
+    "parts": [
+      {
+        "id": "Island north module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 2",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22105910380681357,
+          "y": 0.1444444499633928,
+          "z": -0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07368637124697368,
+          "y": 0.1444444499633928,
+          "z": -0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 3",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07368637124697368,
+          "y": 0.1444444499633928,
+          "z": -0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22105910380681357,
+          "y": 0.1444444499633928,
+          "z": -0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22105910380681357,
+          "y": 0.1444444499633928,
+          "z": 0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 2",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07368637124697368,
+          "y": 0.1444444499633928,
+          "z": 0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07368637124697368,
+          "y": 0.1444444499633928,
+          "z": 0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 3",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22105910380681357,
+          "y": 0.1444444499633928,
+          "z": 0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.517777763428512,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Island north module 2 top drawer 1",
+        "name": "Island north module 2 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 2 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 2 top drawer 2",
+        "name": "Island north module 2 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 2 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 1",
+        "name": "Island north module 3 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 3 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 2",
+        "name": "Island north module 3 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": -0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 3 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 1",
+        "name": "Island south module 2 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 2 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 2",
+        "name": "Island south module 2 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 2 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 1",
+        "name": "Island south module 3 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.07368637124697368,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337274928887686,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 3 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 2",
+        "name": "Island south module 3 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.22105910380681357,
+          "y": 0.6799999602635717,
+          "z": 0.43916670118769213,
+          "width": 0.14337273438771567,
+          "height": 0.19777774024892886,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 3 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 3",
+        "name": "Island north module 1 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 1 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 3",
+        "name": "Island north module 4 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 4 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 3",
+        "name": "Island south module 1 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 1 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 3",
+        "name": "Island south module 4 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.576666703091726,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.3077777104466077,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 4 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 2",
+        "name": "Island north module 1 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 1 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 2",
+        "name": "Island north module 4 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 4 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 2",
+        "name": "Island south module 1 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 1 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 2",
+        "name": "Island south module 4 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.3155555533479762,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.25222224319422604,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 4 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 1",
+        "name": "Island north module 1 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 1 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 1",
+        "name": "Island north module 4 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": -0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 4 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 1",
+        "name": "Island south module 1 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 1 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 1",
+        "name": "Island south module 4 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.38670607407887775,
+          "y": 0.14333333664470235,
+          "z": 0.43916670118769213,
+          "width": 0.1799212098121643,
+          "height": 0.1633333101537502,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 4 drawer 1"
+        ]
+      },
+      {
+        "key": "bay:Island north module 2",
+        "name": "Island north module 2",
+        "type": "compartment",
+        "region": {
+          "x": -0.14737273380160332,
+          "y": 0.1444444499633928,
+          "z": -0.43916670118769213,
+          "width": 0.29074547439813614,
+          "height": 0.517777763428512,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island north module 2 lower door 1",
+          "Island north module 2 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Island north module 3",
+        "name": "Island north module 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.14737273380160332,
+          "y": 0.1444444499633928,
+          "z": -0.43916670118769213,
+          "width": 0.29074547439813614,
+          "height": 0.517777763428512,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island north module 3 lower door 1",
+          "Island north module 3 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Island south module 2",
+        "name": "Island south module 2",
+        "type": "compartment",
+        "region": {
+          "x": -0.14737273380160332,
+          "y": 0.1444444499633928,
+          "z": 0.43916670118769213,
+          "width": 0.29074547439813614,
+          "height": 0.517777763428512,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island south module 2 lower door 1",
+          "Island south module 2 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Island south module 3",
+        "name": "Island south module 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.14737273380160332,
+          "y": 0.1444444499633928,
+          "z": 0.43916670118769213,
+          "width": 0.29074547439813614,
+          "height": 0.517777763428512,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island south module 3 lower door 1",
+          "Island south module 3 lower door 2"
+        ]
+      }
+    ]
+  },
+  "chemical-cabinet": {
+    "parts": [
+      {
+        "id": "Safety cabinet door 1",
+        "kind": "hinge",
+        "bay": "Safety cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41487616300582886
+        ],
+        "region": {
+          "x": -0.25,
+          "y": 0.13197968314470473,
+          "z": 0.36816271908426146,
+          "width": 0.4795918298388816,
+          "height": 0.8121827243032802,
+          "depth": 0.04194018651248812
+        }
+      },
+      {
+        "id": "Safety cabinet door 2",
+        "kind": "hinge",
+        "bay": "Safety cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41487616300582886
+        ],
+        "region": {
+          "x": 0.25,
+          "y": 0.13197968314470473,
+          "z": 0.36816271908426146,
+          "width": 0.4795918298388816,
+          "height": 0.8121827243032802,
+          "depth": 0.04194018651248812
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.72481,
+      0.51481,
+      0.30481
+    ],
+    "locations": [
+      {
+        "key": "bay:Safety cabinet",
+        "name": "Safety cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.13197968314470473,
+          "z": 0.36816271908426146,
+          "width": 0.9795918298388816,
+          "height": 0.8121827243032802,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 3",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.724808972131206,
+          "z": 0.36816271908426146,
+          "width": 0.8399999864842079,
+          "height": 0.1,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ],
+        "parentKey": "bay:Safety cabinet"
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 2",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.5148089912403626,
+          "z": 0.36816271908426146,
+          "width": 0.8399999864842079,
+          "height": 0.1,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ],
+        "parentKey": "bay:Safety cabinet"
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 1",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.30480897850092487,
+          "z": 0.36816271908426146,
+          "width": 0.8399999864842079,
+          "height": 0.1,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ],
+        "parentKey": "bay:Safety cabinet"
+      }
+    ]
+  },
+  "corner-lab-bench": {
+    "parts": [
+      {
+        "id": "corner run drawer 1",
+        "kind": "drawer",
+        "bay": "corner run drawer 1",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0.41999998688697815,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.09066665445433819,
+          "y": 0.7577777771890899,
+          "z": 0.18666667249467592,
+          "width": 0.01333335929446544,
+          "height": 0.19111117233464908,
+          "depth": 0.5359999906222033
+        }
+      },
+      {
+        "id": "corner run drawer 2",
+        "kind": "drawer",
+        "bay": "corner run drawer 2",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0.41999998688697815,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.09066665445433819,
+          "y": 0.49555557954458607,
+          "z": 0.18666667249467592,
+          "width": 0.01333335929446544,
+          "height": 0.25333335673367596,
+          "depth": 0.5359999906222033
+        }
+      },
+      {
+        "id": "corner run drawer 3",
+        "kind": "drawer",
+        "bay": "corner run drawer 3",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0.41999998688697815,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.09066665445433819,
+          "y": 0.1433333295804482,
+          "z": 0.18666667249467592,
+          "width": 0.01333335929446544,
+          "height": 0.34333330971223275,
+          "depth": 0.5359999906222033
+        }
+      },
+      {
+        "id": "Return cabinet door 1",
+        "kind": "hinge",
+        "bay": "Return cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.05133333890967855,
+          "y": 0.12999998542997535,
+          "z": -0.09066665445433819,
+          "width": 0.26533332345220856,
+          "height": 0.610000043710074,
+          "depth": 0.013333339426252092
+        }
+      },
+      {
+        "id": "Return cabinet door 2",
+        "kind": "hinge",
+        "bay": "Return cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.32199996137619324,
+          "y": 0.12999998542997535,
+          "z": -0.09066665445433819,
+          "width": 0.2653333135181019,
+          "height": 0.610000043710074,
+          "depth": 0.013333339426252092
+        }
+      },
+      {
+        "id": "return utility drawer",
+        "kind": "drawer",
+        "bay": "return utility drawer",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.18666667249467592,
+          "y": 0.7577777771890899,
+          "z": -0.09066665445433819,
+          "width": 0.5359999906222033,
+          "height": 0.19111117233464908,
+          "depth": 0.01333335929446544
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:return utility drawer",
+        "name": "return utility drawer",
+        "type": "drawer",
+        "region": {
+          "x": 0.18666667249467592,
+          "y": 0.7577777771890899,
+          "z": -0.09066665445433819,
+          "width": 0.5359999906222033,
+          "height": 0.19111117233464908,
+          "depth": 0.01333335929446544
+        },
+        "partIds": [
+          "return utility drawer"
+        ]
+      },
+      {
+        "key": "drawer:corner run drawer 1",
+        "name": "corner run drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.09066665445433819,
+          "y": 0.7577777771890899,
+          "z": 0.18666667249467592,
+          "width": 0.01333335929446544,
+          "height": 0.19111117233464908,
+          "depth": 0.5359999906222033
+        },
+        "partIds": [
+          "corner run drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:corner run drawer 2",
+        "name": "corner run drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.09066665445433819,
+          "y": 0.49555557954458607,
+          "z": 0.18666667249467592,
+          "width": 0.01333335929446544,
+          "height": 0.25333335673367596,
+          "depth": 0.5359999906222033
+        },
+        "partIds": [
+          "corner run drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:corner run drawer 3",
+        "name": "corner run drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.09066665445433819,
+          "y": 0.1433333295804482,
+          "z": 0.18666667249467592,
+          "width": 0.01333335929446544,
+          "height": 0.34333330971223275,
+          "depth": 0.5359999906222033
+        },
+        "partIds": [
+          "corner run drawer 3"
+        ]
+      },
+      {
+        "key": "bay:Return cabinet",
+        "name": "Return cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0.18666664765940924,
+          "y": 0.12999998542997535,
+          "z": -0.09066665445433819,
+          "width": 0.5359999409516699,
+          "height": 0.610000043710074,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Return cabinet door 1",
+          "Return cabinet door 2"
+        ]
+      }
+    ]
+  },
+  "flammable-cabinet": {
+    "parts": [
+      {
+        "id": "Safety cabinet door 1",
+        "kind": "hinge",
+        "bay": "Safety cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41487616300582886
+        ],
+        "region": {
+          "x": -0.25,
+          "y": 0.1319796809689234,
+          "z": 0.36816271908426146,
+          "width": 0.4795918298388816,
+          "height": 0.8121826695719307,
+          "depth": 0.04194018651248812
+        }
+      },
+      {
+        "id": "Safety cabinet door 2",
+        "kind": "hinge",
+        "bay": "Safety cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41487616300582886
+        ],
+        "region": {
+          "x": 0.25,
+          "y": 0.1319796809689234,
+          "z": 0.36816271908426146,
+          "width": 0.4795918298388816,
+          "height": 0.8121826695719307,
+          "depth": 0.04194018651248812
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.72761,
+      0.51761,
+      0.30761
+    ],
+    "locations": [
+      {
+        "key": "bay:Safety cabinet",
+        "name": "Safety cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.1319796809689234,
+          "z": 0.36816271908426146,
+          "width": 0.9795918298388816,
+          "height": 0.8121826695719307,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 3",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.7276141955869369,
+          "z": 0.36816271908426146,
+          "width": 0.8399999864842079,
+          "height": 0.1,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ],
+        "parentKey": "bay:Safety cabinet"
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 2",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.5176142308857946,
+          "z": 0.36816271908426146,
+          "width": 0.8399999864842079,
+          "height": 0.1,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ],
+        "parentKey": "bay:Safety cabinet"
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 1",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.3076142157577127,
+          "z": 0.36816271908426146,
+          "width": 0.8399999864842079,
+          "height": 0.1,
+          "depth": 0.0419401865124881
+        },
+        "partIds": [
+          "Safety cabinet door 1",
+          "Safety cabinet door 2"
+        ],
+        "parentKey": "bay:Safety cabinet"
+      }
+    ]
+  },
+  "freezer-storage": {
+    "parts": [
+      {
+        "id": "Cold storage door",
+        "kind": "hinge",
+        "bay": "Cold storage",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.224754848055075,
+          "z": 0.3750822527935854,
+          "width": 0.9166666666666666,
+          "height": 0.7235621568230588,
+          "depth": 0.038004593017999085
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.76477,
+      0.61477,
+      0.46477,
+      0.31477
+    ],
+    "locations": [
+      {
+        "key": "bay:Cold storage",
+        "name": "Cold storage",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.224754848055075,
+          "z": 0.3750822527935854,
+          "width": 0.9166666666666666,
+          "height": 0.7235621568230588,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 4",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.7647707177719913,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 3",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.6147707398887426,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 2",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.46477073041013495,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 1",
+        "name": "Shelf 04",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.31477075252688624,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      }
+    ]
+  },
+  "glass-wall-cabinet": {
+    "parts": [
+      {
+        "id": "Sliding glazed door +1",
+        "kind": "slide",
+        "bay": "Glazed wall cabinet",
+        "angle": 0,
+        "travel": 0.4888839663934461,
+        "translation": [
+          -0.48888397216796875,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.21658330295152256,
+          "y": 0.07291667701469486,
+          "z": 0.39999998509883905,
+          "width": 0.49683327985472364,
+          "height": 0.8541666459706103,
+          "depth": 0.04000000596046439
+        }
+      },
+      {
+        "id": "Sliding glazed door -1",
+        "kind": "slide",
+        "bay": "Glazed wall cabinet",
+        "angle": 0,
+        "travel": 0.4888839663934461,
+        "translation": [
+          0.48888397216796875,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.21658330295152256,
+          "y": 0.07291667701469486,
+          "z": 0.43000000819563855,
+          "width": 0.49683327985472364,
+          "height": 0.8541666459706103,
+          "depth": 0.04000000596046439
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.64444,
+      0.325
+    ],
+    "locations": [
+      {
+        "key": "bay:Glazed wall cabinet",
+        "name": "Glazed wall cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.07291667701469486,
+          "z": 0.43000000819563855,
+          "width": 0.9299998857577687,
+          "height": 0.8541666459706103,
+          "depth": 0.07000002905726388
+        },
+        "partIds": [
+          "Sliding glazed door +1",
+          "Sliding glazed door -1"
+        ]
+      },
+      {
+        "key": "bay:Glazed wall cabinet:shelf:Adjustable glass shelf 0.455",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.6444444416849703,
+          "z": 0.43000000819563855,
+          "width": 0.920833312637277,
+          "height": 0.1,
+          "depth": 0.07000002905726388
+        },
+        "partIds": [
+          "Sliding glazed door +1",
+          "Sliding glazed door -1"
+        ],
+        "parentKey": "bay:Glazed wall cabinet"
+      },
+      {
+        "key": "bay:Glazed wall cabinet:shelf:Adjustable glass shelf 0.225",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.3249999834431549,
+          "z": 0.43000000819563855,
+          "width": 0.920833312637277,
+          "height": 0.1,
+          "depth": 0.07000002905726388
+        },
+        "partIds": [
+          "Sliding glazed door +1",
+          "Sliding glazed door -1"
+        ],
+        "parentKey": "bay:Glazed wall cabinet"
+      }
+    ]
+  },
+  "glazed-sliding-cabinet": {
+    "parts": [
+      {
+        "id": "Lower steel sliding panel 1",
+        "kind": "slide",
+        "bay": "Lower steel",
+        "angle": 0,
+        "travel": 0.40220999114631717,
+        "translation": [
+          0.402209997177124,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.22500000662273847,
+          "y": 0.07249999046325684,
+          "z": 0.42800000309944153,
+          "width": 0.545000017881394,
+          "height": 0.42250001430511475,
+          "depth": 0.05199998617172241
+        }
+      },
+      {
+        "id": "Lower steel sliding panel 2",
+        "kind": "slide",
+        "bay": "Lower steel",
+        "angle": 0,
+        "travel": 0.40220999114631717,
+        "translation": [
+          -0.402209997177124,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.22500000662273847,
+          "y": 0.07249999046325684,
+          "z": 0.4519999921321869,
+          "width": 0.545000017881394,
+          "height": 0.42250001430511475,
+          "depth": 0.05199998617172241
+        }
+      },
+      {
+        "id": "Upper glass left",
+        "kind": "slide",
+        "bay": "Upper glass",
+        "angle": 0,
+        "travel": 0.37104997878676654,
+        "translation": [
+          0.3710499703884125,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.22499999006589227,
+          "y": 0.5612500309944153,
+          "z": 0.42800000309944153,
+          "width": 0.5027777586454222,
+          "height": 0.38999998569488525,
+          "depth": 0.022000014781951904
+        }
+      },
+      {
+        "id": "Upper glass right",
+        "kind": "slide",
+        "bay": "Upper glass",
+        "angle": 0,
+        "travel": 0.37104997878676654,
+        "translation": [
+          -0.3710499703884125,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.22499999006589227,
+          "y": 0.5612500309944153,
+          "z": 0.4519999921321869,
+          "width": 0.5027777586454222,
+          "height": 0.38999998569488525,
+          "depth": 0.022000014781951904
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.8105,
+      0.6555,
+      0.3405,
+      0.1805
+    ],
+    "locations": [
+      {
+        "key": "bay:Lower steel",
+        "name": "Lower steel",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.07249999046325684,
+          "z": 0.4519999921321869,
+          "width": 0.995000031126871,
+          "height": 0.42250001430511475,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Lower steel sliding panel 1",
+          "Lower steel sliding panel 2"
+        ]
+      },
+      {
+        "key": "bay:Lower steel:shelf:Tall cabinet adjustable shelf 0.67",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.34049999713897705,
+          "z": 0.4519999921321869,
+          "width": 0.9200000344382401,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Lower steel sliding panel 1",
+          "Lower steel sliding panel 2"
+        ],
+        "parentKey": "bay:Lower steel"
+      },
+      {
+        "key": "bay:Lower steel:shelf:Tall cabinet adjustable shelf 0.35",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.18050000071525574,
+          "z": 0.4519999921321869,
+          "width": 0.9200000344382401,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Lower steel sliding panel 1",
+          "Lower steel sliding panel 2"
+        ],
+        "parentKey": "bay:Lower steel"
+      },
+      {
+        "key": "bay:Upper glass",
+        "name": "Upper glass",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.5612500309944153,
+          "z": 0.4519999921321869,
+          "width": 0.9527777387772067,
+          "height": 0.38999998569488525,
+          "depth": 0.046000003814697266
+        },
+        "partIds": [
+          "Upper glass left",
+          "Upper glass right"
+        ]
+      },
+      {
+        "key": "bay:Upper glass:shelf:Tall cabinet adjustable shelf 1.61",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.8105000257492065,
+          "z": 0.4519999921321869,
+          "width": 0.9200000344382401,
+          "height": 0.1,
+          "depth": 0.046000003814697266
+        },
+        "partIds": [
+          "Upper glass left",
+          "Upper glass right"
+        ],
+        "parentKey": "bay:Upper glass"
+      },
+      {
+        "key": "bay:Upper glass:shelf:Tall cabinet adjustable shelf 1.30",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.6554999947547913,
+          "z": 0.4519999921321869,
+          "width": 0.9200000344382401,
+          "height": 0.1,
+          "depth": 0.046000003814697266
+        },
+        "partIds": [
+          "Upper glass left",
+          "Upper glass right"
+        ],
+        "parentKey": "bay:Upper glass"
+      }
+    ]
+  },
+  "heavy-duty-rack": {
+    "parts": [],
+    "shelfLevels": [
+      0.95023,
+      0.79023,
+      0.57023,
+      0.35023,
+      0.13023
+    ],
+    "locations": [
+      {
+        "key": "shelf:rack shelf 5",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "id": "rack shelf 5",
+          "x": 0,
+          "y": 0.9502273050172263,
+          "z": 0,
+          "width": 0.9337748331300241,
+          "depth": 0.8461538241107087,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 4",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "id": "rack shelf 4",
+          "x": 0,
+          "y": 0.79022725516607,
+          "z": 0,
+          "width": 0.9337748331300241,
+          "depth": 0.8461538241107087,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 3",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "id": "rack shelf 3",
+          "x": 0,
+          "y": 0.5702272746730441,
+          "z": 0,
+          "width": 0.9337748331300241,
+          "depth": 0.8461538241107087,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 2",
+        "name": "Shelf 04",
+        "type": "shelf",
+        "region": {
+          "id": "rack shelf 2",
+          "x": 0,
+          "y": 0.35022726708699864,
+          "z": 0,
+          "width": 0.9337748331300241,
+          "depth": 0.8461538241107087,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 1",
+        "name": "Shelf 05",
+        "type": "shelf",
+        "region": {
+          "id": "rack shelf 1",
+          "x": 0,
+          "y": 0.13022727304746295,
+          "z": 0,
+          "width": 0.9337748331300241,
+          "depth": 0.8461538241107087,
+          "height": 0.025
+        },
+        "partIds": []
+      }
+    ]
+  },
+  "island-bench-service-bridge": {
+    "parts": [
+      {
+        "id": "Island north module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 2",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22270114000501343,
+          "y": 0.06190476251297253,
+          "z": -0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07423372437290121,
+          "y": 0.06190476251297253,
+          "z": -0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 3",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07423372437290121,
+          "y": 0.06190476251297253,
+          "z": -0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22270114000501343,
+          "y": 0.06190476251297253,
+          "z": -0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island north module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          -0.3839999735355377
+        ],
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22270114000501343,
+          "y": 0.06190476251297253,
+          "z": 0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 2",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07423372437290121,
+          "y": 0.06190476251297253,
+          "z": 0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": -0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07423372437290121,
+          "y": 0.06190476251297253,
+          "z": 0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 3",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22270114000501343,
+          "y": 0.06190476251297253,
+          "z": 0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.2219047494567179,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 1",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 2",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Island south module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 3",
+        "angle": 0,
+        "travel": 0.3839999679860956,
+        "translation": [
+          0,
+          0,
+          0.3839999735355377
+        ],
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        }
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 1 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 1",
+        "angle": 0,
+        "travel": 0.4195667450734273,
+        "translation": [
+          0.4195667505264282,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.37476849391320705,
+          "y": 0.6690476166147765,
+          "z": -0.20416668280959224,
+          "width": 0.14212965400498492,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 1 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 1",
+        "angle": 0,
+        "travel": 0.4195666030110366,
+        "translation": [
+          -0.4195666015148163,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.23263887302191233,
+          "y": 0.6690476166147765,
+          "z": -0.2066666756073639,
+          "width": 0.1421296043344496,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 2 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 2",
+        "angle": 0,
+        "travel": 0.41956665628443873,
+        "translation": [
+          0.41956666111946106,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.07106481044564736,
+          "y": 0.6690476166147765,
+          "z": -0.20416668280959224,
+          "width": 0.14212962089129472,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 2 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 2",
+        "angle": 0,
+        "travel": 0.41956665628443873,
+        "translation": [
+          -0.41956666111946106,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.07106481044564736,
+          "y": 0.6690476166147765,
+          "z": -0.2066666756073639,
+          "width": 0.14212962089129472,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 3 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 3",
+        "angle": 0,
+        "travel": 0.4195666030110366,
+        "translation": [
+          0.4195666015148163,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.23263887302191233,
+          "y": 0.6690476166147765,
+          "z": -0.20416668280959224,
+          "width": 0.1421296043344496,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 3 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 3",
+        "angle": 0,
+        "travel": 0.4195667450734273,
+        "translation": [
+          -0.4195667505264282,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.37476849391320705,
+          "y": 0.6690476166147765,
+          "z": -0.2066666756073639,
+          "width": 0.14212965400498492,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 1 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 1",
+        "angle": 0,
+        "travel": 0.4195667450734273,
+        "translation": [
+          0.4195667505264282,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.37476849391320705,
+          "y": 0.6690476166147765,
+          "z": 0.20416668280959224,
+          "width": 0.14212965400498492,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 1 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 1",
+        "angle": 0,
+        "travel": 0.4195666030110366,
+        "translation": [
+          -0.4195666015148163,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.23263887302191233,
+          "y": 0.6690476166147765,
+          "z": 0.2066666756073639,
+          "width": 0.1421296043344496,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 2 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 2",
+        "angle": 0,
+        "travel": 0.41956665628443873,
+        "translation": [
+          0.41956666111946106,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.07106481044564736,
+          "y": 0.6690476166147765,
+          "z": 0.20416668280959224,
+          "width": 0.14212962089129472,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 2 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 2",
+        "angle": 0,
+        "travel": 0.41956665628443873,
+        "translation": [
+          -0.41956666111946106,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.07106481044564736,
+          "y": 0.6690476166147765,
+          "z": 0.2066666756073639,
+          "width": 0.14212962089129472,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 3 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 3",
+        "angle": 0,
+        "travel": 0.4195666030110366,
+        "translation": [
+          0.4195666015148163,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.23263887302191233,
+          "y": 0.6690476166147765,
+          "z": 0.20416668280959224,
+          "width": 0.1421296043344496,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 3 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 3",
+        "angle": 0,
+        "travel": 0.4195667450734273,
+        "translation": [
+          -0.4195667505264282,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.37476849391320705,
+          "y": 0.6690476166147765,
+          "z": 0.2066666756073639,
+          "width": 0.14212965400498492,
+          "height": 0.28095232094226646,
+          "depth": 0.015000006457170235
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.87095,
+      0.76143
+    ],
+    "locations": [
+      {
+        "key": "drawer:Island north module 2 top drawer 1",
+        "name": "Island north module 2 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 2 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 2 top drawer 2",
+        "name": "Island north module 2 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 2 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 1",
+        "name": "Island north module 3 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 3 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 2",
+        "name": "Island north module 3 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": -0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 3 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 1",
+        "name": "Island south module 2 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 2 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 2",
+        "name": "Island south module 2 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 2 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 1",
+        "name": "Island south module 3 top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.07423372437290121,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513410051130848,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 3 top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 2",
+        "name": "Island south module 3 top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.22270114000501343,
+          "y": 0.29142854612700964,
+          "z": 0.43916670118769213,
+          "width": 0.14513409223288593,
+          "height": 0.08476188627230193,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 3 top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 3",
+        "name": "Island north module 1 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 1 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 3",
+        "name": "Island north module 4 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 4 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 3",
+        "name": "Island south module 1 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 1 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 3",
+        "name": "Island south module 4 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.24714286573890057,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.1319047293046727,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 4 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 2",
+        "name": "Island north module 1 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 1 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 2",
+        "name": "Island north module 4 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 4 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 2",
+        "name": "Island south module 1 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 1 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 2",
+        "name": "Island south module 4 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.13523809045350504,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.10809524401515479,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 4 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 1",
+        "name": "Island north module 1 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 1 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 1",
+        "name": "Island north module 4 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": -0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island north module 4 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 1",
+        "name": "Island south module 1 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 1 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 1",
+        "name": "Island south module 4 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.3895785256394336,
+          "y": 0.061428571104192434,
+          "z": 0.43916670118769213,
+          "width": 0.18195403223750198,
+          "height": 0.06999998807907186,
+          "depth": 0.018333297073838933
+        },
+        "partIds": [
+          "Island south module 4 drawer 1"
+        ]
+      },
+      {
+        "key": "bay:Island north module 2",
+        "name": "Island north module 2",
+        "type": "compartment",
+        "region": {
+          "x": -0.14846743011935168,
+          "y": 0.06190476251297253,
+          "z": -0.43916670118769213,
+          "width": 0.2936015120042094,
+          "height": 0.22190474945671787,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island north module 2 lower door 1",
+          "Island north module 2 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Island north module 3",
+        "name": "Island north module 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.14846743011935168,
+          "y": 0.06190476251297253,
+          "z": -0.43916670118769213,
+          "width": 0.2936015120042094,
+          "height": 0.22190474945671787,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island north module 3 lower door 1",
+          "Island north module 3 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Island south module 2",
+        "name": "Island south module 2",
+        "type": "compartment",
+        "region": {
+          "x": -0.14846743011935168,
+          "y": 0.06190476251297253,
+          "z": 0.43916670118769213,
+          "width": 0.2936015120042094,
+          "height": 0.22190474945671787,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island south module 2 lower door 1",
+          "Island south module 2 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Island south module 3",
+        "name": "Island south module 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.14846743011935168,
+          "y": 0.06190476251297253,
+          "z": 0.43916670118769213,
+          "width": 0.2936015120042094,
+          "height": 0.22190474945671787,
+          "depth": 0.02
+        },
+        "partIds": [
+          "Island south module 3 lower door 1",
+          "Island south module 3 lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 1",
+        "name": "Service bridge bay 1",
+        "type": "compartment",
+        "region": {
+          "x": -0.3037036958851935,
+          "y": 0.6690476166147765,
+          "z": 0.2066666756073639,
+          "width": 0.28425925006101194,
+          "height": 0.2809523209422664,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 1 sliding glass 1",
+          "Shimadzu hutch +1 bay 1 sliding glass 2",
+          "Shimadzu hutch -1 bay 1 sliding glass 1",
+          "Shimadzu hutch -1 bay 1 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 1:shelf:Shimadzu hutch glass shelf 2",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": -0.3037036958851935,
+          "y": 0.87095231980694,
+          "z": 0.2066666756073639,
+          "width": 0.28425925006101194,
+          "height": 0.06904761775010294,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 1 sliding glass 1",
+          "Shimadzu hutch +1 bay 1 sliding glass 2",
+          "Shimadzu hutch -1 bay 1 sliding glass 1",
+          "Shimadzu hutch -1 bay 1 sliding glass 2"
+        ],
+        "parentKey": "bay:Service bridge bay 1"
+      },
+      {
+        "key": "bay:Service bridge bay 1:shelf:Shimadzu hutch glass shelf 1",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": -0.3037036958851935,
+          "y": 0.7614285086612355,
+          "z": 0.2066666756073639,
+          "width": 0.28425925006101194,
+          "height": 0.09952381114570454,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 1 sliding glass 1",
+          "Shimadzu hutch +1 bay 1 sliding glass 2",
+          "Shimadzu hutch -1 bay 1 sliding glass 1",
+          "Shimadzu hutch -1 bay 1 sliding glass 2"
+        ],
+        "parentKey": "bay:Service bridge bay 1"
+      },
+      {
+        "key": "bay:Service bridge bay 2",
+        "name": "Service bridge bay 2",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.6690476166147765,
+          "z": 0.2066666756073639,
+          "width": 0.28425924178258943,
+          "height": 0.2809523209422664,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 2 sliding glass 1",
+          "Shimadzu hutch +1 bay 2 sliding glass 2",
+          "Shimadzu hutch -1 bay 2 sliding glass 1",
+          "Shimadzu hutch -1 bay 2 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 2:shelf:Shimadzu hutch glass shelf 2",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.87095231980694,
+          "z": 0.2066666756073639,
+          "width": 0.28425924178258943,
+          "height": 0.06904761775010294,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 2 sliding glass 1",
+          "Shimadzu hutch +1 bay 2 sliding glass 2",
+          "Shimadzu hutch -1 bay 2 sliding glass 1",
+          "Shimadzu hutch -1 bay 2 sliding glass 2"
+        ],
+        "parentKey": "bay:Service bridge bay 2"
+      },
+      {
+        "key": "bay:Service bridge bay 2:shelf:Shimadzu hutch glass shelf 1",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.7614285086612355,
+          "z": 0.2066666756073639,
+          "width": 0.28425924178258943,
+          "height": 0.09952381114570454,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 2 sliding glass 1",
+          "Shimadzu hutch +1 bay 2 sliding glass 2",
+          "Shimadzu hutch -1 bay 2 sliding glass 1",
+          "Shimadzu hutch -1 bay 2 sliding glass 2"
+        ],
+        "parentKey": "bay:Service bridge bay 2"
+      },
+      {
+        "key": "bay:Service bridge bay 3",
+        "name": "Service bridge bay 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.3037036958851935,
+          "y": 0.6690476166147765,
+          "z": 0.2066666756073639,
+          "width": 0.28425925006101194,
+          "height": 0.2809523209422664,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 3 sliding glass 1",
+          "Shimadzu hutch +1 bay 3 sliding glass 2",
+          "Shimadzu hutch -1 bay 3 sliding glass 1",
+          "Shimadzu hutch -1 bay 3 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 3:shelf:Shimadzu hutch glass shelf 2",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0.3037036958851935,
+          "y": 0.87095231980694,
+          "z": 0.2066666756073639,
+          "width": 0.28425925006101194,
+          "height": 0.06904761775010294,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 3 sliding glass 1",
+          "Shimadzu hutch +1 bay 3 sliding glass 2",
+          "Shimadzu hutch -1 bay 3 sliding glass 1",
+          "Shimadzu hutch -1 bay 3 sliding glass 2"
+        ],
+        "parentKey": "bay:Service bridge bay 3"
+      },
+      {
+        "key": "bay:Service bridge bay 3:shelf:Shimadzu hutch glass shelf 1",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0.3037036958851935,
+          "y": 0.7614285086612355,
+          "z": 0.2066666756073639,
+          "width": 0.28425925006101194,
+          "height": 0.09952381114570454,
+          "depth": 0.42833335767189806
+        },
+        "partIds": [
+          "Shimadzu hutch +1 bay 3 sliding glass 1",
+          "Shimadzu hutch +1 bay 3 sliding glass 2",
+          "Shimadzu hutch -1 bay 3 sliding glass 1",
+          "Shimadzu hutch -1 bay 3 sliding glass 2"
+        ],
+        "parentKey": "bay:Service bridge bay 3"
+      }
+    ]
+  },
+  "lab-bench-overhead": {
+    "parts": [
+      {
+        "id": "Base cabinet 2 door 1",
+        "kind": "hinge",
+        "bay": "Base cabinet 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.12083332505491078,
+          "y": 0.06190476244539363,
+          "z": 0.4573333263397217,
+          "width": 0.23666666501098216,
+          "height": 0.3142857410469846,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Base cabinet 3 door 1",
+        "kind": "hinge",
+        "bay": "Base cabinet 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.12083332505491078,
+          "y": 0.06190476244539363,
+          "z": 0.4573333263397217,
+          "width": 0.23666666501098216,
+          "height": 0.3142857410469846,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 1",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.06142857098255026,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.062857138275289,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 2",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.12809524096058622,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.081904761310067,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 3",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.21380953397340022,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.10095239144063638,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 4",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.31857145711678353,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.1152380927511893,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 1",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.06142857098255026,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.062857138275289,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 2",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.12809524096058622,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.081904761310067,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 3",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.21380953397340022,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.10095239144063638,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 4",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.31857145711678353,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.1152380927511893,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Overhead module 1 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 1",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3562499937911831,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.22708335609899535,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        }
+      },
+      {
+        "id": "Overhead module 2 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.11874999379118309,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.2270833312637277,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        }
+      },
+      {
+        "id": "Overhead module 3 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.11874999379118309,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.2270833312637277,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        }
+      },
+      {
+        "id": "Overhead module 4 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 4",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3562499937911831,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.22708335609899535,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.88619,
+      0.78619
+    ],
+    "locations": [
+      {
+        "key": "drawer:Drawer bank 1 drawer 4",
+        "name": "Drawer bank 1 drawer 4",
+        "type": "drawer",
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.31857145711678353,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.1152380927511893,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 4"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 4",
+        "name": "Drawer bank 4 drawer 4",
+        "type": "drawer",
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.31857145711678353,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.1152380927511893,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 4"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 3",
+        "name": "Drawer bank 1 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.21380953397340022,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.10095239144063638,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 3",
+        "name": "Drawer bank 4 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.21380953397340022,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.10095239144063638,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 2",
+        "name": "Drawer bank 1 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.12809524096058622,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.081904761310067,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 2",
+        "name": "Drawer bank 4 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.12809524096058622,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.081904761310067,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 1",
+        "name": "Drawer bank 1 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.3624999875823662,
+          "y": 0.06142857098255026,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.062857138275289,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 1",
+        "name": "Drawer bank 4 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.3624999875823662,
+          "y": 0.06142857098255026,
+          "z": 0.4573333263397217,
+          "width": 0.23666668984624983,
+          "height": 0.062857138275289,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 1"
+        ]
+      },
+      {
+        "key": "bay:Base cabinet 2",
+        "name": "Base cabinet 2",
+        "type": "compartment",
+        "region": {
+          "x": -0.12083332505491076,
+          "y": 0.06190476244539363,
+          "z": 0.4573333263397217,
+          "width": 0.23666666501098216,
+          "height": 0.3142857410469846,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Base cabinet 2 door 1"
+        ]
+      },
+      {
+        "key": "bay:Base cabinet 3",
+        "name": "Base cabinet 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.12083332505491076,
+          "y": 0.06190476244539363,
+          "z": 0.4573333263397217,
+          "width": 0.23666666501098216,
+          "height": 0.3142857410469846,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Base cabinet 3 door 1"
+        ]
+      },
+      {
+        "key": "bay:Overhead module 1",
+        "name": "Overhead module 1",
+        "type": "compartment",
+        "region": {
+          "x": -0.3562499937911831,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.22708335609899533,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 1 glass door"
+        ]
+      },
+      {
+        "key": "bay:Overhead module 1:shelf:Overhead module 1 shelf 1.85",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": -0.3562499937911831,
+          "y": 0.8861905454994631,
+          "z": -0.006666666517655055,
+          "width": 0.2208333126372769,
+          "height": 0.079999952316282,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 1 glass door"
+        ],
+        "parentKey": "bay:Overhead module 1"
+      },
+      {
+        "key": "bay:Overhead module 1:shelf:Overhead module 1 shelf 1.64",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": -0.3562499937911831,
+          "y": 0.7861905227929308,
+          "z": -0.006666666517655055,
+          "width": 0.2208333126372769,
+          "height": 0.0900000227065323,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 1 glass door"
+        ],
+        "parentKey": "bay:Overhead module 1"
+      },
+      {
+        "key": "bay:Overhead module 2",
+        "name": "Overhead module 2",
+        "type": "compartment",
+        "region": {
+          "x": -0.11874999379118309,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.2270833312637277,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 2 glass door"
+        ]
+      },
+      {
+        "key": "bay:Overhead module 2:shelf:Overhead module 2 shelf 1.85",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": -0.11874998758236617,
+          "y": 0.8861905454994631,
+          "z": -0.006666666517655055,
+          "width": 0.22083331263727693,
+          "height": 0.079999952316282,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 2 glass door"
+        ],
+        "parentKey": "bay:Overhead module 2"
+      },
+      {
+        "key": "bay:Overhead module 2:shelf:Overhead module 2 shelf 1.64",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": -0.11874998758236617,
+          "y": 0.7861905227929308,
+          "z": -0.006666666517655055,
+          "width": 0.22083331263727693,
+          "height": 0.0900000227065323,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 2 glass door"
+        ],
+        "parentKey": "bay:Overhead module 2"
+      },
+      {
+        "key": "bay:Overhead module 3",
+        "name": "Overhead module 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.11874999379118309,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.2270833312637277,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 3 glass door"
+        ]
+      },
+      {
+        "key": "bay:Overhead module 3:shelf:Overhead module 3 shelf 1.85",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0.11874998758236617,
+          "y": 0.8861905454994631,
+          "z": -0.006666666517655055,
+          "width": 0.22083331263727693,
+          "height": 0.079999952316282,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 3 glass door"
+        ],
+        "parentKey": "bay:Overhead module 3"
+      },
+      {
+        "key": "bay:Overhead module 3:shelf:Overhead module 3 shelf 1.64",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0.11874998758236617,
+          "y": 0.7861905227929308,
+          "z": -0.006666666517655055,
+          "width": 0.22083331263727693,
+          "height": 0.0900000227065323,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 3 glass door"
+        ],
+        "parentKey": "bay:Overhead module 3"
+      },
+      {
+        "key": "bay:Overhead module 4",
+        "name": "Overhead module 4",
+        "type": "compartment",
+        "region": {
+          "x": 0.3562499937911831,
+          "y": 0.7000000454130647,
+          "z": -0.006666666517655055,
+          "width": 0.22708335609899533,
+          "height": 0.27619045240268036,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 4 glass door"
+        ]
+      },
+      {
+        "key": "bay:Overhead module 4:shelf:Overhead module 4 shelf 1.85",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0.3562499937911831,
+          "y": 0.8861905454994631,
+          "z": -0.006666666517655055,
+          "width": 0.2208333126372769,
+          "height": 0.079999952316282,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 4 glass door"
+        ],
+        "parentKey": "bay:Overhead module 4"
+      },
+      {
+        "key": "bay:Overhead module 4:shelf:Overhead module 4 shelf 1.64",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0.3562499937911831,
+          "y": 0.7861905227929308,
+          "z": -0.006666666517655055,
+          "width": 0.2208333126372769,
+          "height": 0.0900000227065323,
+          "depth": 0.023999998966852825
+        },
+        "partIds": [
+          "Overhead module 4 glass door"
+        ],
+        "parentKey": "bay:Overhead module 4"
+      }
+    ]
+  },
+  "lab-bench-sink": {
+    "parts": [
+      {
+        "id": "Drawer bank 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 1",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.10720553064356485,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.10969867531921752,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 2",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.22355262478750945,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.14294070752475313,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 3",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.37314175113698966,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.17618275211390869,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 1 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 4",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.5559729220756254,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.20111424840491546,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 1",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.10720553064356485,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.10969867531921752,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 2",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.22355262478750945,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.14294070752475313,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 3",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.37314175113698966,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.17618275211390869,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Drawer bank 4 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 4",
+        "angle": 0,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.5559729220756254,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.20111424840491546,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Sink service cabinet 1 door 1",
+        "kind": "hinge",
+        "bay": "Sink service cabinet 1",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": -0.11944444959546327,
+          "y": 0.10803658299665572,
+          "z": 0.4573333263397217,
+          "width": 0.2322222436725363,
+          "height": 0.5484934632814275,
+          "depth": 0.02933335304260254
+        }
+      },
+      {
+        "id": "Sink service cabinet 2 door 1",
+        "kind": "hinge",
+        "bay": "Sink service cabinet 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0.11944444959546327,
+          "y": 0.10803658299665572,
+          "z": 0.4573333263397217,
+          "width": 0.2322222436725363,
+          "height": 0.5484934632814275,
+          "depth": 0.02933335304260254
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Drawer bank 1 drawer 4",
+        "name": "Drawer bank 1 drawer 4",
+        "type": "drawer",
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.5559729220756254,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.20111424840491546,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 4"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 4",
+        "name": "Drawer bank 4 drawer 4",
+        "type": "drawer",
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.5559729220756254,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.20111424840491546,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 4"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 3",
+        "name": "Drawer bank 1 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.37314175113698966,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.17618275211390869,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 3",
+        "name": "Drawer bank 4 drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.37314175113698966,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.17618275211390869,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 2",
+        "name": "Drawer bank 1 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.22355262478750945,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.14294070752475313,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 2",
+        "name": "Drawer bank 4 drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.22355262478750945,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.14294070752475313,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 1",
+        "name": "Drawer bank 1 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.3583333322295436,
+          "y": 0.10720553064356485,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.10969867531921752,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 1 drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 1",
+        "name": "Drawer bank 4 drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.3583333322295436,
+          "y": 0.10720553064356485,
+          "z": 0.4573333263397217,
+          "width": 0.23222221883726699,
+          "height": 0.10969867531921752,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Drawer bank 4 drawer 1"
+        ]
+      },
+      {
+        "key": "bay:Sink service cabinet 1",
+        "name": "Sink service cabinet 1",
+        "type": "compartment",
+        "region": {
+          "x": -0.11944444959546327,
+          "y": 0.10803658299665572,
+          "z": 0.4573333263397217,
+          "width": 0.2322222436725363,
+          "height": 0.5484934632814275,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Sink service cabinet 1 door 1"
+        ]
+      },
+      {
+        "key": "bay:Sink service cabinet 2",
+        "name": "Sink service cabinet 2",
+        "type": "compartment",
+        "region": {
+          "x": 0.11944444959546327,
+          "y": 0.10803658299665572,
+          "z": 0.4573333263397217,
+          "width": 0.2322222436725363,
+          "height": 0.5484934632814275,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Sink service cabinet 2 door 1"
+        ]
+      }
+    ]
   },
   "lab-bench": {
     "parts": [
@@ -148,12 +4581,18 @@
         "bay": "Bench center paired-door cabinet",
         "angle": -1.7453292519943295,
         "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": -0.10416666942614103,
           "y": 0.1444444499633928,
           "z": 0.4479999939600627,
           "width": 0.20166668333389184,
-          "height": 0.517777763428512
+          "height": 0.517777763428512,
+          "depth": 0.02933335304260254
         }
       },
       {
@@ -162,188 +4601,1910 @@
         "bay": "Bench center paired-door cabinet",
         "angle": 1.7453292519943295,
         "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": 0.10416666942614103,
           "y": 0.1444444499633928,
           "z": 0.4479999939600627,
           "width": 0.20166668333389184,
-          "height": 0.517777763428512
+          "height": 0.517777763428512,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench center paired-door cabinet top drawer 1",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench center paired-door cabinet top drawer 1",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": -0.10416666942614103,
           "y": 0.6799999602635717,
           "z": 0.4479999939600627,
           "width": 0.20166668333389184,
-          "height": 0.19777774024892886
+          "height": 0.19777774024892886,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench center paired-door cabinet top drawer 2",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench center paired-door cabinet top drawer 2",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": 0.10416666942614103,
           "y": 0.6799999602635717,
           "z": 0.4479999939600627,
           "width": 0.20166668333389184,
-          "height": 0.19777774024892886
+          "height": 0.19777774024892886,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench left three-drawer bank drawer 1",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench left three-drawer bank drawer 1",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": -0.338888905813665,
           "y": 0.14333333664470235,
           "z": 0.4479999939600627,
           "width": 0.24333331964634047,
-          "height": 0.2888888668130954
+          "height": 0.2888888668130954,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench left three-drawer bank drawer 2",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench left three-drawer bank drawer 2",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": -0.338888905813665,
           "y": 0.44111111000732145,
           "z": 0.4479999939600627,
           "width": 0.24333331964634047,
-          "height": 0.23555555997071426
+          "height": 0.23555555997071426,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench left three-drawer bank drawer 3",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench left three-drawer bank drawer 3",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": -0.338888905813665,
           "y": 0.6855555103001789,
           "z": 0.4479999939600627,
           "width": 0.24333331964634047,
-          "height": 0.19111115967785677
+          "height": 0.19111115967785677,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench right three-drawer bank drawer 1",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench right three-drawer bank drawer 1",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": 0.338888905813665,
           "y": 0.14333333664470235,
           "z": 0.4479999939600627,
           "width": 0.24333331964634047,
-          "height": 0.2888888668130954
+          "height": 0.2888888668130954,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench right three-drawer bank drawer 2",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench right three-drawer bank drawer 2",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": 0.338888905813665,
           "y": 0.44111111000732145,
           "z": 0.4479999939600627,
           "width": 0.24333331964634047,
-          "height": 0.23555555997071426
+          "height": 0.23555555997071426,
+          "depth": 0.02933335304260254
         }
       },
       {
         "id": "Bench right three-drawer bank drawer 3",
         "kind": "drawer",
-        "bay": "",
+        "bay": "Bench right three-drawer bank drawer 3",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.41999998918601433,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
         "region": {
           "x": 0.338888905813665,
           "y": 0.6855555103001789,
           "z": 0.4479999939600627,
           "width": 0.24333331964634047,
-          "height": 0.19111115967785677
+          "height": 0.19111115967785677,
+          "depth": 0.02933335304260254
         }
       }
     ],
-    "shelfLevels": []
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Bench left three-drawer bank drawer 3",
+        "name": "Bench left three-drawer bank drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": -0.338888905813665,
+          "y": 0.6855555103001789,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.19111115967785677,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench left three-drawer bank drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Bench right three-drawer bank drawer 3",
+        "name": "Bench right three-drawer bank drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.338888905813665,
+          "y": 0.6855555103001789,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.19111115967785677,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench right three-drawer bank drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:Bench center paired-door cabinet top drawer 1",
+        "name": "Bench center paired-door cabinet top drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.10416666942614103,
+          "y": 0.6799999602635717,
+          "z": 0.4479999939600627,
+          "width": 0.20166668333389184,
+          "height": 0.19777774024892886,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench center paired-door cabinet top drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Bench center paired-door cabinet top drawer 2",
+        "name": "Bench center paired-door cabinet top drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.10416666942614103,
+          "y": 0.6799999602635717,
+          "z": 0.4479999939600627,
+          "width": 0.20166668333389184,
+          "height": 0.19777774024892886,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench center paired-door cabinet top drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Bench left three-drawer bank drawer 2",
+        "name": "Bench left three-drawer bank drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.338888905813665,
+          "y": 0.44111111000732145,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.23555555997071426,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench left three-drawer bank drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Bench right three-drawer bank drawer 2",
+        "name": "Bench right three-drawer bank drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.338888905813665,
+          "y": 0.44111111000732145,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.23555555997071426,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench right three-drawer bank drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Bench left three-drawer bank drawer 1",
+        "name": "Bench left three-drawer bank drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.338888905813665,
+          "y": 0.14333333664470235,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.2888888668130954,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench left three-drawer bank drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Bench right three-drawer bank drawer 1",
+        "name": "Bench right three-drawer bank drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.338888905813665,
+          "y": 0.14333333664470235,
+          "z": 0.4479999939600627,
+          "width": 0.24333331964634047,
+          "height": 0.2888888668130954,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench right three-drawer bank drawer 1"
+        ]
+      },
+      {
+        "key": "bay:Bench center paired-door cabinet",
+        "name": "Bench center paired-door cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.1444444499633928,
+          "z": 0.4479999939600627,
+          "width": 0.41000002218617393,
+          "height": 0.517777763428512,
+          "depth": 0.02933335304260254
+        },
+        "partIds": [
+          "Bench center paired-door cabinet lower door 1",
+          "Bench center paired-door cabinet lower door 2"
+        ]
+      }
+    ]
+  },
+  "locker": {
+    "parts": [
+      {
+        "id": "locker door 1",
+        "kind": "hinge",
+        "bay": "Locker bay 1",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3079800009727478
+        ],
+        "region": {
+          "x": -0.3265305874199738,
+          "y": 0.11224489403945866,
+          "z": 0.4453860253715973,
+          "width": 0.3112244935886151,
+          "height": 0.8571428388508071,
+          "depth": 0.052730689611124044
+        }
+      },
+      {
+        "id": "locker door 2",
+        "kind": "hinge",
+        "bay": "Locker bay 2",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3079800009727478
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.11224489403945866,
+          "z": 0.4453860253715973,
+          "width": 0.3112244935886151,
+          "height": 0.8571428388508071,
+          "depth": 0.052730689611124044
+        }
+      },
+      {
+        "id": "locker door 3",
+        "kind": "hinge",
+        "bay": "Locker bay 3",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3079800009727478
+        ],
+        "region": {
+          "x": 0.3265305874199738,
+          "y": 0.11224489403945866,
+          "z": 0.4453860253715973,
+          "width": 0.3112244935886151,
+          "height": 0.8571428388508071,
+          "depth": 0.052730689611124044
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.76483
+    ],
+    "locations": [
+      {
+        "key": "bay:Locker bay 1",
+        "name": "Locker bay 1",
+        "type": "compartment",
+        "region": {
+          "x": -0.3265305874199738,
+          "y": 0.11224489403945866,
+          "z": 0.4453860253715973,
+          "width": 0.31122449358861515,
+          "height": 0.8571428388508071,
+          "depth": 0.05273068961112404
+        },
+        "partIds": [
+          "locker door 1"
+        ]
+      },
+      {
+        "key": "bay:Locker bay 1:shelf:Locker bay 1 shelf",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": -0.31999998479473396,
+          "y": 0.764833489846211,
+          "z": 0.4453860253715973,
+          "width": 0.279999989863156,
+          "height": 0.1,
+          "depth": 0.05273068961112404
+        },
+        "partIds": [
+          "locker door 1"
+        ],
+        "parentKey": "bay:Locker bay 1"
+      },
+      {
+        "key": "bay:Locker bay 2",
+        "name": "Locker bay 2",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.11224489403945866,
+          "z": 0.4453860253715973,
+          "width": 0.3112244935886151,
+          "height": 0.8571428388508071,
+          "depth": 0.05273068961112404
+        },
+        "partIds": [
+          "locker door 2"
+        ]
+      },
+      {
+        "key": "bay:Locker bay 2:shelf:Locker bay 2 shelf",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.764833489846211,
+          "z": 0.4453860253715973,
+          "width": 0.280000006757896,
+          "height": 0.1,
+          "depth": 0.05273068961112404
+        },
+        "partIds": [
+          "locker door 2"
+        ],
+        "parentKey": "bay:Locker bay 2"
+      },
+      {
+        "key": "bay:Locker bay 3",
+        "name": "Locker bay 3",
+        "type": "compartment",
+        "region": {
+          "x": 0.3265305874199738,
+          "y": 0.11224489403945866,
+          "z": 0.4453860253715973,
+          "width": 0.31122449358861515,
+          "height": 0.8571428388508071,
+          "depth": 0.05273068961112404
+        },
+        "partIds": [
+          "locker door 3"
+        ]
+      },
+      {
+        "key": "bay:Locker bay 3:shelf:Locker bay 3 shelf",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0.31999998479473396,
+          "y": 0.764833489846211,
+          "z": 0.4453860253715973,
+          "width": 0.279999989863156,
+          "height": 0.1,
+          "depth": 0.05273068961112404
+        },
+        "partIds": [
+          "locker door 3"
+        ],
+        "parentKey": "bay:Locker bay 3"
+      }
+    ]
   },
   "mobile-bench": {
     "parts": [
       {
         "id": "mobile cabinet left door",
         "kind": "hinge",
-        "bay": "mobile cabinet",
+        "bay": "Mobile cabinet",
         "angle": -1.7453292519943295,
         "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
         "region": {
           "x": -0.22485740051179084,
           "y": 0.15777777121289063,
           "z": 0.45428570601404916,
           "width": 0.43166080824773206,
-          "height": 0.46222221088998083
+          "height": 0.46222221088998083,
+          "depth": 0.03142859308087133
         }
       },
       {
         "id": "mobile cabinet right door",
         "kind": "hinge",
-        "bay": "mobile cabinet",
+        "bay": "Mobile cabinet",
         "angle": 1.7453292519943295,
         "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
         "region": {
           "x": 0.21339366257667386,
           "y": 0.15777777121289063,
           "z": 0.45428570601404916,
           "width": 0.43166080824773206,
-          "height": 0.46222221088998083
+          "height": 0.46222221088998083,
+          "depth": 0.03142859308087133
         }
       },
       {
         "id": "mobile drawer 1",
         "kind": "drawer",
-        "bay": "",
+        "bay": "mobile drawer 1",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
         "region": {
           "x": -0.005731868967558494,
           "y": 0.793333340161095,
           "z": 0.45428570601404916,
           "width": 0.8699118713361967,
-          "height": 0.15555554378179826
+          "height": 0.15555554378179826,
+          "depth": 0.03142859308087133
         }
       },
       {
         "id": "mobile drawer 2",
         "kind": "drawer",
-        "bay": "",
+        "bay": "mobile drawer 2",
         "angle": 0,
-        "travel": 0.42,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
         "region": {
           "x": -0.005731868967558494,
           "y": 0.6288888892410841,
           "z": 0.45428570601404916,
           "width": 0.8699118713361967,
-          "height": 0.15555554378179826
+          "height": 0.15555554378179826,
+          "depth": 0.03142859308087133
         }
       }
     ],
-    "shelfLevels": []
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:mobile drawer 1",
+        "name": "mobile drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": -0.005731868967558494,
+          "y": 0.793333340161095,
+          "z": 0.45428570601404916,
+          "width": 0.8699118713361967,
+          "height": 0.15555554378179826,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "mobile drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:mobile drawer 2",
+        "name": "mobile drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": -0.005731868967558494,
+          "y": 0.6288888892410841,
+          "z": 0.45428570601404916,
+          "width": 0.8699118713361967,
+          "height": 0.15555554378179826,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "mobile drawer 2"
+        ]
+      },
+      {
+        "key": "bay:Mobile cabinet",
+        "name": "Mobile cabinet",
+        "type": "compartment",
+        "region": {
+          "x": -0.005731868967558479,
+          "y": 0.15777777121289063,
+          "z": 0.45428570601404916,
+          "width": 0.8699118713361969,
+          "height": 0.46222221088998083,
+          "depth": 0.031428593080871314
+        },
+        "partIds": [
+          "mobile cabinet left door",
+          "mobile cabinet right door"
+        ]
+      }
+    ]
+  },
+  "mobile-drawer": {
+    "parts": [
+      {
+        "id": "mobile drawer 1",
+        "kind": "drawer",
+        "bay": "mobile drawer 1",
+        "angle": 0,
+        "travel": 0.37485614640034615,
+        "translation": [
+          0,
+          0,
+          0.3748561441898346
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.7209976528598564,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.13573082894888117,
+          "depth": 0.04022880010166762
+        }
+      },
+      {
+        "id": "mobile drawer 2",
+        "kind": "drawer",
+        "bay": "mobile drawer 2",
+        "angle": 0,
+        "travel": 0.37485614640034615,
+        "translation": [
+          0,
+          0,
+          0.3748561441898346
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.565158486369668,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.135730875046824,
+          "depth": 0.04022880010166762
+        }
+      },
+      {
+        "id": "mobile drawer 3",
+        "kind": "drawer",
+        "bay": "mobile drawer 3",
+        "angle": 0,
+        "travel": 0.37485614640034615,
+        "translation": [
+          0,
+          0,
+          0.3748561441898346
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.4093193659774225,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.135730875046824,
+          "depth": 0.04022880010166762
+        }
+      },
+      {
+        "id": "mobile drawer 4",
+        "kind": "drawer",
+        "bay": "mobile drawer 4",
+        "angle": 0,
+        "travel": 0.37485614640034615,
+        "translation": [
+          0,
+          0,
+          0.3748561441898346
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.22583139094849375,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.1910285843201904,
+          "depth": 0.04022880010166762
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:mobile drawer 1",
+        "name": "mobile drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.7209976528598564,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.13573082894888117,
+          "depth": 0.04022880010166762
+        },
+        "partIds": [
+          "mobile drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:mobile drawer 2",
+        "name": "mobile drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.565158486369668,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.135730875046824,
+          "depth": 0.04022880010166762
+        },
+        "partIds": [
+          "mobile drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:mobile drawer 3",
+        "name": "mobile drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.4093193659774225,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.135730875046824,
+          "depth": 0.04022880010166762
+        },
+        "partIds": [
+          "mobile drawer 3"
+        ]
+      },
+      {
+        "key": "drawer:mobile drawer 4",
+        "name": "mobile drawer 4",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.22583139094849375,
+          "z": 0.35254035786744053,
+          "width": 0.8799999952316284,
+          "height": 0.1910285843201904,
+          "depth": 0.04022880010166762
+        },
+        "partIds": [
+          "mobile drawer 4"
+        ]
+      }
+    ]
+  },
+  "office-desk": {
+    "parts": [
+      {
+        "id": "Pencil drawer",
+        "kind": "drawer",
+        "bay": "Pencil drawer",
+        "angle": 0,
+        "travel": 0.21999999940395354,
+        "translation": [
+          0,
+          0,
+          0.2199999988079071
+        ],
+        "region": {
+          "x": 0.2999999957425253,
+          "y": 0.8704454027484256,
+          "z": 0.32857144012743134,
+          "width": 0.24000002213886842,
+          "height": 0.06477729862578716,
+          "depth": 0.022857146992975422
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Pencil drawer",
+        "name": "Pencil drawer",
+        "type": "drawer",
+        "region": {
+          "x": 0.2999999957425253,
+          "y": 0.8704454027484256,
+          "z": 0.32857144012743134,
+          "width": 0.24000002213886842,
+          "height": 0.06477729862578716,
+          "depth": 0.022857146992975422
+        },
+        "partIds": [
+          "Pencil drawer"
+        ]
+      }
+    ]
+  },
+  "open-shelving": {
+    "parts": [],
+    "shelfLevels": [
+      0.95357,
+      0.73095,
+      0.50833,
+      0.28571,
+      0.0631
+    ],
+    "locations": [
+      {
+        "key": "shelf:Adjustable shelf 5",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "id": "Adjustable shelf 5",
+          "x": 0,
+          "y": 0.9535714991238684,
+          "z": 0,
+          "width": 0.9464286216059518,
+          "depth": 0.8899999856948853,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 4",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "id": "Adjustable shelf 4",
+          "x": 0,
+          "y": 0.730952455018927,
+          "z": 0,
+          "width": 0.9464286216059518,
+          "depth": 0.8899999856948853,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 3",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "id": "Adjustable shelf 3",
+          "x": 0,
+          "y": 0.5083333541476547,
+          "z": 0,
+          "width": 0.9464286216059518,
+          "depth": 0.8899999856948853,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 2",
+        "name": "Shelf 04",
+        "type": "shelf",
+        "region": {
+          "id": "Adjustable shelf 2",
+          "x": 0,
+          "y": 0.28571428165954776,
+          "z": 0,
+          "width": 0.9464286216059518,
+          "depth": 0.8899999856948853,
+          "height": 0.025
+        },
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 1",
+        "name": "Shelf 05",
+        "type": "shelf",
+        "region": {
+          "id": "Adjustable shelf 1",
+          "x": 0,
+          "y": 0.06309524465039774,
+          "z": 0,
+          "width": 0.9464286216059518,
+          "depth": 0.8899999856948853,
+          "height": 0.025
+        },
+        "partIds": []
+      }
+    ]
+  },
+  "plastic-basket-tower": {
+    "parts": [
+      {
+        "id": "Removable basket 1",
+        "kind": "drawer",
+        "bay": "Removable basket 1",
+        "angle": 0,
+        "travel": 0.22089639151761487,
+        "translation": [
+          0,
+          0,
+          0.2208963930606842
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.8602946871365497,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        }
+      },
+      {
+        "id": "Removable basket 2",
+        "kind": "drawer",
+        "bay": "Removable basket 2",
+        "angle": 0,
+        "travel": 0.22089639151761487,
+        "translation": [
+          0,
+          0,
+          0.2208963930606842
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.7231294040671177,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        }
+      },
+      {
+        "id": "Removable basket 3",
+        "kind": "drawer",
+        "bay": "Removable basket 3",
+        "angle": 0,
+        "travel": 0.22089639151761487,
+        "translation": [
+          0,
+          0,
+          0.2208963930606842
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.5859641902098465,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        }
+      },
+      {
+        "id": "Removable basket 4",
+        "kind": "drawer",
+        "bay": "Removable basket 4",
+        "angle": 0,
+        "travel": 0.22089639151761487,
+        "translation": [
+          0,
+          0,
+          0.2208963930606842
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.4487989071404144,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        }
+      },
+      {
+        "id": "Removable basket 5",
+        "kind": "drawer",
+        "bay": "Removable basket 5",
+        "angle": 0,
+        "travel": 0.22089639151761487,
+        "translation": [
+          0,
+          0,
+          0.2208963930606842
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.31163365867706283,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        }
+      },
+      {
+        "id": "Removable basket 6",
+        "kind": "drawer",
+        "bay": "Removable basket 6",
+        "angle": 0,
+        "travel": 0.22089639151761487,
+        "translation": [
+          0,
+          0,
+          0.2208963930606842
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.17446841021371123,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144348744020761,
+          "depth": 0.04979713447812637
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Removable basket 1",
+        "name": "Removable basket 1",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.8602946871365497,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        },
+        "partIds": [
+          "Removable basket 1"
+        ]
+      },
+      {
+        "key": "drawer:Removable basket 2",
+        "name": "Removable basket 2",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.7231294040671177,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        },
+        "partIds": [
+          "Removable basket 2"
+        ]
+      },
+      {
+        "key": "drawer:Removable basket 3",
+        "name": "Removable basket 3",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.5859641902098465,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        },
+        "partIds": [
+          "Removable basket 3"
+        ]
+      },
+      {
+        "key": "drawer:Removable basket 4",
+        "name": "Removable basket 4",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.4487989071404144,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        },
+        "partIds": [
+          "Removable basket 4"
+        ]
+      },
+      {
+        "key": "drawer:Removable basket 5",
+        "name": "Removable basket 5",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.31163365867706283,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144352204628799,
+          "depth": 0.04979713447812637
+        },
+        "partIds": [
+          "Removable basket 5"
+        ]
+      },
+      {
+        "key": "drawer:Removable basket 6",
+        "name": "Removable basket 6",
+        "type": "drawer",
+        "region": {
+          "x": 0,
+          "y": 0.17446841021371123,
+          "z": 0.3420237449732213,
+          "width": 0.8478261041706334,
+          "height": 0.09144348744020761,
+          "depth": 0.04979713447812637
+        },
+        "partIds": [
+          "Removable basket 6"
+        ]
+      }
+    ]
+  },
+  "refrigerator-storage": {
+    "parts": [
+      {
+        "id": "Cold storage door",
+        "kind": "hinge",
+        "bay": "Cold storage",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.41999998688697815
+        ],
+        "region": {
+          "x": 0,
+          "y": 0.224754848055075,
+          "z": 0.3750822527935854,
+          "width": 0.9166666666666666,
+          "height": 0.7235621568230588,
+          "depth": 0.038004593017999085
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.76477,
+      0.61477,
+      0.46477,
+      0.31477
+    ],
+    "locations": [
+      {
+        "key": "bay:Cold storage",
+        "name": "Cold storage",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.224754848055075,
+          "z": 0.3750822527935854,
+          "width": 0.9166666666666666,
+          "height": 0.7235621568230588,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 4",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.7647707177719913,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 3",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.6147707398887426,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 2",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.46477073041013495,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 1",
+        "name": "Shelf 04",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.31477075252688624,
+          "z": 0.3750822527935854,
+          "width": 0.8400000298023212,
+          "height": 0.1,
+          "depth": 0.03800459301799908
+        },
+        "partIds": [
+          "Cold storage door"
+        ],
+        "parentKey": "bay:Cold storage"
+      }
+    ]
+  },
+  "sink-cabinet": {
+    "parts": [
+      {
+        "id": "Sink service cabinet door 1",
+        "kind": "hinge",
+        "bay": "Sink service cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3781600296497345
+        ],
+        "region": {
+          "x": -0.23645832195050231,
+          "y": 0.11272039657869323,
+          "z": 0.4478526834794409,
+          "width": 0.4629165991975228,
+          "height": 0.5722728263612081,
+          "depth": 0.033742350357161596
+        }
+      },
+      {
+        "id": "Sink service cabinet door 2",
+        "kind": "hinge",
+        "bay": "Sink service cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.3781600296497345
+        ],
+        "region": {
+          "x": 0.23645832195050231,
+          "y": 0.11272039657869323,
+          "z": 0.4478526834794409,
+          "width": 0.4629165991975228,
+          "height": 0.5722728263612081,
+          "depth": 0.033742350357161596
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "bay:Sink service cabinet",
+        "name": "Sink service cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.11272039657869323,
+          "z": 0.4478526834794409,
+          "width": 0.9358332430985274,
+          "height": 0.5722728263612081,
+          "depth": 0.033742350357161555
+        },
+        "partIds": [
+          "Sink service cabinet door 1",
+          "Sink service cabinet door 2"
+        ]
+      }
+    ]
+  },
+  "sliding-door-cabinet": {
+    "parts": [
+      {
+        "id": "Steel cabinet sliding panel 1",
+        "kind": "slide",
+        "bay": "Steel cabinet",
+        "angle": 0,
+        "travel": 0.5362799881950896,
+        "translation": [
+          0.5362799763679504,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.225,
+          "y": 0.12083332464098878,
+          "z": 0.42800000309944153,
+          "width": 0.5449999652306252,
+          "height": 0.816666731238369,
+          "depth": 0.05199998617172241
+        }
+      },
+      {
+        "id": "Steel cabinet sliding panel 2",
+        "kind": "slide",
+        "bay": "Steel cabinet",
+        "angle": 0,
+        "travel": 0.5362799881950896,
+        "translation": [
+          -0.5362799763679504,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.225,
+          "y": 0.12083332464098878,
+          "z": 0.4519999921321869,
+          "width": 0.5449999652306252,
+          "height": 0.816666731238369,
+          "depth": 0.05199998617172241
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.82667,
+      0.585,
+      0.32667
+    ],
+    "locations": [
+      {
+        "key": "bay:Steel cabinet",
+        "name": "Steel cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.12083332464098878,
+          "z": 0.4519999921321869,
+          "width": 0.9949999652306252,
+          "height": 0.8166667312383691,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Steel cabinet sliding panel 1",
+          "Steel cabinet sliding panel 2"
+        ]
+      },
+      {
+        "key": "bay:Steel cabinet:shelf:Adjustable internal shelf 0.98",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.826666752099996,
+          "z": 0.4519999921321869,
+          "width": 0.9374999627470985,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Steel cabinet sliding panel 1",
+          "Steel cabinet sliding panel 2"
+        ],
+        "parentKey": "bay:Steel cabinet"
+      },
+      {
+        "key": "bay:Steel cabinet:shelf:Adjustable internal shelf 0.69",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.585000053147478,
+          "z": 0.4519999921321869,
+          "width": 0.9374999627470985,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Steel cabinet sliding panel 1",
+          "Steel cabinet sliding panel 2"
+        ],
+        "parentKey": "bay:Steel cabinet"
+      },
+      {
+        "key": "bay:Steel cabinet:shelf:Adjustable internal shelf 0.38",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.32666667759418555,
+          "z": 0.4519999921321869,
+          "width": 0.9374999627470985,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Steel cabinet sliding panel 1",
+          "Steel cabinet sliding panel 2"
+        ],
+        "parentKey": "bay:Steel cabinet"
+      }
+    ]
+  },
+  "solvent-cabinet": {
+    "parts": [
+      {
+        "id": "Solvent sliding panel 1",
+        "kind": "slide",
+        "bay": "Solvent",
+        "angle": 0,
+        "travel": 0.44690001424391207,
+        "translation": [
+          0.44690001010894775,
+          0,
+          0
+        ],
+        "region": {
+          "x": -0.22499999403953552,
+          "y": 0.12083332464098878,
+          "z": 0.42800000309944153,
+          "width": 0.5450000166893005,
+          "height": 0.816666731238369,
+          "depth": 0.05199998617172241
+        }
+      },
+      {
+        "id": "Solvent sliding panel 2",
+        "kind": "slide",
+        "bay": "Solvent",
+        "angle": 0,
+        "travel": 0.44690001424391207,
+        "translation": [
+          -0.44690001010894775,
+          0,
+          0
+        ],
+        "region": {
+          "x": 0.22499999403953552,
+          "y": 0.12083332464098878,
+          "z": 0.4519999921321869,
+          "width": 0.5450000166893005,
+          "height": 0.816666731238369,
+          "depth": 0.05199998617172241
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.8125,
+      0.57917,
+      0.3125
+    ],
+    "locations": [
+      {
+        "key": "bay:Solvent",
+        "name": "Solvent",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.12083332464098878,
+          "z": 0.4519999921321869,
+          "width": 0.9950000047683716,
+          "height": 0.8166667312383691,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Solvent sliding panel 1",
+          "Solvent sliding panel 2"
+        ]
+      },
+      {
+        "key": "bay:Solvent:shelf:Solvent containment shelf 0.96",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.8125000186264526,
+          "z": 0.4519999921321869,
+          "width": 0.925000011920929,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Solvent sliding panel 1",
+          "Solvent sliding panel 2"
+        ],
+        "parentKey": "bay:Solvent"
+      },
+      {
+        "key": "bay:Solvent:shelf:Solvent containment shelf 0.68",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.5791666952272273,
+          "z": 0.4519999921321869,
+          "width": 0.925000011920929,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Solvent sliding panel 1",
+          "Solvent sliding panel 2"
+        ],
+        "parentKey": "bay:Solvent"
+      },
+      {
+        "key": "bay:Solvent:shelf:Solvent containment shelf 0.36",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.3125000186264526,
+          "z": 0.4519999921321869,
+          "width": 0.925000011920929,
+          "height": 0.1,
+          "depth": 0.07599997520446777
+        },
+        "partIds": [
+          "Solvent sliding panel 1",
+          "Solvent sliding panel 2"
+        ],
+        "parentKey": "bay:Solvent"
+      }
+    ]
+  },
+  "stainless-enclosed-basin": {
+    "parts": [
+      {
+        "id": "Enclosed basin door +1",
+        "kind": "hinge",
+        "bay": "Enclosed wash cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.40803003311157227
+        ],
+        "region": {
+          "x": 0.24499996523062526,
+          "y": 0.14127860281857135,
+          "z": 0.46943847174206194,
+          "width": 0.46999996523062526,
+          "height": 0.49863039639769413,
+          "depth": 0.0312722299473378
+        }
+      },
+      {
+        "id": "Enclosed basin door -1",
+        "kind": "hinge",
+        "bay": "Enclosed wash cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.40803003311157227
+        ],
+        "region": {
+          "x": -0.24499996523062526,
+          "y": 0.14127860281857135,
+          "z": 0.46943847174206194,
+          "width": 0.46999996523062526,
+          "height": 0.49863039639769413,
+          "depth": 0.0312722299473378
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "bay:Enclosed wash cabinet",
+        "name": "Enclosed wash cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.14127860281857135,
+          "z": 0.46943847174206194,
+          "width": 0.9599998956918758,
+          "height": 0.4986303963976941,
+          "depth": 0.031272229947337804
+        },
+        "partIds": [
+          "Enclosed basin door +1",
+          "Enclosed basin door -1"
+        ]
+      }
+    ]
+  },
+  "stainless-wash-basin": {
+    "parts": [],
+    "shelfLevels": [
+      0.14387
+    ],
+    "locations": [
+      {
+        "key": "shelf:Wash station lower shelf",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "id": "Wash station lower shelf",
+          "x": 1.6556846209548478e-8,
+          "y": 0.14386597739178889,
+          "z": 2.1287371683980964e-8,
+          "width": 0.9388889455500959,
+          "depth": 0.8428570479762862,
+          "height": 0.025
+        },
+        "partIds": []
+      }
+    ]
+  },
+  "tall-cabinet": {
+    "parts": [
+      {
+        "id": "Tall cabinet full-height door +1",
+        "kind": "hinge",
+        "bay": "Tall cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
+        "region": {
+          "x": 0.23249998688697815,
+          "y": 0.05761903983395169,
+          "z": 0.44333332008785725,
+          "width": 0.4529999941587448,
+          "height": 0.906190384715599,
+          "depth": 0.038333334989017843
+        }
+      },
+      {
+        "id": "Tall cabinet full-height door -1",
+        "kind": "hinge",
+        "bay": "Tall cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.34800001978874207
+        ],
+        "region": {
+          "x": -0.23249998688697815,
+          "y": 0.05761903983395169,
+          "z": 0.44333332008785725,
+          "width": 0.4529999941587448,
+          "height": 0.906190384715599,
+          "depth": 0.038333334989017843
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.91071,
+      0.71071,
+      0.49643,
+      0.26786,
+      0.07262
+    ],
+    "locations": [
+      {
+        "key": "bay:Tall cabinet",
+        "name": "Tall cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.05761903983395169,
+          "z": 0.44333332008785725,
+          "width": 0.9179999679327011,
+          "height": 0.906190384715599,
+          "depth": 0.03833333498901781
+        },
+        "partIds": [
+          "Tall cabinet full-height door +1",
+          "Tall cabinet full-height door -1"
+        ]
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 1.90",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.9107142350300674,
+          "z": 0.44333332008785725,
+          "width": 0.9100000262260437,
+          "height": 0.04309518951948322,
+          "depth": 0.03833333498901781
+        },
+        "partIds": [
+          "Tall cabinet full-height door +1",
+          "Tall cabinet full-height door -1"
+        ],
+        "parentKey": "bay:Tall cabinet"
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 1.48",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.7107142690898621,
+          "z": 0.44333332008785725,
+          "width": 0.9100000262260437,
+          "height": 0.1,
+          "depth": 0.03833333498901781
+        },
+        "partIds": [
+          "Tall cabinet full-height door +1",
+          "Tall cabinet full-height door -1"
+        ],
+        "parentKey": "bay:Tall cabinet"
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 1.03",
+        "name": "Shelf 03",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.4964285466946729,
+          "z": 0.44333332008785725,
+          "width": 0.9100000262260437,
+          "height": 0.1,
+          "depth": 0.03833333498901781
+        },
+        "partIds": [
+          "Tall cabinet full-height door +1",
+          "Tall cabinet full-height door -1"
+        ],
+        "parentKey": "bay:Tall cabinet"
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 0.55",
+        "name": "Shelf 04",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.2678571246108243,
+          "z": 0.44333332008785725,
+          "width": 0.9100000262260437,
+          "height": 0.1,
+          "depth": 0.03833333498901781
+        },
+        "partIds": [
+          "Tall cabinet full-height door +1",
+          "Tall cabinet full-height door -1"
+        ],
+        "parentKey": "bay:Tall cabinet"
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 0.14",
+        "name": "Shelf 05",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.07261904437525765,
+          "z": 0.44333332008785725,
+          "width": 0.9100000262260437,
+          "height": 0.1,
+          "depth": 0.03833333498901781
+        },
+        "partIds": [
+          "Tall cabinet full-height door +1",
+          "Tall cabinet full-height door -1"
+        ],
+        "parentKey": "bay:Tall cabinet"
+      }
+    ]
+  },
+  "wall-cabinet": {
+    "parts": [
+      {
+        "id": "wall cabinet left door",
+        "kind": "hinge",
+        "bay": "Wall cabinet",
+        "angle": -1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.26041221618652344
+        ],
+        "region": {
+          "x": -0.2316447172571003,
+          "y": 0.05999999489103036,
+          "z": 0.3886530574179798,
+          "width": 0.4967105398226894,
+          "height": 0.9000000085149494,
+          "depth": 0.22269388516404046
+        }
+      },
+      {
+        "id": "wall cabinet right door",
+        "kind": "hinge",
+        "bay": "Wall cabinet",
+        "angle": 1.7453292519943295,
+        "travel": 0,
+        "translation": [
+          0,
+          0,
+          0.26041221618652344
+        ],
+        "region": {
+          "x": 0.2316447172571003,
+          "y": 0.05999999489103036,
+          "z": 0.3886530574179798,
+          "width": 0.4967105398226894,
+          "height": 0.9000000085149494,
+          "depth": 0.22269388516404046
+        }
+      }
+    ],
+    "shelfLevels": [
+      0.67429,
+      0.35429
+    ],
+    "locations": [
+      {
+        "key": "bay:Wall cabinet",
+        "name": "Wall cabinet",
+        "type": "compartment",
+        "region": {
+          "x": 0,
+          "y": 0.05999999489103036,
+          "z": 0.3886530574179798,
+          "width": 0.9599999743368901,
+          "height": 0.9000000085149494,
+          "depth": 0.22269388516404043
+        },
+        "partIds": [
+          "wall cabinet left door",
+          "wall cabinet right door"
+        ]
+      },
+      {
+        "key": "bay:Wall cabinet:shelf:wall cabinet shelf.001",
+        "name": "Shelf 01",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.6742857298559075,
+          "z": 0.3886530574179798,
+          "width": 0.8999999668863098,
+          "height": 0.1,
+          "depth": 0.22269388516404043
+        },
+        "partIds": [
+          "wall cabinet left door",
+          "wall cabinet right door"
+        ],
+        "parentKey": "bay:Wall cabinet"
+      },
+      {
+        "key": "bay:Wall cabinet:shelf:wall cabinet shelf",
+        "name": "Shelf 02",
+        "type": "shelf",
+        "region": {
+          "x": 0,
+          "y": 0.35428573581637207,
+          "z": 0.3886530574179798,
+          "width": 0.8999999668863098,
+          "height": 0.1,
+          "depth": 0.22269388516404043
+        },
+        "partIds": [
+          "wall cabinet left door",
+          "wall cabinet right door"
+        ],
+        "parentKey": "bay:Wall cabinet"
+      }
+    ]
   }
 }

@@ -5514,6 +5514,62 @@ button.danger:hover,
   margin: 5px 0 8px;
   font-size: 20px;
 }
+
+.asset-visibility-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #c9ded9;
+  border-radius: 10px;
+  background: #f2f9f7;
+  min-width: 0;
+}
+.asset-visibility-card label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+.asset-visibility-card select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  font: inherit;
+  color: #174c43;
+  background: white;
+  border: 1px solid #b9d3cd;
+  border-radius: 6px;
+}
+.asset-visibility-card button {
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  color: #076f63;
+  background: white;
+  border: 1px solid #b9d3cd;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.asset-visibility-card button:hover {
+  background: #e1f2ed;
+}
+.storage-access-binding {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #d2e2df;
+  border-radius: 8px;
+  background: #f3f8f7;
+}
+.storage-access-binding p {
+  margin: 8px 0 0;
+  color: #58736e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.asset-visibility-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
 .asset-source-row {
   display: flex;
   align-items: center;

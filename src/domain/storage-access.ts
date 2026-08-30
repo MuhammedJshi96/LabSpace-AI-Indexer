@@ -8,9 +8,27 @@ export type StorageMechanism = {
   bay: string;
   angle: number;
   travel: number;
-  region: { x: number; y: number; z: number; width: number; height: number };
+  translation?: [number, number, number];
+  region: { x: number; y: number; z: number; width: number; height: number; depth?: number };
 };
-type Rig = { parts: StorageMechanism[]; shelfLevels: number[] };
+export type StorageAnatomyLocation = {
+  key: string;
+  name: string;
+  type: "drawer" | "shelf" | "compartment";
+  parentKey?: string;
+  region: StorageMechanism["region"];
+  partIds: string[];
+};
+type Rig = {
+  parts: StorageMechanism[];
+  shelfLevels: number[];
+  locations?: StorageAnatomyLocation[];
+};
+export const STORAGE_RIGS = rigs as unknown as Record<string, Rig>;
+export function storageOpeningParts(parts: StorageMechanism[]) {
+  if (parts[0]?.kind !== "slide") return parts;
+  return [[...parts].sort((a, b) => b.region.z - a.region.z || a.region.x - b.region.x)[0]];
+}
 export type StorageAccess = {
   parts: StorageMechanism[];
   description: string;
@@ -52,7 +70,7 @@ export function resolveStorageAccess(
   locationId: string | null,
   locations: readonly StorageLocation[],
 ): StorageAccess {
-  const rig = (rigs as Record<string, Rig>)[assetId];
+  const rig = STORAGE_RIGS[assetId];
   if (!rig)
     return unavailable(
       "This asset has no verified opening mechanism. Its exact location remains highlighted.",
@@ -68,6 +86,30 @@ export function resolveStorageAccess(
     visited.add(current.id);
     chain.unshift(current);
     current = locations.find((location) => location.id === current?.parentId);
+  }
+  const bound = [...chain]
+    .reverse()
+    .find(
+      (location) =>
+        location.anatomyKey && rig.locations?.some((slot) => slot.key === location.anatomyKey),
+    );
+  if (bound) {
+    const slot = rig.locations!.find((slot) => slot.key === bound.anatomyKey)!;
+    const parts = storageOpeningParts(rig.parts.filter((part) => slot.partIds.includes(part.id)));
+    const description =
+      parts.length === 0
+        ? "Open shelf · directly accessible"
+        : parts[0].kind === "drawer"
+          ? "1 drawer · tray and front move together"
+          : parts[0].kind === "slide"
+            ? "1 sliding panel · moves along its track"
+            : `${parts.length} hinged door${parts.length === 1 ? "" : "s"} · fixed interior shelves`;
+    return {
+      parts,
+      description,
+      reason: parts.length ? null : "This is open storage; no door needs to be opened.",
+      region: nestedRegion(slot.region, bound, selected, locations),
+    };
   }
   const drawer = chain.find((location) => location.type === "drawer");
   if (drawer) {
@@ -118,7 +160,7 @@ export function resolveStorageAccess(
       region: nestedRegion(part.region, drawer, selected, locations),
     };
   }
-  const doors = rig.parts.filter((part) => part.kind === "hinge");
+  const doors = rig.parts.filter((part) => part.kind === "hinge" || part.kind === "slide");
   if (!doors.length)
     return unavailable(
       "This model has drawers, not a hinged door. Select a drawer to preview access.",
@@ -176,6 +218,9 @@ export function resolveStorageAccess(
     );
     region.width *= 0.94;
   }
+  // Sliding leaves share tracks: open one toward its stationary neighbour,
+  // never cross both leaves through one another.
+  if (candidates[0]?.kind === "slide") candidates = [candidates[0]];
   return {
     parts: candidates,
     description: `${candidates.length} hinged doors${rig.shelfLevels.length ? ` · ${rig.shelfLevels.length} fixed internal shelves` : " · cabinet interior"}`,

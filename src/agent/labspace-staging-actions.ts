@@ -153,6 +153,7 @@ function createStorageLocations(
       capacityNotes: entry.capacityNotes ?? "",
       childIds: [],
       normalizedBounds: entry.normalizedBounds,
+      anatomyKey: entry.anatomyKey,
       createdAt: now,
       updatedAt: now,
     };

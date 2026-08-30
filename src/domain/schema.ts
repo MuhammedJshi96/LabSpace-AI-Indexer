@@ -140,6 +140,8 @@ export const StorageLocationSchema = z.object({
   capacityNotes: z.string(),
   childIds: z.array(IdSchema),
   normalizedBounds: NormalizedStorageBoundsSchema.optional(),
+  /** Stable authored anatomy identity; independent of user names and record IDs. */
+  anatomyKey: z.string().min(1).optional(),
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
 });
@@ -220,16 +222,7 @@ export const RoomSchema = z.object({
   viewState: z
     .object({
       cameraPreset: z
-        .enum([
-          "perspective",
-          "orthographic",
-          "top",
-          "isometric",
-          "front",
-          "right",
-          "left",
-          "back",
-        ])
+        .enum(["perspective", "orthographic", "top", "isometric", "front", "right", "left", "back"])
         .default("isometric"),
       presentation: z.enum(["2d", "split", "3d"]).default("split"),
       floorVisible: z.boolean().default(true),
@@ -344,6 +337,7 @@ export const AssetDefinitionSchema = z.object({
         type: StorageLocationTypeSchema.exclude(["cabinet"]),
         name: z.string().min(1),
         capacityNotes: z.string().optional(),
+        anatomyKey: z.string().min(1).optional(),
         normalizedBounds: NormalizedStorageBoundsSchema.optional(),
       }),
     )

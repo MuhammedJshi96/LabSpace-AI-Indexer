@@ -23,6 +23,10 @@ describe("laboratory floor finishes", () => {
       "warm-welded-vinyl",
       "blue-gray-static-dissipative",
       "light-terrazzo-resin",
+      "ivory-porcelain",
+      "pearl-terrazzo",
+      "pale-oak-office",
+      "graphite-porcelain",
     ]);
     for (const finish of LABORATORY_FLOOR_FINISHES) {
       expect(finish.planColor).toMatch(/^#[0-9a-f]{6}$/i);
@@ -51,7 +55,7 @@ describe("laboratory floor finishes", () => {
 
 describe("laboratory wall finishes", () => {
   it("provides a predefined professional wall library for plan and spatial rendering", () => {
-    expect(LABORATORY_WALL_FINISHES).toHaveLength(6);
+    expect(LABORATORY_WALL_FINISHES).toHaveLength(10);
     expect(LABORATORY_WALL_FINISHES[0].id).toBe(DEFAULT_LABORATORY_WALL_FINISH_ID);
     for (const finish of LABORATORY_WALL_FINISHES) {
       expect(finish.color).toMatch(/^#[0-9a-f]{6}$/i);
@@ -66,14 +70,9 @@ describe("laboratory wall finishes", () => {
     expect(resolveLaboratoryWallFinish("unknown-finish").id).toBe(
       DEFAULT_LABORATORY_WALL_FINISH_ID,
     );
-    expect(wallFinishForObject({}, "cool-gray-resin-panel").id).toBe(
-      "cool-gray-resin-panel",
-    );
+    expect(wallFinishForObject({}, "cool-gray-resin-panel").id).toBe("cool-gray-resin-panel");
     expect(
-      wallFinishForObject(
-        { wallFinishId: "light-ceramic-tile" },
-        "cool-gray-resin-panel",
-      ).id,
+      wallFinishForObject({ wallFinishId: "light-ceramic-tile" }, "cool-gray-resin-panel").id,
     ).toBe("light-ceramic-tile");
   });
 });

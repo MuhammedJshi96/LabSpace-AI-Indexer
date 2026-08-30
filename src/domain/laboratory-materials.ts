@@ -5,7 +5,7 @@ export type LaboratoryFloorFinish = {
   label: string;
   aliases: readonly string[];
   description: string;
-  textureKind?: "epoxy" | "vinyl";
+  textureKind?: "epoxy" | "vinyl" | "limestone" | "oak" | "terrazzo";
   textureRepeat: readonly [number, number];
   color: string;
   planColor: string;
@@ -123,7 +123,8 @@ export const LABORATORY_FLOOR_FINISHES: readonly LaboratoryFloorFinish[] = [
     id: "light-terrazzo-resin",
     label: "Light terrazzo resin",
     aliases: ["terrazzo", "resin terrazzo", "light terrazzo"],
-    description: "Bright seamless resin terrazzo with restrained aggregate for public-facing laboratories.",
+    description:
+      "Bright seamless resin terrazzo with restrained aggregate for public-facing laboratories.",
     textureRepeat: [2, 2],
     color: "#c9c7bf",
     planColor: "#ebe9e2",
@@ -137,6 +138,82 @@ export const LABORATORY_FLOOR_FINISHES: readonly LaboratoryFloorFinish[] = [
     clearcoatRoughness: 0.4,
     bumpScale: 0,
   },
+  ...(
+    [
+      [
+        "ivory-porcelain",
+        "Ivory large-format porcelain",
+        "limestone",
+        "#eee8dd",
+        "#f1ece3",
+        "slab-joints",
+        1200,
+        0.28,
+      ],
+      [
+        "pearl-terrazzo",
+        "Pearl architectural terrazzo",
+        "terrazzo",
+        "#e4dfd2",
+        "#ede9df",
+        "speckled",
+        600,
+        0.35,
+      ],
+      [
+        "pale-oak-office",
+        "Pale oak · office finish",
+        "oak",
+        "#ddc7a6",
+        "#e8d5b6",
+        "sheet-seams",
+        180,
+        0.42,
+      ],
+      [
+        "graphite-porcelain",
+        "Graphite honed porcelain",
+        "limestone",
+        "#727a79",
+        "#bcc3c1",
+        "slab-joints",
+        900,
+        0.42,
+      ],
+    ] as const
+  ).map(
+    ([
+      id,
+      label,
+      textureKind,
+      color,
+      planColor,
+      pattern,
+      patternSpacingMm,
+      roughness,
+    ]): LaboratoryFloorFinish => ({
+      id,
+      label,
+      aliases: [],
+      textureKind,
+      color,
+      planColor,
+      pattern,
+      patternSpacingMm,
+      roughness,
+      description:
+        textureKind === "oak"
+          ? "Warm office and meeting-room finish; not a wet-laboratory specification."
+          : "Architectural presentation finish. Confirm cleanability, chemical resistance and slip ratings for the intended room.",
+      textureRepeat: textureKind === "oak" ? [0.7, 0.7] : [1, 1],
+      patternColor: "#a4a49b",
+      patternOpacity: 0.22,
+      metalness: 0.01,
+      clearcoat: 0.22,
+      clearcoatRoughness: 0.3,
+      bumpScale: 0.0005,
+    }),
+  ),
 ] as const;
 
 const finishesById = new Map(LABORATORY_FLOOR_FINISHES.map((finish) => [finish.id, finish]));

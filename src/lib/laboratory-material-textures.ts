@@ -1,11 +1,7 @@
 import * as THREE from "three";
 
 export type LaboratoryTexturedMaterialKind =
-  | "epoxy"
-  | "vinyl"
-  | "phenolic"
-  | "stainless"
-  | "powder";
+  "epoxy" | "vinyl" | "phenolic" | "stainless" | "powder" | "limestone" | "oak" | "terrazzo";
 
 type MaterialTextureDefinition = {
   url: string;
@@ -23,6 +19,21 @@ export type LaboratoryMaterialTextureOptions = {
 };
 
 export const LABORATORY_MATERIAL_TEXTURES = {
+  limestone: {
+    url: "/materials/architectural-limestone.svg",
+    repeat: [1, 1],
+    provenance: "Original LabSpace vector stone texture",
+  },
+  oak: {
+    url: "/materials/architectural-oak.svg",
+    repeat: [1, 1],
+    provenance: "Original LabSpace vector wood texture",
+  },
+  terrazzo: {
+    url: "/materials/architectural-terrazzo.svg",
+    repeat: [1, 1],
+    provenance: "Original LabSpace vector aggregate texture",
+  },
   epoxy: {
     url: "/materials/epoxy-floor-room809.jpg",
     repeat: [4, 4],
@@ -178,11 +189,11 @@ export function waitForLaboratoryMaterialTextures() {
           ? [4, 4]
           : kind === "vinyl"
             ? [3, 3]
-          : kind === "powder"
-            ? [3, 3]
-            : kind === "stainless"
-              ? [2, 2]
-              : [1.5, 1.5];
+            : kind === "powder"
+              ? [3, 3]
+              : kind === "stainless"
+                ? [2, 2]
+                : [1.5, 1.5];
       const options: LaboratoryMaterialTextureOptions = { repeat };
       const texture = getLaboratoryMaterialTexture(kind, options);
       if (!texture) return Promise.resolve();

@@ -1,9 +1,13 @@
 import { useEffect } from "react";
 import { agentActivityActions } from "../agent/agent-activity-store";
 import { registerLabSpaceTools } from "../webmcp/register-labspace-tools";
+import { useEditorStore } from "../store/editor-store";
 
 export function WebMCPBridge() {
+  const hydrated = useEditorStore((state) => state.hydrated);
   useEffect(() => {
+    // Never expose actions against the temporary seed while persisted data is loading.
+    if (!hydrated) return;
     if (!document.modelContext) {
       agentActivityActions.setBridgeState(
         "unavailable",
@@ -32,7 +36,7 @@ export function WebMCPBridge() {
         }
       });
     return registration.unregister;
-  }, []);
+  }, [hydrated]);
 
   return null;
 }

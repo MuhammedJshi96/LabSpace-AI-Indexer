@@ -21,6 +21,22 @@ type InspectorTab = "activity" | "workflows" | "guide" | "tools";
 
 const WEBMCP_WORKFLOWS = [
   {
+    id: "inventory",
+    mode: "Review",
+    title: "Create an inventory record",
+    outcome: "Verified destination · detailed entry · researcher approval",
+    prompt:
+      "Add 12 boxes of pipette tips to the current room. Find suitable recorded storage locations first, ask me to choose if ambiguous, then use labspace_add_inventory to stage the exact entry for my review. Do not invent an owner or expiry date.",
+  },
+  {
+    id: "collection",
+    mode: "Collect",
+    title: "Prepare a grounded collection guide",
+    outcome: "Proposed checklist · real stock · Next/Previous evidence",
+    prompt:
+      "Help prepare a collection checklist for my planned work. Ask for my approved protocol or material list if needed; label your suggestions clearly. Match the materials against LabSpace, report missing or ambiguous stock, then start a collection guide for the records I choose. Do not treat this as an experiment protocol or a safety-approved walking route.",
+  },
+  {
     id: "build",
     mode: "Create",
     title: "Build a complete room",
@@ -55,6 +71,34 @@ const WEBMCP_WORKFLOWS = [
 ] as const;
 
 const WEBMCP_TOOL_CATALOG = [
+  {
+    name: "labspace_add_inventory",
+    label: "Add inventory",
+    mode: "Review",
+    description:
+      "One-call entry: validate exact rooms and locations, then approve the visible inventory review.",
+  },
+  {
+    name: "labspace_resolve_materials",
+    label: "Ground a material list",
+    mode: "Read",
+    description:
+      "Match suggested materials to actual stock and equipment. Missing and ambiguous items stay explicit.",
+  },
+  {
+    name: "labspace_start_collection",
+    label: "Start collection guide",
+    mode: "Navigate",
+    description:
+      "Turn reviewed record IDs into a room-grouped Next/Previous checklist with exact-location focus.",
+  },
+  {
+    name: "labspace_collection_step",
+    label: "Follow collection guide",
+    mode: "Navigate",
+    description:
+      "Next, previous, status or finish. Never consumes inventory or claims a safe walking path.",
+  },
   {
     name: "labspace_audit_room",
     label: "Audit room readiness",
@@ -471,6 +515,23 @@ export function AgentActivityPanel() {
             </ol>
           </section>
 
+          <section className="webmcp-guide-card">
+            <strong>Add stock, then find it physically</strong>
+            <p>
+              Ask: “Add 12 boxes of pipette tips to DEMO-01. Show me possible storage locations
+              first.” The agent calls <code>labspace_inventory_locations</code>, then{" "}
+              <code>labspace_add_inventory</code>
+              with name, quantity, unit, exact room code and optional location, owner, notes and
+              expiry date. Review the entries and press Approve to save them.
+            </p>
+            <p>
+              For preparation: ask the agent to propose a materials checklist, use{" "}
+              <code>labspace_resolve_materials</code>
+              to verify actual records, and start a collection guide only with the candidates you
+              approve. Next/Previous focuses the exact room and storage. Missing stock is never
+              invented.
+            </p>
+          </section>
           <aside role="note">
             <b>Why Chrome can feel harder</b>
             <span>

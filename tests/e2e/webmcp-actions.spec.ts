@@ -3,7 +3,9 @@ import type { RoomAuditResult } from "../../src/agent/labspace-action-types";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
 
 const WEBMCP_TOOL_NAMES = [
+  "labspace_add_inventory",
   "labspace_audit_room",
+  "labspace_collection_step",
   "labspace_create_room",
   "labspace_find_valid_placements",
   "labspace_focus_record",
@@ -12,12 +14,14 @@ const WEBMCP_TOOL_NAMES = [
   "labspace_inventory_locations",
   "labspace_plan_inventory",
   "labspace_plan_room",
+  "labspace_resolve_materials",
   "labspace_search_assets",
   "labspace_search_records",
   "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
   "labspace_stage_resize",
   "labspace_stage_room_plan",
+  "labspace_start_collection",
   "labspace_validate_object_move",
   "labspace_validate_resize",
 ];
@@ -164,7 +168,93 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
-test("registers exactly seventeen tools on product routes and excludes internal asset routes", async ({
+test("adds reviewed inventory through one tool and guides exact collection stops", async ({
+  page,
+}) => {
+  await page.goto("/digital-twin");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  const before = await readProject(page);
+  const resolution = await executeTool<{
+    requirements: Array<{ status: string; candidates: Array<{ recordId: string }> }>;
+    missing: string[];
+  }>(page, "labspace_resolve_materials", {
+    brief: "Researcher-reviewed preparation supplies",
+    materials: ["Reference standards", "Nitrile gloves", "not-in-stock-xyz"],
+  });
+  expect(resolution.missing).toContain("not-in-stock-xyz");
+  expect(resolution.requirements[0].status).toBe("exact-match");
+  expect(await readProject(page)).toEqual(before);
+  const recordIds = resolution.requirements
+    .slice(0, 2)
+    .map((entry) => entry.candidates[0].recordId);
+  await executeTool(page, "labspace_start_collection", {
+    title: "Preparation checklist",
+    recordIds,
+  });
+  const guide = page.getByRole("region", { name: "Collection guide" });
+  await expect(guide).toContainText("Reference standards");
+  await guide.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(guide).toContainText("2 / 2");
+  await guide.getByRole("button", { name: "Previous", exact: true }).click();
+  await expect(guide).toContainText("1 / 2");
+  await expect(guide).toContainText("Stock is not deducted");
+  expect((await readProject(page)).rooms).toEqual(before.rooms);
+  await executeTool(page, "labspace_collection_step", { action: "finish" });
+  await expect(guide).not.toBeVisible();
+
+  const demo = eligibleDemoRoom(before);
+  await executeTool(page, "labspace_add_inventory", {
+    entries: [
+      {
+        roomCode: demo.code,
+        name: "Reviewed test supplies",
+        quantity: 12,
+        unit: "boxes",
+        notes: "E2E verification",
+        owner: "Shared",
+      },
+    ],
+  });
+  expect((await readProject(page)).rooms).toEqual(before.rooms);
+  await expect(page.getByRole("button", { name: /Approve/ })).toBeVisible();
+  await page.getByRole("button", { name: /Approve/ }).click();
+  await expect
+    .poll(async () =>
+      (await readProject(page)).rooms
+        .find((room) => room.id === demo.id)
+        ?.scene.inventoryItems.some(
+          (item) => item.name === "Reviewed test supplies" && item.quantity === 12,
+        ),
+    )
+    .toBe(true);
+});
+
+test("Ctrl+D duplicates a focused item and undo restores the room", async ({ page }) => {
+  await page.goto("/");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  const project = await readProject(page);
+  const demo = eligibleDemoRoom(project);
+  const equipment = demo.scene.equipmentRecords[0];
+  await executeTool(page, "labspace_focus_record", {
+    recordId: `${demo.id}:equipment:${equipment.id}`,
+  });
+  await page.keyboard.press("Control+d");
+  await expect
+    .poll(
+      async () =>
+        (await readProject(page)).rooms.find((room) => room.id === demo.id)?.scene.objects.length,
+    )
+    .toBe(demo.scene.objects.length + 1);
+  await page.keyboard.press("Control+z");
+  await expect
+    .poll(
+      async () =>
+        (await readProject(page)).rooms.find((room) => room.id === demo.id)?.scene.objects.length,
+    )
+    .toBe(demo.scene.objects.length);
+});
+
+test("registers exactly twenty-one tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin", "/inventory"]) {
@@ -201,13 +291,25 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
 
-  const left = await page.locator(".top-bar-left").boundingBox();
-  const navigation = await page.locator(".primary-navigation").boundingBox();
-  const right = await page.locator(".top-bar-right").boundingBox();
-  expect(left && navigation && right).toBeTruthy();
-  expect(left!.x + left!.width).toBeLessThanOrEqual(navigation!.x);
-  expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(right!.x);
-  expect(right!.x + right!.width).toBeLessThanOrEqual(1120);
+  for (const width of [1120, 1280, 1366, 1440, 1545, 1700, 1920, 2560]) {
+    await page.setViewportSize({ width, height: 900 });
+    const left = await page.locator(".top-bar-left").boundingBox();
+    const navigation = await page.locator(".primary-navigation").boundingBox();
+    const right = await page.locator(".top-bar-right").boundingBox();
+    expect(left && navigation && right).toBeTruthy();
+    expect(left!.x + left!.width, `left group at ${width}px`).toBeLessThanOrEqual(navigation!.x);
+    expect(navigation!.x + navigation!.width, `navigation at ${width}px`).toBeLessThanOrEqual(
+      right!.x,
+    );
+    expect(right!.x + right!.width, `actions at ${width}px`).toBeLessThanOrEqual(width);
+    expect(
+      await page
+        .locator(".top-bar-left")
+        .evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+      `identity fits at ${width}px`,
+    ).toBe(true);
+  }
+  await page.setViewportSize({ width: 1120, height: 900 });
 
   await page.getByRole("button", { name: /Open WebMCP Inspector/ }).click();
   const inspector = page.getByRole("complementary", { name: "WebMCP Inspector" });

@@ -36,6 +36,7 @@ import { AssetThumbnail } from "./AssetThumbnail";
 import { Dialogs, Toasts } from "./Dialogs";
 import { ThreeDView, type RenderQuality } from "./ThreeDView";
 import { TopBar } from "./TopBar";
+import { CollectionGuide } from "./CollectionGuide";
 import { TwoDEditor } from "./TwoDEditor";
 
 class TwinRendererBoundary extends Component<
@@ -146,6 +147,9 @@ export function DigitalTwinPage() {
   const [qrCode, setQrCode] = useState("");
   const hydrate = useEditorStore((state) => state.hydrate);
   const hydrated = useEditorStore((state) => state.hydrated);
+  const dirtyRevision = useEditorStore((state) => state.dirtyRevision);
+  const saveStatus = useEditorStore((state) => state.saveStatus);
+  const saveNow = useEditorStore((state) => state.saveNow);
   const project = useEditorStore((state) => state.project);
   const visibleRoomCount = project.rooms.filter(
     (entry) => entry.roomKind !== "demo-template",
@@ -166,6 +170,12 @@ export function DigitalTwinPage() {
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    if (!hydrated || saveStatus !== "unsaved" || dirtyRevision === 0) return;
+    const timer = window.setTimeout(() => void saveNow(), 900);
+    return () => window.clearTimeout(timer);
+  }, [dirtyRevision, hydrated, saveNow, saveStatus]);
 
   const laboratory = project.laboratories.find((entry) => entry.id === room.laboratoryId);
   const allRecords = useMemo(() => buildDigitalTwinIndex(project), [project]);
@@ -193,13 +203,11 @@ export function DigitalTwinPage() {
   const selectedRecord = allRecords.find((record) => record.id === effectiveSelectedRecordId);
   const focusMatchesSelectedRecord = Boolean(
     selectedRecord &&
-      spatialFocus?.recordId === selectedRecord.id &&
-      spatialFocus.roomId === room.id,
+    spatialFocus?.recordId === selectedRecord.id &&
+    spatialFocus.roomId === room.id,
   );
-  const focusedObjectId = focusMatchesSelectedRecord ? spatialFocus?.objectId ?? null : null;
-  const storageAccessOpen = Boolean(
-    focusMatchesSelectedRecord && spatialFocus?.showStorageAccess,
-  );
+  const focusedObjectId = focusMatchesSelectedRecord ? (spatialFocus?.objectId ?? null) : null;
+  const storageAccessOpen = Boolean(focusMatchesSelectedRecord && spatialFocus?.showStorageAccess);
 
   useEffect(() => {
     if (!shouldAutoFocusDigitalTwinResult(query, selectedRecord)) return;
@@ -266,10 +274,7 @@ export function DigitalTwinPage() {
       return;
     }
     try {
-      labSpaceNavigationActions.focusLabRecord(
-        { recordId: record.id },
-        { revealStorage: false },
-      );
+      labSpaceNavigationActions.focusLabRecord({ recordId: record.id }, { revealStorage: false });
     } catch (error) {
       pushToast(error instanceof Error ? error.message : "Record could not be focused.", "error");
     }
@@ -597,6 +602,7 @@ export function DigitalTwinPage() {
         </main>
 
         <aside className="twin-detail" aria-label="Selected record details">
+          <CollectionGuide embedded />
           {selectedRecord ? (
             <>
               <header className="twin-detail-heading">

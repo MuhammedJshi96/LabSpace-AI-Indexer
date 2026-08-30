@@ -496,3 +496,50 @@ export const auditRoomSchema = {
   },
   additionalProperties: false,
 } as const;
+
+export const resolveMaterialsSchema = {
+  type: "object",
+  properties: {
+    brief: {
+      type: "string",
+      minLength: 1,
+      maxLength: 240,
+      description: "Task context, not an executable experimental protocol.",
+    },
+    materials: {
+      type: "array",
+      minItems: 1,
+      maxItems: 20,
+      items: { type: "string", minLength: 1, maxLength: 120 },
+      description:
+        "Material/equipment names proposed by the agent or researcher; candidates require review.",
+    },
+  },
+  required: ["brief", "materials"],
+  additionalProperties: false,
+} as const;
+
+export const startCollectionSchema = {
+  type: "object",
+  properties: {
+    title: { type: "string", minLength: 1, maxLength: 120 },
+    recordIds: {
+      type: "array",
+      minItems: 1,
+      maxItems: 24,
+      uniqueItems: true,
+      items: { type: "string", minLength: 1, maxLength: 300 },
+      description:
+        "Reviewed canonical record IDs from search or material resolution, with physical locations.",
+    },
+  },
+  required: ["title", "recordIds"],
+  additionalProperties: false,
+} as const;
+
+export const collectionStepSchema = {
+  type: "object",
+  properties: { action: { type: "string", enum: ["status", "next", "previous", "finish"] } },
+  required: ["action"],
+  additionalProperties: false,
+} as const;

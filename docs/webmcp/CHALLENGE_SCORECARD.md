@@ -4,10 +4,10 @@ Audited on 2026-08-30 against the [published Devpost judging criteria](https://w
 
 ## WebMCP Leverage — strong evidence
 
-- Seventeen imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning, bounded creation, and human-reviewed mutations.
+- Twenty-one imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning/addition, bounded creation, material resolution, and guided collection.
 - Tools call the same canonical index, geometry, persistence, history, and validation actions used by the visible product; they do not automate clicks or scrape presentation text.
 - Tool registration survives normal product-route changes and is excluded from internal asset/capture routes.
-- Twenty-four deterministic eval cases and eight dedicated browser E2E cases cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, and undo.
+- Twenty-six deterministic eval cases and ten dedicated browser E2E cases cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, guided collection, keyboard duplication, and undo.
 - The visible WebMCP inspector exposes connection status, registered tools, bounded inputs/results, copy-ready workflows, and a clear usage guide without presenting hidden reasoning.
 
 ## Execution — strong evidence
@@ -15,7 +15,7 @@ Audited on 2026-08-30 against the [published Devpost judging criteria](https://w
 - Public application: <https://labspace-agent-twin.onrender.com/>
 - Public source: <https://github.com/MuhammedJshi96/LabSpace-AI-Indexer>
 - The coherent product includes a multi-room Layout Editor, facility-by-floor view, synchronized 2D/3D planning, Spatial Index, Inventory Studio, Asset Studio, validation, persistence, and browser-agent workflows.
-- The current release gate passes lint, TypeScript, 96 asset definitions, 188 authored renders, 206 unit/integration tests, and a production build.
+- The current release gate passes lint, TypeScript, 96 asset definitions, 188 authored renders, 219 unit/integration tests, and a production build.
 - All 94 user-visible catalog assets use original authored GLBs; only two hidden variable-length wall primitives remain procedural.
 
 ## Potential Impact — credible and specific
@@ -32,6 +32,7 @@ Audited on 2026-08-30 against the [published Devpost judging criteria](https://w
 - One browser agent can compose geometry-aware room creation, asset rotations/elevations, hosted doors/windows, exact-location inventory, room audit, camera evidence, and reviewed corrections.
 - The same workflow connects design-time intent with operational discovery: design the laboratory, index its physical hierarchy, then find and focus anything through canonical evidence.
 - Human control is part of the interaction design: a pristine room's first validated blueprint is capability-scoped, while later placement, resizing, and inventory changes require visible approval.
+- A researcher-reviewed materials list can now become a grounded, room-grouped Next/Previous collection guide. Missing and ambiguous stock is explicit; the itinerary is not an approved experimental protocol or certified pedestrian route.
 
 ## Submission requirements and remaining owner checks
 

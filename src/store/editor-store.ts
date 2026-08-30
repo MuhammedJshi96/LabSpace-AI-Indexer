@@ -2,7 +2,11 @@ import { create } from "zustand";
 import type { PendingAgentChange } from "../agent/labspace-action-types";
 import { getAssetDefinition } from "../domain/assets";
 import { applyCommand, revertCommand, type SceneCommand } from "../domain/history";
-import { requiresBenchSupport, snapBenchObjectToAvailableSupport } from "../domain/geometry";
+import {
+  requiresBenchSupport,
+  snapBenchObjectToAvailableSupport,
+  snapChairToDesk,
+} from "../domain/geometry";
 import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/layers";
 import { normalizeRaisedFromFloorMm } from "../domain/object-transforms";
 import { createBlankLaboratory, createBlankRoom } from "../domain/room-factory";
@@ -861,6 +865,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       childLocationIds: [],
       zIndex: Math.max(0, ...room.scene.objects.map((entry) => entry.zIndex)) + 1,
     };
+    if (state.snapEnabled) object = snapChairToDesk(room, object);
     if (requiresBenchSupport(object)) {
       const supported = snapBenchObjectToAvailableSupport(room, object);
       if (!supported) {
@@ -1134,6 +1139,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ...normalizedPatch,
       updatedAt: new Date().toISOString(),
     };
+    if (
+      state.snapEnabled &&
+      patch.position &&
+      (patch.position.x !== before.position.x || patch.position.y !== before.position.y)
+    )
+      after = snapChairToDesk(room, after);
     if (requiresBenchSupport(after) && (patch.position || patch.rotation || patch.dimensions)) {
       const supported = snapBenchObjectToAvailableSupport(room, after);
       if (!supported) {

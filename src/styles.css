@@ -10829,6 +10829,53 @@ body:has(#procedural-catalog-capture) #root {
 
 .top-bar {
   z-index: 300;
+  grid-template-columns: minmax(160px, 1fr) max-content max-content;
+}
+
+.top-bar-left {
+  width: 100%;
+}
+
+.top-bar-left .brand-lockup {
+  flex: 0 0 auto;
+}
+
+.top-bar-left .room-navigator,
+.room-navigator .room-identity,
+.room-navigator .room-identity > span {
+  min-width: 0;
+}
+
+.room-navigator .room-identity {
+  width: 100%;
+}
+
+.room-navigator .room-identity b {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.room-navigator .room-identity small {
+  flex-shrink: 0;
+}
+
+@media (min-width: 1281px) and (max-width: 1600px) {
+  .primary-navigation {
+    gap: 4px;
+  }
+
+  .primary-navigation a {
+    padding-inline: 8px;
+  }
+}
+
+@media (min-width: 1281px) and (max-width: 1460px) {
+  .header-demo-button > span,
+  .header-save-control > button:first-child > span {
+    display: none;
+  }
 }
 
 .room-navigator-popover {

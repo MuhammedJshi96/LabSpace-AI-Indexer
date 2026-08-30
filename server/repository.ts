@@ -204,11 +204,15 @@ function cloneVersion(version: RoomVersion) {
  * with another visitor or writing judge data to the machine-local database.
  */
 export class MemoryProjectRepository implements ProjectRepository {
-  private project: Project | null = cloneProject(createSeedProject());
+  private project: Project | null;
   private readonly versions = new Map<string, RoomVersion>();
 
+  constructor(private readonly seedProject: () => Project = createSeedProject) {
+    this.project = cloneProject(seedProject());
+  }
+
   getActiveProject(): Project {
-    if (!this.project) this.project = cloneProject(createSeedProject());
+    if (!this.project) this.project = cloneProject(this.seedProject());
     return cloneProject(this.project);
   }
 
@@ -261,7 +265,7 @@ export class MemoryProjectRepository implements ProjectRepository {
   }
 
   resetToSeed(): Project {
-    this.project = cloneProject(createSeedProject());
+    this.project = cloneProject(this.seedProject());
     this.versions.clear();
     return cloneProject(this.project);
   }

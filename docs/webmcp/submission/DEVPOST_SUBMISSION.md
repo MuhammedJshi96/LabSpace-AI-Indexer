@@ -22,7 +22,7 @@ This makes the application meaningfully better when a researcher and agent work 
 
 ## What it does
 
-LabSpace registers seventeen focused browser-native tools:
+LabSpace registers twenty-one focused browser-native tools:
 
 1. audit an active or selected room with deterministic floor, boundary, support, hosted-opening, overlap, height, and identity checks;
 2. create, activate, and save one genuinely blank room in a selected laboratory;
@@ -40,7 +40,11 @@ LabSpace registers seventeen focused browser-native tools:
 14. turn a blocked target into ranked, geometry-valid alternatives;
 15. stage a chosen valid move as a reversible visual preview;
 16. validate object dimensions and hosted-opening wall fit without mutation;
-17. stage a dimension-accurate resize as a reversible visual preview.
+17. stage a dimension-accurate resize as a reversible visual preview;
+18. validate and stage detailed inventory in one reviewed call;
+19. ground a proposed material checklist in actual stock, preserving missing/ambiguous results;
+20. start a room-grouped collection guide from reviewed canonical records;
+21. follow exact locations with Next/Previous without consuming inventory.
 
 An agent can create room 812, infer Floor 8, calculate a six-wall office of roughly 32 square metres, host a door and window, pair four chairs with four desks, and orient the cabinet correctly. The first complete blueprint for that newly created pristine room commits as one undoable update without an unnecessary confirmation pause. It can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target for researcher review.
 
@@ -74,7 +78,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the seventeen-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, bounded blank-room creation, deterministic polygon room and inventory planning, room-readiness auditing, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement and resize validation, ranked alternatives, capability-scoped initial auto-commit, reversible human-reviewed later staging, safe history/autosave handoff, visible Agent Activity and copy-ready workflows, strict contracts and error containment, 24 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the twenty-one-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, bounded blank-room creation, deterministic polygon room and inventory planning, room-readiness auditing, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement and resize validation, ranked alternatives, capability-scoped initial auto-commit, reversible human-reviewed later staging, safe history/autosave handoff, visible Agent Activity and copy-ready workflows, strict contracts and error containment, 24 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs><filter id="stone"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope=".12" intercept=".86"/><feFuncG type="linear" slope=".12" intercept=".86"/><feFuncB type="linear" slope=".12" intercept=".86"/></feComponentTransfer></filter></defs>
+<rect width="512" height="512" fill="#f5f4f0"/><rect width="512" height="512" filter="url(#stone)"/>
+<path d="M-20 70C110 120 165 185 320 240S420 335 530 345M-20 75C110 122 165 188 320 244S420 340 530 348" fill="none" stroke="#a3a7a5" stroke-opacity=".14" stroke-width="2"/>
+<path d="M0 0H512V512" fill="none" stroke="#c5c7c4" stroke-width="1.5"/>
+</svg>

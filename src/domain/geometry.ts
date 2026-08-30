@@ -184,10 +184,7 @@ export function findBenchSupport(
       const coverage = horizontalOverlapCoverage(support, placed);
       return coverage >= 0.55 ? [{ object: support, elevationMm, coverage }] : [];
     })
-    .sort(
-      (left, right) =>
-        right.coverage - left.coverage || left.elevationMm - right.elevationMm,
-    );
+    .sort((left, right) => right.coverage - left.coverage || left.elevationMm - right.elevationMm);
   return candidates[0] ?? null;
 }
 
@@ -251,13 +248,14 @@ export function objectsOverlap(a: SceneObject, b: SceneObject, padding = 0): boo
     return Array.isArray(exemptIds) && exemptIds.includes(target.id);
   };
   if (explicitlyAllowsOverlap(a, b) || explicitlyAllowsOverlap(b, a)) return false;
+  if (chairFitsUnderDesk(a, b) || chairFitsUnderDesk(b, a)) return false;
   const restsOnSupportSurface = (support: SceneObject, placed: SceneObject) => {
     const explicitHeight = Number(support.metadata.supportSurfaceHeight);
     const explicitElevation = Number.isFinite(explicitHeight)
       ? support.position.z + explicitHeight
       : null;
-    const elevationMm = explicitElevation ??
-      (requiresBenchSupport(placed) ? supportSurfaceElevation(support) : null);
+    const elevationMm =
+      explicitElevation ?? (requiresBenchSupport(placed) ? supportSurfaceElevation(support) : null);
     return (
       elevationMm !== null &&
       horizontalOverlapCoverage(support, placed) >= 0.55 &&
@@ -276,6 +274,77 @@ export function objectsOverlap(a: SceneObject, b: SceneObject, padding = 0): boo
     aa.bottom <= bb.top + padding ||
     aa.top >= bb.bottom - padding
   );
+}
+
+const OPEN_KNEE_DESKS = new Set(["office-desk", "rectangular-table", "computer-workstation"]);
+
+/** Only the seat's front may tuck under an open knee-space desk; its back stays outside. */
+export function chairFitsUnderDesk(desk: SceneObject, chair: SceneObject): boolean {
+  if (
+    !OPEN_KNEE_DESKS.has(desk.assetDefinitionId ?? "") ||
+    !["office-chair", "laboratory-chair", "round-stool"].includes(chair.assetDefinitionId ?? "")
+  )
+    return false;
+  if (Math.abs(chair.position.z - desk.position.z) > 20) return false;
+  const surface = supportSurfaceElevation(desk);
+  if (surface === null || chair.position.z + chair.dimensions.height * 0.68 > surface - 35)
+    return false;
+  const angle = ((desk.rotation.z + (desk.flipVertical ? 180 : 0)) * Math.PI) / 180;
+  const dx = chair.position.x - desk.position.x;
+  const dy = chair.position.y - desk.position.y;
+  const across = dx * Math.cos(angle) + dy * Math.sin(angle);
+  const forward = -dx * Math.sin(angle) + dy * Math.cos(angle);
+  const turn =
+    (((chair.rotation.z + (chair.flipVertical ? 180 : 0) - (angle * 180) / Math.PI) % 360) + 360) %
+    360;
+  const facingDesk = chair.assetDefinitionId === "round-stool" || Math.abs(turn - 180) <= 15;
+  return (
+    facingDesk &&
+    Math.abs(across) + chair.dimensions.width / 2 <= desk.dimensions.width / 2 - 100 &&
+    forward >= desk.dimensions.depth / 2 + chair.dimensions.depth * 0.22 &&
+    forward <= desk.dimensions.depth / 2 + chair.dimensions.depth / 2 + 20
+  );
+}
+
+export function snapChairToDesk(room: Room, chair: SceneObject, thresholdMm = 240): SceneObject {
+  if (!["office-chair", "laboratory-chair", "round-stool"].includes(chair.assetDefinitionId ?? ""))
+    return chair;
+  const candidates = room.scene.objects
+    .filter((desk) => desk.visible && OPEN_KNEE_DESKS.has(desk.assetDefinitionId ?? ""))
+    .flatMap((desk) => {
+      const rotation = desk.rotation.z + (desk.flipVertical ? 180 : 0);
+      const angle = (rotation * Math.PI) / 180;
+      const offset = desk.dimensions.depth / 2 + chair.dimensions.depth * 0.27;
+      const candidate: SceneObject = {
+        ...chair,
+        flipVertical: false,
+        position: {
+          x: desk.position.x - Math.sin(angle) * offset,
+          y: desk.position.y + Math.cos(angle) * offset,
+          z: desk.position.z,
+        },
+        rotation: { ...chair.rotation, z: (rotation + 180) % 360 },
+      };
+      const distance = Math.hypot(
+        candidate.position.x - chair.position.x,
+        candidate.position.y - chair.position.y,
+      );
+      if (distance > thresholdMm || !chairFitsUnderDesk(desk, candidate)) return [];
+      if (
+        room.scene.objects.some(
+          (other) =>
+            other.id !== chair.id &&
+            other.id !== desk.id &&
+            other.visible &&
+            !["wall", "door", "window", "label", "measurement"].includes(other.objectType) &&
+            objectsOverlap(candidate, other, 15),
+        )
+      )
+        return [];
+      return [{ candidate, distance }];
+    })
+    .sort((a, b) => a.distance - b.distance);
+  return candidates[0]?.candidate ?? chair;
 }
 
 export type ValidationWarning = {

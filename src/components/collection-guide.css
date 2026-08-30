@@ -1,0 +1,131 @@
+.collection-guide {
+  position: fixed;
+  z-index: 45;
+  right: 22px;
+  bottom: 50px;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 190px);
+  overflow: auto;
+  border: 1px solid #adc9c2;
+  border-radius: 14px;
+  background: #fbfdfb;
+  color: #183b35;
+  box-shadow: 0 14px 44px #123b342b;
+  font-size: 13px;
+}
+.collection-guide header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #eaf4ef;
+  border-bottom: 1px solid #d4e3de;
+}
+.collection-guide header > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.collection-guide small {
+  font-size: 11px;
+  color: #5d756e;
+}
+.collection-guide strong {
+  overflow-wrap: anywhere;
+}
+.collection-guide button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  border: 1px solid #c7d8d1;
+  border-radius: 7px;
+  background: #fff;
+  color: #205b50;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.collection-guide button:focus-visible,
+.collection-guide a:focus-visible {
+  outline: 3px solid #51b7a7;
+  outline-offset: 2px;
+}
+.collection-guide button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+.collection-guide button.primary {
+  background: #087e70;
+  color: white;
+  border-color: #087e70;
+}
+.collection-current {
+  padding: 16px;
+  display: grid;
+  gap: 9px;
+}
+.collection-current > strong {
+  font-size: 16px;
+}
+.collection-current > span {
+  color: #4f6b63;
+  line-height: 1.5;
+}
+.collection-guide nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px 12px;
+}
+.collection-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px 10px;
+}
+.collection-links button,
+.collection-links a {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  color: #08776a;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+}
+.collection-guide ol {
+  margin: 0 16px 12px 38px;
+  padding: 0;
+  line-height: 1.7;
+}
+.collection-guide li[aria-current="step"] {
+  font-weight: 700;
+  color: #007f71;
+}
+.collection-guide footer {
+  padding: 10px 16px;
+  background: #f1f5f2;
+  color: #61736c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.collection-guide [role="alert"] {
+  margin: 8px 16px;
+  color: #9b372b;
+}
+.collection-guide.is-embedded {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: auto;
+  flex: 0 0 auto;
+  max-height: 46vh;
+  border: 0;
+  border-bottom: 1px solid #adc9c2;
+  border-radius: 0;
+  box-shadow: none;
+}

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { describe, expect, it, vi } from "vitest";
 import { PublicDemoSessionStore } from "../../server/public-demo-sessions";
+import { createPublicShowcaseProject } from "../../server/public-showcase";
 
 function request(cookie?: string) {
   return { headers: { cookie } } as Request;
@@ -30,7 +31,7 @@ describe("public judge demo sessions", () => {
     const secondVisitor = sessions.getRepository(request(), response().value, 2_000);
 
     expect(sameVisitor.getActiveProject().name).toBe("Judge A workspace");
-    expect(secondVisitor.getActiveProject().name).toBe("LabSpace Professional Laboratory Index");
+    expect(secondVisitor.getActiveProject()).toEqual(createPublicShowcaseProject());
     expect(sessions.size).toBe(2);
     expect(cookieCall[2]).toMatchObject({ httpOnly: true, sameSite: "lax", secure: false });
     sessions.close();
@@ -48,7 +49,7 @@ describe("public judge demo sessions", () => {
       4 * 60 * 60 * 1000 + 1_001,
     );
 
-    expect(refreshed.getActiveProject().name).toBe("LabSpace Professional Laboratory Index");
+    expect(refreshed.getActiveProject()).toEqual(createPublicShowcaseProject());
     expect(sessions.size).toBe(1);
     sessions.close();
   });

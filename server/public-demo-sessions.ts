@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { MemoryProjectRepository } from "./repository";
+import { createPublicShowcaseProject } from "./public-showcase";
 
 const SESSION_COOKIE = "labspace_judge_session";
 const SESSION_TTL_MS = 4 * 60 * 60 * 1000;
@@ -41,7 +42,10 @@ export class PublicDemoSessionStore {
     let entry = this.sessions.get(sessionId);
     if (!entry) {
       this.makeRoom();
-      entry = { repository: new MemoryProjectRepository(), touchedAt: now };
+      entry = {
+        repository: new MemoryProjectRepository(createPublicShowcaseProject),
+        touchedAt: now,
+      };
       this.sessions.set(sessionId, entry);
     } else {
       entry.touchedAt = now;

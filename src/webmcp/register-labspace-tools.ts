@@ -10,6 +10,7 @@ import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
 import { labSpaceLayoutActions } from "../agent/labspace-layout-actions";
 import { labSpaceInventoryActions } from "../agent/labspace-inventory-actions";
 import { labSpaceWorkspaceActions } from "../agent/labspace-workspace-actions";
+import { labSpaceCollectionActions } from "../agent/labspace-collection-actions";
 import type {
   LabSpaceLayoutActions,
   LabSpaceInventoryActions,
@@ -21,6 +22,9 @@ import type {
 } from "../agent/labspace-action-types";
 import {
   auditRoomSchema,
+  resolveMaterialsSchema,
+  startCollectionSchema,
+  collectionStepSchema,
   createRoomSchema,
   emptyObjectSchema,
   focusRecordSchema,
@@ -41,7 +45,9 @@ import {
 import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./webmcp-types";
 
 export const LABSPACE_WEBMCP_TOOL_NAMES = [
+  "labspace_add_inventory",
   "labspace_audit_room",
+  "labspace_collection_step",
   "labspace_create_room",
   "labspace_find_valid_placements",
   "labspace_focus_record",
@@ -50,12 +56,14 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_inventory_locations",
   "labspace_plan_inventory",
   "labspace_plan_room",
+  "labspace_resolve_materials",
   "labspace_search_assets",
   "labspace_search_records",
   "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
   "labspace_stage_resize",
   "labspace_stage_room_plan",
+  "labspace_start_collection",
   "labspace_validate_object_move",
   "labspace_validate_resize",
 ] as const;
@@ -80,7 +88,8 @@ function completeControlledExecution(
         : toolName === "labspace_stage_object_move" ||
             toolName === "labspace_stage_resize" ||
             toolName === "labspace_stage_room_plan" ||
-            toolName === "labspace_stage_inventory_plan"
+            toolName === "labspace_stage_inventory_plan" ||
+            toolName === "labspace_add_inventory"
           ? "pending"
           : toolName === "labspace_find_valid_placements"
             ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
@@ -157,8 +166,76 @@ export function createLabSpaceToolDefinitions(
   layoutActions: LabSpaceLayoutActions = labSpaceLayoutActions,
   inventoryActions: LabSpaceInventoryActions = labSpaceInventoryActions,
   workspaceActions: LabSpaceWorkspaceActions = labSpaceWorkspaceActions,
+  collectionActions = labSpaceCollectionActions,
 ): WebMCP.ModelContextTool[] {
   return [
+    {
+      name: "labspace_add_inventory",
+      title: "Add inventory with researcher review",
+      description:
+        "Validate and stage up to twenty inventory entries in one call. Use exact room codes and optional storage IDs from inventory_locations. Shows a review panel; records are saved only after the researcher approves. Never fabricate stock.",
+      inputSchema: planInventorySchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          context?.signal,
+          "labspace_add_inventory",
+          "Inventory creation review",
+          input,
+          () =>
+            stagingActions.stageInventoryPlan({
+              planId: inventoryActions.planInventory(input).planId,
+            }),
+        ),
+    },
+    {
+      name: "labspace_resolve_materials",
+      title: "Match suggested materials to real stock",
+      description:
+        "Ground an agent/researcher material list in actual inventory and equipment. Returns missing items, exact matches, and candidates needing review. Does not derive or certify a protocol, infer substitutions, create stock, or claim suitability.",
+      inputSchema: resolveMaterialsSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          context?.signal,
+          "labspace_resolve_materials",
+          "Material evidence",
+          input,
+          () => collectionActions.resolveMaterials(input),
+        ),
+    },
+    {
+      name: "labspace_start_collection",
+      title: "Start a guided collection itinerary",
+      description:
+        "Create a Next/Previous guide from reviewed canonical record IDs, grouped by room. Focuses exact spatial evidence, without modifying stock. This is a collection checklist, not a verified walking path, safety instruction, or permission to run an experiment.",
+      inputSchema: startCollectionSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          context?.signal,
+          "labspace_start_collection",
+          "Collection guide",
+          input,
+          () => collectionActions.startCollection(input),
+        ),
+    },
+    {
+      name: "labspace_collection_step",
+      title: "Navigate the collection guide",
+      description:
+        "Read guide status, focus the next or previous exact location, or finish. No inventory is consumed, reserved, or edited. Missing records fail with a controlled error.",
+      inputSchema: collectionStepSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          context?.signal,
+          "labspace_collection_step",
+          "Collection navigation",
+          input,
+          () => collectionActions.controlCollection(input),
+        ),
+    },
     {
       name: "labspace_audit_room",
       title: "Audit LabSpace room readiness",

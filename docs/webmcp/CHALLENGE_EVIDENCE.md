@@ -38,12 +38,12 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - A one-use, fail-closed capability that auto-commits only the first complete blueprint of a newly WebMCP-created pristine room as one undoable update.
 - Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP mission-control inspector that lists the seventeen browser registrations, their Read/View/Simulate/Create/Review modes, four copy-ready compositional workflows, and bounded live evidence.
+- A visible in-product WebMCP mission-control inspector that lists the twenty-one browser registrations, their Read/View/Simulate/Create/Review modes, four copy-ready compositional workflows, and bounded live evidence.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
-- Twenty-four expected-call eval cases plus deterministic contract tests.
+- Twenty-six expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration, compact-header evidence, automatic first-room construction, and the complete human-reviewed later-change workflow.
 - Isolated four-hour public judge workspaces so simultaneous reviewers cannot overwrite one another.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.

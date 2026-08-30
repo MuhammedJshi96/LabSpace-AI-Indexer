@@ -253,7 +253,11 @@ def build_desk(spec: AssetSpec, *, office: bool) -> None:
     w, d, h = spec.width, spec.depth, spec.height
     top_material = m["desk_surface"] if office else m["powder_light"]
     box("work surface", (0, 0, h * 0.96), (w * 0.98, d * 0.96, h * 0.08), top_material, bevel=0.018, category="work surface")
-    box("underframe", (0, 0.05, h * 0.79), (w * 0.84, d * 0.72, 0.055), m["steel_visible"], bevel=0.010, category="frame")
+    # Open knee space: structural rails, never a solid slab below the desktop.
+    for y in (-d * 0.35, d * 0.35):
+        box("desk apron rail", (0, y, h * 0.90), (w * 0.86, 0.028, 0.036), m["steel_visible"], bevel=0.006, category="frame")
+    for x in (-w * 0.42, w * 0.42):
+        box("desk side rail", (x, 0, h * 0.90), (0.028, d * 0.70, 0.036), m["steel_visible"], bevel=0.006, category="frame")
     for x in (-w * 0.43, w * 0.43):
         for y in (-d * 0.36, d * 0.36):
             box("square tube leg", (x, y, h * 0.43), (0.055, 0.055, h * 0.80), m["steel_visible"], bevel=0.009, category="frame")
@@ -261,8 +265,8 @@ def build_desk(spec: AssetSpec, *, office: bool) -> None:
     box("rear modesty panel", (0, d * 0.40, h * 0.50), (w * 0.78, 0.020, h * 0.44), m["powder_light"], bevel=0.008, category="modesty panel")
     cylinder("cable grommet", (w * 0.34, d * 0.24, h + 0.004), 0.040, 0.012, m["black"], vertices=40, category="cable management")
     if office:
-        box("desk pencil drawer", (w * 0.23, -d * 0.12, h * 0.82), (w * 0.36, d * 0.42, h * 0.10), m["porcelain"], bevel=0.009, category="drawer")
-        add_pull("desk drawer pull", w * 0.23, -d * 0.34, h * 0.82, w * 0.16)
+        box("desk pencil drawer", (w * 0.34, -d * 0.12, h * 0.84), (w * 0.22, d * 0.42, h * 0.075), m["porcelain"], bevel=0.009, category="drawer")
+        add_pull("desk drawer pull", w * 0.34, -d * 0.34, h * 0.84, w * 0.13)
 
 
 def build_wall_cabinet(spec: AssetSpec) -> None:
@@ -401,9 +405,10 @@ def build_workstation(spec: AssetSpec) -> None:
     w, d, h = spec.width, spec.depth, spec.height
     desk_h = 0.74
     build_desk(AssetSpec(spec.asset_id, w, d, desk_h), office=True)
-    box("workstation monitor", (0, d * 0.08, desk_h + 0.34), (w * 0.38, 0.045, h * 0.34), m["powder_dark"], bevel=0.018, rotation=(math.radians(-4), 0, 0), category="monitor")
-    box("workstation display glass", (0, d * 0.052, desk_h + 0.34), (w * 0.34, 0.008, h * 0.28), m["screen"], bevel=0.012, rotation=(math.radians(-4), 0, 0), category="display")
-    box("monitor stand", (0, d * 0.12, desk_h + 0.13), (0.055, 0.07, h * 0.20), m["aluminum"], bevel=0.009, category="monitor stand")
+    box("workstation widescreen aluminum shell", (0, d * 0.18, 1.155), (0.64, 0.026, 0.38), m["aluminum"], bevel=0.012, category="monitor")
+    box("workstation slim display bezel", (0, d * 0.158, 1.155), (0.625, 0.008, 0.366), m["powder_dark"], bevel=0.010, category="display bezel")
+    box("workstation display glass", (0, d * 0.15, 1.157), (0.606, 0.004, 0.341), m["screen"], bevel=0.006, category="display")
+    box("monitor stand", (0, d * 0.21, desk_h + 0.17), (0.045, 0.038, 0.30), m["aluminum"], bevel=0.009, category="monitor stand")
     box("monitor base", (0, d * 0.10, desk_h + 0.035), (w * 0.22, d * 0.22, 0.025), m["aluminum"], bevel=0.009, category="monitor stand")
     box("keyboard", (0, -d * 0.20, desk_h + 0.045), (w * 0.34, d * 0.20, 0.025), m["powder_dark"], bevel=0.008, rotation=(math.radians(3), 0, 0), category="keyboard")
     for col in range(10):
@@ -411,6 +416,13 @@ def build_workstation(spec: AssetSpec) -> None:
             box("keyboard key", (-w * 0.13 + col * w * 0.029, -d * 0.23 + row * d * 0.040, desk_h + 0.063), (w * 0.022, d * 0.025, 0.006), m["powder_light"], bevel=0.002, category="keyboard")
     box("computer tower", (w * 0.34, d * 0.18, desk_h * 0.43), (w * 0.18, d * 0.52, desk_h * 0.66), m["porcelain"], bevel=0.015, category="computer chassis")
     add_vent_slots("computer tower", w * 0.34, -d * 0.085, desk_h * 0.30, w * 0.10, rows=6)
+    box("mouse pad", (w * 0.26, -d * 0.22, desk_h + 0.010), (0.22, 0.20, 0.004), m["powder_dark"], bevel=0.012, category="input devices")
+    box("wireless mouse", (w * 0.26, -d * 0.22, desk_h + 0.030), (0.058, 0.102, 0.031), m["powder_light"], bevel=0.015, category="input devices")
+    box("mouse split seam", (w * 0.26, -d * 0.24, desk_h + 0.047), (0.0015, 0.047, 0.001), m["shadow"], category="input devices")
+    tube("monitor cable to grommet", [(0, d * 0.22, 1.02), (0.03, d * 0.30, 0.79), (w * 0.34, d * 0.24, 0.748)], 0.004, m["rubber"], category="cable management")
+    box("rear monitor mount", (0, d * 0.205, 1.12), (0.12, 0.025, 0.12), m["powder_light"], bevel=0.008, category="rear service")
+    add_vent_slots("monitor rear vents", 0, d * 0.202, 1.28, 0.40, rows=3)
+    cylinder("tower power button", (w * 0.34, -d * 0.09, desk_h * 0.66), 0.011, 0.004, m["aluminum"], axis=(0, -1, 0), vertices=32, category="computer chassis")
 
 
 def build_printer(spec: AssetSpec) -> None:
@@ -500,7 +512,7 @@ def build_one(spec: AssetSpec, output_dir: Path, save_blend_dir: Path | None) ->
 
     if furniture.ROOT is not None:
         furniture.ROOT["display_name"] = spec.asset_id.replace("-", " ").title()
-        furniture.ROOT["revision"] = "catalog-completion-batch12-r2"
+        furniture.ROOT["revision"] = "catalog-completion-batch12-r3" if spec.asset_id in {"office-desk", "rectangular-table", "computer-workstation"} else "catalog-completion-batch12-r2"
         furniture.ROOT["planning_model"] = True
         furniture.ROOT["manufacturer_certified"] = False
         furniture.ROOT["source_note"] = (

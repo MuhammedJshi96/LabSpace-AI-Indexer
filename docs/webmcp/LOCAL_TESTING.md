@@ -28,7 +28,7 @@ Do not enable the flag automatically in application code. ChatGPT's in-app brows
 - **Model Context Tool Inspector extension:** provides a natural-language agent-style testing surface inside Chrome. Installing it is optional and remains a user-controlled browser change.
 - **Chrome DevTools → Application → WebMCP:** a manual debugger. Select one available tool, enter JSON arguments, and choose **Run tool**. It does not turn the DevTools Console into a natural-language chat.
 
-## Discover the seventeen tools
+## Discover the twenty-one tools
 
 In Chrome DevTools Console:
 
@@ -41,7 +41,9 @@ tools.map(({ name, title, annotations }) => ({ name, title, annotations }));
 Expected names (Chrome normally sorts them alphabetically):
 
 ```text
+labspace_add_inventory
 labspace_audit_room
+labspace_collection_step
 labspace_create_room
 labspace_find_valid_placements
 labspace_focus_record
@@ -50,17 +52,19 @@ labspace_inspect_record
 labspace_inventory_locations
 labspace_plan_inventory
 labspace_plan_room
+labspace_resolve_materials
 labspace_search_assets
 labspace_search_records
 labspace_stage_object_move
 labspace_stage_inventory_plan
 labspace_stage_resize
 labspace_stage_room_plan
+labspace_start_collection
 labspace_validate_object_move
 labspace_validate_resize
 ```
 
-There should be seventeen unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+There should be twenty-one unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## Manual tool calls
 

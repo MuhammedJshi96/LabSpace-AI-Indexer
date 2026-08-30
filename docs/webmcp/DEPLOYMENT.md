@@ -28,7 +28,7 @@ No credential belongs in this repository.
 
 ## Public judge-session behavior
 
-With `LABSPACE_PUBLIC_DEMO=1`, the server issues an HTTP-only, same-site session cookie and creates a fresh memory repository from LabSpace's deterministic source-controlled seed. A browser keeps its own edits and versions for four hours of inactivity; another browser receives an independent seed. Up to 250 active sessions are retained with oldest-session eviction. Restart, redeploy, spin-down, expiry, or cookie removal starts a fresh workspace. Export JSON for a portable copy. A production multi-user deployment should add authentication and a managed database with organization-level isolation.
+With `LABSPACE_PUBLIC_DEMO=1`, the server issues an HTTP-only, same-site session cookie and creates a fresh memory repository from the user-approved local snapshot in `server/public-showcase-project.json`. This release publishes the five local rooms (DEMO-01, DEMO-02, R809, R808 and 812), not the older public seed. Local SQLite and test reset seeds are untouched. A browser keeps its edits and versions for four hours of inactivity; another browser receives an independent copy. Up to 250 active sessions are retained. Restart, redeploy, spin-down, expiry, or cookie removal starts a fresh workspace. Export JSON for a portable copy. Production multi-user use requires authentication and a managed database with organization isolation.
 
 ## Production smoke test
 
@@ -48,7 +48,7 @@ Expected health response:
 { "ok": true, "database": "session-memory", "publicDemo": true, "schemaVersion": 2 }
 ```
 
-Then use a WebMCP-capable top-level browser context to verify the seventeen registered tools on `/`, `/digital-twin`, and `/inventory`, and no tools on internal `/asset-preview`, `/facility`, or capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
+Then use a WebMCP-capable top-level browser context to verify the twenty-one registered tools on `/`, `/digital-twin`, and `/inventory`, and no tools on internal `/asset-preview`, `/facility`, or capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
 
 Official hosting references:
 

@@ -12,7 +12,7 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all seventeen live tools and their safety modes.
+2. Select **Registered tools** to see all twenty-one live tools and their safety modes.
 3. Select **Use WebMCP** if you need to see exactly where ChatGPT prompts or Chrome JSON arguments belong.
 4. Select **Agent workflows** to copy a complete build, exact-evidence, audit, or resize request.
 5. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
@@ -50,7 +50,7 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ## Expected visible workflow
 
-1. The agent discovers seventeen structured LabSpace tools.
+1. The agent discovers twenty-one structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
@@ -100,7 +100,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly seventeen unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+Expected: exactly twenty-one unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 

@@ -20,7 +20,7 @@ The trust boundary is risk-based. `labspace_create_room` saves only a blank room
 
 Open the **WebMCP** status control in the LabSpace header. Its inspector makes the browser integration visible without DevTools:
 
-1. **Registered tools** shows the seventeen live browser tools and their Read, View, Simulate, Create, or Review boundary.
+1. **Registered tools** shows the twenty-one live browser tools and their Read, View, Simulate, Create, or Review boundary.
 2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
 3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
 4. **Agent workflows** provides four copy-ready, compositional prompts for building, locating, auditing, and resizing without adding a competing chatbot UI.
@@ -30,7 +30,7 @@ Type the suggested request in the ChatGPT/browser-agent conversation that opened
 
 The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity. The one-time initial build is recorded as an automatic commit; subsequent staged changes still require separate human approval or cancellation.
 
-### Seventeen browser-native tools
+### Twenty-one browser-native tools
 
 | Tool                             | Capability                                                                           | Saved-data behavior                                                      |
 | -------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
@@ -51,6 +51,10 @@ The trace is intentionally evidence, not hidden model reasoning. Ordinary resear
 | `labspace_stage_resize`          | Show a reversible dimension-accurate preview                                         | Not persisted; human approval required                                   |
 | `labspace_stage_inventory_plan`  | Show a human-reviewable inventory proposal                                           | Not persisted; human approval required                                   |
 | `labspace_stage_room_plan`       | Apply a complete blueprint                                                           | First pristine created-room plan auto-commits; otherwise review required |
+| `labspace_add_inventory`         | Validate and stage detailed inventory entries in one call                            | Human approval required before records are created                       |
+| `labspace_resolve_materials`     | Match a suggested materials list to actual stock and equipment                       | Read-only; missing and ambiguous matches stay explicit                   |
+| `labspace_start_collection`      | Start a room-grouped guide from reviewed canonical records                           | Presentation state only; no stock deduction                              |
+| `labspace_collection_step`       | Status, Next, Previous, or finish for the collection guide                           | Presentation state only                                                  |
 
 ```text
 browser agent → document.modelContext → LabSpace tool adapter
@@ -121,7 +125,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - The Asset Library and Inspector collapse into narrow, labeled, keyboard-accessible rails when more canvas space is needed.
 - A dedicated Favorites tab gives quick access to starred assets; stars update immediately, persist safely across reloads, and remain usable for the current session even when browser storage is unavailable.
 - Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The DEMO-01 reference-services profile is the first bundled example and remains independently hideable.
-- Visual predefined libraries synchronize six laboratory floor finishes and six professional wall finishes between the 2D plan and 3D PBR room, with per-wall overrides in the Inspector.
+- Visual material libraries synchronize ten floor finishes and ten wall finishes between the 2D plan and 3D PBR room, including porcelain, pearl terrazzo, pale oak, ivory stone, and satin panels with per-wall overrides. Decorative office finishes are not wet-laboratory certification.
 - Cabinet, shelf, drawer, compartment, and bin hierarchies with stable codes and exact inventory locations.
 - Equipment identity, service, ownership, and utility requirements.
 - Readable desktop typography uses a 12px visible minimum, 13px labels, and 14px controls/body text without shrinking the CAD workspace.
@@ -134,7 +138,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
 
-There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's seventeen structured tools, while the canonical catalog, room planner, room-readiness audit, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
+There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's twenty-one structured tools, while the canonical catalog, room planner, room-readiness audit, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
 
 The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 96-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
 
@@ -160,6 +164,12 @@ Open [http://127.0.0.1:3004/](http://127.0.0.1:3004/). The searchable spatial in
 For a non-technical Windows walkthrough, see [SETUP.md](SETUP.md).
 
 ## Clean clone and judge setup
+
+### Latest competition polish
+
+The live release now includes a one-call reviewed inventory tool, material-list grounding, and a visible Next/Previous collection guide; richer floor/wall finishes; chair-to-desk knee-space snapping; and upgraded authored workstation/desk models. See [Inventory and collection workflows](docs/webmcp/INVENTORY_AND_COLLECTION.md) for exact tool arguments and examples. The guide is a grounded collection itinerary, not an experiment protocol or certified walking route.
+
+The public service uses the explicitly published local five-room project snapshot. Local fresh installations continue to use the blank starter plus separate DEMO-01 seed described below. Neither path overwrites the developer's existing SQLite workspace.
 
 The repository is self-contained: authored GLBs, plan/library renders, inventory evidence images, material textures, and offline Draco decoder files live under `public/` and are copied into the production bundle by Vite. Judges do **not** need Blender, the private reference photographs, an OpenAI API key, or an asset-rebuild step.
 
@@ -218,9 +228,9 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-The result should contain exactly the seventeen tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
+The result should contain exactly the twenty-one tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
-The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build` so TypeScript can access its build-time type packages, starts the existing Express production server, and checks `/api/health`. The public service gives each browser an isolated four-hour in-memory judge workspace seeded from the same source-controlled project, so simultaneous reviewers cannot overwrite one another. Render free instances still restart after inactivity; use JSON export for work that must outlive a browser session. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
+The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build`, starts Express, and checks `/api/health`. Each browser receives an isolated four-hour in-memory workspace seeded from the approved local snapshot in `server/public-showcase-project.json`, so reviewers cannot overwrite one another. Render free instances restart after inactivity; export JSON to retain edits. Local SQLite and the automated-test seed remain separate. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 
 ## Build Week scope and authorship
 

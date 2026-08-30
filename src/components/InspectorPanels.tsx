@@ -23,6 +23,7 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 import { getAssetDefinition } from "../domain/assets";
+import { LABORATORY_MATERIAL_TEXTURES } from "../lib/laboratory-material-textures";
 import { validatePlacement } from "../domain/geometry";
 import { getLocationPath, indexingStats } from "../domain/indexing";
 import { LABORATORY_ENVIRONMENT_PROFILES } from "../domain/laboratory-environment";
@@ -101,6 +102,7 @@ type SurfaceMaterialChoice = {
   color: string;
   accent: string;
   pattern?: string;
+  textureKind?: keyof typeof LABORATORY_MATERIAL_TEXTURES;
 };
 
 function SurfaceMaterialPicker({
@@ -142,6 +144,14 @@ function SurfaceMaterialPicker({
                 {
                   "--surface-color": choice.color,
                   "--surface-accent": choice.accent,
+                  ...(choice.textureKind
+                    ? {
+                        backgroundImage: `url(${LABORATORY_MATERIAL_TEXTURES[choice.textureKind].url})`,
+                        backgroundSize: "cover",
+                        backgroundBlendMode: "multiply",
+                        backgroundColor: choice.color,
+                      }
+                    : {}),
                 } as CSSProperties
               }
             />
@@ -174,6 +184,7 @@ function RoomPanel() {
     color: finish.planColor,
     accent: finish.patternColor,
     pattern: finish.pattern,
+    textureKind: finish.textureKind,
   }));
   const wallChoices = LABORATORY_WALL_FINISHES.map((finish) => ({
     id: finish.id,
@@ -181,6 +192,7 @@ function RoomPanel() {
     description: finish.description,
     color: finish.color,
     accent: finish.baseboardColor,
+    textureKind: finish.textureKind,
   }));
   return (
     <div className="inspector-scroll">
@@ -1209,6 +1221,7 @@ function ObjectProperties({ object }: { object: SceneObject }) {
               description: finish.description,
               color: finish.color,
               accent: finish.baseboardColor,
+              textureKind: finish.textureKind,
             }))}
             onChange={(wallFinishId) =>
               updateObject(
@@ -1558,7 +1571,11 @@ function ObjectProperties({ object }: { object: SceneObject }) {
           <ArrowDown size={16} />
           Send backward
         </button>
-        <button onClick={duplicate}>
+        <button
+          onClick={duplicate}
+          title="Duplicate selected item (Ctrl+D / ⌘D)"
+          aria-keyshortcuts="Control+d Meta+d"
+        >
           <Selection size={16} />
           Duplicate
         </button>

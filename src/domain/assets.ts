@@ -299,7 +299,9 @@ function catalogCompletionModel(
       depth: dimensions[1],
       height: dimensions[2],
     },
-    revision: "catalog-completion-batch12-r2",
+    revision: ["office-desk", "rectangular-table", "computer-workstation"].includes(id)
+      ? "catalog-completion-batch12-r3"
+      : "catalog-completion-batch12-r2",
   };
 }
 
@@ -1460,7 +1462,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   }),
   asset("computer-workstation", "Computer workstation", "Laboratory equipment", [1400, 700, 1350], {
     profile: "workstation",
-    material: "dark",
+    material: "white",
     accent: "#3f7b99",
     description:
       "Complete laboratory computer station with professional desk casework, cable management, monitor and stand, low-glare display, modeled keyboard, workstation tower, ventilation, and rear service detail.",

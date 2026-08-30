@@ -12,11 +12,11 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 ## Take 2 — prove WebMCP discovery (0:16–0:29)
 
-**Screen:** Open the WebMCP Inspector, show seventeen registered tools and the copy-ready agent workflows, then return to the room.
+**Screen:** Open the WebMCP Inspector, show twenty-one registered tools and the copy-ready agent workflows, then return to the room.
 
 **Voice-over:**
 
-“The agent discovers seventeen structured tools: blank-room creation, catalog and location search, polygon planning, exact focus, deterministic room-readiness audit, move and resize validation, and reversible later-change staging. The activity inspector makes every bounded call visible.”
+“The agent discovers twenty-one structured tools: blank-room creation, catalog and location search, polygon planning, exact focus, deterministic room-readiness audit, move and resize validation, and reversible later-change staging. The activity inspector makes every bounded call visible.”
 
 ## Take 3 — build from the empty room (0:29–1:12)
 

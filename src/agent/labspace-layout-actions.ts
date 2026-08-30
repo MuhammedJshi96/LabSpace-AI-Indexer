@@ -3,6 +3,7 @@ import {
   objectBounds,
   requiresBenchSupport,
   snapBenchObjectToAvailableSupport,
+  snapChairToDesk,
   validatePlacement,
 } from "../domain/geometry";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
@@ -548,7 +549,11 @@ function workstationSeatCandidate(
       const definition = object.assetDefinitionId
         ? ASSET_BY_ID.get(object.assetDefinitionId)
         : undefined;
-      return definition?.profile === "table" || definition?.profile === "bench";
+      return (
+        definition?.profile === "table" ||
+        definition?.profile === "bench" ||
+        definition?.profile === "workstation"
+      );
     })
     .sort((left, right) => {
       const leftPlanned = left.id.startsWith("plan-") ? 0 : 1;
@@ -561,12 +566,15 @@ function workstationSeatCandidate(
     const frontX = -Math.sin(radians);
     const frontY = Math.cos(radians);
     const centreOffset = host.dimensions.depth / 2 + seatAsset.defaultDimensions.depth / 2 + 220;
-    const candidate = proposalObject(room, seatAsset, "open", {
+    let candidate = proposalObject(room, seatAsset, "open", {
       x: host.position.x + frontX * centreOffset,
       y: host.position.y + frontY * centreOffset,
       rotation: requestedRotation ?? normalizeRotation(host.rotation.z + 180),
       elevation: requestedElevation,
     });
+    if (requestedRotation === undefined && requestedElevation === undefined) {
+      candidate = snapChairToDesk(room, candidate, 500);
+    }
     if (!spatiallyValid(room, candidate)) continue;
     return { candidate, host };
   }

@@ -50,6 +50,8 @@ const palette = {
 
 type MaterialKind =
   | "powder"
+  | "limestone"
+  | "oak"
   | "porcelain"
   | "stainless"
   | "aluminum"
@@ -214,10 +216,8 @@ function cachedPartMaterial({
     attenuationColor: new THREE.Color(isGlass ? "#eef7f6" : "#ffffff"),
     attenuationDistance: isGlass ? 2.4 : Infinity,
     clearcoat: clearcoat ?? (isGlass ? 0.22 : isWorktop ? 0.28 : isSteel ? 0.12 : 0.16),
-    clearcoatRoughness:
-      clearcoatRoughness ?? (isGlass ? 0.06 : isWorktop ? 0.2 : 0.3),
-    envMapIntensity:
-      envMapIntensity ?? (isGlass ? 1.2 : isSteel ? 1.08 : isScreen ? 0.9 : 0.74),
+    clearcoatRoughness: clearcoatRoughness ?? (isGlass ? 0.06 : isWorktop ? 0.2 : 0.3),
+    envMapIntensity: envMapIntensity ?? (isGlass ? 1.2 : isSteel ? 1.08 : isScreen ? 0.9 : 0.74),
   });
   materialCache.set(key, material);
   return material;

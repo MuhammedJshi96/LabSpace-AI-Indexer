@@ -9,6 +9,7 @@ import { FacilityPage } from "./components/FacilityPage";
 import { InventoryPage } from "./components/InventoryPage";
 import { ProceduralAssetCapturePage } from "./components/ProceduralAssetCapturePage";
 import { WebMCPBridge } from "./components/WebMCPBridge";
+import { CollectionGuide } from "./components/CollectionGuide";
 import "./styles.css";
 
 const captureRoute = window.location.pathname === "/procedural-asset-capture";
@@ -33,6 +34,7 @@ const applicationWithBridge = webMCPRoute ? (
   <>
     <WebMCPBridge />
     {application}
+    {window.location.pathname !== "/digital-twin" && <CollectionGuide />}
     <AgentActivityPanel />
     <AgentReviewPanel />
   </>

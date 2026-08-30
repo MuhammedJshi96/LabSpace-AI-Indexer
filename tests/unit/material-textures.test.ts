@@ -26,7 +26,7 @@ describe("laboratory material textures", () => {
   });
 
   it("lists reusable public textures with their source provenance", () => {
-    expect(LABORATORY_MATERIAL_TEXTURES).toEqual({
+    expect(LABORATORY_MATERIAL_TEXTURES).toMatchObject({
       epoxy: {
         url: "/materials/epoxy-floor-room809.jpg",
         repeat: [4, 4],

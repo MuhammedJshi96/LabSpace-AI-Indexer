@@ -113,11 +113,12 @@ function Wall3D({
   const opacity = wallTransparent && presentation === "editor" ? 0.28 : 1;
   const finish = wallFinishForObject(wall.metadata, room.wallFinish);
   const materialKind =
-    finish.id === "satin-stainless-steel"
+    finish.textureKind ??
+    (finish.id === "satin-stainless-steel"
       ? "stainless"
       : finish.id.includes("panel")
         ? "powder"
-        : "painted";
+        : "painted");
 
   return (
     <group ref={wallGroupRef} position={[startX, 0, startZ]} rotation={[0, -angle, 0]}>

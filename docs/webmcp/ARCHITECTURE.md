@@ -6,7 +6,7 @@ LabSpace exposes a semantic laboratory digital twin through the browser-native W
 Browser agent
     |
     v
-document.modelContext (seventeen bounded WebMCP tools)
+document.modelContext (twenty-one bounded WebMCP tools)
     |
     v
 LabSpace schema/error adapter
@@ -44,6 +44,11 @@ LabSpace schema/error adapter
 | `labspace_stage_resize`          | Apply a reversible resize preview after successful validation             | No; human approval is required before history or autosave        |
 | `labspace_stage_inventory_plan`  | Present proposed inventory records for researcher review                  | No; human approval is required before record creation            |
 | `labspace_stage_room_plan`       | Apply one complete multi-object room blueprint                            | First eligible pristine-room plan auto-commits; otherwise review |
+| `labspace_audit_room`            | Report deterministic room-readiness evidence                              | No                                                               |
+| `labspace_add_inventory`         | Validate and stage detailed inventory in one call                         | No; researcher approval creates records                          |
+| `labspace_resolve_materials`     | Match suggested materials to actual stock and equipment                   | No; missing/ambiguous matches remain explicit                    |
+| `labspace_start_collection`      | Begin an exact-record, room-grouped itinerary                             | No; presentation state only                                      |
+| `labspace_collection_step`       | Status, Next, Previous, or finish                                         | No; presentation state only                                      |
 
 There is deliberately no agent-accessible approve, delete, reset, import, or unrestricted project-write tool. The only direct write is bounded blank-room creation; its one-use initial-layout capability is consumed on success and cannot edit an existing room.
 
@@ -55,6 +60,7 @@ There is deliberately no agent-accessible approve, delete, reset, import, or unr
 - `src/agent/labspace-workspace-actions.ts` validates laboratory and room identity, creates and saves only a pristine blank room, assigns its facility floor, and issues the in-memory one-use initial-plan capability.
 - `src/agent/labspace-layout-actions.ts` searches the canonical asset catalog and calculates bounded multi-object plans from canonical dimensions, the active floor/wall geometry, and the existing placement validator. It pairs seats with workstations, faces perimeter assets inward, places supported equipment at worktop elevation, and resolves canonical wall openings. Plans are read-only.
 - `src/agent/labspace-inventory-actions.ts` lists canonical locations and validates bounded project-wide inventory proposals without mutating project state.
+- `src/agent/labspace-collection-actions.ts` resolves suggested material names against canonical records and stores a session-only collection itinerary. It reuses exact-record focus, never invents a protocol, and does not consume or reserve stock.
 - `src/agent/labspace-staging-actions.ts` creates one reversible move or resize, complete room blueprint, or inventory review only after validation. It consumes the one-use capability to commit only the first complete blueprint of the newly created pristine room; all other staged changes remain pending review. It never writes directly to SQLite.
 - `src/components/AgentReviewPanel.tsx` is the human trust boundary. Approve creates one normal undoable history entry and schedules the existing autosave; Cancel restores the exact prior object or scene.
 - `src/agent/agent-activity-store.ts` keeps a bounded, sanitized evidence trail. It records actions and outcomes, not hidden reasoning or chain-of-thought.
@@ -63,7 +69,7 @@ There is deliberately no agent-accessible approve, delete, reset, import, or unr
 
 ## Registration lifecycle
 
-The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Each mount registers exactly seventeen tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools.
+The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Once canonical project hydration finishes, each mount registers exactly twenty-one tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools. Inventory approvals use the same revision-aware autosave from the Spatial Index as from the editor.
 
 ## Grounding and safety
 

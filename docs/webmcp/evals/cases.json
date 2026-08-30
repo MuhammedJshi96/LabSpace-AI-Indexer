@@ -1,6 +1,10 @@
 {
   "version": 1,
   "toolSet": [
+    "labspace_add_inventory",
+    "labspace_resolve_materials",
+    "labspace_start_collection",
+    "labspace_collection_step",
     "labspace_audit_room",
     "labspace_create_room",
     "labspace_find_valid_placements",
@@ -20,6 +24,30 @@
     "labspace_stage_resize"
   ],
   "cases": [
+    {
+      "id": "review-new-inventory",
+      "prompt": "Add twelve boxes of tips in a verified storage location after I review the details.",
+      "expectedTools": ["labspace_inventory_locations", "labspace_add_inventory"],
+      "forbiddenTools": ["labspace_stage_room_plan"],
+      "requiresHumanApproval": true,
+      "expectedOutcome": "A canonical inventory proposal is visible; no stock exists until researcher approval."
+    },
+    {
+      "id": "grounded-collection-guide",
+      "prompt": "Match my proposed preparation checklist to our inventory and guide me through confirmed locations.",
+      "expectedTools": [
+        "labspace_resolve_materials",
+        "labspace_start_collection",
+        "labspace_collection_step"
+      ],
+      "forbiddenTools": [
+        "labspace_add_inventory",
+        "labspace_stage_inventory_plan",
+        "labspace_stage_object_move"
+      ],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Missing and ambiguous materials are reported. Reviewed records form a Next/Previous collection itinerary; no safety certification or inventory consumption is implied."
+    },
     {
       "id": "audit-active-room-readiness",
       "prompt": "Audit the active room and summarize its current deterministic planning readiness without changing anything.",

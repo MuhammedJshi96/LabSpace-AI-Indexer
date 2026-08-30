@@ -1,6 +1,6 @@
 # WebMCP Challenge deployment
 
-LabSpace is a stateful Node/Express application with a Vite frontend. Local development keeps the SQLite repository; the public challenge service uses isolated in-memory browser sessions so reviewers never share one mutable project. Deployment uses the root `render.yaml` Blueprint.
+LabSpace is a stateful Node/Express application with a Vite frontend. Local development keeps the SQLite repository. The public app saves each browser's project and named versions in IndexedDB; temporary server sessions are used only to bootstrap first-time visitors. Deployment uses the root `render.yaml` Blueprint.
 
 Live judge service: [https://labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com)
 
@@ -12,7 +12,7 @@ The Blueprint creates one free Node web service from `webmcp-challenge-2026`:
   development-only type packages even though the deployed runtime is production)
 - start: `npm run start`
 - health check: `/api/health`
-- public judge data: isolated four-hour in-memory browser sessions
+- public judge data: durable same-browser IndexedDB, with isolated server-session bootstrap
 - no API keys, secrets, or paid services required
 
 The server binds to Render's `PORT` on `0.0.0.0`. In production it serves `dist/`, keeps API responses uncached, and does not mount `/api/testing/reset`.
@@ -28,7 +28,24 @@ No credential belongs in this repository.
 
 ## Public judge-session behavior
 
-With `LABSPACE_PUBLIC_DEMO=1`, the server issues an HTTP-only, same-site session cookie and creates a fresh memory repository from the user-approved local snapshot in `server/public-showcase-project.json`. This release publishes the five local rooms (DEMO-01, DEMO-02, R809, R808 and 812), not the older public seed. Local SQLite and test reset seeds are untouched. A browser keeps its edits and versions for four hours of inactivity; another browser receives an independent copy. Up to 250 active sessions are retained. Restart, redeploy, spin-down, expiry, or cookie removal starts a fresh workspace. Export JSON for a portable copy. Production multi-user use requires authentication and a managed database with organization isolation.
+With `LABSPACE_PUBLIC_DEMO=1`, first-time visitors adopt their current server-session project and named room versions into IndexedDB. If no prior server session exists, the approved `server/public-showcase-project.json` provides the initial project. This release does not change that snapshot, local SQLite, or test seeds.
+
+Once a browser workspace exists, it is the authoritative save. Loads do not depend on project APIs and never merge with or replace it from the server snapshot. Project saves resolve only after an atomic IndexedDB transaction completes. Named versions use the same database. Render restarts, deployments, four-hour server-session expiry and cookie removal do not reset browser saves. Database names are stable across build revisions. Revision checks prevent stale tabs from overwriting newer saves. Invalid saved data is not overwritten with defaults; quota/permission failures show an actionable error and leave current unsaved work exportable.
+
+This is **same-browser, same-origin, same-device persistence**, not cloud/account sync. Clearing site data, private-browsing cleanup, device loss or browser eviction can remove the saved copy. Export project JSON for backup and import it explicitly elsewhere. JSON contains the current full project, not the separate named-version archive. Never replace the public snapshot with a user's private project to implement persistence. Authentication and a managed database with organization isolation remain necessary for shared multi-user/cloud storage.
+
+The server still limits bootstrap memory sessions to four hours/250 entries. `/api/health` therefore reports `session-memory`; it describes the server, not the browser's authoritative project storage.
+
+## Persistence regression test
+
+Run `npm run build` then `npm run test:e2e:public`. The suite owns an isolated production/public-mode server on port 3114, creates rooms through the UI, verifies exported project identity through reload and a real process restart, checks version survival, disables project APIs, checks browser isolation and stale-tab conflicts, and simulates a storage-quota failure. It never resets or stops the user's development server.
+
+### Verification — 2026-08-31
+
+- Release checks passed: lint, TypeScript, 96 asset definitions, catalog renders, 251 unit tests and production build. Existing large-bundle warnings remain non-blocking.
+- Public persistence: 7/7 browser tests passed, including real server restart, full project export equality, named versions, visitor isolation, stale tabs, storage failures, incompatible data, explicit import and deletion without reseeding.
+- Existing Storage/Inventory regressions: 7/7 passed. Existing WebMCP browser regressions: 13/14 passed.
+- Known verification limitation: `dismisses exact-location selection without reloading or changing room data` repeatedly timed out at the 10-second `2D fallback` click after focusing a record. Its test and the 3D renderer are unchanged in this release. This is recorded separately; the complete E2E suite is not claimed green.
 
 ## Production smoke test
 

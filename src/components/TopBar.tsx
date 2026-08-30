@@ -28,6 +28,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
     state.project.rooms.some((entry) => entry.roomKind === "demo"),
   );
   const saveStatus = useEditorStore((state) => state.saveStatus);
+  const browserSave = useEditorStore((state) => state.persistenceMode === "browser");
   const setDialog = useEditorStore((state) => state.setDialog);
   const openLatestDemoRoom = useEditorStore((state) => state.openLatestDemoRoom);
   const saveNow = useEditorStore((state) => state.saveNow);
@@ -36,12 +37,16 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
     saveStatus === "unsaved"
       ? "Unsaved changes"
       : saveStatus === "saving"
-        ? "Saving locally…"
+        ? browserSave
+          ? "Saving in this browser…"
+          : "Saving locally…"
         : saveStatus === "error"
           ? "Save error"
           : saveStatus === "loading"
             ? "Opening project…"
-            : "All changes saved";
+            : browserSave
+              ? "Saved in this browser"
+              : "All changes saved";
 
   return (
     <header className="top-bar">

@@ -17,6 +17,14 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "node", "vitest/globals", "webmcp-types"]
   },
-  "include": ["src", "server", "scripts", "tests", "vite.config.mjs", "playwright.config.ts"],
+  "include": [
+    "src",
+    "server",
+    "scripts",
+    "tests",
+    "vite.config.mjs",
+    "playwright.config.ts",
+    "playwright.public.config.ts"
+  ],
   "exclude": ["dist", "node_modules"]
 }

@@ -1,0 +1,47 @@
+.project-save-warning {
+  position: fixed;
+  left: 18px;
+  bottom: 42px;
+  z-index: 180;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(470px, calc(100vw - 36px));
+  padding: 16px;
+  border: 1px solid #c77e22;
+  border-radius: 10px;
+  color: #653c0b;
+  background: #fff8eb;
+  box-shadow: 0 8px 28px #17252224;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.project-save-warning > svg {
+  flex-shrink: 0;
+}
+.project-save-warning p {
+  margin: 6px 0 12px;
+}
+.project-save-warning button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #c77e22;
+  border-radius: 5px;
+  padding: 8px 12px;
+  background: white;
+  color: inherit;
+}
+.browser-save-explanation {
+  padding: 13px 16px;
+  margin: 14px 0;
+  border: 1px solid #b7d7d2;
+  border-radius: 8px;
+  background: #edf7f5;
+  color: #244740;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.browser-save-explanation p {
+  margin: 4px 0 0;
+}

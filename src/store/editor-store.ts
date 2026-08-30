@@ -54,6 +54,7 @@ import type {
   Vector3,
 } from "../domain/schema";
 import {
+  getPersistenceMode,
   getRoomVersion,
   listRoomVersions,
   loadProject,
@@ -148,6 +149,7 @@ type EditorState = {
   future: EditorCommand[];
   clipboard: SceneObject[];
   saveStatus: SaveStatus;
+  persistenceMode: "server" | "browser";
   saveError: string | null;
   dirtyRevision: number;
   versions: RoomVersion[];
@@ -697,6 +699,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   future: [],
   clipboard: [],
   saveStatus: "loading",
+  persistenceMode: "server",
   saveError: null,
   dirtyRevision: 0,
   versions: [],
@@ -732,6 +735,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         set({
           ...roomSwitchState(project),
           hydrated: true,
+          persistenceMode: getPersistenceMode(),
           saveStatus: repairedFloorEnvelope ? "unsaved" : "saved",
           saveError: null,
           dirtyRevision: repairedFloorEnvelope ? 1 : 0,
@@ -739,11 +743,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       } catch (error) {
         set({
           hydrated: true,
+          persistenceMode: getPersistenceMode(),
           saveStatus: "error",
-          saveError: error instanceof Error ? error.message : "Unable to load local project.",
+          saveError: error instanceof Error ? error.message : "Unable to load saved project.",
         });
         get().pushToast(
-          "Local project could not be loaded; the seeded room is available in memory.",
+          "Saved project could not be opened. No saved data was replaced. Saving is blocked until it can be loaded.",
           "error",
         );
       } finally {

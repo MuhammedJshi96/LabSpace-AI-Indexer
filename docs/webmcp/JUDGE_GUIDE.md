@@ -24,7 +24,7 @@ Enter the prompts below in the ChatGPT/browser-agent conversation controlling th
 
 Chrome DevTools is intentionally different: it is a manual debugger that executes one selected tool with JSON arguments. For natural-language workflows in Chrome, use Google's Model Context Tool Inspector extension; for the simplest judge flow, use ChatGPT's in-app browser.
 
-The public service assigns each browser an isolated four-hour workspace, so another judge's edits cannot alter this demo.
+The public service saves an independent workspace in each browser. Wait for **Saved in this browser** before closing the tab: refreshes and site deployments retain your rooms. Other judges' browsers cannot alter your project. Export JSON before clearing site data or moving to another browser/device; this is not cloud sync.
 
 ## Signature room-creation prompt
 

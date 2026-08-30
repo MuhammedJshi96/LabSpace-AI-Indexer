@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test",
     "test:e2e:webmcp": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test tests/e2e/webmcp-actions.spec.ts",
+    "test:e2e:public": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.public.config.ts",
     "validate:assets": "tsx scripts/validate-assets.ts",
     "release:check": "npm run lint && npm run typecheck && npm run validate:assets && npm run test && npm run build",
     "assets:build": "node scripts/build-hero-assets.mjs",

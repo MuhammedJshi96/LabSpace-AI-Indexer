@@ -9,6 +9,7 @@ import { InventoryPage } from "./components/InventoryPage";
 import { ProceduralAssetCapturePage } from "./components/ProceduralAssetCapturePage";
 import { WebMCPBridge } from "./components/WebMCPBridge";
 import { CollectionGuide } from "./components/CollectionGuide";
+import { ProjectSaveLifecycle } from "./components/ProjectSaveLifecycle";
 
 export function ApplicationRouter() {
   const [path, setPath] = useState(window.location.pathname);
@@ -44,5 +45,12 @@ export function ApplicationRouter() {
     application
   );
 
-  return captureRoute ? application : applicationWithBridge;
+  return captureRoute ? (
+    application
+  ) : (
+    <>
+      <ProjectSaveLifecycle />
+      {applicationWithBridge}
+    </>
+  );
 }

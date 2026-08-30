@@ -103,6 +103,7 @@ function ProjectDialog() {
   const createDemoFromTemplate = useEditorStore((state) => state.createDemoFromTemplate);
   const resetActiveDemoFromTemplate = useEditorStore((state) => state.resetActiveDemoFromTemplate);
   const saveNow = useEditorStore((state) => state.saveNow);
+  const browserSave = useEditorStore((state) => state.persistenceMode === "browser");
   const setDialog = useEditorStore((state) => state.setDialog);
   const pushToast = useEditorStore((state) => state.pushToast);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -175,6 +176,13 @@ function ProjectDialog() {
   };
 
   const newProject = () => {
+    if (
+      browserSave &&
+      !window.confirm(
+        "Start a new workspace? Export your current project first if you want to keep a portable copy. This replaces the active project in this browser.",
+      )
+    )
+      return;
     replaceProject(createBlankProject());
     setDialog(null);
     pushToast("New professional laboratory project created.", "success");
@@ -262,7 +270,8 @@ function ProjectDialog() {
           <span>
             {project.laboratories.length} laborator
             {project.laboratories.length === 1 ? "y" : "ies"} · {visibleRooms.length} room
-            {visibleRooms.length === 1 ? "" : "s"} · Local project
+            {visibleRooms.length === 1 ? "" : "s"} ·{" "}
+            {browserSave ? "Saved in this browser" : "Local project"}
           </span>
         </div>
         <button
@@ -592,6 +601,21 @@ function ProjectDialog() {
           <small>Create, exchange, and version the complete indexed project</small>
         </span>
       </div>
+      {browserSave && (
+        <section className="browser-save-explanation" aria-label="How your project is saved">
+          <strong>Automatic saving · This browser and device</strong>
+          <p>
+            Your laboratories, rooms, layouts, inventory and named room versions stay saved here
+            across refreshes and site updates. Wait for “Saved in this browser” before closing the
+            tab.
+          </p>
+          <p>
+            Use <b>Export project</b> for a portable backup, and <b>Open JSON</b> to bring it to
+            another browser or computer. Clearing site data or closing a private-browsing session
+            removes its saved copy. This is not cloud or account sync.
+          </p>
+        </section>
+      )}
       <div className="dialog-action-grid">
         <button onClick={newProject}>
           <FilePlus size={19} />
@@ -686,6 +710,15 @@ function ProjectDialog() {
         onChange={async (event) => {
           const file = event.target.files?.[0];
           if (!file) return;
+          if (
+            browserSave &&
+            !window.confirm(
+              "Replace this browser's active project with the selected JSON file? Export the current project first if you need to keep it.",
+            )
+          ) {
+            event.target.value = "";
+            return;
+          }
           try {
             const imported = await importProject(JSON.parse(await file.text()));
             replaceProject(imported);
@@ -708,12 +741,19 @@ function ProjectDialog() {
               !window.confirm(`Delete “${project.name}” from this computer? This cannot be undone.`)
             )
               return;
-            await deleteLocalProject(project.id);
-            const replacement = createBlankProject();
-            replaceProject(replacement);
-            await useEditorStore.getState().saveNow();
-            setDialog(null);
-            pushToast("Project deleted; a new blank project is ready.", "success");
+            try {
+              await deleteLocalProject(project.id);
+              const replacement = createBlankProject();
+              replaceProject(replacement);
+              await useEditorStore.getState().saveNow();
+              setDialog(null);
+              pushToast("Project deleted; a new blank project is ready.", "success");
+            } catch (error) {
+              pushToast(
+                error instanceof Error ? error.message : "Project could not be deleted.",
+                "error",
+              );
+            }
           }}
         >
           <Trash size={16} />

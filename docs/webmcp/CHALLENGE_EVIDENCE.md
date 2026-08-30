@@ -45,7 +45,7 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
 - Twenty-six expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration, compact-header evidence, automatic first-room construction, and the complete human-reviewed later-change workflow.
-- Isolated four-hour public judge workspaces so simultaneous reviewers cannot overwrite one another.
+- Independent, automatically saved browser workspaces survive refresh and deployment; stale tabs cannot silently overwrite newer saves. No account or cloud-sync claim is made.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
 - A complete visible Asset Library conversion: 94 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.

@@ -173,6 +173,9 @@ test("adds reviewed inventory through one tool and guides exact collection stops
 }) => {
   await page.goto("/digital-twin");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  // This contract tests inventory/review/navigation, not GPU compilation. The
+  // shipped fallback keeps CPU-only CI responsive; 3D focus is covered separately.
+  await page.getByRole("button", { name: "2D fallback", exact: true }).click();
   const before = await readProject(page);
   const resolution = await executeTool<{
     requirements: Array<{ status: string; candidates: Array<{ recordId: string }> }>;
@@ -193,8 +196,12 @@ test("adds reviewed inventory through one tool and guides exact collection stops
   });
   const guide = page.getByRole("region", { name: "Collection guide" });
   await expect(guide).toContainText("Reference standards");
+  await expect(
+    page.getByRole("heading", { name: "Reference standards", exact: true }),
+  ).toBeVisible();
   await guide.getByRole("button", { name: "Next", exact: true }).click();
   await expect(guide).toContainText("2 / 2");
+  await expect(page.getByRole("heading", { name: "Nitrile gloves, M", exact: true })).toBeVisible();
   await guide.getByRole("button", { name: "Previous", exact: true }).click();
   await expect(guide).toContainText("1 / 2");
   await expect(guide).toContainText("Stock is not deducted");

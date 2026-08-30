@@ -196,11 +196,13 @@ test("adds reviewed inventory through one tool and guides exact collection stops
   });
   const guide = page.getByRole("region", { name: "Collection guide" });
   await expect(guide).toContainText("Reference standards");
+  await expect(page.getByRole("button", { name: "Return to 3D", exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Reference standards", exact: true }),
   ).toBeVisible();
   await guide.getByRole("button", { name: "Next", exact: true }).click();
   await expect(guide).toContainText("2 / 2");
+  await expect(page.getByRole("button", { name: "Return to 3D", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Nitrile gloves, M", exact: true })).toBeVisible();
   await guide.getByRole("button", { name: "Previous", exact: true }).click();
   await expect(guide).toContainText("1 / 2");

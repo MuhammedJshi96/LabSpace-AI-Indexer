@@ -43,6 +43,25 @@ describe("grounded material collection", () => {
       resolveMaterials({ brief: "Review", materials: [item.name] }, project).requirements[0].status,
     ).toBe("review-candidates");
   });
+  it("keeps a chosen 2D fallback while focusing and advancing exact records", () => {
+    const project = useEditorStore.getState().project;
+    const records = buildDigitalTwinIndex(project)
+      .filter((record) => record.kind === "inventory" && record.objectId)
+      .slice(0, 2);
+    useEditorStore.setState({ digitalTwinSpatialMode: "2d", presentation: "2d" });
+    startCollection({ title: "2D collection", recordIds: records.map((record) => record.id) });
+    expect(useEditorStore.getState()).toMatchObject({
+      digitalTwinSpatialMode: "2d",
+      presentation: "2d",
+      selectedLocationId: records[0].locationId,
+    });
+    controlCollection({ action: "next" });
+    expect(useEditorStore.getState()).toMatchObject({
+      digitalTwinSpatialMode: "2d",
+      presentation: "2d",
+      selectedLocationId: records[1].locationId,
+    });
+  });
   it("focuses next and previous exact locations without consuming stock or creating history", () => {
     const project = useEditorStore.getState().project;
     const records = buildDigitalTwinIndex(project)

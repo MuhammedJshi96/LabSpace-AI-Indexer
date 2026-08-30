@@ -138,6 +138,14 @@ export function collectionStatus(project = useEditorStore.getState().project) {
   };
 }
 
+/** Collection is view-agnostic: retain the researcher's 2D/3D choice between stops. */
+export function focusCollectionRecord(recordId: string) {
+  const { digitalTwinSpatialMode, presentation } = useEditorStore.getState();
+  const result = focusLabRecord({ recordId }, { revealStorage: false });
+  useEditorStore.setState({ digitalTwinSpatialMode, presentation });
+  return result;
+}
+
 export function startCollection(input: unknown) {
   const { title, recordIds } = parse(routeInput, input);
   if (new Set(recordIds).size !== recordIds.length)
@@ -155,15 +163,13 @@ export function startCollection(input: unknown) {
   // Group by laboratory/room without pretending to know doors, stairs, or safe walking paths.
   const rooms = [...new Set(records.map((record) => record.roomId))];
   const ordered = rooms.flatMap((roomId) => records.filter((record) => record.roomId === roomId));
-  focusLabRecord({ recordId: ordered[0].id }, { revealStorage: false });
-  useCollectionStore
-    .getState()
-    .setRoute({
-      projectId: project.id,
-      title,
-      recordIds: ordered.map((record) => record.id),
-      step: 0,
-    });
+  focusCollectionRecord(ordered[0].id);
+  useCollectionStore.getState().setRoute({
+    projectId: project.id,
+    title,
+    recordIds: ordered.map((record) => record.id),
+    step: 0,
+  });
   return collectionStatus();
 }
 
@@ -179,7 +185,7 @@ export function controlCollection(input: unknown) {
       0,
       Math.min(route.recordIds.length - 1, route.step + (action === "next" ? 1 : -1)),
     );
-    focusLabRecord({ recordId: route.recordIds[step] }, { revealStorage: false });
+    focusCollectionRecord(route.recordIds[step]);
     useCollectionStore.getState().setRoute({ ...route, step });
   }
   return collectionStatus();

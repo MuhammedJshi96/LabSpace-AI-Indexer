@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import "./collection-guide.css";
 import { ArrowLeft, ArrowRight, ListChecks, MapPin, X } from "@phosphor-icons/react";
-import { controlCollection, useCollectionStore } from "../agent/labspace-collection-actions";
-import { focusLabRecord } from "../agent/labspace-navigation-actions";
+import {
+  controlCollection,
+  focusCollectionRecord,
+  useCollectionStore,
+} from "../agent/labspace-collection-actions";
 import { buildDigitalTwinIndex } from "../domain/digital-twin-index";
 import { useEditorStore } from "../store/editor-store";
 
@@ -17,7 +20,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
     const id = route.recordIds[route.step];
     if (useEditorStore.getState().digitalTwinSelectedRecordId === id) return;
     try {
-      focusLabRecord({ recordId: id }, { revealStorage: false });
+      focusCollectionRecord(id);
     } catch {
       /* The guide renders an unavailable stop without inventing a replacement. */
     }
@@ -87,7 +90,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
         <button
           onClick={() => {
             try {
-              focusLabRecord({ recordId: route.recordIds[route.step] }, { revealStorage: false });
+              focusCollectionRecord(route.recordIds[route.step]);
               setError("");
             } catch (failure) {
               setError(failure instanceof Error ? failure.message : "Stop unavailable.");

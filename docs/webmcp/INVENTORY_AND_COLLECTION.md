@@ -35,7 +35,7 @@ Ask: “Use my approved preparation list, match it against our inventory, show a
 - `labspace_resolve_materials` takes `{brief, materials:["Reference standards", "Nitrile gloves"]}` and checks canonical inventory/equipment across eligible rooms. It returns exact matches, review candidates, quantities/status as recorded, and missing items. Factory templates are excluded.
 - The researcher chooses the relevant records. `labspace_start_collection` takes `{title, recordIds:[...]}` using those real IDs and starts a room-grouped itinerary.
 - The visible **Collection guide** has **Previous**, **Next**, **Focus**, and **All stops**. `labspace_collection_step` offers the same `previous`, `next`, `status`, and `finish` operations to the agent.
-- Each stop focuses the canonical room object and storage location. The guide survives navigation in the same browser tab. It does not deduct, reserve, or fabricate stock.
+- Each stop focuses the canonical room object and storage location while retaining your chosen 2D/3D view. The guide survives navigation in the same browser tab. It does not deduct, reserve, or fabricate stock.
 
 This is a collection checklist, **not** a validated pedestrian route, regulatory safety assessment, or authorization to run an experiment. It does not infer safe substitutions or chemical compatibility. Unlocated/deleted records fail explicitly.
 

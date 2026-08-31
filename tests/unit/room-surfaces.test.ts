@@ -21,11 +21,19 @@ describe("room surface realism regression", () => {
       expect(maps.roughnessMap.format).toBe(THREE.RGBAFormat);
       expect(maps.roughnessMap.colorSpace).toBe(THREE.NoColorSpace);
       const data = maps.roughnessMap.image.data as Uint8Array;
+      let minimumRoughness = 255;
+      let invalidMetalness = 0;
+      let invalidAlpha = 0;
       for (let i = 0; i < data.length; i += 4) {
-        expect(data[i + 1]).toBeGreaterThanOrEqual(242);
-        expect(data[i + 2]).toBe(0);
-        expect(data[i + 3]).toBe(255);
+        minimumRoughness = Math.min(minimumRoughness, data[i + 1]);
+        if (data[i + 2] !== 0) invalidMetalness += 1;
+        if (data[i + 3] !== 255) invalidAlpha += 1;
       }
+      // Inspect every texel without constructing ~440,000 assertion objects.
+      // This keeps identical coverage within the default timeout on CI runners.
+      expect(minimumRoughness, profile).toBeGreaterThanOrEqual(242);
+      expect(invalidMetalness, profile).toBe(0);
+      expect(invalidAlpha, profile).toBe(0);
     }
   });
 

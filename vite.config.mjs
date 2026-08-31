@@ -20,6 +20,9 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
+          // Keep the opt-in AO shaders out of the baseline spatial bundle.
+          if (/\/(GTAOPass|GTAOShader|PoissonDenoiseShader)\.js$/.test(id.replaceAll("\\", "/")))
+            return "contact-shading";
           if (
             id.includes("three") ||
             id.includes("@react-three") ||

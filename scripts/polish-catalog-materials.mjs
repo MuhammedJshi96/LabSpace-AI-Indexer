@@ -271,7 +271,9 @@ export function reviewMaterial(material, assetId) {
       /clear|laminated|safety|vision|low.?iron|borosilicate|observation/i.test(result.name) &&
       !/edge|frost|smok/i.test(result.name)
     ) {
-      pbr.baseColorFactor = [0.96, 0.985, 0.99, 1];
+      // Retain the authored cool-blue glass identity; clarity is a roughness /
+      // transmission correction, not permission to bleach every pane white.
+      pbr.baseColorFactor ??= [0.7, 0.9, 0.93, 1];
       pbr.roughnessFactor = 0.015;
       result.extensions.KHR_materials_transmission.transmissionFactor = 0.98;
     }

@@ -40,8 +40,8 @@ variants with four shared pairs of 256 px normal/roughness maps (coating, brushe
 metal, phenolic and polymer). All eight maps together use less than 3 MiB including
 mipmaps. Only exposed metal receives directional brushed grain; laminate/paint remains
 dielectric and grips remain matte black. No catalog GLBs or thumbnail files have
-been regenerated or recolored. It adds no downloads,
-ray tracing, screen-space AO, per-object reflection probes or polygon subdivisions.
+been regenerated or recolored. It adds no image downloads,
+ray tracing, per-object reflection probes or polygon subdivisions.
 Contact-shadow buffer sizes stay fixed across tiers to avoid reallocating those
 buffers on each change. Low suppresses their capture passes, rather than hiding
 objects. Facility now renders on demand as the room and Asset Studio already did.
@@ -58,6 +58,26 @@ The settings follow the installed Three.js shadow implementation. See the
 [official shadow controls](https://threejs.org/docs/pages/LightShadow.html) for
 the cost of map resolution and variance-shadow blur samples. High is intentionally
 opt-in; identical frame rate on all GPUs is not claimed.
+
+## `ref1.png` shading benchmark
+
+The user selected `references/ref1.png` as the explicit material-depth benchmark.
+Its useful cues are grounded plinths, soft occlusion at panel junctions, satin dark
+worktops, restrained grain and readable glass. Its wood casework and room layout
+are not permission to recolor or rearrange the user's laboratory.
+
+High now lazy-loads a restrained GTAO contact-shading pass in the room and Asset
+Studio (not the larger Facility overview). It renders capped depth/normal/AO
+buffers, at most 960 px on one edge and 524,288 pixels, then blends over the
+existing antialiased frame. There are no full-resolution composer buffers.
+Transparent panes and editor guides are excluded from the occluder pass only;
+the beauty scene still contains every object. The pass reuses existing shadows,
+denoises its sampling, renders only on invalidation, disposes its buffers on
+Balanced/Low and falls back to ordinary rendering if initialization/drawing fails.
+
+This adds a geometry-normal pass and three fullscreen passes to High, so it has a
+real GPU/CPU cost. It approximates the reference's contact depth; it is not baked
+global illumination or a claim to exactly reproduce the reference photograph.
 
 ## Clear glazing correction
 
@@ -84,7 +104,16 @@ comparison; they have not been batch-regenerated with the experimental lighting.
 
 ## Local verification
 
-- Final material/color pass: **365 tests across 52 files**, lint, TypeScript,
+- Reference contact-shading pass: **367 tests across 53 files** passed with lint,
+  typecheck, catalog validation and production build. Clean-preview High →
+  Balanced kept the camera transform, removed the AO diagnostics/buffers and
+  returned from 152 to 98 draw calls in the sampled bench view. High's extra
+  normal pass is a deliberate opt-in cost, not a free performance improvement.
+- The final blue-glass cabinet preview remained at 30 rendered frames across
+  later idle checks. The new AO module adds approximately 7.3 KiB gzip of lazy
+  component/shader code; its special shaders are split out of the base bundle.
+
+- Material/color checkpoint: **365 tests across 52 files**, lint, TypeScript,
   asset validation and production build passed. Build retains its existing
   large-chunk advisory; this is not a claim of zero GPU or bundle cost.
 - Visually checked transparent blue cabinet panes and three-pane windows,

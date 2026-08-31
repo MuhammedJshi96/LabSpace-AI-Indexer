@@ -28,6 +28,7 @@ import * as THREE from "three";
 import { StudioEnvironment } from "./StudioEnvironment";
 import { QualityKeyLight } from "./QualityKeyLight";
 import { QualityColorManagement } from "./QualityColorManagement";
+import { RenderContactShading } from "./RenderContactShading";
 import { RenderDiagnostics } from "./RenderDiagnostics";
 import { RenderQualityControl } from "./RenderQualityControl";
 import { renderQualityPreset, type RenderQuality } from "../domain/render-quality";
@@ -1209,6 +1210,7 @@ export function ThreeDView({
         >
           <RenderDiagnostics />
           <QualityColorManagement exposure={presentation === "digital-twin" ? 1.04 : 0.98} />
+          <RenderContactShading surface="room" />
           <RoomScene
             room={room}
             focusObjectId={focusObjectId}

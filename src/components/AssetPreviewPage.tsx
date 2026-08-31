@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { StudioEnvironment } from "./StudioEnvironment";
 import { QualityKeyLight } from "./QualityKeyLight";
 import { QualityColorManagement } from "./QualityColorManagement";
+import { RenderContactShading } from "./RenderContactShading";
 import { RenderDiagnostics } from "./RenderDiagnostics";
 import { RenderQualityControl } from "./RenderQualityControl";
 import { renderQualityPreset } from "../domain/render-quality";
@@ -315,6 +316,7 @@ export function AssetPreviewPage() {
             >
               <RenderDiagnostics />
               <QualityColorManagement />
+              <RenderContactShading surface="studio" />
               <PreviewCameraRig
                 view={previewView}
                 extent={previewExtent}

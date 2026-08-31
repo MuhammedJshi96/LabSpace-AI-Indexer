@@ -22,6 +22,7 @@ export function RenderDiagnostics() {
       .map((n) => n.toFixed(4))
       .join(",");
     canvas.dataset.shadowFilter = String(gl.shadowMap.type);
+    canvas.dataset.toneMapping = String(gl.toneMapping);
   });
   return null;
 }

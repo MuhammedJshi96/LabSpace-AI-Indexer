@@ -11,6 +11,7 @@ import {
 import * as THREE from "three";
 import { StudioEnvironment } from "./StudioEnvironment";
 import { QualityKeyLight } from "./QualityKeyLight";
+import { QualityColorManagement } from "./QualityColorManagement";
 import { RenderDiagnostics } from "./RenderDiagnostics";
 import { RenderQualityControl } from "./RenderQualityControl";
 import { renderQualityPreset } from "../domain/render-quality";
@@ -309,12 +310,11 @@ export function AssetPreviewPage() {
               frameloop="demand"
               gl={{ antialias: true, powerPreference: "high-performance" }}
               onCreated={({ gl }) => {
-                gl.toneMapping = THREE.ACESFilmicToneMapping;
-                gl.toneMappingExposure = 1;
                 gl.outputColorSpace = THREE.SRGBColorSpace;
               }}
             >
               <RenderDiagnostics />
+              <QualityColorManagement />
               <PreviewCameraRig
                 view={previewView}
                 extent={previewExtent}
@@ -328,8 +328,12 @@ export function AssetPreviewPage() {
                 intensity={0.55 * renderSettings.environmentMultiplier}
                 onReady={() => setLightingReady(true)}
               />
-              <hemisphereLight color="#ffffff" groundColor="#c5cbc8" intensity={0.32} />
-              <ambientLight intensity={0.06} />
+              <hemisphereLight
+                color="#ffffff"
+                groundColor="#c5cbc8"
+                intensity={0.32 * renderSettings.fillMultiplier}
+              />
+              <ambientLight intensity={0.06 * renderSettings.fillMultiplier} />
               <QualityKeyLight
                 quality={quality}
                 surface="studio"

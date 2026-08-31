@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import * as THREE from "three";
+import { applyRenderColor } from "../../src/lib/render-color";
 import { normalizeRenderQuality, renderQualityPreset } from "../../src/domain/render-quality";
 import {
   createRenderSettingsStore,
@@ -6,6 +8,20 @@ import {
 } from "../../src/store/render-settings-store";
 
 describe("reversible render quality", () => {
+  it("uses color-preserving Neutral only in High and restores base color management", () => {
+    const renderer = { toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.98 };
+    const restore = applyRenderColor(renderer, "high", 0.98);
+    expect(renderer.toneMapping).toBe(THREE.NeutralToneMapping);
+    expect(renderer.toneMappingExposure).toBe(0.98);
+    restore();
+    expect(renderer.toneMapping).toBe(THREE.ACESFilmicToneMapping);
+    for (const quality of ["balanced", "low"] as const) {
+      const reset = applyRenderColor(renderer, quality, 1.04);
+      expect(renderer.toneMapping).toBe(THREE.ACESFilmicToneMapping);
+      expect(renderer.toneMappingExposure).toBe(1.04);
+      reset();
+    }
+  });
   it("keeps the released Balanced budgets on each surface", () => {
     expect(renderQualityPreset("balanced")).toMatchObject({
       dpr: [1, 1.5],
@@ -13,6 +29,7 @@ describe("reversible render quality", () => {
       softShadows: false,
       environmentMultiplier: 1,
       keyMultiplier: 1,
+      fillMultiplier: 1,
       contactShadows: true,
     });
     expect(renderQualityPreset("balanced", "studio").shadowSize).toBe(1024);

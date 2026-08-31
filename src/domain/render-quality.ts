@@ -15,12 +15,12 @@ export const RENDER_QUALITY_OPTIONS: Array<{
   {
     value: "balanced",
     label: "Balanced",
-    description: "Published lighting and detail. Recommended for everyday editing.",
+    description: "Base lighting and finish detail. Recommended for everyday editing.",
   },
   {
     value: "high",
     label: "High",
-    description: "Soft studio shadows and finer detail. Uses more GPU memory.",
+    description: "Soft shadows, fine coating grain and brushed-metal detail. Uses more GPU memory.",
   },
 ];
 
@@ -41,7 +41,8 @@ export function renderQualityPreset(quality: RenderQuality, surface: RenderSurfa
     shadowSize: quality === "low" ? 512 : quality === "high" ? 2048 : balancedShadowSize,
     softShadows: quality === "high",
     contactShadows: quality !== "low",
-    environmentMultiplier: quality === "high" ? 1.12 : 1,
-    keyMultiplier: quality === "high" ? 0.88 : 1,
+    environmentMultiplier: 1,
+    keyMultiplier: 1,
+    fillMultiplier: quality === "high" ? 0.78 : 1,
   };
 }

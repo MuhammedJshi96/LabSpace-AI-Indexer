@@ -214,7 +214,7 @@ export function reviewMaterial(material, assetId) {
     ].includes(result.name)
   )
     surface = "polymer";
-  if (dielectricNames.test(result.name)) {
+  if (dielectricNames.test(result.name) && !/glass|glazing/i.test(result.name)) {
     pbr.metallicFactor = 0;
     if (!/rubber|vinyl|phenolic|seam|label/i.test(result.name)) {
       pbr.roughnessFactor = Math.max(pbr.roughnessFactor ?? 0.4, 0.4);
@@ -262,13 +262,13 @@ export function reviewMaterial(material, assetId) {
     surface = "micrograin";
   }
   const transmission = result.extensions?.KHR_materials_transmission?.transmissionFactor ?? 0;
-  if (transmission > 0.8 && /glass|glazing/i.test(result.name)) {
+  if (transmission > 0.5 && /glass|glazing/i.test(result.name)) {
     // Transmission already controls transparency. Multiplying by alpha .2
     // made real glazing disappear and caused incorrect sorting/double blending.
     if (pbr.baseColorFactor) pbr.baseColorFactor[3] = 1;
     result.alphaMode = "OPAQUE";
     if (
-      /clear|laminated|safety|vision/i.test(result.name) &&
+      /clear|laminated|safety|vision|low.?iron|borosilicate|observation/i.test(result.name) &&
       !/edge|frost|smok/i.test(result.name)
     ) {
       pbr.baseColorFactor = [0.96, 0.985, 0.99, 1];

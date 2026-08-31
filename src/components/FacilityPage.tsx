@@ -11,6 +11,7 @@ import {
 import { OrbitControls } from "@react-three/drei";
 import { StudioEnvironment } from "./StudioEnvironment";
 import { QualityKeyLight } from "./QualityKeyLight";
+import { QualityColorManagement } from "./QualityColorManagement";
 import { RenderDiagnostics } from "./RenderDiagnostics";
 import { RenderQualityControl } from "./RenderQualityControl";
 import { renderQualityPreset } from "../domain/render-quality";
@@ -700,9 +701,14 @@ function FacilityStackView({
       <RenderDiagnostics />
       <color attach="background" args={["#e9f0ee"]} />
       <fog attach="fog" args={["#e9f0ee", 42, 120]} />
+      <QualityColorManagement />
       <StudioEnvironment intensity={0.55 * renderSettings.environmentMultiplier} />
-      <hemisphereLight color="#ffffff" groundColor="#b5bdb8" intensity={0.4} />
-      <ambientLight intensity={0.075} />
+      <hemisphereLight
+        color="#ffffff"
+        groundColor="#b5bdb8"
+        intensity={0.4 * renderSettings.fillMultiplier}
+      />
+      <ambientLight intensity={0.075 * renderSettings.fillMultiplier} />
       <QualityKeyLight
         quality={quality}
         surface="facility"

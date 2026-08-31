@@ -27,6 +27,7 @@ import {
 import * as THREE from "three";
 import { StudioEnvironment } from "./StudioEnvironment";
 import { QualityKeyLight } from "./QualityKeyLight";
+import { QualityColorManagement } from "./QualityColorManagement";
 import { RenderDiagnostics } from "./RenderDiagnostics";
 import { RenderQualityControl } from "./RenderQualityControl";
 import { renderQualityPreset, type RenderQuality } from "../domain/render-quality";
@@ -832,7 +833,11 @@ const RoomScene = memo(function RoomScene({
       <StudioEnvironment
         intensity={lighting.environmentIntensity * renderSettings.environmentMultiplier}
       />
-      <hemisphereLight color="#f7f9ff" groundColor="#c4bfb5" intensity={0.28} />
+      <hemisphereLight
+        color="#f7f9ff"
+        groundColor="#c4bfb5"
+        intensity={0.28 * renderSettings.fillMultiplier}
+      />
       <QualityKeyLight
         quality={quality}
         position={lighting.keyPosition}
@@ -1198,13 +1203,12 @@ export function ThreeDView({
           frameloop="demand"
           gl={{ antialias: true, powerPreference: "high-performance" }}
           onCreated={({ gl }) => {
-            gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = presentation === "digital-twin" ? 1.04 : 0.98;
             gl.outputColorSpace = THREE.SRGBColorSpace;
           }}
           onPointerMissed={() => useEditorStore.getState().setSelected([])}
         >
           <RenderDiagnostics />
+          <QualityColorManagement exposure={presentation === "digital-twin" ? 1.04 : 0.98} />
           <RoomScene
             room={room}
             focusObjectId={focusObjectId}

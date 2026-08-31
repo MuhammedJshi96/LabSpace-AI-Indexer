@@ -10,7 +10,9 @@ export function RenderQualityControl({ className = "" }: { className?: string })
   )!.description;
   return (
     <div className={`render-quality-control ${className}`} data-quality={quality}>
-      <label title={`${description} View setting only; rooms and materials are unchanged.`}>
+      <label
+        title={`${description} View setting only; saved rooms and finish colors are unchanged.`}
+      >
         <span>Quality</span>
         <select
           aria-label="Render quality"
@@ -27,7 +29,7 @@ export function RenderQualityControl({ className = "" }: { className?: string })
       <button
         type="button"
         aria-label="Restore Balanced rendering"
-        title="Restore the published Balanced appearance"
+        title="Restore Balanced lighting and base finish detail; retain corrected clear glass"
         disabled={quality === "balanced"}
         onClick={() => setQuality("balanced")}
       >

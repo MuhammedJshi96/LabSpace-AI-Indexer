@@ -30,7 +30,7 @@ export function QualityKeyLight({ quality, surface = "room", ...props }: Props) 
       shadow-radius={settings.softShadows ? 6 : props["shadow-radius"]}
       shadow-intensity={
         settings.softShadows
-          ? Math.min(0.7, props["shadow-intensity"] ?? 1)
+          ? Math.min(0.78, props["shadow-intensity"] ?? 1)
           : props["shadow-intensity"]
       }
       shadow-blurSamples={8}

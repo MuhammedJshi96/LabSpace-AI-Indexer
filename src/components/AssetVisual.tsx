@@ -1,4 +1,12 @@
-import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from "react";
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
@@ -7,6 +15,8 @@ import { getLaboratoryMaterialTexture } from "../lib/laboratory-material-texture
 import { ProceduralAssetModel } from "./ProceduralAssetModel";
 import { applyStoragePose, cloneStorageScene } from "../lib/storage-articulation";
 import { applyReviewedAuthoredFinish } from "../lib/authored-finish";
+import { bindPresentationMaterials, type PresentationBinding } from "../lib/presentation-materials";
+import { useRenderSettings } from "../store/render-settings-store";
 
 type DetailLevel = "room" | "preview";
 
@@ -178,6 +188,7 @@ function AuthoredAssetModel({
   // offline while dense rooms benefit from compressed geometry delivery.
   const { scene } = useGLTF(source, "/draco/gltf/", true);
   const invalidate = useThree((state) => state.invalidate);
+  const quality = useRenderSettings((state) => state.quality);
   const authored = model.authoredDimensions;
 
   const enhancedScene = useMemo(() => {
@@ -190,6 +201,24 @@ function AuthoredAssetModel({
     });
     return cloneStorageScene(scene);
   }, [scene]);
+
+  const materialBindings = useMemo(() => {
+    const bindings: PresentationBinding[] = [];
+    enhancedScene.scene.traverse((node) => {
+      if (node instanceof THREE.Mesh)
+        bindings.push({
+          mesh: node,
+          materials: Array.isArray(node.material) ? node.material : [node.material],
+          multiple: Array.isArray(node.material),
+        });
+    });
+    return bindings;
+  }, [enhancedScene]);
+  useLayoutEffect(() => {
+    const release = bindPresentationMaterials(materialBindings, quality);
+    invalidate(2);
+    return release;
+  }, [materialBindings, quality, invalidate]);
 
   const reducedMotion = useMemo(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,

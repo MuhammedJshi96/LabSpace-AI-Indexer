@@ -290,6 +290,7 @@ def add_framed_glass_slider(
         y + 0.004,
         (bottom + top) / 2.0,
         -1.0,
+        projection=0.016,
     )
 
 

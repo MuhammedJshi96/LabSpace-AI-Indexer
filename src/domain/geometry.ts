@@ -144,6 +144,11 @@ export function supportSurfaceElevation(object: SceneObject): number | null {
   const explicitHeight = Number(object.metadata.supportSurfaceHeight);
   if (Number.isFinite(explicitHeight)) return object.position.z + explicitHeight;
 
+  if (object.assetDefinitionId === "computer-lab-bench")
+    return object.position.z + object.dimensions.height * (800 / 1350);
+  if (object.assetDefinitionId === "institutional-sink-cabinet")
+    return object.position.z + object.dimensions.height * (900 / 1200);
+
   const profile = ASSET_BY_ID.get(object.assetDefinitionId)?.profile;
   if (profile === "bench") return object.position.z + Math.min(900, object.dimensions.height);
   if (profile === "table") return object.position.z + Math.min(760, object.dimensions.height);
@@ -276,7 +281,25 @@ export function objectsOverlap(a: SceneObject, b: SceneObject, padding = 0): boo
   );
 }
 
-const OPEN_KNEE_DESKS = new Set(["office-desk", "rectangular-table", "computer-workstation"]);
+const OPEN_KNEE_DESKS = new Set([
+  "office-desk",
+  "rectangular-table",
+  "computer-workstation",
+  "computer-lab-bench",
+]);
+
+function deskKneeSpace(desk: SceneObject) {
+  // The reference computer bench has a real right-hand drawer pedestal.
+  // Its knee space is offset to the left, never the whole worktop footprint.
+  if (desk.assetDefinitionId === "computer-lab-bench") {
+    const direction = desk.flipHorizontal ? -1 : 1;
+    return {
+      center: -desk.dimensions.width * 0.13 * direction,
+      halfWidth: desk.dimensions.width * 0.28,
+    };
+  }
+  return { center: 0, halfWidth: desk.dimensions.width / 2 - 100 };
+}
 
 /** Only the seat's front may tuck under an open knee-space desk; its back stays outside. */
 export function chairFitsUnderDesk(desk: SceneObject, chair: SceneObject): boolean {
@@ -298,9 +321,10 @@ export function chairFitsUnderDesk(desk: SceneObject, chair: SceneObject): boole
     (((chair.rotation.z + (chair.flipVertical ? 180 : 0) - (angle * 180) / Math.PI) % 360) + 360) %
     360;
   const facingDesk = chair.assetDefinitionId === "round-stool" || Math.abs(turn - 180) <= 15;
+  const knee = deskKneeSpace(desk);
   return (
     facingDesk &&
-    Math.abs(across) + chair.dimensions.width / 2 <= desk.dimensions.width / 2 - 100 &&
+    Math.abs(across - knee.center) + chair.dimensions.width / 2 <= knee.halfWidth &&
     forward >= desk.dimensions.depth / 2 + chair.dimensions.depth * 0.22 &&
     forward <= desk.dimensions.depth / 2 + chair.dimensions.depth / 2 + 20
   );
@@ -315,12 +339,13 @@ export function snapChairToDesk(room: Room, chair: SceneObject, thresholdMm = 24
       const rotation = desk.rotation.z + (desk.flipVertical ? 180 : 0);
       const angle = (rotation * Math.PI) / 180;
       const offset = desk.dimensions.depth / 2 + chair.dimensions.depth * 0.27;
+      const across = deskKneeSpace(desk).center;
       const candidate: SceneObject = {
         ...chair,
         flipVertical: false,
         position: {
-          x: desk.position.x - Math.sin(angle) * offset,
-          y: desk.position.y + Math.cos(angle) * offset,
+          x: desk.position.x + Math.cos(angle) * across - Math.sin(angle) * offset,
+          y: desk.position.y + Math.sin(angle) * across + Math.cos(angle) * offset,
           z: desk.position.z,
         },
         rotation: { ...chair.rotation, z: (rotation + 180) % 360 },

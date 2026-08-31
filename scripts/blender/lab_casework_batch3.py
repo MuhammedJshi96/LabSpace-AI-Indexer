@@ -713,151 +713,8 @@ def add_open_wash_frame(width: float, depth: float) -> None:
 
 
 def build_stainless_wash_basin(spec: AssetSpec) -> None:
-    m = furniture.MATERIALS
-    # Local to this requested asset. Never retune shared runtime metal finishes.
-    for key, color, metal, rough in (
-        ("stainless", (0.62, 0.69, 0.68, 1), 0.34, 0.32),
-        ("stainless_bright", (0.74, 0.80, 0.79, 1), 0.42, 0.27),
-    ):
-        finish = "body" if key == "stainless" else "surface"
-        m[key] = furniture.make_material(f"Open wash satin alloy {finish}", color, metallic=metal, roughness=rough, coat=0.12)
-    add_open_wash_frame(spec.width, spec.depth)
-    sink_x = -0.23
-    sink_y = -0.015
-    sink_width = 0.88
-    sink_length = 0.52
-    sink_left = sink_x - sink_width / 2.0
-    sink_right = sink_x + sink_width / 2.0
-    sink_front = sink_y - sink_length / 2.0
-    sink_back = sink_y + sink_length / 2.0
-    left_width = sink_left + spec.width / 2.0
-    right_width = spec.width / 2.0 - sink_right
-    for name, x, piece_width in (
-        ("left", -spec.width / 2.0 + left_width / 2.0, left_width),
-        ("right", sink_right + right_width / 2.0, right_width),
-    ):
-        furniture.add_box(
-            f"Open wash station top {name}",
-            (x, 0.0, 0.866),
-            (piece_width, spec.depth, 0.068),
-            m["stainless_bright"],
-            bevel=0.012,
-            category="wash top",
-        )
-    front_depth = sink_front + spec.depth / 2.0
-    rear_depth = spec.depth / 2.0 - sink_back
-    for name, y, piece_depth in (
-        ("front", -spec.depth / 2.0 + front_depth / 2.0, front_depth),
-        ("rear", sink_back + rear_depth / 2.0, rear_depth),
-    ):
-        furniture.add_box(
-            f"Open wash station top {name}",
-            (sink_x, y, 0.866),
-            (sink_width, piece_depth, 0.068),
-            m["stainless_bright"],
-            bevel=0.009,
-            category="wash top",
-        )
-    add_rectangular_basin(
-        "Deep wash basin",
-        (sink_x, sink_y),
-        (sink_width, sink_length),
-        0.894,
-        depth=0.30,
-        water=False,
-    )
-    for index in range(8):
-        x = 0.39 + index * 0.065
-        furniture.add_box(
-            f"Drainboard ridge {index + 1}",
-            (x, -0.02, 0.896),
-            (0.012, 0.48, 0.008),
-            m["stainless"],
-            bevel=0.003,
-            category="drainboard",
-        )
-    furniture.add_box(
-        "Wash station rear splashback",
-        (0.0, spec.depth / 2.0 - 0.018, 0.965),
-        (spec.width, 0.036, 0.17),
-        m["stainless"],
-        bevel=0.006,
-        category="splashback",
-    )
-    add_faucet("Pre-rinse mixer", -0.40, spec.depth / 2.0 - 0.075, 0.87, height=0.42)
-    add_faucet(
-        "Secondary laboratory tap",
-        0.52,
-        spec.depth / 2.0 - 0.075,
-        0.87,
-        height=0.24,
-        reach=0.12,
-    )
-    add_curve_tube(
-        "Flexible pre-rinse hose",
-        [
-            (-0.40, 0.25, 0.91),
-            (-0.52, 0.22, 1.16),
-            (-0.45, 0.05, 1.27),
-            (-0.30, -0.02, 1.11),
-        ],
-        0.010,
-        m["black"],
-        category="hose",
-    )
-    # The pre-rinse fixture is included in the 1300 mm overall planning envelope.
-    for key, x in (("blue", 0.64), ("red", 0.70), ("green", 0.76), ("yellow", 0.82)):
-        furniture.add_cylinder(
-            f"Service marker {key}",
-            (x, spec.depth / 2.0 - 0.055, 0.875),
-            0.011,
-            0.022,
-            m[key],
-            vertices=20,
-            category="service marker",
-        )
-    furniture.add_box(
-        "Wash station information label",
-        (spec.width / 2.0 - 0.15, -spec.depth / 2.0 + 0.012, 0.74),
-        (0.16, 0.008, 0.07),
-        m["label"],
-        bevel=0.004,
-        category="label",
-    )
-    add_curve_tube("Basin drain and P-trap", [(-0.23, 0, 0.605), (-0.23, 0, 0.45),
-        (-0.23, 0.07, 0.40), (-0.23, 0.14, 0.45), (-0.23, 0.14, 0.51),
-        (-0.23, 0.30, 0.51)], 0.022, m["stainless"], category="plumbing")
-    furniture.add_box("Rear service box mounting bracket", (0.55, 0.235, 0.52),
-        (0.22, 0.13, 0.026), m["stainless"], bevel=0.004, category="service mounting")
-    furniture.add_box(
-        "Wash station powder-coated service box",
-        (0.55, 0.245, 0.42),
-        (0.18, 0.12, 0.18),
-        m["powder_light"],
-        bevel=0.012,
-        category="service box",
-    )
-    furniture.add_box(
-        "Wash station interior service panel",
-        (0.55, 0.310, 0.42),
-        (0.15, 0.015, 0.14),
-        m["interior"],
-        bevel=0.004,
-        category="service box",
-    )
-    furniture.add_box(
-        "Wash station shadow reveal",
-        (0.55, 0.179, 0.42),
-        (0.15, 0.012, 0.025),
-        m["shadow"],
-        bevel=0.003,
-        category="service box",
-    )
-    if furniture.ROOT is not None:
-        furniture.ROOT["worktop_height_m"] = 0.90
-        furniture.ROOT["reference_anatomy"] = (
-            "open stainless wash station, lower shelf, deep basin, folded pre-rinse fixture"
-        )
+    from reference_sink_construction import build_open
+    build_open(spec)
 
 
 def build_stainless_enclosed_basin(spec: AssetSpec) -> None:
@@ -1167,6 +1024,16 @@ def build_one(
     furniture.build_materials()
     add_reference_materials()
     BUILDERS[spec.asset_id](spec)
+
+    # Hardware is physical geometry, so a millimetre of forward projection
+    # must not move the delivered footprint anchor away from its centre.
+    minimum, maximum = furniture.mesh_bounds()
+    offset = (minimum + maximum) * 0.5
+    for obj in bpy.context.scene.objects:
+        if obj.type == "MESH":
+            obj.location.x -= offset.x
+            obj.location.y -= offset.y
+    bpy.context.view_layer.update()
 
     if furniture.ROOT is not None:
         furniture.ROOT["display_name"] = spec.asset_id.replace("-", " ").title()

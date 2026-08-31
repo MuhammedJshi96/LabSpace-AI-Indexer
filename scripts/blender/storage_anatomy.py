@@ -24,6 +24,33 @@ def prepare(f):
             f.add_box(name+' side',(mid.x+side*(d.x-t)/2,mid.y,mid.z),(t,d.y,d.z),material,bevel=.004)
             f.add_box(name+' pan',(mid.x,mid.y,mid.z+side*(d.z-t)/2),(d.x-2*t,d.y,t),material,bevel=.004)
         f.add_box(name+' back',(mid.x,hi.y-t/2 if front_sign<0 else lo.y+t/2,mid.z),(d.x-2*t,t,d.z-2*t),material,bevel=.003)
+        # Hollowing a source block must retain its manufactured front returns.
+        # Otherwise short doors expose an empty header/sill and appear detached.
+        prefixes = {
+            'safety cabinet shell': ('safety cabinet door',),
+            'mobile drawer carcass': ('mobile drawer ',),
+            'locker carcass': ('locker door ',),
+            'cold-storage insulated chassis': ('cold-storage door',),
+            'Enclosed stainless cabinet shell': ('Enclosed basin door ',),
+        }.get(name, ())
+        faces = [o for o in bpy.context.scene.objects if o.type == 'MESH'
+                 and any(o.name.startswith(p) for p in prefixes)
+                 and o.get('part_category') in {'cabinet door','drawer','door','insulated door','locker door','cold storage door'}]
+        if faces and front_sign < 0:
+            flo,fhi=bounds(faces)
+            face_back=max(o.location.y+o.dimensions.y/2 for o in faces)
+            front=min(lo.y,face_back+.001)
+            back=lo.y+.040
+            cy=(front+back)/2; fd=back-front
+            bottom=min(max(flo.z-.003,lo.z+t),hi.z-t)
+            top=max(min(fhi.z+.003,hi.z-t),bottom)
+            if hi.z-top>.002:
+                f.add_box(name+' closed header return',(mid.x,cy,(top+hi.z)/2),(d.x-2*t,fd,hi.z-top),material,bevel=.002,category='fixed face frame')
+            if bottom-lo.z>.002:
+                f.add_box(name+' closed sill return',(mid.x,cy,(lo.z+bottom)/2),(d.x-2*t,fd,bottom-lo.z),material,bevel=.002,category='fixed face frame')
+            for side in (-1,1):
+                f.add_box(name+' front side return',(mid.x+side*(d.x-t)/2,cy,mid.z),(t,fd,d.z),material,bevel=.002,category='fixed face frame')
+            root['closed_face_frame_revision']='catalog-joinery-r2'
     solid={'chemical-cabinet':'safety cabinet shell','flammable-cabinet':'safety cabinet shell','mobile-drawer':'mobile drawer carcass','locker':'locker carcass','refrigerator-storage':'cold-storage insulated chassis','freezer-storage':'cold-storage insulated chassis'}
     if aid in solid: hollow(solid[aid])
     if aid=='stainless-enclosed-basin': hollow('Enclosed stainless cabinet shell')
@@ -31,6 +58,8 @@ def prepare(f):
         for obj in list(bpy.context.scene.objects):
             if obj.type=='MESH' and re.match(r'Island .+ carcass shell$',obj.name):
                 hollow(obj.name,-1 if obj.location.y<0 else 1)
+    import recessed_casework
+    recessed_casework.apply(f)
     if aid in {'chemical-cabinet','flammable-cabinet','refrigerator-storage','freezer-storage'}:
         levels=(.30,.51,.72) if 'cabinet' in aid else (.31,.46,.61,.76)
         for i,z in enumerate(levels): f.add_box(f'Internal shelf {i+1}',(center.x,center.y+.02,minimum.z+size.z*z),(size.x*.84,size.y*.78,.018),m['interior'],bevel=.003,category='interior shelf')
@@ -55,7 +84,8 @@ def prepare(f):
         shift=n*(travel if travel is not None else min(depth*(.32 if 'island' in aid else .58),.42))
         if kind=='slide': shift=t*(-side*(travel if travel is not None else width*.82))
         region={'x':(mid.x-center.x)/size.x,'y':(lo.z-minimum.z)/size.z,'z':-(mid.y-center.y)/size.y,'width':max(.012,(hi.x-lo.x)/size.x),'height':(hi.z-lo.z)/size.z,'depth':max(.012,(hi.y-lo.y)/size.y)}
-        data={'id':prefix,'kind':kind,'bay':bay or prefix,'angle':side*(-n.y if abs(n.y)>.5 else 1)*math.radians(100) if kind=='hinge' else 0.,'travel':shift.length if kind in {'drawer','slide'} else 0.,'translation':[shift.x,shift.z,-shift.y],'region':region}
+        angle = 90 if face.get('cabinet_setback_m') else 100
+        data={'id':prefix,'kind':kind,'bay':bay or prefix,'angle':side*(-n.y if abs(n.y)>.5 else 1)*math.radians(angle) if kind=='hinge' else 0.,'travel':shift.length if kind in {'drawer','slide'} else 0.,'translation':[shift.x,shift.z,-shift.y],'region':region}
         node['storageMechanism']=data; metadata.append(data)
         if kind=='drawer' and tray:
             before=set(bpy.data.objects); td=min(depth*(.34 if 'island' in aid else .65),.48); tw=width-.035; bottom=lo.z+.012; th=max(.025,(hi.z-lo.z)*.62)

@@ -3,6 +3,7 @@ import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import type { AssetDefinition } from "../domain/schema";
+import { isDoubleLeafDoor } from "../domain/wall-openings";
 import {
   getLaboratoryMaterialTexture,
   waitForLaboratoryMaterialTextures,
@@ -3561,7 +3562,7 @@ function OpeningAssetModel({
     );
   }
 
-  const doubleLeaf = id === "double-door" || id === "double-sliding-door";
+  const doubleLeaf = isDoubleLeafDoor(id);
   const sliding = id.includes("sliding-door");
   const largeGlazing = id === "cleanroom-glazed-door" || sliding;
   const narrowLite = id === "narrow-lite-door";

@@ -460,32 +460,31 @@ def add_recessed_pull(
     width: float,
     normal_y: float,
 ) -> None:
-    # A shallow C-channel reads like a real folded laboratory pull. The dark
-    # reveal is deliberately subordinate to the satin aluminum grip so the
-    # face stays clean and light instead of becoming a stack of black slots.
+    # Folded satin channel, seated directly on the 22 mm facade. Only its
+    # narrow inner return is dark; never a large black rectangle on the door.
     recess_width = min(max(width * 0.62, 0.14), 0.30)
     add_box(
-        f"{name} recessed pocket",
-        (x, y + normal_y * 0.011, z),
-        (recess_width, 0.007, 0.024),
-        MATERIALS["shadow"],
-        bevel=0.005,
+        f"{name} mounted channel back",
+        (x, y + normal_y * 0.012, z),
+        (recess_width, 0.004, 0.016),
+        MATERIALS["aluminum"],
+        bevel=0.001,
         category="pull",
     )
     add_box(
         f"{name} pull lip",
         (x, y + normal_y * 0.017, z + 0.007),
-        (recess_width - 0.012, 0.009, 0.009),
+        (recess_width, 0.012, 0.003),
         MATERIALS["aluminum"],
-        bevel=0.002,
+        bevel=0.0008,
         category="pull",
     )
     add_box(
-        f"{name} lower grip highlight",
-        (x, y + normal_y * 0.018, z - 0.006),
-        (recess_width - 0.018, 0.006, 0.0035),
-        MATERIALS["stainless"],
-        bevel=0.001,
+        f"{name} folded grip return",
+        (x, y + normal_y * 0.022, z + 0.003),
+        (recess_width, 0.003, 0.008),
+        MATERIALS["aluminum"],
+        bevel=0.0008,
         category="pull",
     )
 
@@ -496,12 +495,14 @@ def add_vertical_door_pull(
     y: float,
     z: float,
     normal_y: float,
+    *,
+    projection: float = 0.027,
 ) -> None:
     """Slim anodized pull with two standoffs for paired cabinet doors."""
     add_box(
         f"{name} handle rail",
-        (x, y + normal_y * 0.014, z),
-        (0.014, 0.011, 0.165),
+        (x, y + normal_y * projection, z),
+        (0.012, 0.010, 0.150),
         MATERIALS["aluminum"],
         bevel=0.005,
         category="door pull",
@@ -509,8 +510,8 @@ def add_vertical_door_pull(
     for offset in (-0.060, 0.060):
         add_box(
             f"{name} handle standoff {offset:+.3f}",
-            (x, y + normal_y * 0.008, z + offset),
-            (0.020, 0.012, 0.012),
+            (x, y + normal_y * (projection + 0.008) / 2, z + offset),
+            (0.016, projection - 0.012, 0.012),
             MATERIALS["aluminum"],
             bevel=0.002,
             category="door pull",
@@ -1300,6 +1301,8 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
     if script_directory not in sys.path:
         sys.path.insert(0, script_directory)
     import storage_anatomy
+    import fixed_casework_joints
+    fixed_casework_joints.apply(sys.modules[__name__])
     storage_anatomy.prepare(sys.modules[__name__])
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     source_parts = len(meshes)
@@ -1405,9 +1408,12 @@ def validate_statistics(spec: AssetSpec, stats: dict[str, object], *, imported: 
         errors.append(
             f"{stats['mesh_objects']} runtime mesh batches exceeds the 25 draw-call target"
         )
-    if stats["mesh_objects"] < 12:
+    # A formed all-stainless sink legitimately shares a small material palette.
+    # Requiring 14 colors encouraged gratuitous labels/markers on clean steel.
+    formed_wash = spec.asset_id == "stainless-wash-basin"
+    if stats["mesh_objects"] < (4 if formed_wash else 12):
         errors.append(f"only {stats['mesh_objects']} material batches")
-    if stats["materials"] < 14:
+    if stats["materials"] < (4 if formed_wash else 14):
         errors.append(f"only {stats['materials']} exported PBR materials")
     if imported:
         disallowed = [

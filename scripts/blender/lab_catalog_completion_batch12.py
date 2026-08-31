@@ -30,6 +30,7 @@ import lab_casework_batch3 as casework  # noqa: E402
 import lab_fidelity_batch6 as fidelity  # noqa: E402
 import lab_furniture as furniture  # noqa: E402
 import lab_instruments_batch10 as instruments  # noqa: E402
+from manufactured_surfaces import formed_bowl  # noqa: E402
 
 
 AssetSpec = furniture.AssetSpec
@@ -163,16 +164,15 @@ def cone(
     return furniture.parent_to_root(obj, category)
 
 
-def add_pull(name: str, x: float, y: float, z: float, width: float) -> None:
+def add_pull(name: str, x: float, y: float, z: float, width: float, *, vertical=False) -> None:
     m = furniture.MATERIALS
-    tube(
-        name,
-        [(x - width / 2, y + 0.012, z), (x - width / 2, y - 0.025, z),
-         (x + width / 2, y - 0.025, z), (x + width / 2, y + 0.012, z)],
-        0.008,
-        m["aluminum"],
-        category="handle",
-    )
+    span = min(width, .19 if vertical else .28)
+    # Straight satin bar with real end mounts, not a broad bowed wire loop.
+    for side in (-1,1):
+        px=x if vertical else x+side*span/2
+        pz=z+side*span/2 if vertical else z
+        box(name+" mounting foot",(px,y+.009,pz),(.019,.035,.019),m["aluminum"],bevel=.003,category="handle")
+    box(name+" grip",(x,y-.012,z),(.015,.015,span+.018) if vertical else (span+.018,.015,.015),m["aluminum"],bevel=.004,category="handle")
 
 
 def add_casters(width: float, depth: float, z: float = 0.055) -> None:
@@ -377,20 +377,25 @@ def build_desk(spec: AssetSpec, *, office: bool) -> None:
 
 
 def build_rectangular_table(spec: AssetSpec) -> None:
-    """Preserve the approved, unrelated table while named desks are revised."""
+    """Continuous welded frame, with legs and brackets on a common datum."""
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
-    box("work surface", (0, 0, h * 0.96), (w * 0.98, d * 0.96, h * 0.08), m["powder_light"], bevel=0.018, category="work surface")
+    underside = h - 0.032
+    leg_x, leg_y = w * 0.43, d * 0.36
+    box("work surface", (0, 0, h - 0.016), (w, d, 0.032), m["desk_surface"], bevel=0.005, category="work surface")
     for y in (-d * 0.35, d * 0.35):
-        box("desk apron rail", (0, y, h * 0.90), (w * 0.86, 0.028, 0.036), m["steel_visible"], bevel=0.006, category="frame")
+        box("desk apron rail", (0, y, underside - 0.026), (2 * leg_x, 0.035, 0.052), m["steel_visible"], bevel=0.003, category="frame")
     for x in (-w * 0.42, w * 0.42):
-        box("desk side rail", (x, 0, h * 0.90), (0.028, d * 0.70, 0.036), m["steel_visible"], bevel=0.006, category="frame")
+        box("desk side rail", (x, 0, underside - 0.026), (0.035, 2 * leg_y, 0.052), m["steel_visible"], bevel=0.003, category="frame")
     for x in (-w * 0.43, w * 0.43):
         for y in (-d * 0.36, d * 0.36):
-            box("square tube leg", (x, y, h * 0.43), (0.055, 0.055, h * 0.80), m["steel_visible"], bevel=0.009, category="frame")
-            cylinder("leveling foot", (x, y, 0.018), 0.040, 0.030, m["rubber"], vertices=28, category="foot")
-    box("rear modesty panel", (0, d * 0.40, h * 0.50), (w * 0.78, 0.020, h * 0.44), m["powder_light"], bevel=0.008, category="modesty panel")
-    cylinder("cable grommet", (w * 0.34, d * 0.24, h + 0.004), 0.040, 0.012, m["black"], vertices=40, category="cable management")
+            box("square tube leg", (x, y, (underside + 0.028) / 2), (0.050, 0.050, underside - 0.028), m["steel_visible"], bevel=0.003, category="frame")
+            box("welded corner bracket", (x, y, underside - 0.005), (0.090, 0.080, 0.010), m["steel_visible"], bevel=0.002, category="joinery")
+            cylinder("leveling foot", (x, y, 0.014), 0.029, 0.028, m["rubber"], vertices=40, category="foot")
+    box("rear modesty panel", (0, leg_y, h * 0.56), (w * 0.80, 0.020, h * 0.32), m["powder_light"], bevel=0.003, category="modesty panel")
+    for x in (-w * 0.39, w * 0.39):
+        box("modesty panel bracket", (x, leg_y, underside - 0.085), (0.040, 0.040, 0.140), m["steel_visible"], bevel=0.002, category="joinery")
+    cylinder("cable grommet", (w * 0.34, d * 0.24, h - 0.0015), 0.029, 0.003, m["black"], vertices=48, category="cable management")
 
 
 def build_wall_cabinet(spec: AssetSpec) -> None:
@@ -413,7 +418,7 @@ def build_wall_cabinet(spec: AssetSpec) -> None:
         for z, label in ((h * 0.08, "lower"), (h * 0.94, "upper")):
             box(prefix + " " + label + " rail", (x, front - 0.012, z), (w * 0.47, 0.030, h * 0.04), m["porcelain"], bevel=0.003, category="cabinet door")
         box(prefix + " glass insert", (x, front - 0.013, h * 0.51), (w * 0.39, 0.008, h * 0.82), m["glass"], bevel=0.002, category="door glazing")
-        add_pull(prefix + " pull", x - side * w * 0.17, front - 0.035, h * 0.46, h * 0.20)
+        add_pull(prefix + " pull", x - side * w * 0.17, front - 0.035, h * 0.46, h * 0.20, vertical=True)
     for x in (-w * 0.36, w * 0.36):
         box("wall mounting cleat", (x, d * 0.47, h * 0.52), (0.08, 0.025, h * 0.68), m["zinc"], bevel=0.004, category="wall mounting")
 
@@ -422,16 +427,17 @@ def build_safety_cabinet(spec: AssetSpec, *, flammable: bool) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
     front = -d / 2
-    body = m["safety_yellow"] if flammable else m["powder_light"]
+    body = m["safety_yellow"] if flammable else furniture.make_material("Chemical cabinet blue epoxy enamel", (.045,.16,.30,1), metallic=.06,roughness=.30,coat=.12)
     box("safety cabinet shell", (0, 0, h * 0.52), (w * 0.98, d * 0.96, h * 0.93), body, bevel=0.020, category="double-wall cabinet")
     box("safety cabinet recessed plinth", (0, 0.02, h * 0.055), (w * 0.88, d * 0.84, h * 0.11), m["shadow"], bevel=0.008, category="plinth")
     for side in (-1, 1):
         x = side * w * 0.245
-        box("safety cabinet door", (x, front - 0.012, h * 0.53), (w * 0.47, 0.030, h * 0.80), body, bevel=0.012, category="cabinet door")
-        add_pull("safety cabinet pull", x - side * w * 0.15, front - 0.035, h * 0.62, h * 0.22)
+        box("safety cabinet door", (x, front - 0.012, h * 0.53), (w * 0.49 - 0.005, 0.030, h * 0.80), body, bevel=0.002, category="cabinet door")
+        add_pull("safety cabinet pull", x - side * w * 0.15, front - 0.035, h * 0.62, h * 0.15, vertical=True)
         add_vent_slots("safety cabinet", x, front - 0.032, h * 0.24, w * 0.20, rows=4)
-    box("safety cabinet label plate", (0, front - 0.034, h * 0.84), (w * 0.34, 0.010, h * 0.10), m["label"], bevel=0.006, category="safety label")
-    box("safety cabinet label stripe", (0, front - 0.041, h * 0.84), (w * 0.22, 0.003, h * 0.018), m["bio_red"] if flammable else m["teal"], bevel=0.001, category="safety label")
+    # Keep the label wholly on its leaf, including in the open position.
+    box("safety cabinet label plate", (w * 0.245, front - 0.034, h * 0.84), (w * 0.30, 0.010, h * 0.08), m["label"], bevel=0.004, category="safety label")
+    box("safety cabinet label stripe", (w * 0.245, front - 0.041, h * 0.84), (w * 0.20, 0.003, h * 0.012), m["bio_red"] if flammable else m["teal"], bevel=0.001, category="safety label")
     for side in (-1, 1):
         cylinder("safety cabinet vent collar", (side * w * 0.34, d * 0.49, h * 0.28), 0.055, 0.030, m["aluminum"], axis=(0, 1, 0), vertices=36, category="vent connection")
 
@@ -441,12 +447,25 @@ def build_mobile_drawer(spec: AssetSpec) -> None:
     w, d, h = spec.width, spec.depth, spec.height
     front = -d / 2
     box("mobile drawer carcass", (0, 0, h * 0.52), (w * 0.95, d * 0.92, h * 0.78), m["powder"], bevel=0.015, category="drawer carcass")
-    for index in range(4):
-        drawer_h = h * (0.135 if index < 3 else 0.19)
-        z = h * (0.78 - index * 0.155)
-        box(f"mobile drawer {index + 1}", (0, front - 0.012, z), (w * 0.88, 0.026, drawer_h), m["porcelain"], bevel=0.008, category="drawer")
+    # Partition one continuous facade: 5 mm reveals and a larger bottom file
+    # drawer. The previous independent percentages produced both large gaps
+    # and a small overlap at the bottom two fronts.
+    gap = 0.005
+    top, bottom = h * 0.8475, h * 0.22
+    unit = (top - bottom - 3 * gap) / 4.3
+    cursor = top
+    for index, weight in enumerate((1, 1, 1, 1.3)):
+        drawer_h = unit * weight
+        z = cursor - drawer_h / 2
+        box(f"mobile drawer {index + 1}", (0, front - 0.012, z), (w * 0.88, 0.026, drawer_h), m["porcelain"], bevel=0.002, category="drawer")
         add_pull(f"mobile drawer pull {index + 1}", 0, front - 0.036, z + drawer_h * 0.22, w * 0.46)
+        cursor -= drawer_h + gap
     box("mobile drawer top", (0, 0, h * 0.96), (w, d * 0.96, h * 0.06), m["stainless"], bevel=0.010, category="top")
+    # The original shell stopped 13 mm below its top. A folded bearing tray
+    # closes that joint without changing any drawer position or storage ID.
+    box("mobile drawer top bearing tray", (0, 0, h * 0.92),
+        (w * 0.95, d * 0.92, h * 0.022), m["powder"], bevel=0.001,
+        category="fixed worktop joint")
     add_casters(w, d, z=0.045)
 
 
@@ -471,7 +490,7 @@ def build_locker(spec: AssetSpec) -> None:
     box("locker carcass", (0, 0, h * 0.51), (w * 0.98, d * 0.96, h * 0.94), m["powder"], bevel=0.017, category="locker carcass")
     for index in range(3):
         x = -w * 0.32 + index * w * 0.32
-        box(f"locker door {index + 1}", (x, front - 0.012, h * 0.53), (w * 0.305, 0.028, h * 0.84), m["porcelain"], bevel=0.010, category="locker door")
+        box(f"locker door {index + 1}", (x, front - 0.012, h * 0.53), (w * 0.32 - 0.005, 0.028, h * 0.84), m["porcelain"], bevel=0.002, category="locker door")
         add_vent_slots(f"locker {index + 1} upper", x, front - 0.031, h * 0.77, w * 0.16, rows=4)
         add_vent_slots(f"locker {index + 1} lower", x, front - 0.031, h * 0.26, w * 0.16, rows=3)
         cylinder(f"locker lock {index + 1}", (x + w * 0.09, front - 0.036, h * 0.53), 0.018, 0.010, m["zinc"], axis=(0, -1, 0), vertices=28, category="lock")
@@ -608,28 +627,54 @@ def build_workstation(spec: AssetSpec) -> None:
 def build_printer(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
-    front = -d / 2
-    box("printer lower chassis", (0, 0, h * 0.32), (w * 0.94, d * 0.90, h * 0.50), m["porcelain"], bevel=0.022, category="printer chassis")
-    box("printer scanner body", (0, d * 0.04, h * 0.69), (w * 0.88, d * 0.76, h * 0.28), m["powder_light"], bevel=0.020, category="scanner")
-    box("printer scanner lid", (0, d * 0.04, h * 0.87), (w * 0.84, d * 0.70, h * 0.07), m["powder_dark"], bevel=0.015, category="scanner lid")
-    box("printer output bay", (0, front - 0.010, h * 0.38), (w * 0.60, 0.045, h * 0.17), m["shadow"], bevel=0.012, category="paper output")
-    box("printer output tray", (0, front - d * 0.18, h * 0.28), (w * 0.58, d * 0.38, 0.025), m["powder_dark"], bevel=0.010, rotation=(math.radians(-8), 0, 0), category="paper tray")
-    box("printer control panel", (w * 0.27, front - 0.055, h * 0.70), (w * 0.26, 0.025, h * 0.16), m["powder_dark"], bevel=0.010, rotation=(math.radians(-15), 0, 0), category="control panel")
-    box("printer display", (w * 0.27, front - 0.071, h * 0.71), (w * 0.18, 0.006, h * 0.10), m["screen"], bevel=0.006, rotation=(math.radians(-15), 0, 0), category="display")
-    add_vent_slots("printer rear ventilation", 0, d * 0.456, h * 0.30, w * 0.55, rows=5)
+    front, rear = -d * .34, d * .46
+    box("printer lower chassis", (0, d * .06, h * .34), (w * .94, d * .80, h * .62), m["porcelain"], bevel=.014, category="printer chassis")
+    # Scanner sits on a continuous engine housing, not separated box layers.
+    box("printer scanner body", (0, d * .045, h * .78), (w * .98, d * .86, h * .27), m["powder_light"], bevel=.010, category="scanner")
+    box("scanner lid gasket", (0, d * .045, h * .919), (w * .93, d * .80, .004), m["shadow"], bevel=.002, category="seam")
+    box("printer scanner lid", (0, d * .045, h * .95), (w * .94, d * .81, h * .06), m["porcelain"], bevel=.008, category="scanner lid")
+    box("printer output bay", (-w * .10, front - .003, h * .52), (w * .59, .009, h * .15), m["shadow"], bevel=.006, category="paper output")
+    box("printer output tray", (-w * .10, -d * .365, h * .435), (w * .61, d * .25, .014), m["powder_dark"], bevel=.005, category="paper tray")
+    for side in (-1, 1):
+        box("paper guide lip", (-w * .10 + side * w * .295, -d * .37, h * .449), (.009, d * .24, .015), m["powder_dark"], bevel=.003, category="paper tray")
+    box("integrated control fascia", (w * .31, -d * .378, h * .77), (w * .28, .028, h * .22), m["powder_dark"], bevel=.008, category="control panel")
+    box("printer display", (w * .31, -d * .409, h * .79), (w * .19, .035, h * .115), m["screen"], bevel=.004, category="display")
+    cylinder("printer power key", (w * .31, -d * .412, h * .69), .008, .007, m["teal"], axis=(0,-1,0), vertices=32, category="control key")
+    box("paper cassette face", (0, front - .004, h * .20), (w * .86, .014, h * .20), m["powder_light"], bevel=.005, category="paper cassette")
+    box("cassette finger recess", (0, front - .012, h * .26), (w * .22, .006, .013), m["powder_dark"], bevel=.004, category="paper cassette")
+    for x in (-w * .31, w * .31):
+        box("scanner rear hinge", (x, rear - .008, h * .915), (.045, .035, .032), m["powder_dark"], bevel=.005, category="hinge")
+    add_vent_slots("printer rear ventilation", 0, rear + .003, h * .40, w * .55, rows=5)
+    box("printer rear connection panel", (w * .29, rear + .002, h * .19), (.060, .008, .065), m["powder_dark"], bevel=.003, category="rear service")
+    for z in (h*.16, h*.23):
+        box("printer rear data socket", (w*.29, rear+.008, z), (.030,.004,.010), m["shadow"], bevel=.001, category="rear service")
+    for x in (-w*.36,w*.36):
+        for y in (-d*.25,d*.36):
+            cylinder("printer rubber foot", (x,y,h*.016), .018,h*.032,m["rubber"],vertices=32,category="foot")
 
 
 def build_safety_shower(spec: AssetSpec) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
-    cylinder("safety shower floor flange", (0, 0, 0.025), w * 0.12, 0.050, m["steel_visible"], vertices=48, category="floor flange")
-    cylinder("safety shower riser", (0, d * 0.28, h * 0.48), 0.032, h * 0.90, m["steel_visible"], vertices=40, category="water riser")
+    cylinder("safety shower floor flange", (0, d * .28, .018), w * .12, .036, m["steel_visible"], vertices=64, category="floor flange")
+    cylinder("safety shower riser", (0, d * .28, (h*.93+.025)/2), .032, h*.93-.025, m["steel_visible"], vertices=48, category="water riser")
+    for x in (-.062,.062):
+        for y in (-.052,.052):
+            cylinder("flange anchor", (x,d*.28+y,.042), .010,.022,m["zinc"],vertices=6,category="anchor")
     tube("safety shower overhead arm", [(0, d * 0.28, h * 0.86), (0, d * 0.28, h * 0.95), (0, 0, h * 0.95)], 0.032, m["steel_visible"], category="overhead pipe")
     cone("safety shower head", (0, 0, h * 0.88), w * 0.18, w * 0.07, h * 0.10, m["steel_visible"], category="shower head")
+    cylinder("head threaded coupling", (0,0,h*.935),.039,h*.05,m["steel_visible"],vertices=48,category="pipe coupling")
     cylinder("safety shower spray plate", (0, 0, h * 0.825), w * 0.16, 0.018, m["powder_dark"], vertices=48, category="shower head")
     tube("safety shower pull rod", [(w * 0.20, d * 0.22, h * 0.84), (w * 0.20, d * 0.22, h * 0.47)], 0.010, m["steel_visible"], category="activation pull")
     torus("safety shower pull ring", (w * 0.20, d * 0.22, h * 0.42), 0.065, 0.010, m["bio_red"], rotation=(math.pi / 2, 0, 0), category="activation pull")
-    cone("eyewash bowl", (0, d * 0.12, h * 0.39), w * 0.18, w * 0.11, h * 0.07, m["steel_visible"], category="eyewash bowl")
+    tube("valve activation lever", [(0,d*.28,h*.84),(w*.20,d*.22,h*.84)],.013,m["steel_visible"],category="valve linkage")
+    tube("pull ring connector", [(w*.20,d*.22,h*.47),(w*.20,d*.22,h*.42+.055)],.010,m["steel_visible"],category="activation pull")
+    formed_bowl(furniture, "eyewash formed basin", (0,d*.12,h*.425), w*.18,h*.07,m["steel_visible"])
+    cylinder("eyewash drain strainer", (0,d*.12,h*.425-h*.07*.90), .025,.006,m["zinc"],vertices=48,category="drain")
+    tube("eyewash feed and support", [(0,d*.28,h*.40),(0,d*.12,h*.40)],.024,m["steel_visible"],category="eyewash feed")
+    tube("eyewash drain return", [(0,d*.12,h*.36),(0,d*.12,h*.31),(0,d*.28,h*.31)],.022,m["steel_visible"],category="drain")
+    for z in (h*.61,h*.71):
+        box("sign mounting standoff", (0,d*.30,z),(.080,.09,.025),m["steel_visible"],bevel=.003,category="sign mounting")
     for side in (-1, 1):
         tube("eyewash nozzle stem", [(side * w * 0.07, d * 0.10, h * 0.40), (side * w * 0.07, d * 0.05, h * 0.45)], 0.012, m["steel_visible"], category="eyewash nozzle")
         cylinder("eyewash nozzle", (side * w * 0.07, d * 0.045, h * 0.46), 0.025, 0.032, m["teal"], axis=(0, -0.6, 0.8), vertices=32, category="eyewash nozzle")
@@ -642,6 +687,9 @@ def build_waste_bin(spec: AssetSpec, *, biological: bool) -> None:
     m = furniture.MATERIALS
     w, d, h = spec.width, spec.depth, spec.height
     body = m["bio_red"] if biological else m["steel_visible"]
+    cylinder("waste bin grounded base", (0,0,h*.045), w*.405,h*.09,m["rubber"],vertices=64,category="base")
+    box("pedal pivot housing", (0,-d*.31,h*.06),(w*.20,d*.23,h*.08),m["powder_dark"],bevel=.006,category="pedal linkage")
+    tube("rear lid linkage", [(0,d*.38,h*.08),(0,d*.41,h*.18),(0,d*.42,h*.78)],.007,m["zinc"],category="pedal linkage")
     cone("waste bin tapered body", (0, 0, h * 0.43), w * 0.40, w * 0.46, h * 0.72, body, category="waste container")
     torus("waste bin upper rim", (0, 0, h * 0.80), w * 0.43, 0.018, m["aluminum"], category="lid rim")
     cylinder("waste bin lid", (0, 0, h * 0.83), w * 0.44, h * 0.06, m["powder_dark"] if biological else m["powder_light"], vertices=48, category="lid")

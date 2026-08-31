@@ -286,10 +286,12 @@ function asset(
       options.description ??
       `Parametric planning representation of ${name.toLowerCase()}; dimensions are editable and not manufacturer-certified.`,
     storageTemplate: authoredStorageTemplate(id) ?? options.storageTemplate,
-    model3d:
-      options.model3d && authoredStorageTemplate(id)?.length
-        ? { ...options.model3d, revision: "storage-anatomy-r2" }
-        : options.model3d,
+    // All 104 delivered GLBs have an explicit reviewed finish packet. Include
+    // that revision in model AND thumbnail URLs so existing rooms refresh their
+    // visuals without changing any scene objects or persisted dimensions.
+    model3d: options.model3d
+      ? { ...options.model3d, revision: `${options.model3d.revision}-catalog-polish-r3` }
+      : options.model3d,
   });
 }
 
@@ -312,7 +314,161 @@ function catalogCompletionModel(
   };
 }
 
+function referencePackModel(
+  id: string,
+  [width, depth, height]: [number, number, number],
+): NonNullable<AssetDefinition["model3d"]> {
+  return {
+    previewSrc: `/models/hero/${id}.glb`,
+    authoredDimensions: { width, depth, height },
+    revision: "reference-batch13-r2",
+  };
+}
+
 export const ASSET_CATALOG: AssetDefinition[] = [
+  asset("wide-lite-door", "Wide-lite laboratory door", "Architecture", [950, 160, 2150], {
+    objectType: "door",
+    connection: "wall",
+    indexingBehavior: "none",
+    profile: "door",
+    material: "white",
+    description:
+      "Single institutional steel door with a wider full-height vision lite, genuine through-glazing, two-sided beads, satin lever hardware, hinges, closer and kick plates. Wall hosted; editable handing and swing. Original planning representation, not fire or egress certified.",
+    model3d: referencePackModel("wide-lite-door", [950, 160, 2150]),
+  }),
+  asset(
+    "single-transom-door",
+    "Single laboratory door with transom",
+    "Architecture",
+    [1000, 160, 2650],
+    {
+      objectType: "door",
+      connection: "wall",
+      indexingBehavior: "none",
+      profile: "door",
+      material: "white",
+      description:
+        "Narrow-lite single steel door below a fixed glazed transom, with a continuous frame, cross rail, compression seals, lever set and overhead closer. The transom is part of one hosted opening; the total height includes it. Not manufacturer-certified.",
+      model3d: referencePackModel("single-transom-door", [1000, 160, 2650]),
+    },
+  ),
+  asset(
+    "double-transom-door",
+    "Double laboratory door with transom",
+    "Architecture",
+    [1800, 160, 2650],
+    {
+      objectType: "door",
+      connection: "wall",
+      indexingBehavior: "none",
+      profile: "door",
+      material: "white",
+      description:
+        "Two independently detailed narrow-lite leaves below a fixed glazed transom. Continuous light steel jambs, meeting astragal, kick plates, opposing hinges, lever sets and twin closers; canonical wall hosting and double-leaf plan swings. Total height includes the transom. Not certified.",
+      model3d: referencePackModel("double-transom-door", [1800, 160, 2650]),
+    },
+  ),
+  asset(
+    "double-egress-door",
+    "Double laboratory push-bar door",
+    "Architecture",
+    [1800, 180, 2150],
+    {
+      objectType: "door",
+      connection: "wall",
+      indexingBehavior: "none",
+      profile: "door",
+      material: "white",
+      description:
+        "Paired institutional vision-lite doors with interior panic push bars, exterior lever hardware, twin closers, hinge knuckles and satin kick plates. Original architectural planning asset: hardware appearance does not certify fire rating, emergency egress or regulatory compliance.",
+      model3d: referencePackModel("double-egress-door", [1800, 180, 2150]),
+    },
+  ),
+  asset(
+    "integral-blind-window",
+    "Observation window with integral blinds",
+    "Architecture",
+    [1800, 160, 1200],
+    {
+      objectType: "window",
+      connection: "wall",
+      indexingBehavior: "none",
+      profile: "window",
+      material: "glass",
+      description:
+        "Wide sealed observation glazing with individually modeled satin-white Venetian slats, ladder cords, head cassette, weighted bottom rail, magnetic control and two-sided glazing beads. Blinds are shown partially raised; this is a fixed authored state, not an animated blind control.",
+      model3d: referencePackModel("integral-blind-window", [1800, 160, 1200]),
+    },
+  ),
+  asset("clerestory-window", "High-level clerestory window", "Architecture", [1800, 140, 500], {
+    objectType: "window",
+    connection: "wall",
+    indexingBehavior: "none",
+    profile: "window",
+    material: "glass",
+    description:
+      "Low horizontal fixed transom/clerestory module with deep light-metal jambs, genuine glazing, front/rear beads, seals and a folded sill. Starts 2200 mm above the floor when wall hosted; size and elevation remain editable.",
+    model3d: referencePackModel("clerestory-window", [1800, 140, 500]),
+  }),
+  asset(
+    "asymmetric-lab-bench",
+    "Asymmetric five-drawer laboratory bench",
+    "Furniture",
+    [1800, 750, 900],
+    {
+      profile: "bench",
+      material: "white",
+      indexingBehavior: "storage",
+      description:
+        "Reference-led mixed laboratory casework: two upper drawers above paired cabinet doors recessed 75 mm at left, and a forward three-drawer bank at right. Five real drawer trays, shortened cabinet shelves, stepped side construction and plinth, satin channel pulls and a black phenolic worktop. The setback is a representative interpretation of the supplied photo. Storage locations match the authored openings.",
+      model3d: {
+        ...referencePackModel("asymmetric-lab-bench", [1800, 750, 900]),
+        revision: "recessed-casework-r1",
+      },
+    },
+  ),
+  asset(
+    "institutional-sink-cabinet",
+    "Institutional trough sink cabinet",
+    "Furniture",
+    [1500, 700, 1200],
+    {
+      profile: "bench",
+      material: "steel",
+      indexingBehavior: "storage",
+      description:
+        "Institutional wash cabinet with warm-grey structural casework, porcelain door faces, a continuous formed stainless trough, twin mixers, integrated satin pulls and a recessed graphite plinth. Paired left storage doors and one right service door retain fixed shelves and isolated plumbing. Original logo-free planning model; overall height includes taps and rim height is 900 mm.",
+      model3d: referencePackModel("institutional-sink-cabinet", [1500, 700, 1200]),
+    },
+  ),
+  asset(
+    "computer-lab-bench",
+    "Computer laboratory bench with drawers",
+    "Laboratory equipment",
+    [1600, 750, 1350],
+    {
+      profile: "workstation",
+      material: "white",
+      indexingBehavior: "storage",
+      description:
+        "Laboratory computer bench with black phenolic worktop, satin frame and levelling feet, three-drawer right pedestal, open left knee space, modesty panel and cable tray. Includes a detailed monitor, keyboard, mouse and compact PC. Three assignable drawers articulate as complete trays; overall height includes monitor.",
+      model3d: referencePackModel("computer-lab-bench", [1600, 750, 1350]),
+    },
+  ),
+  asset(
+    "recirculating-chiller",
+    "Under-bench recirculating chiller",
+    "Laboratory equipment",
+    [400, 550, 650],
+    {
+      profile: "box",
+      material: "white",
+      connection: "floor",
+      description:
+        "Compact floor-standing cooling unit with a light folded enclosure, removable louvred intake, controller, reservoir filler, level window, side grips, rear hose unions, power inlet and swivel casters. Original representative envelope informed by laboratory recirculators; not a certified device or a storage cabinet. Leave ventilation and hose clearance.",
+      model3d: referencePackModel("recirculating-chiller", [400, 550, 650]),
+    },
+  ),
   asset("straight-wall", "Straight wall", "Architecture", [2400, 150, 3000], {
     objectType: "wall",
     connection: "free",
@@ -502,11 +658,11 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     material: "dark",
     storageTemplate: standardBenchStorage(),
     description:
-      "Clean Shimadzu-style laboratory base bench with symmetrical three-drawer end banks, a wide central paired-door cabinet, two adjacent upper drawers, consistent 8 mm face reveals, satin aluminum channel pulls, a recessed toe kick, realistic rear service panels, and a black phenolic worktop. This logo-free planning model is dimension-driven and not manufacturer-certified.",
+      "Clean Shimadzu-style laboratory base bench with symmetrical three-drawer end banks, a central paired-door cabinet recessed 75 mm behind the drawers, two internal shelves, two adjacent upper drawers, consistent 8 mm face reveals, satin aluminum channel pulls, a stepped recessed plinth, realistic rear service panels, and a black phenolic worktop. The setback is a representative design choice, not a measured manufacturer specification.",
     model3d: {
       previewSrc: "/models/hero/lab-bench.glb",
       authoredDimensions: { width: 1800, depth: 750, height: 900 },
-      revision: "storage-articulation-r1",
+      revision: "recessed-casework-r1",
     },
   }),
   asset("lab-bench-sink", "Laboratory bench with sink", "Furniture", [1800, 750, 1200], {
@@ -560,7 +716,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       material: "steel",
       accent: "#75969a",
       description:
-        "Open-front stainless laboratory wash station with a deep integral basin, drainboard, rear splashback, mixer fixture, and exposed service clearance below. This logo-free, dimension-driven model is a representative planning asset and is not manufacturer-certified.",
+        "Reference-led 304 stainless wash station with a continuous formed deck and coved basin, pressed drainboard, folded splashback, commercial mixer, welded tubular legs, adjustable bullet feet, lower shelf and connected drain trap. Original planning geometry informed by commercial sink construction; not manufacturer-certified.",
       model3d: {
         previewSrc: "/models/hero/stainless-wash-basin.glb",
         authoredDimensions: { width: 1800, depth: 700, height: 1300 },
@@ -604,11 +760,11 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       accent: "#829294",
       storageTemplate: islandServiceBridgeStorage(),
       description:
-        "Shimadzu Ref2-informed double-sided island laboratory bench with functional three-drawer stacks at the left and right ends of each working face, two separate central cabinets with paired doors and two adjacent drawers above each cabinet, dark chemical-resistant phenolic worktops, a light metallic service spine, and a raised three-bay glazed sliding-door hutch with two internal shelves. This original logo-free planning model is dimension-driven and not manufacturer-certified.",
+        "Shimadzu Ref2-informed double-sided island laboratory bench with three-drawer end stacks, two central paired-door cabinets recessed 75 mm behind the drawers on each working face, two shelves per lower cabinet, and two adjacent drawers above each cabinet. Preserves the dark phenolic worktops, light metallic service spine and raised three-bay glazed sliding-door hutch. Original representative geometry, not manufacturer-certified.",
       model3d: {
         previewSrc: "/models/hero/island-bench-service-bridge.glb",
         authoredDimensions: { width: 3600, depth: 1200, height: 2100 },
-        revision: "shimadzu-ref2-r7",
+        revision: "recessed-casework-r1",
       },
     },
   ),
@@ -628,10 +784,12 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "bench",
     material: "dark",
     storageTemplate: centerIslandStorage(),
+    description:
+      "Double-sided laboratory island with forward drawer banks and 75 mm recessed lower cabinet bays on both working faces. Each cabinet has matching recessed shelves and a stepped plinth; original drawer counts, worktop and service construction are preserved. Representative planning geometry, not manufacturer-certified.",
     model3d: {
       previewSrc: "/models/hero/center-island-bench.glb",
       authoredDimensions: { width: 3000, depth: 1200, height: 900 },
-      revision: "casework-proportion-r7",
+      revision: "recessed-casework-r1",
     },
   }),
   asset("mobile-bench", "Mobile bench", "Furniture", [1200, 700, 900], {
@@ -832,7 +990,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "tall",
     material: "blue",
     description:
-      "Double-wall chemical storage cabinet with restrained light enclosure, two sealed doors, ventilation collars, louvered panels, spill-control plinth, vertical pulls, and a dedicated hazard-information field.",
+      "Blue epoxy-finish chemical storage cabinet with an enclosed face frame, paired doors, slim mounted vertical pulls, internal shelves, ventilation collars and a recessed plinth. Original planning representation, not a certified chemical-compatibility or safety claim.",
     model3d: catalogCompletionModel("chemical-cabinet", [900, 600, 1900]),
   }),
   asset("flammable-cabinet", "Flammable-material cabinet", "Storage", [900, 600, 1200], {

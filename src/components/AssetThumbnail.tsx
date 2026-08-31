@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { assetThumbnailKind } from "../domain/asset-thumbnail";
+import { isDoubleLeafDoor } from "../domain/wall-openings";
 import type { AssetDefinition } from "../domain/schema";
 import { assetRenderKind, assetRenderSource } from "../lib/asset-render-path";
 
@@ -333,7 +334,7 @@ function drawDoorOrWindow(
     );
     return;
   }
-  const doubleDoor = asset.id === "double-door";
+  const doubleDoor = isDoubleLeafDoor(asset.id);
   const sliding = asset.id === "sliding-door";
   const frameX = doubleDoor ? 30 : 49;
   const frameWidth = doubleDoor ? 100 : 62;

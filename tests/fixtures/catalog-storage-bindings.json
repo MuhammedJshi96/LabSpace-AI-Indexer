@@ -1,0 +1,2262 @@
+{
+  "asymmetric-lab-bench": {
+    "parts": [
+      {
+        "id": "Mixed bench cabinet door 1",
+        "kind": "hinge",
+        "bay": "Mixed bench cabinet"
+      },
+      {
+        "id": "Mixed bench cabinet door 2",
+        "kind": "hinge",
+        "bay": "Mixed bench cabinet"
+      },
+      {
+        "id": "Mixed bench upper drawer 1",
+        "kind": "drawer",
+        "bay": "Mixed bench upper drawer 1"
+      },
+      {
+        "id": "Mixed bench upper drawer 2",
+        "kind": "drawer",
+        "bay": "Mixed bench upper drawer 2"
+      },
+      {
+        "id": "Right bank drawer 1",
+        "kind": "drawer",
+        "bay": "Right bank drawer 1"
+      },
+      {
+        "id": "Right bank drawer 2",
+        "kind": "drawer",
+        "bay": "Right bank drawer 2"
+      },
+      {
+        "id": "Right bank drawer 3",
+        "kind": "drawer",
+        "bay": "Right bank drawer 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Mixed bench upper drawer 1",
+        "type": "drawer",
+        "partIds": ["Mixed bench upper drawer 1"]
+      },
+      {
+        "key": "drawer:Mixed bench upper drawer 2",
+        "type": "drawer",
+        "partIds": ["Mixed bench upper drawer 2"]
+      },
+      {
+        "key": "drawer:Right bank drawer 3",
+        "type": "drawer",
+        "partIds": ["Right bank drawer 3"]
+      },
+      {
+        "key": "drawer:Right bank drawer 2",
+        "type": "drawer",
+        "partIds": ["Right bank drawer 2"]
+      },
+      {
+        "key": "drawer:Right bank drawer 1",
+        "type": "drawer",
+        "partIds": ["Right bank drawer 1"]
+      },
+      {
+        "key": "bay:Mixed bench cabinet",
+        "type": "compartment",
+        "partIds": ["Mixed bench cabinet door 1", "Mixed bench cabinet door 2"]
+      },
+      {
+        "key": "bay:Mixed bench cabinet:shelf:Mixed cabinet adjustable shelf",
+        "type": "shelf",
+        "parentKey": "bay:Mixed bench cabinet",
+        "partIds": ["Mixed bench cabinet door 1", "Mixed bench cabinet door 2"]
+      },
+      {
+        "key": "bay:Mixed bench cabinet:shelf:Mixed cabinet base shelf",
+        "type": "shelf",
+        "parentKey": "bay:Mixed bench cabinet",
+        "partIds": ["Mixed bench cabinet door 1", "Mixed bench cabinet door 2"]
+      }
+    ]
+  },
+  "base-cabinet": {
+    "parts": [
+      {
+        "id": "Shimadzu base cabinet lower door 1",
+        "kind": "hinge",
+        "bay": "Shimadzu base cabinet"
+      },
+      {
+        "id": "Shimadzu base cabinet lower door 2",
+        "kind": "hinge",
+        "bay": "Shimadzu base cabinet"
+      },
+      {
+        "id": "Shimadzu base cabinet top drawer 1",
+        "kind": "drawer",
+        "bay": "Shimadzu base cabinet top drawer 1"
+      },
+      {
+        "id": "Shimadzu base cabinet top drawer 2",
+        "kind": "drawer",
+        "bay": "Shimadzu base cabinet top drawer 2"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Shimadzu base cabinet top drawer 1",
+        "type": "drawer",
+        "partIds": ["Shimadzu base cabinet top drawer 1"]
+      },
+      {
+        "key": "drawer:Shimadzu base cabinet top drawer 2",
+        "type": "drawer",
+        "partIds": ["Shimadzu base cabinet top drawer 2"]
+      },
+      {
+        "key": "bay:Shimadzu base cabinet",
+        "type": "compartment",
+        "partIds": ["Shimadzu base cabinet lower door 1", "Shimadzu base cabinet lower door 2"]
+      },
+      {
+        "key": "bay:Shimadzu base cabinet:shelf:Adjustable interior shelf",
+        "type": "shelf",
+        "parentKey": "bay:Shimadzu base cabinet",
+        "partIds": ["Shimadzu base cabinet lower door 1", "Shimadzu base cabinet lower door 2"]
+      }
+    ]
+  },
+  "base-drawer-cabinet": {
+    "parts": [
+      {
+        "id": "Three-drawer bank drawer 1",
+        "kind": "drawer",
+        "bay": "Three-drawer bank drawer 1"
+      },
+      {
+        "id": "Three-drawer bank drawer 2",
+        "kind": "drawer",
+        "bay": "Three-drawer bank drawer 2"
+      },
+      {
+        "id": "Three-drawer bank drawer 3",
+        "kind": "drawer",
+        "bay": "Three-drawer bank drawer 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Three-drawer bank drawer 3",
+        "type": "drawer",
+        "partIds": ["Three-drawer bank drawer 3"]
+      },
+      {
+        "key": "drawer:Three-drawer bank drawer 2",
+        "type": "drawer",
+        "partIds": ["Three-drawer bank drawer 2"]
+      },
+      {
+        "key": "drawer:Three-drawer bank drawer 1",
+        "type": "drawer",
+        "partIds": ["Three-drawer bank drawer 1"]
+      }
+    ]
+  },
+  "center-island-bench": {
+    "parts": [
+      {
+        "id": "Island north module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 1"
+      },
+      {
+        "id": "Island north module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 2"
+      },
+      {
+        "id": "Island north module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 3"
+      },
+      {
+        "id": "Island north module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 2"
+      },
+      {
+        "id": "Island north module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 2"
+      },
+      {
+        "id": "Island north module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 1"
+      },
+      {
+        "id": "Island north module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 2"
+      },
+      {
+        "id": "Island north module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 3"
+      },
+      {
+        "id": "Island north module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 3"
+      },
+      {
+        "id": "Island north module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 1"
+      },
+      {
+        "id": "Island north module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 2"
+      },
+      {
+        "id": "Island north module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 1"
+      },
+      {
+        "id": "Island north module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 2"
+      },
+      {
+        "id": "Island north module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 3"
+      },
+      {
+        "id": "Island south module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 1"
+      },
+      {
+        "id": "Island south module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 2"
+      },
+      {
+        "id": "Island south module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 3"
+      },
+      {
+        "id": "Island south module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 2"
+      },
+      {
+        "id": "Island south module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 2"
+      },
+      {
+        "id": "Island south module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 1"
+      },
+      {
+        "id": "Island south module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 2"
+      },
+      {
+        "id": "Island south module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 3"
+      },
+      {
+        "id": "Island south module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 3"
+      },
+      {
+        "id": "Island south module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 1"
+      },
+      {
+        "id": "Island south module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 2"
+      },
+      {
+        "id": "Island south module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 1"
+      },
+      {
+        "id": "Island south module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 2"
+      },
+      {
+        "id": "Island south module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Island north module 2 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 2 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island north module 2 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 2 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 3 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 3 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 2 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 2 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 3 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 3 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island north module 1 drawer 3"]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island north module 4 drawer 3"]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island south module 1 drawer 3"]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island south module 4 drawer 3"]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 1 drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 4 drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 1 drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 4 drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 1 drawer 1"]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 4 drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 1 drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 4 drawer 1"]
+      },
+      {
+        "key": "bay:Island north module 2",
+        "type": "compartment",
+        "partIds": ["Island north module 2 lower door 1", "Island north module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 2:shelf:Island north module 2 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 2",
+        "partIds": ["Island north module 2 lower door 1", "Island north module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 2:shelf:Island north module 2 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 2",
+        "partIds": ["Island north module 2 lower door 1", "Island north module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 3",
+        "type": "compartment",
+        "partIds": ["Island north module 3 lower door 1", "Island north module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 3:shelf:Island north module 3 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 3",
+        "partIds": ["Island north module 3 lower door 1", "Island north module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 3:shelf:Island north module 3 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 3",
+        "partIds": ["Island north module 3 lower door 1", "Island north module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 2",
+        "type": "compartment",
+        "partIds": ["Island south module 2 lower door 1", "Island south module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 2:shelf:Island south module 2 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 2",
+        "partIds": ["Island south module 2 lower door 1", "Island south module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 2:shelf:Island south module 2 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 2",
+        "partIds": ["Island south module 2 lower door 1", "Island south module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 3",
+        "type": "compartment",
+        "partIds": ["Island south module 3 lower door 1", "Island south module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 3:shelf:Island south module 3 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 3",
+        "partIds": ["Island south module 3 lower door 1", "Island south module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 3:shelf:Island south module 3 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 3",
+        "partIds": ["Island south module 3 lower door 1", "Island south module 3 lower door 2"]
+      }
+    ]
+  },
+  "chemical-cabinet": {
+    "parts": [
+      {
+        "id": "Safety cabinet door 1",
+        "kind": "hinge",
+        "bay": "Safety cabinet"
+      },
+      {
+        "id": "Safety cabinet door 2",
+        "kind": "hinge",
+        "bay": "Safety cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Safety cabinet",
+        "type": "compartment",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 3",
+        "type": "shelf",
+        "parentKey": "bay:Safety cabinet",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Safety cabinet",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Safety cabinet",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      }
+    ]
+  },
+  "computer-lab-bench": {
+    "parts": [
+      {
+        "id": "Computer pedestal drawer 1",
+        "kind": "drawer",
+        "bay": "Computer pedestal drawer 1"
+      },
+      {
+        "id": "Computer pedestal drawer 2",
+        "kind": "drawer",
+        "bay": "Computer pedestal drawer 2"
+      },
+      {
+        "id": "Computer pedestal drawer 3",
+        "kind": "drawer",
+        "bay": "Computer pedestal drawer 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Computer pedestal drawer 3",
+        "type": "drawer",
+        "partIds": ["Computer pedestal drawer 3"]
+      },
+      {
+        "key": "drawer:Computer pedestal drawer 2",
+        "type": "drawer",
+        "partIds": ["Computer pedestal drawer 2"]
+      },
+      {
+        "key": "drawer:Computer pedestal drawer 1",
+        "type": "drawer",
+        "partIds": ["Computer pedestal drawer 1"]
+      }
+    ]
+  },
+  "corner-lab-bench": {
+    "parts": [
+      {
+        "id": "corner run drawer 1",
+        "kind": "drawer",
+        "bay": "corner run drawer 1"
+      },
+      {
+        "id": "corner run drawer 2",
+        "kind": "drawer",
+        "bay": "corner run drawer 2"
+      },
+      {
+        "id": "corner run drawer 3",
+        "kind": "drawer",
+        "bay": "corner run drawer 3"
+      },
+      {
+        "id": "Return cabinet door 1",
+        "kind": "hinge",
+        "bay": "Return cabinet"
+      },
+      {
+        "id": "Return cabinet door 2",
+        "kind": "hinge",
+        "bay": "Return cabinet"
+      },
+      {
+        "id": "return utility drawer",
+        "kind": "drawer",
+        "bay": "return utility drawer"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:return utility drawer",
+        "type": "drawer",
+        "partIds": ["return utility drawer"]
+      },
+      {
+        "key": "drawer:corner run drawer 1",
+        "type": "drawer",
+        "partIds": ["corner run drawer 1"]
+      },
+      {
+        "key": "drawer:corner run drawer 2",
+        "type": "drawer",
+        "partIds": ["corner run drawer 2"]
+      },
+      {
+        "key": "drawer:corner run drawer 3",
+        "type": "drawer",
+        "partIds": ["corner run drawer 3"]
+      },
+      {
+        "key": "bay:Return cabinet",
+        "type": "compartment",
+        "partIds": ["Return cabinet door 1", "Return cabinet door 2"]
+      }
+    ]
+  },
+  "flammable-cabinet": {
+    "parts": [
+      {
+        "id": "Safety cabinet door 1",
+        "kind": "hinge",
+        "bay": "Safety cabinet"
+      },
+      {
+        "id": "Safety cabinet door 2",
+        "kind": "hinge",
+        "bay": "Safety cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Safety cabinet",
+        "type": "compartment",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 3",
+        "type": "shelf",
+        "parentKey": "bay:Safety cabinet",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Safety cabinet",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      },
+      {
+        "key": "bay:Safety cabinet:shelf:Internal shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Safety cabinet",
+        "partIds": ["Safety cabinet door 1", "Safety cabinet door 2"]
+      }
+    ]
+  },
+  "freezer-storage": {
+    "parts": [
+      {
+        "id": "Cold storage door",
+        "kind": "hinge",
+        "bay": "Cold storage"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Cold storage",
+        "type": "compartment",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 4",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 3",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      }
+    ]
+  },
+  "glass-wall-cabinet": {
+    "parts": [
+      {
+        "id": "Sliding glazed door +1",
+        "kind": "slide",
+        "bay": "Glazed wall cabinet"
+      },
+      {
+        "id": "Sliding glazed door -1",
+        "kind": "slide",
+        "bay": "Glazed wall cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Glazed wall cabinet",
+        "type": "compartment",
+        "partIds": ["Sliding glazed door +1", "Sliding glazed door -1"]
+      },
+      {
+        "key": "bay:Glazed wall cabinet:shelf:Adjustable glass shelf 0.455",
+        "type": "shelf",
+        "parentKey": "bay:Glazed wall cabinet",
+        "partIds": ["Sliding glazed door +1", "Sliding glazed door -1"]
+      },
+      {
+        "key": "bay:Glazed wall cabinet:shelf:Adjustable glass shelf 0.225",
+        "type": "shelf",
+        "parentKey": "bay:Glazed wall cabinet",
+        "partIds": ["Sliding glazed door +1", "Sliding glazed door -1"]
+      }
+    ]
+  },
+  "glazed-sliding-cabinet": {
+    "parts": [
+      {
+        "id": "Lower steel sliding panel 1",
+        "kind": "slide",
+        "bay": "Lower steel"
+      },
+      {
+        "id": "Lower steel sliding panel 2",
+        "kind": "slide",
+        "bay": "Lower steel"
+      },
+      {
+        "id": "Upper glass left",
+        "kind": "slide",
+        "bay": "Upper glass"
+      },
+      {
+        "id": "Upper glass right",
+        "kind": "slide",
+        "bay": "Upper glass"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Lower steel",
+        "type": "compartment",
+        "partIds": ["Lower steel sliding panel 1", "Lower steel sliding panel 2"]
+      },
+      {
+        "key": "bay:Lower steel:shelf:Tall cabinet adjustable shelf 0.67",
+        "type": "shelf",
+        "parentKey": "bay:Lower steel",
+        "partIds": ["Lower steel sliding panel 1", "Lower steel sliding panel 2"]
+      },
+      {
+        "key": "bay:Lower steel:shelf:Tall cabinet adjustable shelf 0.35",
+        "type": "shelf",
+        "parentKey": "bay:Lower steel",
+        "partIds": ["Lower steel sliding panel 1", "Lower steel sliding panel 2"]
+      },
+      {
+        "key": "bay:Upper glass",
+        "type": "compartment",
+        "partIds": ["Upper glass left", "Upper glass right"]
+      },
+      {
+        "key": "bay:Upper glass:shelf:Tall cabinet adjustable shelf 1.61",
+        "type": "shelf",
+        "parentKey": "bay:Upper glass",
+        "partIds": ["Upper glass left", "Upper glass right"]
+      },
+      {
+        "key": "bay:Upper glass:shelf:Tall cabinet adjustable shelf 1.30",
+        "type": "shelf",
+        "parentKey": "bay:Upper glass",
+        "partIds": ["Upper glass left", "Upper glass right"]
+      }
+    ]
+  },
+  "heavy-duty-rack": {
+    "parts": [],
+    "locations": [
+      {
+        "key": "shelf:rack shelf 5",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 4",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 3",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 2",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:rack shelf 1",
+        "type": "shelf",
+        "partIds": []
+      }
+    ]
+  },
+  "institutional-sink-cabinet": {
+    "parts": [
+      {
+        "id": "Wash left cabinet door 1",
+        "kind": "hinge",
+        "bay": "Wash left cabinet"
+      },
+      {
+        "id": "Wash left cabinet door 2",
+        "kind": "hinge",
+        "bay": "Wash left cabinet"
+      },
+      {
+        "id": "Wash service cabinet door 1",
+        "kind": "hinge",
+        "bay": "Wash service cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Wash left cabinet",
+        "type": "compartment",
+        "partIds": ["Wash left cabinet door 1", "Wash left cabinet door 2"]
+      },
+      {
+        "key": "bay:Wash left cabinet:shelf:Wash left shelf",
+        "type": "shelf",
+        "parentKey": "bay:Wash left cabinet",
+        "partIds": ["Wash left cabinet door 1", "Wash left cabinet door 2"]
+      },
+      {
+        "key": "bay:Wash left cabinet:shelf:Wash left lower shelf",
+        "type": "shelf",
+        "parentKey": "bay:Wash left cabinet",
+        "partIds": ["Wash left cabinet door 1", "Wash left cabinet door 2"]
+      },
+      {
+        "key": "bay:Wash service cabinet",
+        "type": "compartment",
+        "partIds": ["Wash service cabinet door 1"]
+      }
+    ]
+  },
+  "island-bench-service-bridge": {
+    "parts": [
+      {
+        "id": "Island north module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 1"
+      },
+      {
+        "id": "Island north module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 2"
+      },
+      {
+        "id": "Island north module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 1 drawer 3"
+      },
+      {
+        "id": "Island north module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 2"
+      },
+      {
+        "id": "Island north module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 2"
+      },
+      {
+        "id": "Island north module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 1"
+      },
+      {
+        "id": "Island north module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 2 top drawer 2"
+      },
+      {
+        "id": "Island north module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island north module 3"
+      },
+      {
+        "id": "Island north module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island north module 3"
+      },
+      {
+        "id": "Island north module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 1"
+      },
+      {
+        "id": "Island north module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 3 top drawer 2"
+      },
+      {
+        "id": "Island north module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 1"
+      },
+      {
+        "id": "Island north module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 2"
+      },
+      {
+        "id": "Island north module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island north module 4 drawer 3"
+      },
+      {
+        "id": "Island south module 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 1"
+      },
+      {
+        "id": "Island south module 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 2"
+      },
+      {
+        "id": "Island south module 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 1 drawer 3"
+      },
+      {
+        "id": "Island south module 2 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 2"
+      },
+      {
+        "id": "Island south module 2 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 2"
+      },
+      {
+        "id": "Island south module 2 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 1"
+      },
+      {
+        "id": "Island south module 2 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 2 top drawer 2"
+      },
+      {
+        "id": "Island south module 3 lower door 1",
+        "kind": "hinge",
+        "bay": "Island south module 3"
+      },
+      {
+        "id": "Island south module 3 lower door 2",
+        "kind": "hinge",
+        "bay": "Island south module 3"
+      },
+      {
+        "id": "Island south module 3 top drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 1"
+      },
+      {
+        "id": "Island south module 3 top drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 3 top drawer 2"
+      },
+      {
+        "id": "Island south module 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 1"
+      },
+      {
+        "id": "Island south module 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 2"
+      },
+      {
+        "id": "Island south module 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Island south module 4 drawer 3"
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 1 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 1"
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 1 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 1"
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 2 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 2"
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 2 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 2"
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 3 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 3"
+      },
+      {
+        "id": "Shimadzu hutch +1 bay 3 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge +1 bay 3"
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 1 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 1"
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 1 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 1"
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 2 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 2"
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 2 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 2"
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 3 sliding glass 1",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 3"
+      },
+      {
+        "id": "Shimadzu hutch -1 bay 3 sliding glass 2",
+        "kind": "slide",
+        "bay": "Service bridge -1 bay 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Island north module 2 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 2 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island north module 2 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 2 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 3 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island north module 3 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 3 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 2 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 2 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 2 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 3 top drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 3 top drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 3 top drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island north module 1 drawer 3"]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island north module 4 drawer 3"]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island south module 1 drawer 3"]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 3",
+        "type": "drawer",
+        "partIds": ["Island south module 4 drawer 3"]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 1 drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island north module 4 drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 1 drawer 2"]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 2",
+        "type": "drawer",
+        "partIds": ["Island south module 4 drawer 2"]
+      },
+      {
+        "key": "drawer:Island north module 1 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 1 drawer 1"]
+      },
+      {
+        "key": "drawer:Island north module 4 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island north module 4 drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 1 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 1 drawer 1"]
+      },
+      {
+        "key": "drawer:Island south module 4 drawer 1",
+        "type": "drawer",
+        "partIds": ["Island south module 4 drawer 1"]
+      },
+      {
+        "key": "bay:Island north module 2",
+        "type": "compartment",
+        "partIds": ["Island north module 2 lower door 1", "Island north module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 2:shelf:Island north module 2 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 2",
+        "partIds": ["Island north module 2 lower door 1", "Island north module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 2:shelf:Island north module 2 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 2",
+        "partIds": ["Island north module 2 lower door 1", "Island north module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 3",
+        "type": "compartment",
+        "partIds": ["Island north module 3 lower door 1", "Island north module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 3:shelf:Island north module 3 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 3",
+        "partIds": ["Island north module 3 lower door 1", "Island north module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island north module 3:shelf:Island north module 3 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island north module 3",
+        "partIds": ["Island north module 3 lower door 1", "Island north module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 2",
+        "type": "compartment",
+        "partIds": ["Island south module 2 lower door 1", "Island south module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 2:shelf:Island south module 2 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 2",
+        "partIds": ["Island south module 2 lower door 1", "Island south module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 2:shelf:Island south module 2 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 2",
+        "partIds": ["Island south module 2 lower door 1", "Island south module 2 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 3",
+        "type": "compartment",
+        "partIds": ["Island south module 3 lower door 1", "Island south module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 3:shelf:Island south module 3 recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 3",
+        "partIds": ["Island south module 3 lower door 1", "Island south module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Island south module 3:shelf:Island south module 3 recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Island south module 3",
+        "partIds": ["Island south module 3 lower door 1", "Island south module 3 lower door 2"]
+      },
+      {
+        "key": "bay:Service bridge bay 1",
+        "type": "compartment",
+        "partIds": [
+          "Shimadzu hutch +1 bay 1 sliding glass 1",
+          "Shimadzu hutch +1 bay 1 sliding glass 2",
+          "Shimadzu hutch -1 bay 1 sliding glass 1",
+          "Shimadzu hutch -1 bay 1 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 1:shelf:Shimadzu hutch glass shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Service bridge bay 1",
+        "partIds": [
+          "Shimadzu hutch +1 bay 1 sliding glass 1",
+          "Shimadzu hutch +1 bay 1 sliding glass 2",
+          "Shimadzu hutch -1 bay 1 sliding glass 1",
+          "Shimadzu hutch -1 bay 1 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 1:shelf:Shimadzu hutch glass shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Service bridge bay 1",
+        "partIds": [
+          "Shimadzu hutch +1 bay 1 sliding glass 1",
+          "Shimadzu hutch +1 bay 1 sliding glass 2",
+          "Shimadzu hutch -1 bay 1 sliding glass 1",
+          "Shimadzu hutch -1 bay 1 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 2",
+        "type": "compartment",
+        "partIds": [
+          "Shimadzu hutch +1 bay 2 sliding glass 1",
+          "Shimadzu hutch +1 bay 2 sliding glass 2",
+          "Shimadzu hutch -1 bay 2 sliding glass 1",
+          "Shimadzu hutch -1 bay 2 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 2:shelf:Shimadzu hutch glass shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Service bridge bay 2",
+        "partIds": [
+          "Shimadzu hutch +1 bay 2 sliding glass 1",
+          "Shimadzu hutch +1 bay 2 sliding glass 2",
+          "Shimadzu hutch -1 bay 2 sliding glass 1",
+          "Shimadzu hutch -1 bay 2 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 2:shelf:Shimadzu hutch glass shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Service bridge bay 2",
+        "partIds": [
+          "Shimadzu hutch +1 bay 2 sliding glass 1",
+          "Shimadzu hutch +1 bay 2 sliding glass 2",
+          "Shimadzu hutch -1 bay 2 sliding glass 1",
+          "Shimadzu hutch -1 bay 2 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 3",
+        "type": "compartment",
+        "partIds": [
+          "Shimadzu hutch +1 bay 3 sliding glass 1",
+          "Shimadzu hutch +1 bay 3 sliding glass 2",
+          "Shimadzu hutch -1 bay 3 sliding glass 1",
+          "Shimadzu hutch -1 bay 3 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 3:shelf:Shimadzu hutch glass shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Service bridge bay 3",
+        "partIds": [
+          "Shimadzu hutch +1 bay 3 sliding glass 1",
+          "Shimadzu hutch +1 bay 3 sliding glass 2",
+          "Shimadzu hutch -1 bay 3 sliding glass 1",
+          "Shimadzu hutch -1 bay 3 sliding glass 2"
+        ]
+      },
+      {
+        "key": "bay:Service bridge bay 3:shelf:Shimadzu hutch glass shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Service bridge bay 3",
+        "partIds": [
+          "Shimadzu hutch +1 bay 3 sliding glass 1",
+          "Shimadzu hutch +1 bay 3 sliding glass 2",
+          "Shimadzu hutch -1 bay 3 sliding glass 1",
+          "Shimadzu hutch -1 bay 3 sliding glass 2"
+        ]
+      }
+    ]
+  },
+  "lab-bench-overhead": {
+    "parts": [
+      {
+        "id": "Base cabinet 2 door 1",
+        "kind": "hinge",
+        "bay": "Base cabinet 2"
+      },
+      {
+        "id": "Base cabinet 3 door 1",
+        "kind": "hinge",
+        "bay": "Base cabinet 3"
+      },
+      {
+        "id": "Drawer bank 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 1"
+      },
+      {
+        "id": "Drawer bank 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 2"
+      },
+      {
+        "id": "Drawer bank 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 3"
+      },
+      {
+        "id": "Drawer bank 1 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 4"
+      },
+      {
+        "id": "Drawer bank 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 1"
+      },
+      {
+        "id": "Drawer bank 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 2"
+      },
+      {
+        "id": "Drawer bank 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 3"
+      },
+      {
+        "id": "Drawer bank 4 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 4"
+      },
+      {
+        "id": "Overhead module 1 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 1"
+      },
+      {
+        "id": "Overhead module 2 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 2"
+      },
+      {
+        "id": "Overhead module 3 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 3"
+      },
+      {
+        "id": "Overhead module 4 glass door",
+        "kind": "hinge",
+        "bay": "Overhead module 4"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Drawer bank 1 drawer 4",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 4"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 4",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 4"]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 3",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 3"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 3",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 3"]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 2",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 2"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 2",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 2"]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 1",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 1"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 1",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 1"]
+      },
+      {
+        "key": "bay:Base cabinet 2",
+        "type": "compartment",
+        "partIds": ["Base cabinet 2 door 1"]
+      },
+      {
+        "key": "bay:Base cabinet 3",
+        "type": "compartment",
+        "partIds": ["Base cabinet 3 door 1"]
+      },
+      {
+        "key": "bay:Overhead module 1",
+        "type": "compartment",
+        "partIds": ["Overhead module 1 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 1:shelf:Overhead module 1 shelf 1.85",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 1",
+        "partIds": ["Overhead module 1 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 1:shelf:Overhead module 1 shelf 1.64",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 1",
+        "partIds": ["Overhead module 1 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 2",
+        "type": "compartment",
+        "partIds": ["Overhead module 2 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 2:shelf:Overhead module 2 shelf 1.85",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 2",
+        "partIds": ["Overhead module 2 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 2:shelf:Overhead module 2 shelf 1.64",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 2",
+        "partIds": ["Overhead module 2 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 3",
+        "type": "compartment",
+        "partIds": ["Overhead module 3 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 3:shelf:Overhead module 3 shelf 1.85",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 3",
+        "partIds": ["Overhead module 3 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 3:shelf:Overhead module 3 shelf 1.64",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 3",
+        "partIds": ["Overhead module 3 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 4",
+        "type": "compartment",
+        "partIds": ["Overhead module 4 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 4:shelf:Overhead module 4 shelf 1.85",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 4",
+        "partIds": ["Overhead module 4 glass door"]
+      },
+      {
+        "key": "bay:Overhead module 4:shelf:Overhead module 4 shelf 1.64",
+        "type": "shelf",
+        "parentKey": "bay:Overhead module 4",
+        "partIds": ["Overhead module 4 glass door"]
+      }
+    ]
+  },
+  "lab-bench-sink": {
+    "parts": [
+      {
+        "id": "Drawer bank 1 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 1"
+      },
+      {
+        "id": "Drawer bank 1 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 2"
+      },
+      {
+        "id": "Drawer bank 1 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 3"
+      },
+      {
+        "id": "Drawer bank 1 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 1 drawer 4"
+      },
+      {
+        "id": "Drawer bank 4 drawer 1",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 1"
+      },
+      {
+        "id": "Drawer bank 4 drawer 2",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 2"
+      },
+      {
+        "id": "Drawer bank 4 drawer 3",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 3"
+      },
+      {
+        "id": "Drawer bank 4 drawer 4",
+        "kind": "drawer",
+        "bay": "Drawer bank 4 drawer 4"
+      },
+      {
+        "id": "Sink service cabinet 1 door 1",
+        "kind": "hinge",
+        "bay": "Sink service cabinet 1"
+      },
+      {
+        "id": "Sink service cabinet 2 door 1",
+        "kind": "hinge",
+        "bay": "Sink service cabinet 2"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Drawer bank 1 drawer 4",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 4"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 4",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 4"]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 3",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 3"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 3",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 3"]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 2",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 2"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 2",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 2"]
+      },
+      {
+        "key": "drawer:Drawer bank 1 drawer 1",
+        "type": "drawer",
+        "partIds": ["Drawer bank 1 drawer 1"]
+      },
+      {
+        "key": "drawer:Drawer bank 4 drawer 1",
+        "type": "drawer",
+        "partIds": ["Drawer bank 4 drawer 1"]
+      },
+      {
+        "key": "bay:Sink service cabinet 1",
+        "type": "compartment",
+        "partIds": ["Sink service cabinet 1 door 1"]
+      },
+      {
+        "key": "bay:Sink service cabinet 2",
+        "type": "compartment",
+        "partIds": ["Sink service cabinet 2 door 1"]
+      }
+    ]
+  },
+  "lab-bench": {
+    "parts": [
+      {
+        "id": "Bench center paired-door cabinet lower door 1",
+        "kind": "hinge",
+        "bay": "Bench center paired-door cabinet"
+      },
+      {
+        "id": "Bench center paired-door cabinet lower door 2",
+        "kind": "hinge",
+        "bay": "Bench center paired-door cabinet"
+      },
+      {
+        "id": "Bench center paired-door cabinet top drawer 1",
+        "kind": "drawer",
+        "bay": "Bench center paired-door cabinet top drawer 1"
+      },
+      {
+        "id": "Bench center paired-door cabinet top drawer 2",
+        "kind": "drawer",
+        "bay": "Bench center paired-door cabinet top drawer 2"
+      },
+      {
+        "id": "Bench left three-drawer bank drawer 1",
+        "kind": "drawer",
+        "bay": "Bench left three-drawer bank drawer 1"
+      },
+      {
+        "id": "Bench left three-drawer bank drawer 2",
+        "kind": "drawer",
+        "bay": "Bench left three-drawer bank drawer 2"
+      },
+      {
+        "id": "Bench left three-drawer bank drawer 3",
+        "kind": "drawer",
+        "bay": "Bench left three-drawer bank drawer 3"
+      },
+      {
+        "id": "Bench right three-drawer bank drawer 1",
+        "kind": "drawer",
+        "bay": "Bench right three-drawer bank drawer 1"
+      },
+      {
+        "id": "Bench right three-drawer bank drawer 2",
+        "kind": "drawer",
+        "bay": "Bench right three-drawer bank drawer 2"
+      },
+      {
+        "id": "Bench right three-drawer bank drawer 3",
+        "kind": "drawer",
+        "bay": "Bench right three-drawer bank drawer 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Bench left three-drawer bank drawer 3",
+        "type": "drawer",
+        "partIds": ["Bench left three-drawer bank drawer 3"]
+      },
+      {
+        "key": "drawer:Bench right three-drawer bank drawer 3",
+        "type": "drawer",
+        "partIds": ["Bench right three-drawer bank drawer 3"]
+      },
+      {
+        "key": "drawer:Bench center paired-door cabinet top drawer 1",
+        "type": "drawer",
+        "partIds": ["Bench center paired-door cabinet top drawer 1"]
+      },
+      {
+        "key": "drawer:Bench center paired-door cabinet top drawer 2",
+        "type": "drawer",
+        "partIds": ["Bench center paired-door cabinet top drawer 2"]
+      },
+      {
+        "key": "drawer:Bench left three-drawer bank drawer 2",
+        "type": "drawer",
+        "partIds": ["Bench left three-drawer bank drawer 2"]
+      },
+      {
+        "key": "drawer:Bench right three-drawer bank drawer 2",
+        "type": "drawer",
+        "partIds": ["Bench right three-drawer bank drawer 2"]
+      },
+      {
+        "key": "drawer:Bench left three-drawer bank drawer 1",
+        "type": "drawer",
+        "partIds": ["Bench left three-drawer bank drawer 1"]
+      },
+      {
+        "key": "drawer:Bench right three-drawer bank drawer 1",
+        "type": "drawer",
+        "partIds": ["Bench right three-drawer bank drawer 1"]
+      },
+      {
+        "key": "bay:Bench center paired-door cabinet",
+        "type": "compartment",
+        "partIds": [
+          "Bench center paired-door cabinet lower door 1",
+          "Bench center paired-door cabinet lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Bench center paired-door cabinet:shelf:Bench center paired-door cabinet recessed shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Bench center paired-door cabinet",
+        "partIds": [
+          "Bench center paired-door cabinet lower door 1",
+          "Bench center paired-door cabinet lower door 2"
+        ]
+      },
+      {
+        "key": "bay:Bench center paired-door cabinet:shelf:Bench center paired-door cabinet recessed shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Bench center paired-door cabinet",
+        "partIds": [
+          "Bench center paired-door cabinet lower door 1",
+          "Bench center paired-door cabinet lower door 2"
+        ]
+      }
+    ]
+  },
+  "locker": {
+    "parts": [
+      {
+        "id": "locker door 1",
+        "kind": "hinge",
+        "bay": "Locker bay 1"
+      },
+      {
+        "id": "locker door 2",
+        "kind": "hinge",
+        "bay": "Locker bay 2"
+      },
+      {
+        "id": "locker door 3",
+        "kind": "hinge",
+        "bay": "Locker bay 3"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Locker bay 1",
+        "type": "compartment",
+        "partIds": ["locker door 1"]
+      },
+      {
+        "key": "bay:Locker bay 1:shelf:Locker bay 1 shelf",
+        "type": "shelf",
+        "parentKey": "bay:Locker bay 1",
+        "partIds": ["locker door 1"]
+      },
+      {
+        "key": "bay:Locker bay 2",
+        "type": "compartment",
+        "partIds": ["locker door 2"]
+      },
+      {
+        "key": "bay:Locker bay 2:shelf:Locker bay 2 shelf",
+        "type": "shelf",
+        "parentKey": "bay:Locker bay 2",
+        "partIds": ["locker door 2"]
+      },
+      {
+        "key": "bay:Locker bay 3",
+        "type": "compartment",
+        "partIds": ["locker door 3"]
+      },
+      {
+        "key": "bay:Locker bay 3:shelf:Locker bay 3 shelf",
+        "type": "shelf",
+        "parentKey": "bay:Locker bay 3",
+        "partIds": ["locker door 3"]
+      }
+    ]
+  },
+  "mobile-bench": {
+    "parts": [
+      {
+        "id": "mobile cabinet left door",
+        "kind": "hinge",
+        "bay": "Mobile cabinet"
+      },
+      {
+        "id": "mobile cabinet right door",
+        "kind": "hinge",
+        "bay": "Mobile cabinet"
+      },
+      {
+        "id": "mobile drawer 1",
+        "kind": "drawer",
+        "bay": "mobile drawer 1"
+      },
+      {
+        "id": "mobile drawer 2",
+        "kind": "drawer",
+        "bay": "mobile drawer 2"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:mobile drawer 1",
+        "type": "drawer",
+        "partIds": ["mobile drawer 1"]
+      },
+      {
+        "key": "drawer:mobile drawer 2",
+        "type": "drawer",
+        "partIds": ["mobile drawer 2"]
+      },
+      {
+        "key": "bay:Mobile cabinet",
+        "type": "compartment",
+        "partIds": ["mobile cabinet left door", "mobile cabinet right door"]
+      }
+    ]
+  },
+  "mobile-drawer": {
+    "parts": [
+      {
+        "id": "mobile drawer 1",
+        "kind": "drawer",
+        "bay": "mobile drawer 1"
+      },
+      {
+        "id": "mobile drawer 2",
+        "kind": "drawer",
+        "bay": "mobile drawer 2"
+      },
+      {
+        "id": "mobile drawer 3",
+        "kind": "drawer",
+        "bay": "mobile drawer 3"
+      },
+      {
+        "id": "mobile drawer 4",
+        "kind": "drawer",
+        "bay": "mobile drawer 4"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:mobile drawer 1",
+        "type": "drawer",
+        "partIds": ["mobile drawer 1"]
+      },
+      {
+        "key": "drawer:mobile drawer 2",
+        "type": "drawer",
+        "partIds": ["mobile drawer 2"]
+      },
+      {
+        "key": "drawer:mobile drawer 3",
+        "type": "drawer",
+        "partIds": ["mobile drawer 3"]
+      },
+      {
+        "key": "drawer:mobile drawer 4",
+        "type": "drawer",
+        "partIds": ["mobile drawer 4"]
+      }
+    ]
+  },
+  "office-desk": {
+    "parts": [
+      {
+        "id": "Pencil drawer",
+        "kind": "drawer",
+        "bay": "Pencil drawer"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Pencil drawer",
+        "type": "drawer",
+        "partIds": ["Pencil drawer"]
+      }
+    ]
+  },
+  "open-shelving": {
+    "parts": [],
+    "locations": [
+      {
+        "key": "shelf:Adjustable shelf 5",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 4",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 3",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 2",
+        "type": "shelf",
+        "partIds": []
+      },
+      {
+        "key": "shelf:Adjustable shelf 1",
+        "type": "shelf",
+        "partIds": []
+      }
+    ]
+  },
+  "plastic-basket-tower": {
+    "parts": [
+      {
+        "id": "Removable basket 1",
+        "kind": "drawer",
+        "bay": "Removable basket 1"
+      },
+      {
+        "id": "Removable basket 2",
+        "kind": "drawer",
+        "bay": "Removable basket 2"
+      },
+      {
+        "id": "Removable basket 3",
+        "kind": "drawer",
+        "bay": "Removable basket 3"
+      },
+      {
+        "id": "Removable basket 4",
+        "kind": "drawer",
+        "bay": "Removable basket 4"
+      },
+      {
+        "id": "Removable basket 5",
+        "kind": "drawer",
+        "bay": "Removable basket 5"
+      },
+      {
+        "id": "Removable basket 6",
+        "kind": "drawer",
+        "bay": "Removable basket 6"
+      }
+    ],
+    "locations": [
+      {
+        "key": "drawer:Removable basket 1",
+        "type": "drawer",
+        "partIds": ["Removable basket 1"]
+      },
+      {
+        "key": "drawer:Removable basket 2",
+        "type": "drawer",
+        "partIds": ["Removable basket 2"]
+      },
+      {
+        "key": "drawer:Removable basket 3",
+        "type": "drawer",
+        "partIds": ["Removable basket 3"]
+      },
+      {
+        "key": "drawer:Removable basket 4",
+        "type": "drawer",
+        "partIds": ["Removable basket 4"]
+      },
+      {
+        "key": "drawer:Removable basket 5",
+        "type": "drawer",
+        "partIds": ["Removable basket 5"]
+      },
+      {
+        "key": "drawer:Removable basket 6",
+        "type": "drawer",
+        "partIds": ["Removable basket 6"]
+      }
+    ]
+  },
+  "refrigerator-storage": {
+    "parts": [
+      {
+        "id": "Cold storage door",
+        "kind": "hinge",
+        "bay": "Cold storage"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Cold storage",
+        "type": "compartment",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 4",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 3",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 2",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      },
+      {
+        "key": "bay:Cold storage:shelf:Internal shelf 1",
+        "type": "shelf",
+        "parentKey": "bay:Cold storage",
+        "partIds": ["Cold storage door"]
+      }
+    ]
+  },
+  "sink-cabinet": {
+    "parts": [
+      {
+        "id": "Sink service cabinet door 1",
+        "kind": "hinge",
+        "bay": "Sink service cabinet"
+      },
+      {
+        "id": "Sink service cabinet door 2",
+        "kind": "hinge",
+        "bay": "Sink service cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Sink service cabinet",
+        "type": "compartment",
+        "partIds": ["Sink service cabinet door 1", "Sink service cabinet door 2"]
+      }
+    ]
+  },
+  "sliding-door-cabinet": {
+    "parts": [
+      {
+        "id": "Steel cabinet sliding panel 1",
+        "kind": "slide",
+        "bay": "Steel cabinet"
+      },
+      {
+        "id": "Steel cabinet sliding panel 2",
+        "kind": "slide",
+        "bay": "Steel cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Steel cabinet",
+        "type": "compartment",
+        "partIds": ["Steel cabinet sliding panel 1", "Steel cabinet sliding panel 2"]
+      },
+      {
+        "key": "bay:Steel cabinet:shelf:Adjustable internal shelf 0.98",
+        "type": "shelf",
+        "parentKey": "bay:Steel cabinet",
+        "partIds": ["Steel cabinet sliding panel 1", "Steel cabinet sliding panel 2"]
+      },
+      {
+        "key": "bay:Steel cabinet:shelf:Adjustable internal shelf 0.69",
+        "type": "shelf",
+        "parentKey": "bay:Steel cabinet",
+        "partIds": ["Steel cabinet sliding panel 1", "Steel cabinet sliding panel 2"]
+      },
+      {
+        "key": "bay:Steel cabinet:shelf:Adjustable internal shelf 0.38",
+        "type": "shelf",
+        "parentKey": "bay:Steel cabinet",
+        "partIds": ["Steel cabinet sliding panel 1", "Steel cabinet sliding panel 2"]
+      }
+    ]
+  },
+  "solvent-cabinet": {
+    "parts": [
+      {
+        "id": "Solvent sliding panel 1",
+        "kind": "slide",
+        "bay": "Solvent"
+      },
+      {
+        "id": "Solvent sliding panel 2",
+        "kind": "slide",
+        "bay": "Solvent"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Solvent",
+        "type": "compartment",
+        "partIds": ["Solvent sliding panel 1", "Solvent sliding panel 2"]
+      },
+      {
+        "key": "bay:Solvent:shelf:Solvent containment shelf 0.96",
+        "type": "shelf",
+        "parentKey": "bay:Solvent",
+        "partIds": ["Solvent sliding panel 1", "Solvent sliding panel 2"]
+      },
+      {
+        "key": "bay:Solvent:shelf:Solvent containment shelf 0.68",
+        "type": "shelf",
+        "parentKey": "bay:Solvent",
+        "partIds": ["Solvent sliding panel 1", "Solvent sliding panel 2"]
+      },
+      {
+        "key": "bay:Solvent:shelf:Solvent containment shelf 0.36",
+        "type": "shelf",
+        "parentKey": "bay:Solvent",
+        "partIds": ["Solvent sliding panel 1", "Solvent sliding panel 2"]
+      }
+    ]
+  },
+  "stainless-enclosed-basin": {
+    "parts": [
+      {
+        "id": "Enclosed basin door +1",
+        "kind": "hinge",
+        "bay": "Enclosed wash cabinet"
+      },
+      {
+        "id": "Enclosed basin door -1",
+        "kind": "hinge",
+        "bay": "Enclosed wash cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Enclosed wash cabinet",
+        "type": "compartment",
+        "partIds": ["Enclosed basin door +1", "Enclosed basin door -1"]
+      }
+    ]
+  },
+  "stainless-wash-basin": {
+    "parts": [],
+    "locations": [
+      {
+        "key": "shelf:Wash station lower shelf",
+        "type": "shelf",
+        "partIds": []
+      }
+    ]
+  },
+  "tall-cabinet": {
+    "parts": [
+      {
+        "id": "Tall cabinet full-height door +1",
+        "kind": "hinge",
+        "bay": "Tall cabinet"
+      },
+      {
+        "id": "Tall cabinet full-height door -1",
+        "kind": "hinge",
+        "bay": "Tall cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Tall cabinet",
+        "type": "compartment",
+        "partIds": ["Tall cabinet full-height door +1", "Tall cabinet full-height door -1"]
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 1.90",
+        "type": "shelf",
+        "parentKey": "bay:Tall cabinet",
+        "partIds": ["Tall cabinet full-height door +1", "Tall cabinet full-height door -1"]
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 1.48",
+        "type": "shelf",
+        "parentKey": "bay:Tall cabinet",
+        "partIds": ["Tall cabinet full-height door +1", "Tall cabinet full-height door -1"]
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 1.03",
+        "type": "shelf",
+        "parentKey": "bay:Tall cabinet",
+        "partIds": ["Tall cabinet full-height door +1", "Tall cabinet full-height door -1"]
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 0.55",
+        "type": "shelf",
+        "parentKey": "bay:Tall cabinet",
+        "partIds": ["Tall cabinet full-height door +1", "Tall cabinet full-height door -1"]
+      },
+      {
+        "key": "bay:Tall cabinet:shelf:Tall cabinet shelf 0.14",
+        "type": "shelf",
+        "parentKey": "bay:Tall cabinet",
+        "partIds": ["Tall cabinet full-height door +1", "Tall cabinet full-height door -1"]
+      }
+    ]
+  },
+  "wall-cabinet": {
+    "parts": [
+      {
+        "id": "wall cabinet left door",
+        "kind": "hinge",
+        "bay": "Wall cabinet"
+      },
+      {
+        "id": "wall cabinet right door",
+        "kind": "hinge",
+        "bay": "Wall cabinet"
+      }
+    ],
+    "locations": [
+      {
+        "key": "bay:Wall cabinet",
+        "type": "compartment",
+        "partIds": ["wall cabinet left door", "wall cabinet right door"]
+      },
+      {
+        "key": "bay:Wall cabinet:shelf:wall cabinet shelf.001",
+        "type": "shelf",
+        "parentKey": "bay:Wall cabinet",
+        "partIds": ["wall cabinet left door", "wall cabinet right door"]
+      },
+      {
+        "key": "bay:Wall cabinet:shelf:wall cabinet shelf",
+        "type": "shelf",
+        "parentKey": "bay:Wall cabinet",
+        "partIds": ["wall cabinet left door", "wall cabinet right door"]
+      }
+    ]
+  }
+}

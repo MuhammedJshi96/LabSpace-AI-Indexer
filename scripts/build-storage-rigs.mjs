@@ -65,7 +65,10 @@ for (const id of ids) {
           s.y > y0 + 0.005 &&
           s.y < y1 - 0.005 &&
           s.x + s.width / 2 > x0 + 0.01 &&
-          s.x - s.width / 2 < x1 - 0.01,
+          s.x - s.width / 2 < x1 - 0.01 &&
+          // Opposing lower island cabinets contain separate physical shelves.
+          // The central service hutch is deliberately shared across both faces.
+          (!bay.startsWith("Island ") || s.z * region.z > 0),
       )
       .sort((a, b) => b.y - a.y);
     for (const [i, shelf] of physical.entries()) {

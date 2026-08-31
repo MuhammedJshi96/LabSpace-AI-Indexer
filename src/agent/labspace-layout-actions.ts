@@ -10,6 +10,7 @@ import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import { resolveLayerIdForObjectType } from "../domain/layers";
 import type { AssetDefinition, Project, Room, SceneObject } from "../domain/schema";
 import {
+  defaultOpeningSillHeight,
   findNearestWallProjection,
   hostOpeningAtPoint,
   openingOverlapsSibling,
@@ -672,7 +673,7 @@ function hostedOpeningCandidate(room: Room, asset: AssetDefinition, request: Roo
       sillHeight:
         request.host?.sillHeightMm ??
         request.elevationMm ??
-        (asset.objectType === "window" ? 900 : 0),
+        defaultOpeningSillHeight(asset.id, asset.objectType),
       height: candidate.dimensions.height,
       handing: request.host?.handing ?? "left",
       swing: request.host?.swing ?? (asset.id.includes("sliding-door") ? "sliding" : "inward"),

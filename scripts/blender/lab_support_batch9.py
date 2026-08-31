@@ -28,6 +28,7 @@ if str(SCRIPT_DIRECTORY) not in sys.path:
 import lab_casework_batch3 as casework  # noqa: E402
 import lab_fidelity_batch6 as fidelity  # noqa: E402
 import lab_furniture as furniture  # noqa: E402
+from manufactured_surfaces import formed_bowl  # noqa: E402
 
 
 AssetSpec = furniture.AssetSpec
@@ -449,17 +450,18 @@ def build_gas_cylinder(_: AssetSpec) -> None:
 def build_eyewash(_: AssetSpec) -> None:
     box("Eyewash base plate", (0, 0.04, 0.020), (0.29, 0.24, 0.040), "stainless", bevel=0.008, category="pedestal base")
     cylinder_between("Supply pedestal", (0, 0.08, 0.04), (0, 0.08, 0.73), 0.027, "stainless", category="water supply")
-    cylinder("Stainless eyewash bowl", (0, -0.015, 0.745), 0.195, 0.105, "polished_stainless", bevel=0.009, category="eyewash bowl")
-    torus("Eyewash bowl rolled rim", (0, -0.015, 0.795), 0.190, 0.011, "stainless", category="eyewash bowl")
-    cylinder("Bowl interior", (0, -0.015, 0.803), 0.165, 0.010, "powder_dark", bevel=0.002, category="eyewash bowl")
+    formed_bowl(furniture, "Formed stainless eyewash basin", (0,-.015,.80),.195,.105,furniture.MATERIALS["polished_stainless"])
+    cylinder("Basin drain strainer", (0,-.015,.708),.026,.006,"stainless",bevel=.001,category="drain")
     cylinder_between("Drain tail", (0, -0.015, 0.69), (0, 0.08, 0.55), 0.020, "stainless", category="drain")
     for side in (-1, 1):
         x = side * 0.075
-        cylinder_between(f"Spray riser {side}", (x, -0.015, 0.79), (x, -0.015, 0.875), 0.012, "stainless", category="spray head")
+        cylinder_between(f"Spray riser {side}", (x, -0.015, 0.73), (x, -0.015, 0.875), 0.012, "stainless", category="spray head")
         cylinder(f"Aerated spray head {side}", (x, -0.015, 0.892), 0.030, 0.034, "white_polymer", bevel=0.005, category="spray head")
         cylinder(f"Green dust cap {side}", (x, -0.015, 0.912), 0.027, 0.014, "safety_green", bevel=0.004, category="spray head")
         cylinder(f"Water plume {side}", (x, -0.015, 0.953), 0.010, 0.060, "blue_liquid", bevel=0.002, category="water spray")
     box("Stay-open push plate", (0, -0.155, 0.62), (0.16, 0.018, 0.085), "safety_green", bevel=0.010, rotation=(math.radians(-12), 0, 0), category="activation control")
+    cylinder_between("Push plate valve linkage", (0,.08,.62),(0,-.155,.62),.012,"stainless",category="activation control")
+    cylinder_between("Sign support mast", (0,.075,.76),(0,.075,.99),.009,"stainless",category="sign support")
     box("Eyewash symbol plate", (0, 0.075, 0.98), (0.25, 0.018, 0.12), "safety_green", bevel=0.005, category="safety sign")
     box("Eyewash sign insert", (0, 0.064, 0.98), (0.17, 0.004, 0.050), "label", bevel=0.002, category="safety sign")
 

@@ -3,6 +3,22 @@ import type { SceneObject } from "./schema";
 
 export type PlanPoint = { x: number; y: number };
 
+export function defaultOpeningSillHeight(assetId: string, objectType: string): number {
+  if (assetId === "clerestory-window") return 2200;
+  if (assetId === "pass-through-window") return 1100;
+  if (assetId === "observation-window") return 1000;
+  return objectType === "window" ? 900 : 0;
+}
+
+export function isDoubleLeafDoor(assetId: string): boolean {
+  return [
+    "double-door",
+    "double-sliding-door",
+    "double-transom-door",
+    "double-egress-door",
+  ].includes(assetId);
+}
+
 export type WallProjection = {
   wall: SceneObject;
   point: PlanPoint;
@@ -121,14 +137,7 @@ export function hostOpeningAtPoint(
   object: SceneObject,
   projection: WallProjection,
 ): Pick<SceneObject, "position" | "rotation" | "opening"> {
-  const defaultSillHeight =
-    object.assetDefinitionId === "pass-through-window"
-      ? 1100
-      : object.assetDefinitionId === "observation-window"
-        ? 1000
-        : object.objectType === "window"
-          ? 900
-          : 0;
+  const defaultSillHeight = defaultOpeningSillHeight(object.assetDefinitionId, object.objectType);
   const sillHeight = object.opening?.sillHeight ?? defaultSillHeight;
   return {
     position: {

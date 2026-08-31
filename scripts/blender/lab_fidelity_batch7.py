@@ -736,22 +736,23 @@ def build_plate_reader(spec: AssetSpec) -> None:
 
 
 def build_microcentrifuge(spec: AssetSpec) -> None:
+    from manufactured_surfaces import rounded_loft
     m = furniture.MATERIALS
     width, depth, height = spec.width, spec.depth, spec.height
-    box(
+    rounded_loft(furniture,
         "Microcentrifuge lower chassis",
         (0.0, 0.018, height * 0.37),
         (width, depth * 0.94, height * 0.74),
         m["instrument_white"],
-        bevel=0.030,
+        corner=.20, taper=.94,
         category="instrument chassis",
     )
-    box(
+    rounded_loft(furniture,
         "Microcentrifuge rotor lid",
         (0.0, 0.032, height * 0.80),
         (width * 0.91, depth * 0.78, height * 0.33),
         m["light_aluminum"],
-        bevel=0.040,
+        corner=.22, taper=.94,
         rotation=(math.radians(-2.5), 0.0, 0.0),
         category="rotor lid",
     )

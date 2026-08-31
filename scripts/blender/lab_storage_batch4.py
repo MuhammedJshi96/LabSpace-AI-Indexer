@@ -398,6 +398,7 @@ def build_glass_wall_cabinet(spec: AssetSpec) -> None:
             layer_y - 0.006,
             spec.height * 0.50,
             -1.0,
+            projection=0.016,  # Low-profile slider pull stays within the cabinet envelope.
         )
     for y, name in ((face_y - 0.014, "front"), (face_y + 0.014, "rear")):
         for z in (0.052, spec.height - 0.052):

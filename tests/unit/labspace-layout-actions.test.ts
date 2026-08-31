@@ -40,6 +40,27 @@ afterEach(() => {
 });
 
 describe("LabSpace browser-agent room planning", () => {
+  it("offers the reference pack to WebMCP and shares the editor's high-level window default", () => {
+    blankLayoutFixture();
+    expect(searchLabAssets({ query: "chiller" }).results).toContainEqual(
+      expect.objectContaining({ assetId: "recirculating-chiller", connection: "floor" }),
+    );
+    const plan = planRoomLayout({
+      brief: "A laboratory with high-level glazing and a transom entrance.",
+      assets: [
+        { assetId: "clerestory-window", quantity: 1, host: { wallIndex: 1, offsetMm: 4000 } },
+        { assetId: "double-transom-door", quantity: 1, host: { wallIndex: 2, offsetMm: 4000 } },
+      ],
+    });
+    expect(plan.unplaced).toEqual([]);
+    expect(
+      plan.proposals.find((p) => p.assetId === "clerestory-window")?.opening?.sillHeightMm,
+    ).toBe(2200);
+    expect(
+      plan.proposals.find((p) => p.assetId === "double-transom-door")?.dimensionsMm.height,
+    ).toBe(2650);
+    expect(plan.requiresHumanApproval).toBe(true);
+  });
   it("searches canonical catalog assets with dimensions and indexing behavior", () => {
     const result = searchLabAssets({ query: "laboratory bench", categories: ["Furniture"] });
 

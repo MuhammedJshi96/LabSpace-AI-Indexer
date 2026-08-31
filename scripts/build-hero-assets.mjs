@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
-import { env, stdout } from "node:process";
+import { env, stdout, execPath } from "node:process";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -57,8 +57,8 @@ const jobs = [
     script: "scripts/blender/lab_catalog_completion_batch12.py",
     args: ["--output-dir", outputDir],
   },
+  { script: "scripts/blender/lab_reference_batch13.py", args: ["--output-dir", outputDir] },
   { script: "scripts/blender/compress_hero_glbs.py", args: ["--model-dir", outputDir] },
-  { script: "scripts/blender/render_hero_catalog.py", args: [] },
 ];
 
 for (const job of jobs) {
@@ -83,5 +83,28 @@ for (const job of jobs) {
     throw new Error(`${job.script} failed with exit code ${result.status ?? "unknown"}.`);
   }
 }
+
+// Material review must follow compression (which re-exports material extras).
+// Storage rigs and same-model renders are always derived from that delivery.
+for (const script of ["scripts/polish-catalog-materials.mjs", "scripts/build-storage-rigs.mjs"]) {
+  const result = spawnSync(execPath, [resolve(projectRoot, script)], {
+    cwd: projectRoot,
+    stdio: "inherit",
+  });
+  if (result.status !== 0) throw new Error(`${script} failed.`);
+}
+const renders = spawnSync(
+  blender,
+  [
+    "--background",
+    "--factory-startup",
+    "--python-exit-code",
+    "1",
+    "--python",
+    resolve(projectRoot, "scripts/blender/render_hero_catalog.py"),
+  ],
+  { cwd: projectRoot, stdio: "inherit" },
+);
+if (renders.status !== 0) throw new Error("Catalog rendering failed.");
 
 stdout.write("\nAll LabSpace hero GLBs were rebuilt successfully.\n");

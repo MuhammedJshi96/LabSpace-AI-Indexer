@@ -6,6 +6,7 @@ import type { AssetDefinition } from "../domain/schema";
 import { getLaboratoryMaterialTexture } from "../lib/laboratory-material-textures";
 import { ProceduralAssetModel } from "./ProceduralAssetModel";
 import { applyStoragePose, cloneStorageScene } from "../lib/storage-articulation";
+import { applyReviewedAuthoredFinish } from "../lib/authored-finish";
 
 type DetailLevel = "room" | "preview";
 
@@ -23,6 +24,10 @@ const enhancedMaterials = new WeakSet<THREE.Material>();
 
 function enhanceAuthoredMaterial(material: THREE.Material) {
   if (enhancedMaterials.has(material) || !(material instanceof THREE.MeshStandardMaterial)) return;
+  if (applyReviewedAuthoredFinish(material)) {
+    enhancedMaterials.add(material);
+    return;
+  }
   const name = material.name.toLowerCase();
   const isPrimaryDarkWorktop =
     name.includes("phenolic worktop") || name.includes("phenolic exposed edge");

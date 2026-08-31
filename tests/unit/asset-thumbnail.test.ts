@@ -28,7 +28,7 @@ describe("asset library thumbnails", () => {
 
   it("keeps authored GLB assets on their material-aware isometric renders", () => {
     const authoredAssets = ASSET_CATALOG.filter((asset) => asset.model3d);
-    expect(authoredAssets).toHaveLength(94);
+    expect(authoredAssets).toHaveLength(104);
     for (const asset of authoredAssets) {
       const source = authoredAssetRenderSource(asset, "isometric");
       expect(source).toMatch(/models\/hero\/renders\/.*-isometric\.png/);
@@ -56,7 +56,7 @@ describe("asset library thumbnails", () => {
       expect(asset.defaultDimensions).toEqual(dimensions);
       expect(asset.model3d?.previewSrc).toBe(`/models/hero/${id}.glb`);
       expect(asset.model3d?.authoredDimensions).toEqual(dimensions);
-      expect(asset.model3d?.revision).toBe("remaining-equipment-batch11-r1");
+      expect(asset.model3d?.revision).toBe("remaining-equipment-batch11-r1-catalog-polish-r3");
     }
   });
 
@@ -75,7 +75,7 @@ describe("asset library thumbnails", () => {
       expect(asset.defaultDimensions).toEqual(dimensions);
       expect(asset.model3d?.previewSrc).toBe(`/models/hero/${id}.glb`);
       expect(asset.model3d?.authoredDimensions).toEqual(dimensions);
-      expect(asset.model3d?.revision).toBe("instruments-batch10-r1");
+      expect(asset.model3d?.revision).toBe("instruments-batch10-r1-catalog-polish-r3");
     }
   });
 

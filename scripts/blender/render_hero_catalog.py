@@ -12,7 +12,10 @@ The script intentionally discovers only ``*.glb`` files directly inside
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+import time
+import uuid
 from pathlib import Path
 
 import bpy
@@ -39,10 +42,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--view",
-        choices=("all", "isometric", "top"),
+        choices=("all", "isometric", "top", "rear"),
         default="all",
         help="Render both catalog views or only the selected derived view.",
     )
+    parser.add_argument("--output-dir", default=str(OUTPUT_DIRECTORY))
     return parser.parse_args(argv)
 
 
@@ -117,6 +121,8 @@ def prepare_catalog_materials() -> None:
     """
 
     for material in bpy.data.materials:
+        if str(material.get("labspace_finish_revision", "")).startswith("catalog-polish-"):
+            continue
         if not material.use_nodes or "phenolic" not in material.name.lower():
             continue
         bsdf = material.node_tree.nodes.get("Principled BSDF")
@@ -134,7 +140,13 @@ def prepare_catalog_materials() -> None:
 
 def configure_scene() -> bpy.types.Scene:
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_EEVEE_NEXT"
+    # Offline ray-traced reflections/transmission avoid Eevee's visible stipple
+    # on glazing. This adds no runtime GPU cost: the app still loads static PNGs.
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 64
+    scene.cycles.use_denoising = True
+    scene.cycles.seed = 0
+    scene.cycles.transparent_max_bounces = 12
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
@@ -146,6 +158,7 @@ def configure_scene() -> bpy.types.Scene:
     scene.render.pixel_aspect_x = 1.0
     scene.render.pixel_aspect_y = 1.0
     scene.view_settings.look = "AgX - Medium High Contrast"
+    scene.view_settings.exposure = -0.45
 
     world = bpy.data.worlds.new("Hero catalog studio world")
     world.use_nodes = True
@@ -225,8 +238,8 @@ def create_orthographic_camera(
 
     scale = max(dimensions.x, dimensions.y, dimensions.z, 0.1)
     distance = max(4.0 * scale, 2.0)
-    if view == "isometric":
-        direction = Vector((1.35, -1.55, 1.10)).normalized()
+    if view in {"isometric", "rear"}:
+        direction = Vector((1.35, -1.55, 1.10) if view == "isometric" else (-1.35, 1.55, 0.85)).normalized()
         camera.location = target + direction * distance
         look_at(camera, target)
     elif view == "top":
@@ -280,8 +293,19 @@ def render_view(
     scene.camera = camera
     scene.render.resolution_x = resolution[0]
     scene.render.resolution_y = resolution[1]
-    scene.render.filepath = str(output_path)
+    # Render beside the destination then replace atomically. A dev-server read
+    # must never see half a PNG, and Windows may briefly hold the previous file.
+    temporary = output_path.with_name(f".{output_path.stem}-{uuid.uuid4().hex}.png")
+    scene.render.filepath = str(temporary)
     bpy.ops.render.render(write_still=True)
+    for attempt in range(8):
+        try:
+            os.replace(temporary, output_path)
+            break
+        except OSError:
+            if attempt == 7:
+                raise
+            time.sleep(.25)
 
     bpy.data.objects.remove(camera, do_unlink=True)
     print(f"LABSPACE_HERO_RENDER {view} {output_path}")
@@ -320,10 +344,15 @@ def render_model(glb_path: Path, views: tuple[str, ...]) -> None:
             minimum,
             maximum,
         )
+    if "rear" in views:
+        render_view(bpy.context.scene, OUTPUT_DIRECTORY / f"{glb_path.stem}-rear.png",
+                    "rear", ISO_RESOLUTION, minimum, maximum)
 
 
 def main() -> None:
+    global OUTPUT_DIRECTORY
     args = parse_args()
+    OUTPUT_DIRECTORY = (PROJECT_ROOT / args.output_dir).resolve()
     if not MODEL_DIRECTORY.exists():
         raise FileNotFoundError(MODEL_DIRECTORY)
 

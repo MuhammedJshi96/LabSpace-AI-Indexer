@@ -398,6 +398,7 @@ def build_round_stool(spec: AssetSpec) -> None:
 
 
 def add_chair_seat(width: float, depth: float, z: float, material: bpy.types.Material) -> None:
+    from manufactured_surfaces import rounded_loft
     m = furniture.MATERIALS
     add_box(
         "Seat pan",
@@ -407,12 +408,12 @@ def add_chair_seat(width: float, depth: float, z: float, material: bpy.types.Mat
         bevel=0.014,
         category="seat shell",
     )
-    add_box(
+    rounded_loft(furniture,
         "Upholstered seat cushion",
         (0.0, -0.020, z),
         (width, depth, 0.065),
         material,
-        bevel=0.028,
+        corner=.17, taper=.93,
         rotation=(math.radians(-2.5), 0.0, 0.0),
         category="seat cushion",
     )
@@ -428,6 +429,7 @@ def add_chair_seat(width: float, depth: float, z: float, material: bpy.types.Mat
 
 
 def build_laboratory_chair(spec: AssetSpec) -> None:
+    from manufactured_surfaces import rounded_loft
     m = furniture.MATERIALS
     add_five_star_base(0.260, 0.100, 0.028)
     add_gas_column(0.535)
@@ -448,22 +450,22 @@ def build_laboratory_chair(spec: AssetSpec) -> None:
         m["black"],
         category="back support",
     )
-    add_box(
+    rounded_loft(furniture,
         "Laboratory chair back shell",
         (0.0, 0.218, 0.805),
-        (0.365, 0.050, 0.235),
+        (0.365, 0.235, 0.050),
         m["black"],
-        bevel=0.026,
-        rotation=(math.radians(-7.0), 0.0, 0.0),
+        corner=.18,
+        rotation=(math.radians(83.0), 0.0, 0.0),
         category="back shell",
     )
-    add_box(
+    rounded_loft(furniture,
         "Laboratory chair back cushion",
         (0.0, 0.190, 0.807),
-        (0.340, 0.040, 0.205),
+        (0.340, 0.205, 0.040),
         m["vinyl_black"],
-        bevel=0.030,
-        rotation=(math.radians(-7.0), 0.0, 0.0),
+        corner=.20,
+        rotation=(math.radians(83.0), 0.0, 0.0),
         category="back cushion",
     )
     add_box(
@@ -499,6 +501,7 @@ def add_armrest(side: float, z: float, blue: bool = False) -> None:
 
 
 def build_office_chair(spec: AssetSpec) -> None:
+    from manufactured_surfaces import rounded_loft
     m = furniture.MATERIALS
     add_five_star_base(0.285, 0.105, 0.030)
     add_gas_column(0.525)
@@ -513,22 +516,22 @@ def build_office_chair(spec: AssetSpec) -> None:
         m["powder_dark"],
         category="back support",
     )
-    add_box(
+    rounded_loft(furniture,
         "Office chair high-back shell",
         (0.0, 0.230, 0.790),
-        (0.435, 0.060, 0.395),
+        (0.435, 0.395, 0.060),
         m["black"],
-        bevel=0.035,
-        rotation=(math.radians(-8.0), 0.0, 0.0),
+        corner=.18,
+        rotation=(math.radians(82.0), 0.0, 0.0),
         category="back shell",
     )
-    add_box(
+    rounded_loft(furniture,
         "Office chair high-back upholstery",
         (0.0, 0.194, 0.790),
-        (0.400, 0.045, 0.365),
+        (0.400, 0.365, 0.045),
         m["upholstery_blue"],
-        bevel=0.040,
-        rotation=(math.radians(-8.0), 0.0, 0.0),
+        corner=.20,
+        rotation=(math.radians(82.0), 0.0, 0.0),
         category="back cushion",
     )
     for z in (0.675, 0.775, 0.875):

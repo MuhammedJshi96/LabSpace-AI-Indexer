@@ -319,6 +319,12 @@ export function AssetPreviewPage() {
               />
               <color attach="background" args={["#eef2f1"]} />
               <Environment resolution={128} frames={1}>
+                {/* A continuous neutral studio prevents polished metal from
+                    reflecting a black void between the softboxes. */}
+                <mesh scale={40}>
+                  <sphereGeometry args={[1, 32, 16]} />
+                  <meshBasicMaterial color="#9fa8a9" side={THREE.BackSide} />
+                </mesh>
                 <Lightformer
                   form="rect"
                   intensity={2.55}
@@ -335,12 +341,20 @@ export function AssetPreviewPage() {
                   rotation={[0.1, -Math.PI / 3, 0]}
                   scale={[4, 3, 1]}
                 />
+                <Lightformer
+                  form="rect"
+                  intensity={1.4}
+                  color="#ffffff"
+                  position={[0, 3, -5]}
+                  rotation={[0, Math.PI, 0]}
+                  scale={[2, 5, 1]}
+                />
               </Environment>
               <hemisphereLight color="#f6fbfa" groundColor="#6f7a77" intensity={0.52} />
               <ambientLight intensity={0.18} />
               <directionalLight
                 position={[5, 8, 6]}
-                intensity={2.05}
+                intensity={1.55}
                 castShadow
                 shadow-mapSize-width={1536}
                 shadow-mapSize-height={1536}

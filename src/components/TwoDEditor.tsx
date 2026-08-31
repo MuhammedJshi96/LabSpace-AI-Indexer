@@ -36,6 +36,7 @@ import { editWallEndpoint, translateWall, type WallEndpoint } from "../domain/wa
 import {
   findNearestWallProjection,
   hostOpeningAtPoint,
+  isDoubleLeafDoor,
   openingOverlapsSibling,
   resolveHostedOpening,
 } from "../domain/wall-openings";
@@ -1052,9 +1053,7 @@ function OpeningPlan({
   const width = object.dimensions.width;
   const isDoor = object.objectType === "door";
   const isSlidingDoor = isDoor && object.opening?.swing === "sliding";
-  const isDoubleDoor =
-    object.assetDefinitionId === "double-door" ||
-    object.assetDefinitionId === "double-sliding-door";
+  const isDoubleDoor = isDoubleLeafDoor(object.assetDefinitionId);
   const windowPaneCount =
     object.assetDefinitionId === "wide-window"
       ? 3

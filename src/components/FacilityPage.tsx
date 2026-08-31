@@ -10,6 +10,11 @@ import {
 } from "@phosphor-icons/react";
 import { OrbitControls } from "@react-three/drei";
 import { StudioEnvironment } from "./StudioEnvironment";
+import { QualityKeyLight } from "./QualityKeyLight";
+import { RenderDiagnostics } from "./RenderDiagnostics";
+import { RenderQualityControl } from "./RenderQualityControl";
+import { renderQualityPreset } from "../domain/render-quality";
+import { useRenderSettings } from "../store/render-settings-store";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -639,6 +644,8 @@ function FacilityStackView({
   onSelect,
   onOpen,
 }: FacilityStackViewProps) {
+  const quality = useRenderSettings((state) => state.quality);
+  const renderSettings = renderQualityPreset(quality, "facility");
   const floorScenes = useMemo(() => {
     const grouped = new Map<number, Room[]>();
     rooms.forEach((room, index) => {
@@ -675,8 +682,9 @@ function FacilityStackView({
   return (
     <Canvas
       key={sceneKey}
-      shadows
-      dpr={[1, 1.45]}
+      shadows={{ type: renderSettings.softShadows ? THREE.VSMShadowMap : THREE.PCFShadowMap }}
+      dpr={renderSettings.dpr}
+      frameloop="demand"
       camera={{
         position: [
           framingSpan,
@@ -689,20 +697,25 @@ function FacilityStackView({
       }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
     >
+      <RenderDiagnostics />
       <color attach="background" args={["#e9f0ee"]} />
       <fog attach="fog" args={["#e9f0ee", 42, 120]} />
-      <StudioEnvironment />
+      <StudioEnvironment intensity={0.55 * renderSettings.environmentMultiplier} />
       <hemisphereLight color="#ffffff" groundColor="#b5bdb8" intensity={0.4} />
       <ambientLight intensity={0.075} />
-      <directionalLight
-        castShadow
+      <QualityKeyLight
+        quality={quality}
+        surface="facility"
         intensity={1.1}
         position={[14, 22, 12]}
-        shadow-mapSize-width={1536}
-        shadow-mapSize-height={1536}
         shadow-radius={4}
         shadow-bias={-0.0002}
         shadow-normalBias={0.025}
+        shadow-camera-left={quality === "high" ? -maxSpan : -5}
+        shadow-camera-right={quality === "high" ? maxSpan : 5}
+        shadow-camera-top={quality === "high" ? maxSpan + stackHeight : 5}
+        shadow-camera-bottom={quality === "high" ? -maxSpan : -5}
+        shadow-camera-far={quality === "high" ? Math.max(50, maxSpan * 4) : 500}
       />
       <directionalLight intensity={0.3} position={[-12, 10, -8]} color="#ffffff" />
       <gridHelper args={[100, 100, "#adc7c1", "#d5e3df"]} position={[0, -0.22, 0]} />
@@ -1022,7 +1035,7 @@ export function FacilityPage() {
                 {floorFilter === "all" ? " · All floors" : ` · Floor ${floorFilter}`}
               </b>
             </span>
-            <em>Orbit · inspect · double-click a room to open</em>
+            <RenderQualityControl />
           </header>
           <div
             className="facility-map facility-stack-canvas"

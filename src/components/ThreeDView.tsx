@@ -26,6 +26,11 @@ import {
 } from "@phosphor-icons/react";
 import * as THREE from "three";
 import { StudioEnvironment } from "./StudioEnvironment";
+import { QualityKeyLight } from "./QualityKeyLight";
+import { RenderDiagnostics } from "./RenderDiagnostics";
+import { RenderQualityControl } from "./RenderQualityControl";
+import { renderQualityPreset, type RenderQuality } from "../domain/render-quality";
+import { useRenderSettings } from "../store/render-settings-store";
 import { getAssetDefinition } from "../domain/assets";
 import {
   cameraCommandKey,
@@ -442,7 +447,7 @@ export function Asset3D({
   );
 }
 
-export type RenderQuality = "performance" | "balanced" | "detail";
+export type { RenderQuality } from "../domain/render-quality";
 
 function CameraRig({
   room,
@@ -803,6 +808,7 @@ const RoomScene = memo(function RoomScene({
   const roomWidthMetres = mmToMetres(room.width);
   const roomDepthMetres = mmToMetres(room.depth);
   const lighting = roomLightingLayout(room.width, room.depth, room.wallHeight);
+  const renderSettings = renderQualityPreset(quality);
   const hasClosedFloor = useMemo(
     () => Boolean(getClosedWallFloorPolygon(room.scene.objects)),
     [room.scene.objects],
@@ -823,14 +829,15 @@ const RoomScene = memo(function RoomScene({
           environmentContextVisible && (presentation !== "digital-twin" || !wallTransparentOverride)
         }
       />
-      <StudioEnvironment intensity={lighting.environmentIntensity} />
+      <StudioEnvironment
+        intensity={lighting.environmentIntensity * renderSettings.environmentMultiplier}
+      />
       <hemisphereLight color="#f7f9ff" groundColor="#c4bfb5" intensity={0.28} />
-      <directionalLight
+      <QualityKeyLight
+        quality={quality}
         position={lighting.keyPosition}
         intensity={lighting.keyIntensity}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
         shadow-radius={2.5}
         shadow-intensity={lighting.shadowIntensity}
         shadow-camera-near={1}
@@ -895,12 +902,12 @@ const RoomScene = memo(function RoomScene({
       {floorVisible && hasClosedFloor && sceneReady && (
         <ContactShadows
           position={[0, 0.008, 0]}
-          opacity={0.36}
+          opacity={renderSettings.contactShadows ? 0.36 : 0}
           scale={Math.max(roomWidthMetres, roomDepthMetres) * 1.25}
           blur={2.4}
           far={lighting.contactFar}
-          resolution={quality === "performance" ? 512 : 1024}
-          frames={2}
+          resolution={1024}
+          frames={renderSettings.contactShadows ? 2 : 0}
           color="#353a3e"
         />
       )}
@@ -980,7 +987,7 @@ function ViewCube({
 }
 
 export function ThreeDView({
-  quality = "balanced",
+  quality: qualityOverride,
   focusObjectId: focusObjectIdOverride,
   focusLocationId: focusLocationIdOverride,
   presentation = "editor",
@@ -994,6 +1001,9 @@ export function ThreeDView({
   wallTransparentOverride?: boolean;
   showStorageAccess?: boolean;
 } = {}) {
+  const preferredQuality = useRenderSettings((state) => state.quality);
+  const quality = qualityOverride ?? preferredQuality;
+  const renderSettings = renderQualityPreset(quality);
   const [materialMapsReady, setMaterialMapsReady] = useState(false);
   const [readySceneSignature, setReadySceneSignature] = useState<string | null>(null);
   const readyAssetIds = useRef(new Set<string>());
@@ -1109,6 +1119,8 @@ export function ThreeDView({
       className="three-d-view"
       data-testid="3d-view"
       data-render-quality={quality}
+      data-shadow-map-size={renderSettings.shadowSize}
+      data-shadow-filter={renderSettings.softShadows ? "soft-studio" : "pcf"}
       data-surface-renderer="satin-grain-v1"
       data-presentation={presentation}
       data-focus-object-id={focusObjectId ?? undefined}
@@ -1123,6 +1135,7 @@ export function ThreeDView({
     >
       <div className="three-d-toolbar">
         <ViewCube preset={preset} onChange={setPreset} />
+        {presentation === "editor" && <RenderQualityControl className="render-quality-overlay" />}
         <div className="three-d-actions">
           {hasLaboratoryEnvironmentProfile(room) && (
             <button
@@ -1180,8 +1193,8 @@ export function ThreeDView({
         }
       >
         <Canvas
-          shadows={{ type: THREE.PCFShadowMap }}
-          dpr={quality === "detail" ? [1.25, 2] : quality === "performance" ? [0.75, 1] : [1, 1.5]}
+          shadows={{ type: renderSettings.softShadows ? THREE.VSMShadowMap : THREE.PCFShadowMap }}
+          dpr={renderSettings.dpr}
           frameloop="demand"
           gl={{ antialias: true, powerPreference: "high-performance" }}
           onCreated={({ gl }) => {
@@ -1191,6 +1204,7 @@ export function ThreeDView({
           }}
           onPointerMissed={() => useEditorStore.getState().setSelected([])}
         >
+          <RenderDiagnostics />
           <RoomScene
             room={room}
             focusObjectId={focusObjectId}

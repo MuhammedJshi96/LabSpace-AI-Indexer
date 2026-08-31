@@ -35,7 +35,8 @@ import { labSpaceNavigationActions } from "../agent/labspace-navigation-actions"
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { AssetThumbnail } from "./AssetThumbnail";
 import { Dialogs, Toasts } from "./Dialogs";
-import { ThreeDView, type RenderQuality } from "./ThreeDView";
+import { ThreeDView } from "./ThreeDView";
+import { RenderQualityControl } from "./RenderQualityControl";
 import { TopBar } from "./TopBar";
 import { CollectionGuide } from "./CollectionGuide";
 import { TwoDEditor } from "./TwoDEditor";
@@ -143,7 +144,6 @@ export function DigitalTwinPage() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<TwinMode>("browse");
   const [scope, setScope] = useState<DigitalTwinScope>("project");
-  const [quality, setQuality] = useState<RenderQuality>("balanced");
   const [wallCutaway, setWallCutaway] = useState(false);
   const [qrCode, setQrCode] = useState("");
   const hydrate = useEditorStore((state) => state.hydrate);
@@ -389,18 +389,7 @@ export function DigitalTwinPage() {
           </button>
         </form>
         <div className="twin-top-actions">
-          <label className="twin-quality">
-            <span>Render quality</span>
-            <select
-              aria-label="Render quality"
-              value={quality}
-              onChange={(event) => setQuality(event.target.value as RenderQuality)}
-            >
-              <option value="performance">Performance</option>
-              <option value="balanced">Balanced</option>
-              <option value="detail">Detail</option>
-            </select>
-          </label>
+          <RenderQualityControl />
           <button
             className={spatialMode === "2d" ? "active" : ""}
             onClick={() => setSpatialMode(spatialMode === "3d" ? "2d" : "3d")}
@@ -511,7 +500,6 @@ export function DigitalTwinPage() {
             {spatialMode === "3d" ? (
               <TwinRendererBoundary label="3D spatial index">
                 <ThreeDView
-                  quality={quality}
                   focusObjectId={focusedObjectId}
                   focusLocationId={focusedObjectId ? spatialFocus?.locationId : null}
                   presentation="digital-twin"

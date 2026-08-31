@@ -10,6 +10,11 @@ import {
 } from "@phosphor-icons/react";
 import * as THREE from "three";
 import { StudioEnvironment } from "./StudioEnvironment";
+import { QualityKeyLight } from "./QualityKeyLight";
+import { RenderDiagnostics } from "./RenderDiagnostics";
+import { RenderQualityControl } from "./RenderQualityControl";
+import { renderQualityPreset } from "../domain/render-quality";
+import { useRenderSettings } from "../store/render-settings-store";
 import { ASSET_CATALOG } from "../domain/assets";
 import { assetPreviewCameraDistance } from "../domain/asset-preview-camera";
 import { BUILD_WEEK_DEMO_ASSET_IDS } from "../domain/build-week-demo";
@@ -97,6 +102,8 @@ function PreviewCameraRig({
 }
 
 export function AssetPreviewPage() {
+  const quality = useRenderSettings((state) => state.quality);
+  const renderSettings = renderQualityPreset(quality, "studio");
   const hydrate = useEditorStore((state) => state.hydrate);
   const archivedAssetIds = useEditorStore((state) => state.project.archivedAssetIds);
   const archiveAsset = useEditorStore((state) => state.archiveAsset);
@@ -291,10 +298,14 @@ export function AssetPreviewPage() {
             className="asset-preview-canvas"
             data-asset-id={asset.id}
             data-model-ready={readyAssetId === asset.id}
+            data-render-quality={quality}
+            data-shadow-map-size={renderSettings.shadowSize}
           >
             <Canvas
-              shadows={{ type: THREE.PCFShadowMap }}
-              dpr={[1, 1.5]}
+              shadows={{
+                type: renderSettings.softShadows ? THREE.VSMShadowMap : THREE.PCFShadowMap,
+              }}
+              dpr={renderSettings.dpr}
               frameloop="demand"
               gl={{ antialias: true, powerPreference: "high-performance" }}
               onCreated={({ gl }) => {
@@ -303,6 +314,7 @@ export function AssetPreviewPage() {
                 gl.outputColorSpace = THREE.SRGBColorSpace;
               }}
             >
+              <RenderDiagnostics />
               <PreviewCameraRig
                 view={previewView}
                 extent={previewExtent}
@@ -312,15 +324,17 @@ export function AssetPreviewPage() {
                 resetKey={cameraResetKey}
               />
               <color attach="background" args={["#eef2f1"]} />
-              <StudioEnvironment onReady={() => setLightingReady(true)} />
+              <StudioEnvironment
+                intensity={0.55 * renderSettings.environmentMultiplier}
+                onReady={() => setLightingReady(true)}
+              />
               <hemisphereLight color="#ffffff" groundColor="#c5cbc8" intensity={0.32} />
               <ambientLight intensity={0.06} />
-              <directionalLight
-                castShadow
+              <QualityKeyLight
+                quality={quality}
+                surface="studio"
                 position={[5, 8, 6]}
                 intensity={1.25}
-                shadow-mapSize-width={1024}
-                shadow-mapSize-height={1024}
                 shadow-radius={5}
                 shadow-camera-left={-previewExtent * 1.5}
                 shadow-camera-right={previewExtent * 1.5}
@@ -353,12 +367,12 @@ export function AssetPreviewPage() {
                 <ContactShadows
                   key={`${asset.id}:${openParts.map((part) => part.id).join(",")}`}
                   position={[0, 0.001, 0]}
-                  opacity={0.34}
+                  opacity={renderSettings.contactShadows ? 0.34 : 0}
                   scale={Math.max(2.4, previewExtent * 3.2)}
                   blur={3.2}
                   far={Math.max(0.3, previewHeight * 1.1)}
                   resolution={512}
-                  frames={2}
+                  frames={renderSettings.contactShadows ? 2 : 0}
                 />
               )}
               <Grid
@@ -397,6 +411,7 @@ export function AssetPreviewPage() {
               <Cube size={16} weight="duotone" />
               Orbit · pan · zoom
             </div>
+            <RenderQualityControl className="render-quality-studio" />
           </div>
           <div className="asset-preview-details">
             {storageSlots.length > 0 && (

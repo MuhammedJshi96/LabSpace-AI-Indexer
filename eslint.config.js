@@ -10,6 +10,7 @@ export default tseslint.config(
       "coverage",
       "playwright-report",
       "test-results",
+      "artifacts",
       ".npm-cache",
       ".tools",
       "public/draco",

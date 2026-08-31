@@ -1028,6 +1028,9 @@ def apply_modifiers() -> None:
 
 
 def consolidate_by_material() -> None:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import reference_finishes
+    reference_finishes.apply(sys.modules[__name__])
     groups: dict[str, list[bpy.types.Object]] = {}
     for obj in bpy.context.scene.objects:
         if obj.type != "MESH":

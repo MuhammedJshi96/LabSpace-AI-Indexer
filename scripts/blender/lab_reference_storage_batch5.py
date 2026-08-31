@@ -338,7 +338,7 @@ def build_glazed_sliding_cabinet(spec: AssetSpec) -> None:
         1.925,
         -1.0,
     )
-    for row, z in enumerate((0.38, 0.69, 1.30, 1.61), 1):
+    for row, z in enumerate((0.35, 0.67, 1.30, 1.61), 1):
         for column, x in enumerate((-0.235, 0.0, 0.235), 1):
             furniture.add_box(
                 f"Visible storage bin {row}-{column}",

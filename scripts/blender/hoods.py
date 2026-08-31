@@ -670,16 +670,29 @@ def add_base_casework(
         MATERIALS["interior"],
         bevel=0.005,
     )
-    gap = 0.016
+    # A folded face frame closes the carcass behind the moving door reveals.
+    # The old side panels stopped short of the doors and work deck, leaving
+    # visible daylight around otherwise solid casework.
+    for side in (-1.0, 1.0):
+        rounded_box(f"{prefix}_front_return_{side:+.0f}",
+                    (side * (width / 2 - .031), front_y + .045, height * .51),
+                    (.062, .075, height - .04), powder, bevel=.002)
+    rounded_box(f"{prefix}_front_header", (0, front_y + .045, height - .05),
+                (width - .10, .075, .10), powder, bevel=.002)
+    rounded_box(f"{prefix}_front_sill", (0, front_y + .045, .158),
+                (width - .10, .075, .050), powder, bevel=.002)
+    rounded_box(f"{prefix}_worktop_bearing", (0, .01, height - .010),
+                (width - .025, depth - .025, .035), powder, bevel=.002)
+    gap = 0.005
     door_width = (width - 0.14 - gap) * 0.5
     for side in (-1.0, 1.0):
-        x = side * (door_width * 0.5 + gap * 0.25)
+        x = side * (door_width * 0.5 + gap * 0.5)
         rounded_box(
             f"{prefix}_{'left' if side < 0 else 'right'}_door",
             (x, front_y - 0.008, height * 0.52),
             (door_width, 0.032, height - 0.25),
             powder,
-            bevel=0.010,
+            bevel=0.002,
         )
         rounded_box(
             f"{prefix}_{'left' if side < 0 else 'right'}_door_seam",
@@ -693,15 +706,15 @@ def add_base_casework(
             (x, front_y - 0.030, height * 0.52),
             (door_width - 0.030, 0.007, height - 0.28),
             powder,
-            bevel=0.007,
+            bevel=0.002,
         )
-        handle_x = side * 0.085
+        handle_x = side * 0.120
         add_front_handle(
             f"{prefix}_{'left' if side < 0 else 'right'}_handle",
             handle_x,
             front_y - 0.030,
             height * 0.73,
-            0.18,
+            0.14,
         )
         for z in (0.25, height - 0.12):
             front_fastener(
@@ -764,9 +777,10 @@ def build_fume_hood() -> None:
     cylinder("Hood cup sink opening", (0.48, 0.18, 0.991), 0.092, 0.010, MATERIALS["black"], vertices=56)
 
     # Full chamber shell: solid liners and removable rear baffles.
-    rounded_box("Hood left liner", (-0.705, 0.015, 1.515), (0.055, 0.72, 1.13), MATERIALS["interior"], bevel=0.010)
-    rounded_box("Hood right liner", (0.705, 0.015, 1.515), (0.055, 0.72, 1.13), MATERIALS["interior"], bevel=0.010)
-    rounded_box("Hood chamber ceiling", (0.0, 0.020, 2.050), (1.42, 0.71, 0.060), MATERIALS["interior"], bevel=0.010)
+    rounded_box("Hood left liner", (-0.705, 0.007, 1.515), (0.055, 0.84, 1.13), MATERIALS["interior"], bevel=0.003)
+    rounded_box("Hood right liner", (0.705, 0.007, 1.515), (0.055, 0.84, 1.13), MATERIALS["interior"], bevel=0.003)
+    rounded_box("Hood chamber ceiling", (0.0, 0.010, 2.050), (1.42, 0.80, 0.060), MATERIALS["interior"], bevel=0.003)
+    rounded_box("Hood continuous rear enclosure", (0.0, .415, 1.515), (1.44, .025, 1.14), MATERIALS["powder"], bevel=.003)
     rounded_box("Hood rear liner", (0.0, 0.365, 1.515), (1.40, 0.045, 1.13), MATERIALS["powder_dark"], bevel=0.008)
     for index, z in enumerate((1.205, 1.515, 1.825)):
         rounded_box(
@@ -784,7 +798,7 @@ def build_fume_hood() -> None:
                 MATERIALS["shadow"],
                 bevel=0.006,
             )
-    rounded_box("Hood lower baffle intake", (0.0, 0.305, 1.045), (1.25, 0.010, 0.030), MATERIALS["shadow"], bevel=0.006)
+    rounded_box("Hood lower baffle intake", (0.0, 0.339, 1.045), (1.25, 0.010, 0.030), MATERIALS["shadow"], bevel=0.002)
 
     # Black architectural frame and thick tracked sash.
     for side in (-1.0, 1.0):
@@ -1066,6 +1080,9 @@ def apply_modifiers() -> None:
 
 def consolidate_static_meshes_by_material() -> None:
     """Collapse authored static parts to one runtime mesh per PBR material."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import reference_finishes
+    reference_finishes.apply(sys.modules[__name__])
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     grouped: dict[str, list[bpy.types.Object]] = {}
     for obj in meshes:
@@ -1286,6 +1303,7 @@ def build_one(
         build_fume_hood()
     else:
         build_biosafety_cabinet()
+    ROOT["construction_revision"] = "connected-enclosure-r4"
     fit_to_dimensions(ASSETS[asset_id]["dimensions"])
     authored_report = scene_report(asset_id)
     validate_report(asset_id, authored_report, imported=False)

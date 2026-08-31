@@ -942,6 +942,9 @@ def apply_modifiers() -> None:
 def consolidate_by_material() -> None:
     """Join static parts sharing a PBR material into one runtime mesh group."""
     apply_modifiers()
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import reference_finishes
+    reference_finishes.apply(sys.modules[__name__])
     groups: dict[str, list[bpy.types.Object]] = {}
     for obj in mesh_objects():
         key = obj.material_slots[0].material.name if obj.material_slots else "unassigned"

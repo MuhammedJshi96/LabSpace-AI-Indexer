@@ -24,6 +24,60 @@ function locationsFor(objectId: string) {
 describe("reference-based bench storage", () => {
   beforeEach(resetEditor);
 
+  it("closes both rotated runs of the corner bench without moving its storage", () => {
+    const data = readFileSync("public/models/hero/corner-lab-bench.glb");
+    const gltf = JSON.parse(data.subarray(20, 20 + data.readUInt32LE(12)).toString());
+    const root = gltf.nodes.find(
+      (n: { extras?: { asset_id?: string } }) => n.extras?.asset_id === "corner-lab-bench",
+    );
+    expect(root.extras.corner_gable_joint_revision).toBe("closed-gable-r1");
+    expect(root.extras.corner_gable_joint_runs).toBe(2);
+  });
+
+  it.each([
+    "asymmetric-lab-bench",
+    "lab-bench",
+    "center-island-bench",
+    "island-bench-service-bridge",
+    "lab-bench-sink",
+    "lab-bench-overhead",
+    "base-cabinet",
+    "base-drawer-cabinet",
+    "sink-cabinet",
+    "tall-cabinet",
+    "mobile-bench",
+    "wall-cabinet",
+    "computer-lab-bench",
+    "mobile-drawer",
+    "chemical-cabinet",
+    "flammable-cabinet",
+    "locker",
+    "refrigerator-storage",
+    "freezer-storage",
+    "stainless-enclosed-basin",
+  ])("%s closes the overlay-to-gable channel with fixed returns", (id) => {
+    const data = readFileSync(`public/models/hero/${id}.glb`);
+    const gltf = JSON.parse(data.subarray(20, 20 + data.readUInt32LE(12)).toString());
+    const root = gltf.nodes.find(
+      (n: { extras?: { asset_id?: string } }) => n.extras?.asset_id === id,
+    );
+    expect(root.extras.gable_joint_revision).toBe("closed-gable-r1");
+    const records = root.extras.gable_joint_records;
+    expect(records.length).toBeGreaterThanOrEqual(2);
+    for (const joint of records) {
+      expect(joint.fronts.length).toBeGreaterThan(0);
+      expect(joint.overlayClearance).toBeCloseTo(0.002);
+      expect(joint.faceSetback).toBeCloseTo(0.005);
+      expect(joint.fixedPanelOverlap).toBeGreaterThan(0);
+      expect(joint.frontEdgeOverlap).toBeGreaterThan(0);
+      expect(joint.upper).toBeGreaterThan(joint.lower);
+    }
+    if (id.includes("island"))
+      expect([...new Set(records.map((r: { normal: number }) => r.normal))].sort()).toEqual([
+        -1, 1,
+      ]);
+  });
+
   it("creates the standard Shimadzu bench drawer and cabinet anatomy", () => {
     const objectId = useEditorStore.getState().addAsset("lab-bench")!;
     const locations = locationsFor(objectId);
@@ -72,7 +126,7 @@ describe("reference-based bench storage", () => {
     "island-bench-service-bridge",
   ])("%s delivers genuinely recessed cabinets without moving the drawer datum", (id) => {
     const definition = getAssetDefinition(id);
-    expect(definition.model3d?.revision).toBe("recessed-casework-r1-catalog-polish-r3");
+    expect(definition.model3d?.revision).toBe("recessed-casework-r1-catalog-polish-r7");
     const data = readFileSync(`public/models/hero/${id}.glb`);
     const gltf = JSON.parse(data.subarray(20, 20 + data.readUInt32LE(12)).toString());
     const root = gltf.nodes.find(

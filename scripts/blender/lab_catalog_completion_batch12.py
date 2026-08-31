@@ -254,6 +254,17 @@ def build_corner_bench(spec: AssetSpec) -> None:
         for side in (-1, 1):
             box("manufactured end gable", (side * (bw / 2 - 0.010), 0, (base + top) / 2),
                 (0.020, bd, top - base), m["powder_light"], bevel=0.003)
+            # Fold the fixed gable around the overlay before rotating the run.
+            # This closes the same exposed tray channel on BOTH L-bench axes,
+            # while retaining 2 mm behind the drawer/door and its travel.
+            box("corner fixed gable leading edge",
+                (side * (bw / 2 - .010), front - .0025, (base + top) / 2),
+                (.020, .013, top - base), m["powder_light"], bevel=.0008,
+                category="fixed gable return")
+            box("corner fixed gable inner return",
+                (side * (bw / 2 - .020), front + .017, (base + top) / 2),
+                (.008, .018, top - base), m["powder_light"], bevel=.0008,
+                category="fixed gable return")
         box("removable cabinet back", (0, bd / 2 - 0.009, (base + top) / 2),
             (bw - 0.040, 0.018, top - base - 0.008), m["powder"], bevel=0.003, category="rear service")
         box("recessed toe kick", (0, 0.038, base / 2), (bw - 0.025, bd - 0.076, base), m["powder"], bevel=0.003, category="plinth")
@@ -283,6 +294,8 @@ def build_corner_bench(spec: AssetSpec) -> None:
 
     cabinet_run((-0.280, 0.425), 0, True)
     cabinet_run((0.425, -0.280), -math.pi / 2, False)
+    furniture.ROOT["corner_gable_joint_revision"] = "closed-gable-r1"
+    furniture.ROOT["corner_gable_joint_runs"] = 2
     # Enclosed blind corner joins the two runs beneath the shared work surface.
     box("blind-corner body", (0.425, 0.425, 0.4835), (0.570, 0.570, 0.757), m["powder"], bevel=0.004)
     box("blind-corner recessed plinth", (0.463, 0.463, 0.0525), (0.494, 0.494, 0.105), m["powder"], bevel=0.003, category="plinth")
@@ -394,7 +407,8 @@ def build_rectangular_table(spec: AssetSpec) -> None:
             cylinder("leveling foot", (x, y, 0.014), 0.029, 0.028, m["rubber"], vertices=40, category="foot")
     box("rear modesty panel", (0, leg_y, h * 0.56), (w * 0.80, 0.020, h * 0.32), m["powder_light"], bevel=0.003, category="modesty panel")
     for x in (-w * 0.39, w * 0.39):
-        box("modesty panel bracket", (x, leg_y, underside - 0.085), (0.040, 0.040, 0.140), m["steel_visible"], bevel=0.002, category="joinery")
+        bottom, top = h * .70, underside - .010
+        box("modesty panel bracket", (x, leg_y, (bottom + top) / 2), (0.040, 0.040, top - bottom), m["steel_visible"], bevel=0.002, category="joinery")
     cylinder("cable grommet", (w * 0.34, d * 0.24, h - 0.0015), 0.029, 0.003, m["black"], vertices=48, category="cable management")
 
 
@@ -664,7 +678,7 @@ def build_safety_shower(spec: AssetSpec) -> None:
     tube("safety shower overhead arm", [(0, d * 0.28, h * 0.86), (0, d * 0.28, h * 0.95), (0, 0, h * 0.95)], 0.032, m["steel_visible"], category="overhead pipe")
     cone("safety shower head", (0, 0, h * 0.88), w * 0.18, w * 0.07, h * 0.10, m["steel_visible"], category="shower head")
     cylinder("head threaded coupling", (0,0,h*.935),.039,h*.05,m["steel_visible"],vertices=48,category="pipe coupling")
-    cylinder("safety shower spray plate", (0, 0, h * 0.825), w * 0.16, 0.018, m["powder_dark"], vertices=48, category="shower head")
+    cylinder("safety shower spray plate", (0, 0, h * 0.830), w * 0.16, 0.018, m["powder_dark"], vertices=48, category="shower head")
     tube("safety shower pull rod", [(w * 0.20, d * 0.22, h * 0.84), (w * 0.20, d * 0.22, h * 0.47)], 0.010, m["steel_visible"], category="activation pull")
     torus("safety shower pull ring", (w * 0.20, d * 0.22, h * 0.42), 0.065, 0.010, m["bio_red"], rotation=(math.pi / 2, 0, 0), category="activation pull")
     tube("valve activation lever", [(0,d*.28,h*.84),(w*.20,d*.22,h*.84)],.013,m["steel_visible"],category="valve linkage")

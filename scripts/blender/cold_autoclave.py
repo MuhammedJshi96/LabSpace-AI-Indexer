@@ -728,9 +728,14 @@ def build_autoclave() -> None:
             fastener(f"Rear utility screw {x:.2f} {z:.2f}", (x, 0.416, z), axis=(0.0, 1.0, 0.0))
 
     # Product/safety plates and dense inspection details.
-    rounded_box("Front model badge", (-0.205, -0.414, 0.905), (0.150, 0.008, 0.078), MATERIALS["aqua"], bevel=0.005)
+    # The upper badge straddles the removable service door: attach it to a
+    # real backing boss, not to space in front of the taller cabinet shell.
+    for name, x, z, w, h in (("Badge mounting boss", -.205, .905, .145, .073),
+                              ("Warning mounting boss", .165, .880, .170, .115)):
+        rounded_box(name, (x, -.385, z), (w, .054, h), gray, bevel=.002)
+    rounded_box("Front model badge", (-0.205, -0.411, 0.905), (0.150, 0.014, 0.078), MATERIALS["aqua"], bevel=0.003)
     text_mesh("Front model badge text", "AUTOCLAVE", (-0.205, -0.421, 0.905), 0.018, MATERIALS["paper"])
-    rounded_box("Warning plate", (0.165, -0.416, 0.880), (0.175, 0.008, 0.120), MATERIALS["paper"], bevel=0.004)
+    rounded_box("Warning plate", (0.165, -0.412, 0.880), (0.175, 0.016, 0.120), MATERIALS["paper"], bevel=0.003)
     text_mesh("Warning heading", "CAUTION", (0.165, -0.423, 0.914), 0.019, MATERIALS["red"])
     for row, width in enumerate((0.135, 0.145, 0.110)):
         rounded_box(f"Warning line {row + 1}", (0.165, -0.425, 0.880 - row * 0.022), (width, 0.002, 0.004), MATERIALS["label"], bevel=0.001)
@@ -770,6 +775,9 @@ def consolidate_static_meshes_by_material() -> None:
     painted-shell, and metal treatments while collapsing hundreds of repeated
     fasteners and vent parts into a draw-call-friendly asset.
     """
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import reference_finishes
+    reference_finishes.apply(sys.modules[__name__])
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     grouped: dict[str, list[bpy.types.Object]] = {}
     for obj in meshes:

@@ -197,6 +197,11 @@ def build_base_cabinet(spec: AssetSpec) -> None:
         bevel=0.003,
         category="interior shelf",
     )
+    for side in (-1, 1):
+        furniture.add_box(f"Base shelf bearing ledge {side}",
+            (side * (spec.width / 2 - .040), .018, .340),
+            (.036, spec.depth - .13, .012), furniture.MATERIALS["zinc"],
+            bevel=.002, category="fixed shelf support")
     furniture.add_double_door_cabinet_with_top_drawers(
         "Shimadzu base cabinet", 0.0, front_y, spec.width - 0.065, -1.0
     )
@@ -507,6 +512,11 @@ def build_tall_cabinet(spec: AssetSpec) -> None:
             bevel=0.003,
             category="interior shelf",
         )
+        for side in (-1, 1):
+            furniture.add_box(f"Tall shelf bearing ledge {side} {z}",
+                (side * (spec.width / 2 - .040), .018, z - .015),
+                (.030, spec.depth - .13, .012), m["zinc"],
+                bevel=.002, category="fixed shelf support")
     leaf_width = (spec.width - 0.070) / 2.0
     door_bottom = 0.115
     door_height = 1.915

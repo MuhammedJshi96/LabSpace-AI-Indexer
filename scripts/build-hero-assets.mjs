@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
-import { env, stdout, execPath } from "node:process";
+import { env, stdout, execPath, argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -14,7 +14,10 @@ if (!existsSync(blender)) {
   );
 }
 
-const outputDir = "public/models/hero";
+const stagingIndex = argv.indexOf("--staging-only");
+if (stagingIndex >= 0 && !argv[stagingIndex + 1])
+  throw new Error("--staging-only requires an output directory");
+const outputDir = stagingIndex >= 0 ? resolve(argv[stagingIndex + 1]) : "public/models/hero";
 const jobs = [
   {
     script: "scripts/blender/lab_casework_batch3.py",
@@ -85,6 +88,10 @@ for (const job of jobs) {
 }
 
 // Material review must follow compression (which re-exports material extras).
+if (stagingIndex >= 0) {
+  stdout.write(`Staged authored models in ${outputDir}; live catalog not changed.\n`);
+  exit(0);
+}
 // Storage rigs and same-model renders are always derived from that delivery.
 for (const script of ["scripts/polish-catalog-materials.mjs", "scripts/build-storage-rigs.mjs"]) {
   const result = spawnSync(execPath, [resolve(projectRoot, script)], {

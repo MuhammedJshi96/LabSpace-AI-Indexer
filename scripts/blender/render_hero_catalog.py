@@ -47,6 +47,7 @@ def parse_args() -> argparse.Namespace:
         help="Render both catalog views or only the selected derived view.",
     )
     parser.add_argument("--output-dir", default=str(OUTPUT_DIRECTORY))
+    parser.add_argument("--resume", action="store_true", help="Skip views already newer than their source GLB.")
     return parser.parse_args(argv)
 
 
@@ -110,28 +111,23 @@ def remove_embedded_cameras_and_lights() -> None:
         bpy.data.objects.remove(obj, do_unlink=True)
 
 
-def prepare_catalog_materials() -> None:
+def prepare_catalog_materials(view="isometric") -> None:
     """Keep reference-critical finishes legible in the transparent card rig.
 
-    The authored GLBs retain physically useful glossy phenolic surfaces for the
-    room renderer. Four white catalog softboxes can make those surfaces read as
-    gray at thumbnail scale, however, so the catalog-only render uses a darker,
-    broader satin response. This keeps black bench worktops black in the Asset
-    Library and 2D material-aware plan without altering the delivered model.
+    Preserve authored albedo. In the orthographic plan, suppress the overhead
+    softbox's specular image instead of repainting a black resin top grey/white.
+    This adjustment belongs to the derived evidence image, not the room GLB.
     """
 
     for material in bpy.data.materials:
-        if str(material.get("labspace_finish_revision", "")).startswith("catalog-polish-"):
-            continue
         if not material.use_nodes or "phenolic" not in material.name.lower():
             continue
         bsdf = material.node_tree.nodes.get("Principled BSDF")
         if bsdf is None:
             continue
-        bsdf.inputs["Base Color"].default_value = (0.0004, 0.0006, 0.0006, 1.0)
-        bsdf.inputs["Roughness"].default_value = 0.78
+        bsdf.inputs["Roughness"].default_value = .62 if view == "top" else .44
         if "Specular IOR Level" in bsdf.inputs:
-            bsdf.inputs["Specular IOR Level"].default_value = 0.02
+            bsdf.inputs["Specular IOR Level"].default_value = .015 if view == "top" else .22
         if "Coat Weight" in bsdf.inputs:
             bsdf.inputs["Coat Weight"].default_value = 0.0
         if "Coat Roughness" in bsdf.inputs:
@@ -158,7 +154,7 @@ def configure_scene() -> bpy.types.Scene:
     scene.render.pixel_aspect_x = 1.0
     scene.render.pixel_aspect_y = 1.0
     scene.view_settings.look = "AgX - Medium High Contrast"
-    scene.view_settings.exposure = -0.45
+    scene.view_settings.exposure = -1.4
 
     world = bpy.data.worlds.new("Hero catalog studio world")
     world.use_nodes = True
@@ -285,6 +281,11 @@ def render_view(
     minimum: Vector,
     maximum: Vector,
 ) -> None:
+    prepare_catalog_materials(view)
+    # Plan evidence has no grazing camera angle: the entire work surface faces
+    # the key. A lower exposure preserves dark resin instead of tone-mapping it
+    # into a grey highlight. Side views keep the product-studio exposure.
+    scene.view_settings.exposure = -2.0 if view == "top" else -1.4
     dimensions = maximum - minimum
     target = (minimum + maximum) * 0.5
     camera = create_orthographic_camera(target, dimensions, view)
@@ -369,12 +370,18 @@ def main() -> None:
     OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     configure_scene()
     views = ("isometric", "top") if args.view == "all" else (args.view,)
+    rendered = 0
     for glb_path in models:
+        if args.resume and all((OUTPUT_DIRECTORY / f"{glb_path.stem}-{view}.png").exists()
+                               and (OUTPUT_DIRECTORY / f"{glb_path.stem}-{view}.png").stat().st_mtime >= max(glb_path.stat().st_mtime, Path(__file__).stat().st_mtime)
+                               for view in views):
+            continue
         render_model(glb_path, views)
+        rendered += 1
 
     print(
         f"LABSPACE_HERO_CATALOG_COMPLETE models={len(models)} "
-        f"renders={len(models) * len(views)} output={OUTPUT_DIRECTORY}"
+        f"renders={rendered * len(views)} current={len(models)} output={OUTPUT_DIRECTORY}"
     )
 
 

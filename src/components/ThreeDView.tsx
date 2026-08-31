@@ -11,9 +11,7 @@ import {
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import {
   ContactShadows,
-  Environment,
   Grid,
-  Lightformer,
   OrbitControls,
   OrthographicCamera,
   PerspectiveCamera,
@@ -27,6 +25,7 @@ import {
   SquareSplitHorizontal,
 } from "@phosphor-icons/react";
 import * as THREE from "three";
+import { StudioEnvironment } from "./StudioEnvironment";
 import { getAssetDefinition } from "../domain/assets";
 import {
   cameraCommandKey,
@@ -50,6 +49,8 @@ import { ModelBox as Box, ProceduralAssetModel, SelectionBounds } from "./Proced
 import { AssetVisual } from "./AssetVisual";
 import { LaboratoryEnvironment } from "./LaboratoryEnvironment";
 import { RoomFloor3D } from "./RoomFloor3D";
+import { RoomWallBlock } from "./RoomWallBlock";
+import { roomLightingLayout } from "../domain/room-lighting";
 
 // Keep the camera constructor props referentially stable. Recreating this
 // tuple during every room-object update makes React Three Fiber re-apply the
@@ -105,13 +106,6 @@ function Wall3D({
   const startZ = mmToMetres(wall.wall.start.y - room.depth / 2);
   const opacity = wallTransparent && presentation === "editor" ? 0.28 : 1;
   const finish = wallFinishForObject(wall.metadata, room.wallFinish);
-  const materialKind =
-    finish.textureKind ??
-    (finish.id === "satin-stainless-steel"
-      ? "stainless"
-      : finish.id.includes("panel")
-        ? "powder"
-        : "painted");
 
   return (
     <group ref={wallGroupRef} position={[startX, 0, startZ]} rotation={[0, -angle, 0]}>
@@ -121,30 +115,22 @@ function Wall3D({
         const renderLength = Math.max(0.01, renderEnd - renderStart);
         return (
           <group key={`span-${index}`}>
-            <Box
+            <RoomWallBlock
               position={[(renderStart + renderEnd) / 2, height / 2, 0]}
-              scale={[renderLength, height, thickness]}
-              color={finish.color}
+              size={[renderLength, height, thickness]}
+              finish={finish}
               opacity={opacity}
-              metalness={finish.metalness}
-              roughness={finish.roughness}
-              materialKind={materialKind}
-              clearcoat={finish.clearcoat}
-              clearcoatRoughness={finish.clearcoatRoughness}
-              envMapIntensity={presentation === "digital-twin" ? 1.02 : 0.82}
-              sharp
             />
             <Box
               position={[(renderStart + renderEnd) / 2, 0.047, -thickness * 0.53]}
               scale={[renderLength, 0.094, 0.018]}
               color={finish.baseboardColor}
               opacity={opacity}
-              metalness={0.28}
-              roughness={0.42}
-              materialKind="aluminum"
-              clearcoat={0.14}
-              clearcoatRoughness={0.28}
-              envMapIntensity={1.1}
+              metalness={0}
+              roughness={0.65}
+              materialKind="rubber"
+              clearcoat={0}
+              envMapIntensity={0.65}
               sharp
             />
           </group>
@@ -158,37 +144,23 @@ function Wall3D({
         return (
           <group key={object.id}>
             {sill > 0 && (
-              <Box
+              <RoomWallBlock
                 position={[(start + end) / 2, sill / 2, 0]}
-                scale={[openingWidth, sill, thickness]}
-                color={finish.color}
+                size={[openingWidth, sill, thickness]}
+                finish={finish}
                 opacity={opacity}
-                metalness={finish.metalness}
-                roughness={finish.roughness}
-                materialKind={materialKind}
-                clearcoat={finish.clearcoat}
-                clearcoatRoughness={finish.clearcoatRoughness}
-                envMapIntensity={presentation === "digital-twin" ? 1.02 : 0.82}
-                sharp
               />
             )}
             {height > sill + openingHeight && (
-              <Box
+              <RoomWallBlock
                 position={[
                   (start + end) / 2,
                   sill + openingHeight + (height - sill - openingHeight) / 2,
                   0,
                 ]}
-                scale={[openingWidth, height - sill - openingHeight, thickness]}
-                color={finish.color}
+                size={[openingWidth, height - sill - openingHeight, thickness]}
+                finish={finish}
                 opacity={opacity}
-                metalness={finish.metalness}
-                roughness={finish.roughness}
-                materialKind={materialKind}
-                clearcoat={finish.clearcoat}
-                clearcoatRoughness={finish.clearcoatRoughness}
-                envMapIntensity={presentation === "digital-twin" ? 1.02 : 0.82}
-                sharp
               />
             )}
           </group>
@@ -243,37 +215,23 @@ function WallJoints3D({
         joint.walls.some((wall) => !shouldCutawayWall(wall, room, camera.position));
     });
   });
-  const finish = wallFinishForObject({}, room.wallFinish);
-  const materialKind =
-    finish.id === "satin-stainless-steel"
-      ? "stainless"
-      : finish.id.includes("panel")
-        ? "powder"
-        : "painted";
-
   return (
     <group ref={groupRef}>
       {joints.map((joint, index) => {
         const thickness = Math.max(...joint.walls.map((wall) => wall.wall!.thickness));
         const height = Math.max(...joint.walls.map((wall) => wall.wall!.height));
+        const finish = wallFinishForObject(joint.walls[0].metadata, room.wallFinish);
         return (
-          <Box
+          <RoomWallBlock
             key={`${Math.round(joint.point.x)}-${Math.round(joint.point.y)}-${index}`}
             position={[
               mmToMetres(joint.point.x - room.width / 2),
               mmToMetres(height) / 2,
               mmToMetres(joint.point.y - room.depth / 2),
             ]}
-            scale={[mmToMetres(thickness) * 1.01, mmToMetres(height), mmToMetres(thickness) * 1.01]}
-            color={finish.color}
+            size={[mmToMetres(thickness) * 1.01, mmToMetres(height), mmToMetres(thickness) * 1.01]}
+            finish={finish}
             opacity={wallTransparent && presentation === "editor" ? 0.28 : 1}
-            metalness={finish.metalness}
-            roughness={finish.roughness}
-            materialKind={materialKind}
-            clearcoat={finish.clearcoat}
-            clearcoatRoughness={finish.clearcoatRoughness}
-            envMapIntensity={presentation === "digital-twin" ? 1.02 : 0.82}
-            sharp
           />
         );
       })}
@@ -817,6 +775,7 @@ const RoomScene = memo(function RoomScene({
   wallTransparentOverride,
   showStorageAccess,
   onAssetReady,
+  sceneReady,
 }: {
   room: Room;
   focusObjectId?: string | null;
@@ -826,6 +785,7 @@ const RoomScene = memo(function RoomScene({
   wallTransparentOverride?: boolean;
   showStorageAccess: boolean;
   onAssetReady?: (objectId: string) => void;
+  sceneReady: boolean;
 }) {
   const selectedIds = useEditorStore((state) => state.selectedIds);
   const hoveredId = useEditorStore((state) => state.hoveredId);
@@ -842,6 +802,7 @@ const RoomScene = memo(function RoomScene({
   });
   const roomWidthMetres = mmToMetres(room.width);
   const roomDepthMetres = mmToMetres(room.depth);
+  const lighting = roomLightingLayout(room.width, room.depth, room.wallHeight);
   const hasClosedFloor = useMemo(
     () => Boolean(getClosedWallFloorPolygon(room.scene.objects)),
     [room.scene.objects],
@@ -862,79 +823,26 @@ const RoomScene = memo(function RoomScene({
           environmentContextVisible && (presentation !== "digital-twin" || !wallTransparentOverride)
         }
       />
-      <Environment resolution={quality === "detail" ? 256 : 128} frames={1}>
-        <Lightformer
-          form="rect"
-          intensity={2.4}
-          color="#ffffff"
-          position={[4, 8, 6]}
-          rotation={[-Math.PI / 4, 0.35, 0]}
-          scale={[8, 8, 1]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={1.2}
-          color="#cde7e3"
-          position={[-6, 4, -5]}
-          rotation={[0.2, -Math.PI / 3, 0]}
-          scale={[6, 4, 1]}
-        />
-      </Environment>
-      <hemisphereLight
-        color="#f5fbf8"
-        groundColor="#59554d"
-        intensity={presentation === "digital-twin" ? 0.34 : 0.34}
-      />
-      <ambientLight intensity={presentation === "digital-twin" ? 0.075 : 0.16} />
+      <StudioEnvironment intensity={lighting.environmentIntensity} />
+      <hemisphereLight color="#f7f9ff" groundColor="#c4bfb5" intensity={0.28} />
       <directionalLight
-        position={[5, 11, 7]}
-        intensity={presentation === "digital-twin" ? 1.72 : 1.95}
+        position={lighting.keyPosition}
+        intensity={lighting.keyIntensity}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
+        shadow-radius={2.5}
+        shadow-intensity={lighting.shadowIntensity}
         shadow-camera-near={1}
-        shadow-camera-far={26}
-        shadow-camera-left={-8}
-        shadow-camera-right={8}
-        shadow-camera-top={8}
-        shadow-camera-bottom={-8}
+        shadow-camera-far={lighting.shadowFar}
+        shadow-camera-left={-lighting.shadowExtent}
+        shadow-camera-right={lighting.shadowExtent}
+        shadow-camera-top={lighting.shadowExtent}
+        shadow-camera-bottom={-lighting.shadowExtent}
         shadow-bias={-0.0002}
-        shadow-normalBias={0.025}
+        shadow-normalBias={0.004}
       />
-      <directionalLight
-        position={[-8, 5, -3]}
-        color="#d7ece8"
-        intensity={presentation === "digital-twin" ? 0.32 : 0.5}
-      />
-      <directionalLight
-        position={[1, 4, -9]}
-        color="#fff0dc"
-        intensity={presentation === "digital-twin" ? 0.28 : 0.24}
-      />
-      {presentation === "digital-twin" && (
-        <>
-          <directionalLight position={[-5, 7.5, 6]} color="#fffaf2" intensity={0.58} />
-          {[-0.26, 0.26].map((offset) => (
-            <rectAreaLight
-              key={`photographic-key-${offset}`}
-              color="#f8fffd"
-              intensity={4.8}
-              width={Math.max(1.9, roomWidthMetres * 0.3)}
-              height={0.2}
-              position={[roomWidthMetres * offset, 2.82, -roomDepthMetres * 0.18]}
-              rotation={[-Math.PI / 2, 0, 0]}
-            />
-          ))}
-          <rectAreaLight
-            color="#f4fbf8"
-            intensity={4.2}
-            width={Math.max(2.2, roomWidthMetres * 0.36)}
-            height={0.2}
-            position={[0, 2.82, roomDepthMetres * 0.24]}
-            rotation={[-Math.PI / 2, 0, 0]}
-          />
-        </>
-      )}
+      <directionalLight position={[-8, 5, -3]} color="#eef1f4" intensity={0.22} />
       {floorVisible && hasClosedFloor && (
         <RoomFloor3D room={room} onClearSelection={() => setSelected([])} />
       )}
@@ -984,16 +892,16 @@ const RoomScene = memo(function RoomScene({
             onReady={onAssetReady}
           />
         ))}
-      {floorVisible && hasClosedFloor && (
+      {floorVisible && hasClosedFloor && sceneReady && (
         <ContactShadows
           position={[0, 0.008, 0]}
-          opacity={presentation === "digital-twin" ? 0.46 : 0.3}
+          opacity={0.36}
           scale={Math.max(roomWidthMetres, roomDepthMetres) * 1.25}
-          blur={presentation === "digital-twin" ? 2.05 : 2.8}
-          far={presentation === "digital-twin" ? 4.2 : 3.2}
-          resolution={quality === "detail" ? 2048 : quality === "performance" ? 512 : 1024}
-          frames={1}
-          color="#27302e"
+          blur={2.4}
+          far={lighting.contactFar}
+          resolution={quality === "performance" ? 512 : 1024}
+          frames={2}
+          color="#353a3e"
         />
       )}
       {presentation === "editor" && (
@@ -1201,6 +1109,7 @@ export function ThreeDView({
       className="three-d-view"
       data-testid="3d-view"
       data-render-quality={quality}
+      data-surface-renderer="satin-grain-v1"
       data-presentation={presentation}
       data-focus-object-id={focusObjectId ?? undefined}
       data-focus-location-id={focusLocationId ?? undefined}
@@ -1271,7 +1180,7 @@ export function ThreeDView({
         }
       >
         <Canvas
-          shadows={{ type: THREE.PCFSoftShadowMap }}
+          shadows={{ type: THREE.PCFShadowMap }}
           dpr={quality === "detail" ? [1.25, 2] : quality === "performance" ? [0.75, 1] : [1, 1.5]}
           frameloop="demand"
           gl={{ antialias: true, powerPreference: "high-performance" }}
@@ -1291,6 +1200,7 @@ export function ThreeDView({
             wallTransparentOverride={wallTransparentOverride}
             showStorageAccess={showStorageAccess}
             onAssetReady={markAssetReady}
+            sceneReady={sceneReady}
           />
         </Canvas>
       </Suspense>

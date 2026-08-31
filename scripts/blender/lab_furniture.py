@@ -1304,6 +1304,10 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
     import fixed_casework_joints
     fixed_casework_joints.apply(sys.modules[__name__])
     storage_anatomy.prepare(sys.modules[__name__])
+    import casework_edge_returns
+    casework_edge_returns.apply(sys.modules[__name__])
+    import reference_finishes
+    reference_finishes.apply(sys.modules[__name__])
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     source_parts = len(meshes)
 

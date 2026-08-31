@@ -56,7 +56,7 @@ describe("asset library thumbnails", () => {
       expect(asset.defaultDimensions).toEqual(dimensions);
       expect(asset.model3d?.previewSrc).toBe(`/models/hero/${id}.glb`);
       expect(asset.model3d?.authoredDimensions).toEqual(dimensions);
-      expect(asset.model3d?.revision).toBe("remaining-equipment-batch11-r1-catalog-polish-r3");
+      expect(asset.model3d?.revision).toBe("remaining-equipment-batch11-r1-catalog-polish-r7");
     }
   });
 
@@ -75,7 +75,7 @@ describe("asset library thumbnails", () => {
       expect(asset.defaultDimensions).toEqual(dimensions);
       expect(asset.model3d?.previewSrc).toBe(`/models/hero/${id}.glb`);
       expect(asset.model3d?.authoredDimensions).toEqual(dimensions);
-      expect(asset.model3d?.revision).toBe("instruments-batch10-r1-catalog-polish-r3");
+      expect(asset.model3d?.revision).toBe("instruments-batch10-r1-catalog-polish-r7");
     }
   });
 

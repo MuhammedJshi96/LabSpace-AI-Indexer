@@ -42,29 +42,37 @@ describe("additive July-reference asset pack", () => {
     }),
   );
 
-  it.each(ids)("delivers %s as a dimension-matched, self-contained authored GLB", (id) => {
-    const definition = ASSET_BY_ID.get(id)!;
-    expect(definition).toBeDefined();
-    expect(definition.model3d?.authoredDimensions).toEqual(definition.defaultDimensions);
-    const data = readFileSync(`public/models/hero/${id}.glb`);
-    const gltf = JSON.parse(data.subarray(20, 20 + data.readUInt32LE(12)).toString());
-    expect(gltf.meshes.length).toBeGreaterThan(2);
-    expect(gltf.materials.length).toBeGreaterThan(3);
-    expect(gltf.cameras ?? []).toHaveLength(0);
-    expect(gltf.images ?? []).toEqual([]);
-    expect(data.length).toBeLessThan(600_000);
-    const root = gltf.nodes.find(
-      (n: { extras?: { asset_id: string } }) => n.extras?.asset_id === id,
-    );
-    const dims = definition.defaultDimensions;
-    for (const [index, mm] of [dims.width, dims.depth, dims.height].entries())
-      expect(root.extras.authored_bounds_m[index]).toBeCloseTo(mm / 1000, 4);
-    expect(root.extras.manufacturer_certified).toBe(false);
-    const parts = gltf.nodes.flatMap((n: { extras?: { storageMechanism?: unknown } }) =>
-      n.extras?.storageMechanism ? [n.extras.storageMechanism] : [],
-    );
-    expect(parts).toEqual(STORAGE_RIGS[id]?.parts ?? []);
-  });
+  it.each(ids)(
+    "delivers %s as a dimension-matched authored GLB with local shared finish maps",
+    (id) => {
+      const definition = ASSET_BY_ID.get(id)!;
+      expect(definition).toBeDefined();
+      expect(definition.model3d?.authoredDimensions).toEqual(definition.defaultDimensions);
+      const data = readFileSync(`public/models/hero/${id}.glb`);
+      const gltf = JSON.parse(data.subarray(20, 20 + data.readUInt32LE(12)).toString());
+      expect(gltf.meshes.length).toBeGreaterThan(2);
+      expect(gltf.materials.length).toBeGreaterThan(3);
+      expect(gltf.cameras ?? []).toHaveLength(0);
+      for (const image of gltf.images ?? []) {
+        expect(image.uri).toMatch(
+          /^\.\.\/\.\.\/materials\/pbr\/\w+-surface-r[45]-(normal|roughness)\.png$/,
+        );
+        expect(readFileSync(`public/models/hero/${image.uri}`).length).toBeGreaterThan(0);
+      }
+      expect(data.length).toBeLessThan(600_000);
+      const root = gltf.nodes.find(
+        (n: { extras?: { asset_id: string } }) => n.extras?.asset_id === id,
+      );
+      const dims = definition.defaultDimensions;
+      for (const [index, mm] of [dims.width, dims.depth, dims.height].entries())
+        expect(root.extras.authored_bounds_m[index]).toBeCloseTo(mm / 1000, 4);
+      expect(root.extras.manufacturer_certified).toBe(false);
+      const parts = gltf.nodes.flatMap((n: { extras?: { storageMechanism?: unknown } }) =>
+        n.extras?.storageMechanism ? [n.extras.storageMechanism] : [],
+      );
+      expect(parts).toEqual(STORAGE_RIGS[id]?.parts ?? []);
+    },
+  );
 
   it("makes the new families discoverable without substituting old definitions", () => {
     expect(searchAssets("transom").map((a) => a.id)).toEqual(

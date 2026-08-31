@@ -8,7 +8,8 @@ import {
   Ruler,
   StackSimple,
 } from "@phosphor-icons/react";
-import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
+import { StudioEnvironment } from "./StudioEnvironment";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -30,6 +31,8 @@ import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 import { AssetVisual } from "./AssetVisual";
 import { Dialogs, Toasts } from "./Dialogs";
 import { RoomFloor3D } from "./RoomFloor3D";
+import { RoomWallBlock } from "./RoomWallBlock";
+import { wallFinishForObject } from "../domain/laboratory-wall-materials";
 import { TopBar } from "./TopBar";
 
 function clampFloorIndex(value: number) {
@@ -97,8 +100,7 @@ function representativeObjects(objects: SceneObject[]) {
 
 function facilityOpenings(objects: SceneObject[]) {
   return objects.filter(
-    (object) =>
-      object.visible && ["door", "window"].includes(object.objectType),
+    (object) => object.visible && ["door", "window"].includes(object.objectType),
   );
 }
 
@@ -334,10 +336,10 @@ function facilityWallPieces(
   openings: SceneObject[],
   visualHeight: number,
 ): FacilityWallPiece[] {
-  const length = Math.max(0.12, Math.hypot(
-    wall.wall!.end.x - wall.wall!.start.x,
-    wall.wall!.end.y - wall.wall!.start.y,
-  ) / 1000);
+  const length = Math.max(
+    0.12,
+    Math.hypot(wall.wall!.end.x - wall.wall!.start.x, wall.wall!.end.y - wall.wall!.start.y) / 1000,
+  );
   const hosted = openings
     .filter((opening) => opening.opening?.wallId === wall.id)
     .map((opening) => ({
@@ -400,10 +402,7 @@ function facilityOpeningSurroundPieces(
 ): FacilityWallPiece[] {
   const length = Math.max(
     0.12,
-    Math.hypot(
-      wall.wall!.end.x - wall.wall!.start.x,
-      wall.wall!.end.y - wall.wall!.start.y,
-    ) / 1000,
+    Math.hypot(wall.wall!.end.x - wall.wall!.start.x, wall.wall!.end.y - wall.wall!.start.y) / 1000,
   );
   const jambWidth = 0.14;
   return openings
@@ -462,14 +461,14 @@ function FacilityWall({
   openings,
   roomWidth,
   roomDepth,
-  selected,
+  roomWallFinish,
   onSelect,
 }: {
   object: SceneObject;
   openings: SceneObject[];
   roomWidth: number;
   roomDepth: number;
-  selected: boolean;
+  roomWallFinish: string;
   onSelect: () => void;
 }) {
   const wall = object.wall!;
@@ -482,6 +481,7 @@ function FacilityWall({
   const nearCutaway = wallX > roomWidth * 0.27 || wallZ > roomDepth * 0.27;
   const visualHeight = nearCutaway ? Math.min(0.32, actualHeight) : actualHeight;
   const thickness = Math.max(0.065, wall.thickness / 1000);
+  const finish = wallFinishForObject(object.metadata, roomWallFinish);
   const pieces = [
     ...facilityWallPieces(object, openings, visualHeight),
     ...(nearCutaway
@@ -492,24 +492,19 @@ function FacilityWall({
   return (
     <group position={[wallX, 0, wallZ]} rotation={[0, angle, 0]}>
       {pieces.map((piece, index) => (
-        <mesh
+        <group
           key={`${object.id}-piece-${index}`}
-          position={[piece.center, piece.base + piece.height / 2, 0]}
-          castShadow
-          receiveShadow
           onClick={(event) => {
             event.stopPropagation();
             onSelect();
           }}
         >
-          <boxGeometry args={[piece.width, piece.height, thickness]} />
-          <meshPhysicalMaterial
-            color={selected ? "#eef8f5" : "#e3e7e5"}
-            metalness={0.02}
-            roughness={0.58}
-            clearcoat={0.08}
+          <RoomWallBlock
+            position={[piece.center, piece.base + piece.height / 2, 0]}
+            size={[piece.width, piece.height, thickness]}
+            finish={finish}
           />
-        </mesh>
+        </group>
       ))}
     </group>
   );
@@ -568,7 +563,7 @@ function RoomMiniature({ room, x, z, sectionY, selected, onSelect, onOpen }: Roo
           openings={openings}
           roomWidth={width}
           roomDepth={depth}
-          selected={selected}
+          roomWallFinish={room.wallFinish}
           onSelect={() => onSelect(room.id)}
         />
       ))}
@@ -696,36 +691,20 @@ function FacilityStackView({
     >
       <color attach="background" args={["#e9f0ee"]} />
       <fog attach="fog" args={["#e9f0ee", 42, 120]} />
-      <Environment resolution={128} frames={1}>
-        <Lightformer
-          form="rect"
-          intensity={2.5}
-          color="#ffffff"
-          position={[6, 14, 8]}
-          rotation={[-Math.PI / 4, 0.35, 0]}
-          scale={[10, 10, 1]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={1.15}
-          color="#c9e7e0"
-          position={[-9, 7, -8]}
-          rotation={[0.2, -Math.PI / 3, 0]}
-          scale={[8, 6, 1]}
-        />
-      </Environment>
-      <hemisphereLight color="#f7fffc" groundColor="#606864" intensity={0.65} />
-      <ambientLight intensity={0.28} />
+      <StudioEnvironment />
+      <hemisphereLight color="#ffffff" groundColor="#b5bdb8" intensity={0.4} />
+      <ambientLight intensity={0.075} />
       <directionalLight
         castShadow
-        intensity={2.35}
+        intensity={1.1}
         position={[14, 22, 12]}
         shadow-mapSize-width={1536}
         shadow-mapSize-height={1536}
+        shadow-radius={4}
         shadow-bias={-0.0002}
         shadow-normalBias={0.025}
       />
-      <directionalLight intensity={0.65} position={[-12, 10, -8]} color="#d5eee8" />
+      <directionalLight intensity={0.3} position={[-12, 10, -8]} color="#ffffff" />
       <gridHelper args={[100, 100, "#adc7c1", "#d5e3df"]} position={[0, -0.22, 0]} />
       <FacilityBuildingFrame bounds={buildingBounds} topY={buildingTopY} />
       {floorScenes.map((scene) => (
@@ -752,11 +731,7 @@ function FacilityStackView({
               key={`room-plate-${entry.room.id}`}
               room={entry.room}
               width={entry.footprintWidth}
-              position={[
-                entry.x,
-                scene.sectionY + 0.37,
-                buildingBounds.maxZ + 0.7,
-              ]}
+              position={[entry.x, scene.sectionY + 0.37, buildingBounds.maxZ + 0.7]}
               selected={selectedRoomId === entry.room.id}
               onSelect={() => onSelect(entry.room.id)}
             />

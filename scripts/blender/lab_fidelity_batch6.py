@@ -485,7 +485,7 @@ def add_armrest(side: float, z: float, blue: bool = False) -> None:
     add_cylinder_between(
         f"Arm upright {side:+.0f}",
         (side * 0.205, 0.035, z - 0.155),
-        (x, 0.015, z - 0.025),
+        (x, 0.015, z - 0.012),
         0.010,
         m["powder_dark"],
         category="armrest frame",
@@ -757,6 +757,9 @@ def build_top_loading_balance(spec: AssetSpec) -> None:
         bevel=0.004,
         category="instrument chassis",
     )
+    add_box("Weighing pan load-cell bearing", (0.0, 0.048, 0.063),
+            (0.034, 0.034, 0.014), m["stainless_bright"], bevel=0.002,
+            category="load cell support")
     add_box(
         "Rectangular weighing pan",
         (0.0, 0.048, 0.070),

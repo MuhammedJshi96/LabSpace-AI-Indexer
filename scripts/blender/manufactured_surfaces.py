@@ -30,6 +30,21 @@ def rounded_loft(f, name, location, dimensions, material, *, rotation=(0, 0, 0),
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
+    # Analytic wrap on the side rings plus planar cap UVs. Without this the
+    # molded chassis could not show the shared normal/roughness finish at all.
+    uv = mesh.uv_layers.new(name="Manufactured surface UV")
+    for poly in mesh.polygons:
+        if len(poly.vertices) != 4:
+            for loop in poly.loop_indices:
+                point = mesh.vertices[mesh.loops[loop].vertex_index].co
+                uv.data[loop].uv = (point.x / w + .5, point.y / d + .5)
+        else:
+            first = mesh.loops[poly.loop_start].vertex_index % n
+            for loop in poly.loop_indices:
+                index = mesh.loops[loop].vertex_index
+                column, ring = index % n, index // n
+                u = 1.0 if first == n - 1 and column == 0 else column / n
+                uv.data[loop].uv = (u, rings[ring][0] + .5)
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     obj.location = location

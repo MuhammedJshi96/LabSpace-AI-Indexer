@@ -1,14 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import {
-  ContactShadows,
-  Environment,
-  Grid,
-  Lightformer,
-  OrbitControls,
-  PerspectiveCamera,
-  useGLTF,
-} from "@react-three/drei";
+import { ContactShadows, Grid, OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
 import {
   Archive,
   ArrowCounterClockwise,
@@ -17,6 +9,7 @@ import {
   MagnifyingGlass,
 } from "@phosphor-icons/react";
 import * as THREE from "three";
+import { StudioEnvironment } from "./StudioEnvironment";
 import { ASSET_CATALOG } from "../domain/assets";
 import { assetPreviewCameraDistance } from "../domain/asset-preview-camera";
 import { BUILD_WEEK_DEMO_ASSET_IDS } from "../domain/build-week-demo";
@@ -112,6 +105,7 @@ export function AssetPreviewPage() {
   const [previewView, setPreviewView] = useState<PreviewView>("isometric");
   const [cameraResetKey, setCameraResetKey] = useState(0);
   const [readyAssetId, setReadyAssetId] = useState<string | null>(null);
+  const [lightingReady, setLightingReady] = useState(false);
   const [storagePreview, setStoragePreview] = useState({ assetId: "", key: "" });
   const [panelId, setPanelId] = useState("");
   const requestedAssetId = new URLSearchParams(window.location.search).get("asset");
@@ -299,8 +293,8 @@ export function AssetPreviewPage() {
             data-model-ready={readyAssetId === asset.id}
           >
             <Canvas
-              shadows={{ type: THREE.PCFSoftShadowMap }}
-              dpr={[1, 2]}
+              shadows={{ type: THREE.PCFShadowMap }}
+              dpr={[1, 1.5]}
               frameloop="demand"
               gl={{ antialias: true, powerPreference: "high-performance" }}
               onCreated={({ gl }) => {
@@ -318,75 +312,61 @@ export function AssetPreviewPage() {
                 resetKey={cameraResetKey}
               />
               <color attach="background" args={["#eef2f1"]} />
-              <Environment resolution={128} frames={1}>
-                {/* A continuous neutral studio prevents polished metal from
-                    reflecting a black void between the softboxes. */}
-                <mesh scale={40}>
-                  <sphereGeometry args={[1, 32, 16]} />
-                  <meshBasicMaterial color="#9fa8a9" side={THREE.BackSide} />
-                </mesh>
-                <Lightformer
-                  form="rect"
-                  intensity={2.55}
-                  color="#ffffff"
-                  position={[3, 5, 4]}
-                  rotation={[-Math.PI / 4, 0.35, 0]}
-                  scale={[5, 5, 1]}
-                />
-                <Lightformer
-                  form="rect"
-                  intensity={1.25}
-                  color="#c9e5e1"
-                  position={[-4, 2, -3]}
-                  rotation={[0.1, -Math.PI / 3, 0]}
-                  scale={[4, 3, 1]}
-                />
-                <Lightformer
-                  form="rect"
-                  intensity={1.4}
-                  color="#ffffff"
-                  position={[0, 3, -5]}
-                  rotation={[0, Math.PI, 0]}
-                  scale={[2, 5, 1]}
-                />
-              </Environment>
-              <hemisphereLight color="#f6fbfa" groundColor="#6f7a77" intensity={0.52} />
-              <ambientLight intensity={0.18} />
+              <StudioEnvironment onReady={() => setLightingReady(true)} />
+              <hemisphereLight color="#ffffff" groundColor="#c5cbc8" intensity={0.32} />
+              <ambientLight intensity={0.06} />
               <directionalLight
-                position={[5, 8, 6]}
-                intensity={1.55}
                 castShadow
-                shadow-mapSize-width={1536}
-                shadow-mapSize-height={1536}
-                shadow-bias={-0.0002}
-                shadow-normalBias={0.02}
+                position={[5, 8, 6]}
+                intensity={1.25}
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
+                shadow-radius={5}
+                shadow-camera-left={-previewExtent * 1.5}
+                shadow-camera-right={previewExtent * 1.5}
+                shadow-camera-top={previewExtent * 1.5}
+                shadow-camera-bottom={-previewExtent * 1.5}
+                shadow-normalBias={0.002}
+                shadow-bias={-0.00005}
               />
-              <directionalLight position={[-4, 3, -3]} color="#d7ece8" intensity={0.48} />
-              <AssetVisual
-                definition={asset}
-                width={object.dimensions.width / 1000}
-                depth={object.dimensions.depth / 1000}
-                height={object.dimensions.height / 1000}
-                detail="preview"
-                openStorageParts={openParts.map((part) => part.id)}
-                onReady={() => setReadyAssetId(asset.id)}
-              />
-              <ContactShadows
-                key={asset.id}
-                position={[0, 0.012, 0]}
-                opacity={0.42}
-                scale={Math.max(2.4, previewExtent * 3.2)}
-                blur={2.6}
-                far={Math.max(0.8, previewExtent * 1.8)}
-                resolution={512}
-                frames={1}
-              />
+              <directionalLight position={[-4, 3, -3]} color="#ffffff" intensity={0.35} />
+              {lightingReady && (
+                <AssetVisual
+                  definition={asset}
+                  width={object.dimensions.width / 1000}
+                  depth={object.dimensions.depth / 1000}
+                  height={object.dimensions.height / 1000}
+                  detail="preview"
+                  openStorageParts={openParts.map((part) => part.id)}
+                  onReady={() => setReadyAssetId(asset.id)}
+                />
+              )}
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.012, 0]}>
+                <planeGeometry args={[200, 200]} />
+                <meshBasicMaterial color="#eef2f1" toneMapped={false} />
+              </mesh>
+              <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.009, 0]}>
+                <planeGeometry args={[200, 200]} />
+                <shadowMaterial transparent opacity={0.16} depthWrite={false} />
+              </mesh>
+              {readyAssetId === asset.id && (
+                <ContactShadows
+                  key={`${asset.id}:${openParts.map((part) => part.id).join(",")}`}
+                  position={[0, 0.001, 0]}
+                  opacity={0.34}
+                  scale={Math.max(2.4, previewExtent * 3.2)}
+                  blur={3.2}
+                  far={Math.max(0.3, previewHeight * 1.1)}
+                  resolution={512}
+                  frames={2}
+                />
+              )}
               <Grid
                 args={[Math.max(4, previewExtent * 8), Math.max(4, previewExtent * 8)]}
                 cellSize={gridCellSize}
-                cellColor="#c6cfcc"
+                cellColor="#d4ddda"
                 sectionSize={gridCellSize * 5}
-                sectionColor="#9eaaa6"
+                sectionColor="#bdcbc5"
                 fadeDistance={Math.max(4, previewExtent * 6)}
                 infiniteGrid
                 position={[0, -0.004, 0]}

@@ -1893,6 +1893,9 @@ def consolidate_static_parts_by_material() -> None:
     because each uses a different material group.
     """
 
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import reference_finishes
+    reference_finishes.apply(sys.modules[__name__])
     mesh_objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     for obj in mesh_objects:
         bpy.ops.object.select_all(action="DESELECT")

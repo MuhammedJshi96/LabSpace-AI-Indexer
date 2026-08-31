@@ -481,6 +481,9 @@ def build_incubator(spec: AssetSpec) -> None:
         m["silver"],
         category="door handle",
     )
+    for z in (h * .31, h * .70):
+        box("IN604 handle mounting foot", (w * .345, front - .031, z),
+            (.032, .034, .032), m["silver"], bevel=.003, category="door handle mount")
     for index, z in enumerate((h * 0.28, h * 0.68), 1):
         cylinder(f"IN604 left hinge {index}", (-w * 0.44, front - 0.016, z), 0.018, 0.060, m["silver"], axis=(0.0, 0.0, 1.0), vertices=30, category="door hinge")
     box(
@@ -573,6 +576,9 @@ def build_shaking_incubator(spec: AssetSpec) -> None:
         m["silver"],
         category="door handle",
     )
+    for x in (-w * .31, w * .24):
+        box("S44i handle mounting foot", (x, front - .032, h * .445),
+            (.036, .032, .040), m["silver"], bevel=.003, category="door handle mount")
     control_x = w * 0.385
     box("S44i right control pod", (control_x, front - 0.004, h * 0.590), (w * 0.175, 0.055, h * 0.315), m["instrument_gray"], bevel=0.020, category="control pod")
     add_front_display("S44i", (control_x, front - 0.034, h * 0.625), w * 0.125, h * 0.150, readout_rows=3, key_count=4)
@@ -673,7 +679,7 @@ def build_lab_refrigerator(spec: AssetSpec) -> None:
         cylinder(f"MPR-722R side access plug {side:+.0f}", (x + side * 0.005, d * 0.08, h * 0.55), 0.023, 0.008, m["rubber"], axis=(side, 0.0, 0.0), vertices=32, category="side access port")
         add_vent_rows(f"MPR-722R side lower ventilation {side:+.0f}", (x + side * 0.004, d * 0.18, h * 0.19), d * 0.30, 5, 7, face="right", slot_height=0.010)
     rear = d / 2 + 0.003
-    box("MPR-722R rear refrigeration service panel", (0.0, rear, h * 0.29), (w * 0.84, 0.008, h * 0.38), m["instrument_gray"], bevel=0.006, category="rear service panel")
+    box("MPR-722R rear refrigeration service panel", (0.0, rear, h * 0.29), (w * 0.84, 0.016, h * 0.38), m["instrument_gray"], bevel=0.003, category="rear service panel")
     for x in (-w * 0.32, w * 0.32):
         box(f"MPR-722R rear condenser rail {x:+.3f}", (x, rear + 0.010, h * 0.69), (0.012, 0.014, h * 0.40), m["zinc"], bevel=0.003, category="rear condenser")
     for index in range(11):

@@ -178,20 +178,33 @@ def build_laminar_flow(spec: AssetSpec) -> None:
     worktop_z = h * 0.435
 
     box("clean bench lower plinth", (0.0, 0.02, h * 0.055), (w * 0.95, d * 0.83, h * 0.09), m["light_aluminum"], bevel=0.016, category="base")
-    box("clean bench lower cabinet carcass", (0.0, 0.03, h * 0.245), (w * 0.93, d * 0.79, h * 0.36), m["instrument_white"], bevel=0.014, category="base cabinet")
+    box("clean bench lower cabinet carcass", (0.0, 0.025, h * 0.245), (w * 0.93, d * 0.94, h * 0.37), m["instrument_white"], bevel=0.003, category="base cabinet")
     for index, x in enumerate((-w * 0.23, w * 0.23), 1):
-        box(f"clean bench cabinet door {index}", (x, front + 0.070, h * 0.255), (w * 0.445, 0.018, h * 0.315), m["instrument_white"], bevel=0.009, category="cabinet door")
-        tube(f"clean bench door handle {index}", [(x - w * 0.055, front + 0.052, h * 0.30), (x, front + 0.040, h * 0.31), (x + w * 0.055, front + 0.052, h * 0.30)], 0.008, m["silver"], category="handle")
+        box(f"clean bench cabinet door {index}", (x, front + 0.035, h * 0.255), (w * 0.46 - .005, 0.022, h * 0.315), m["instrument_white"], bevel=0.002, category="cabinet door")
+        tube(f"clean bench door handle {index}", [(x - .080, front + .025, h * .32), (x - .080, front - .006, h * .32), (x + .080, front - .006, h * .32), (x + .080, front + .025, h * .32)], .006, m["silver"], category="mounted handle")
     box("clean bench stainless work surface", (0.0, -0.005, worktop_z), (w * 0.96, d * 0.86, h * 0.028), m["chamber_stainless"], bevel=0.008, category="work surface")
-    box("clean bench front spill lip", (0.0, front + 0.025, worktop_z + h * 0.018), (w * 0.94, 0.026, h * 0.032), m["silver"], bevel=0.004, category="work surface")
+    box("clean bench front spill lip", (0.0, front + 0.040, worktop_z), (w * 0.94, 0.040, h * 0.028), m["silver"], bevel=0.003, category="work surface")
 
     opening_bottom = worktop_z + h * 0.030
     opening_top = h * 0.805
     for side in (-1.0, 1.0):
         x = side * w * 0.455
-        box(f"clean bench side column {side:+.0f}", (x, 0.0, h * 0.675), (w * 0.07, d * 0.86, h * 0.49), m["instrument_white"], bevel=0.012, category="upper frame")
-        box(f"clean bench side vision panel {side:+.0f}", (x - side * w * 0.038, 0.0, (opening_bottom + opening_top) / 2), (0.010, d * 0.68, opening_top - opening_bottom), m["clear_glass"], bevel=0.004, category="side glass")
-    box("clean bench rear HEPA diffuser", (0.0, rear - 0.045, (opening_bottom + opening_top) / 2), (w * 0.82, 0.034, opening_top - opening_bottom), m["light_aluminum"], bevel=0.008, category="HEPA diffuser")
+        # A joined four-sided frame, not opaque blocks behind decorative glass.
+        bottom = worktop_z + h * .012
+        top = h * .815
+        for y in (-d * .395, d * .395):
+            box(f"clean bench side upright {side:+.0f} {y:+.3f}", (x, y, (bottom + top) / 2),
+                (w * .07, d * .075, top-bottom), m["instrument_white"], bevel=.003, category="upper frame")
+        for z in (bottom + .02, top - .02):
+            box(f"clean bench side crossrail {side:+.0f} {z:.3f}", (x, 0, z),
+                (w * .07, d * .86, .045), m["instrument_white"], bevel=.003, category="upper frame")
+        box(f"clean bench side vision panel {side:+.0f}", (x, 0.0, (bottom + top) / 2),
+            (.010, d * .735, top-bottom-.06), m["clear_glass"], bevel=.001, category="side glass")
+    # Continuous rear housing joins deck and plenum behind the removable diffuser.
+    rear_bottom = worktop_z + h * .010
+    box("clean bench rear enclosure", (0, rear-.022, (rear_bottom+opening_top)/2),
+        (w*.94, .045, opening_top-rear_bottom+.012), m["instrument_white"], bevel=.003, category="joined rear enclosure")
+    box("clean bench rear HEPA diffuser", (0.0, rear - 0.045, (opening_bottom + opening_top) / 2), (w * 0.86, 0.034, opening_top - opening_bottom), m["light_aluminum"], bevel=0.003, category="HEPA diffuser")
     for row in range(9):
         z = opening_bottom + (row + 1) * (opening_top - opening_bottom) / 10
         for col in range(18):
@@ -202,9 +215,9 @@ def build_laminar_flow(spec: AssetSpec) -> None:
     for index in range(14):
         y = -d * 0.21 + index * d * 0.42 / 13
         box(f"clean bench intake slot {index + 1}", (0.0, y, h * 0.995), (w * 0.58, 0.008, 0.004), m["shadow"], bevel=0.001, category="intake grille")
-    box("clean bench task light", (0.0, front + d * 0.15, opening_top - h * 0.018), (w * 0.70, 0.026, h * 0.018), m["work_light"], bevel=0.006, category="task light")
-    box("clean bench eye-level control fascia", (w * 0.25, front + 0.014, h * 0.855), (w * 0.36, 0.022, h * 0.072), m["instrument_gray"], bevel=0.010, category="control fascia")
-    add_front_display("clean bench", (w * 0.19, front + 0.001, h * 0.855), w * 0.20, h * 0.046, readout_rows=2, key_count=4)
+    box("clean bench task light", (0.0, front + d * 0.15, h * .798), (w * 0.70, 0.045, h * 0.010), m["work_light"], bevel=0.003, category="task light")
+    box("clean bench eye-level control fascia", (w * 0.25, front + 0.040, h * 0.855), (w * 0.36, 0.022, h * 0.072), m["instrument_gray"], bevel=0.004, category="control fascia")
+    add_front_display("clean bench", (w * 0.19, front + 0.027, h * 0.855), w * 0.20, h * 0.046, readout_rows=2, key_count=4)
     for x in (-w * 0.30, w * 0.32):
         for z in (worktop_z + h * 0.10, worktop_z + h * 0.18):
             box(f"clean bench service outlet {x:.2f}-{z:.2f}", (x, rear - 0.070, z), (w * 0.075, 0.012, h * 0.052), m["powder_light"], bevel=0.006, category="service outlet")
@@ -215,6 +228,7 @@ def build_laminar_flow(spec: AssetSpec) -> None:
     box("clean bench rear service cover", (0.0, rear + 0.003, h * 0.31), (w * 0.78, 0.008, h * 0.34), m["instrument_gray"], bevel=0.006, category="rear service panel")
     add_vent_rows("clean bench rear base", (0.0, rear + 0.009, h * 0.31), w * 0.54, 6, 12, slot_height=0.010)
     add_feet(w * 0.86, d * 0.72, radius=0.018)
+    furniture.ROOT["construction_revision"] = "connected-enclosure-r4"
 
 
 def build_stereo_microscope(spec: AssetSpec) -> None:
@@ -350,6 +364,9 @@ def build_glassware_washer(spec: AssetSpec) -> None:
     box("FlaskScrubber upper control fascia", (0.0, front - 0.017, h * 0.90), (w * 0.88, 0.025, h * 0.12), m["instrument_gray"], bevel=0.010, category="control fascia")
     add_front_display("FlaskScrubber", (-w * 0.16, front - 0.034, h * 0.90), w * 0.38, h * 0.075, readout_rows=2, key_count=4)
     tube("FlaskScrubber full-width handle", [(-w * 0.34, front - 0.058, h * 0.82), (-w * 0.34, front - 0.082, h * 0.80), (w * 0.34, front - 0.082, h * 0.80), (w * 0.34, front - 0.058, h * 0.82)], 0.011, m["silver"], category="door handle")
+    for x in (-w * .34, w * .34):
+        box("FlaskScrubber handle mounting foot", (x, front - .039, h * .82),
+            (.032, .044, .035), m["silver"], bevel=.003, category="door handle mount")
     for side in (-1.0, 1.0):
         add_vent_rows(f"FlaskScrubber side drying vent {side:+.0f}", (side * w * 0.485, d * 0.15, h * 0.27), d * 0.44, 6, 7, face="right", slot_height=0.009)
     box("FlaskScrubber rear service panel", (0.0, rear + 0.004, h * 0.48), (w * 0.82, 0.008, h * 0.70), m["instrument_gray"], bevel=0.006, category="rear service panel")

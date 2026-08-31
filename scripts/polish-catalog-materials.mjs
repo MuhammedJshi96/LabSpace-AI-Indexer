@@ -1,11 +1,13 @@
 /** Explicit finish review, preserving every geometry byte and storage binding. */
-import { readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, renameSync } from "node:fs";
+import { setTimeout as pause } from "node:timers/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 import { Buffer } from "node:buffer";
 import { argv, stdout } from "node:process";
+import { buildSurfaceMaps, SURFACE_REVISION, surfaceRevision } from "./build-surface-maps.mjs";
 
-export const FINISH_REVISION = "catalog-polish-r3";
+export const FINISH_REVISION = "catalog-polish-r7";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const reviewedGroups = {
   architecture:
@@ -49,11 +51,13 @@ export const FINISH_FAMILIES = {
   ),
 };
 export const FAMILY_ROLES = {
-  structure: { color: [0.46, 0.52, 0.52, 1], metal: 0.035, rough: 0.34 },
-  face: { color: [0.72, 0.76, 0.74, 1], metal: 0.035, rough: 0.34 },
-  stainless: { color: [0.48, 0.54, 0.56, 1], metal: 0.92, rough: 0.28 },
-  hardware: { color: [0.62, 0.67, 0.69, 1], metal: 0.94, rough: 0.24 },
-  lockerFace: { color: [0.34, 0.41, 0.43, 1], metal: 0.035, rough: 0.34 },
+  benchStructure: { color: [0.36, 0.35, 0.37, 1], metal: 0, rough: 0.45 },
+  benchFace: { color: [0.43, 0.415, 0.435, 1], metal: 0, rough: 0.43 },
+  structure: { color: [0.53, 0.55, 0.55, 1], metal: 0, rough: 0.43 },
+  face: { color: [0.68, 0.7, 0.69, 1], metal: 0, rough: 0.4 },
+  stainless: { color: [0.57, 0.6, 0.62, 1], metal: 1, rough: 0.26 },
+  hardware: { color: [0.7, 0.73, 0.75, 1], metal: 1, rough: 0.2 },
+  lockerFace: { color: [0.34, 0.39, 0.42, 1], metal: 0, rough: 0.3 },
 };
 const steelAliases = new Set([
   "Brushed stainless steel",
@@ -77,6 +81,11 @@ const familyStructures = new Set([
   "Room 809 light gray powder coat",
   "Institutional warm grey casework",
 ]);
+
+// These finishes name the visible coating, not the substrate below it. Never
+// turn them into conductors, even if old authored data used a small metal factor.
+const dielectricNames =
+  /paint|powder coat|enamel|polymer|polyamide|laminate|vinyl|rubber|phenolic/i;
 
 // Exact reviewed material names only. Unlisted finishes are deliberately retained,
 // including safety colors, instrument-specific accents, glass, optics and rubber.
@@ -114,16 +123,16 @@ export function reviewMaterial(material, assetId) {
   const pbr = (result.pbrMetallicRoughness ??= {});
   let action = "retain-authored-finish";
   if (satin.has(result.name)) {
-    pbr.metallicFactor = 0.88;
-    pbr.roughnessFactor = 0.29;
+    pbr.metallicFactor = 1;
+    pbr.roughnessFactor = 0.26;
     action = "brushed-satin-response";
   } else if (bright.has(result.name)) {
-    pbr.metallicFactor = 0.9;
-    pbr.roughnessFactor = 0.24;
+    pbr.metallicFactor = 1;
+    pbr.roughnessFactor = 0.2;
     action = "controlled-hardware-reflections";
   } else if (enamel.has(result.name)) {
-    pbr.metallicFactor = 0.035;
-    pbr.roughnessFactor = 0.34;
+    pbr.metallicFactor = 0;
+    pbr.roughnessFactor = 0.4;
     action = "smooth-enamel-no-photographic-overlay";
   } else if (
     ["Black phenolic worktop - satin", "Black phenolic exposed edge"].includes(result.name)
@@ -132,28 +141,28 @@ export function reviewMaterial(material, assetId) {
       ? [0.005, 0.007, 0.007, 1]
       : [0.009, 0.012, 0.011, 1];
     pbr.metallicFactor = 0;
-    pbr.roughnessFactor = 0.36;
+    pbr.roughnessFactor = 0.3;
     if (result.extensions?.KHR_materials_clearcoat)
       result.extensions.KHR_materials_clearcoat.clearcoatFactor = 0.1;
     action = "satin-phenolic-physical-surface";
   } else if (result.name === "Graphite powder coat") {
     // Preserve the already-approved light mechanism body; encode it in the GLB
     // instead of relying on a hidden renderer-side recoloring rule.
-    pbr.baseColorFactor = [0.23, 0.28, 0.27, 1];
-    pbr.metallicFactor = 0.12;
+    pbr.baseColorFactor = [0.23, 0.25, 0.26, 1];
+    pbr.metallicFactor = 0;
     pbr.roughnessFactor = 0.36;
     action = "authored-light-mechanism-finish";
   }
   // Reviewed roles retain contrast, rather than whitening the whole catalog.
   const group = REVIEWED_ASSETS[assetId];
   if (result.name === "Room 809 light gray powder coat") {
-    pbr.baseColorFactor = group === "architecture" ? [0.62, 0.66, 0.65, 1] : [0.46, 0.52, 0.52, 1];
+    pbr.baseColorFactor = group === "architecture" ? [0.62, 0.64, 0.63, 1] : [0.53, 0.55, 0.55, 1];
     action = "neutral-grey-structural-enamel";
   } else if (result.name === "Warm gray powder coat highlight") {
-    pbr.baseColorFactor = [0.72, 0.76, 0.74, 1];
+    pbr.baseColorFactor = [0.68, 0.7, 0.69, 1];
     action = "porcelain-face-contrast";
   } else if (result.name === "Porcelain white instrument enamel") {
-    pbr.baseColorFactor = [0.68, 0.73, 0.72, 1];
+    pbr.baseColorFactor = [0.66, 0.68, 0.68, 1];
     action = "soft-instrument-enamel";
   } else if (result.name === "Studio-readable satin stainless steel") {
     pbr.baseColorFactor = [0.48, 0.54, 0.56, 1];
@@ -166,8 +175,10 @@ export function reviewMaterial(material, assetId) {
   if (steelAliases.has(result.name)) role = "stainless";
   else if (hardwareAliases.has(result.name)) role = "hardware";
   else if (["benches", "sinks", "storage", "lockers", "workstations"].includes(family)) {
-    if (familyFaces.has(result.name)) role = family === "lockers" ? "lockerFace" : "face";
-    else if (familyStructures.has(result.name)) role = "structure";
+    if (familyFaces.has(result.name))
+      role = family === "lockers" ? "lockerFace" : family === "benches" ? "benchFace" : "face";
+    else if (familyStructures.has(result.name))
+      role = family === "benches" ? "benchStructure" : "structure";
   }
   if (role) {
     const recipe = FAMILY_ROLES[role];
@@ -176,13 +187,108 @@ export function reviewMaterial(material, assetId) {
     pbr.roughnessFactor = recipe.rough;
     action = `family-role:${role}`;
   }
+  // Paint is a dielectric; only exposed metal receives conductor response.
+  // Tiny shared normal/roughness maps add finish, never an albedo recolor.
+  let surface;
+  if (
+    steelAliases.has(result.name) ||
+    hardwareAliases.has(result.name) ||
+    satin.has(result.name) ||
+    bright.has(result.name)
+  )
+    surface = "brushed";
+  else if (result.name.startsWith("Black phenolic")) surface = "phenolic";
+  else if (
+    enamel.has(result.name) ||
+    familyFaces.has(result.name) ||
+    familyStructures.has(result.name)
+  )
+    surface = "enamel";
+  else if (
+    [
+      "Black engineering polymer",
+      "Black rubber",
+      "Soft black rubber",
+      "Black vinyl upholstery",
+      "Blue vinyl upholstery",
+    ].includes(result.name)
+  )
+    surface = "polymer";
+  if (dielectricNames.test(result.name)) {
+    pbr.metallicFactor = 0;
+    if (!/rubber|vinyl|phenolic|seam|label/i.test(result.name)) {
+      pbr.roughnessFactor = Math.max(pbr.roughnessFactor ?? 0.4, 0.4);
+    }
+    // An additional clearcoat lobe made paint/laminate look like silver lacquer.
+    if (result.extensions?.KHR_materials_clearcoat)
+      delete result.extensions.KHR_materials_clearcoat;
+  }
+  if (result.extras?.labspace_visible_finish) {
+    // Authored part-specific finishes supersede legacy material-name recipes.
+    // The source generator has already separated pulls from real fasteners.
+    role = undefined;
+    surface = result.extras.labspace_surface;
+    action = `reference-surface:${result.extras.labspace_visible_finish}`;
+    if (result.extras.labspace_visible_finish === "laminate") {
+      result.name = "Soft grey laboratory laminate";
+      pbr.baseColorFactor = [0.43, 0.415, 0.435, 1];
+      pbr.roughnessFactor = 0.46;
+    } else if (result.extras.labspace_visible_finish === "coated-pull") {
+      result.name = "Satin grey coated casework pull";
+      pbr.baseColorFactor = [0.37, 0.365, 0.385, 1];
+      pbr.roughnessFactor = 0.42;
+    }
+  }
+  if (family === "benches" && result.name === "Black phenolic worktop - satin") {
+    // User's latest bench photo: cool charcoal with a restrained plum cast,
+    // not bright white or a silver top. Still a nonmetallic resin surface.
+    pbr.baseColorFactor = [0.014, 0.011, 0.019, 1];
+    pbr.roughnessFactor = 0.34;
+    action = "reference-charcoal-phenolic";
+  }
+  // The user's mesh-like white coating is a texture-only finish. Keep the
+  // reference-grey bench colors, black handles, safety colors and bare metal intact.
+  const rgb = (pbr.baseColorFactor ?? [1, 1, 1]).slice(0, 3);
+  const whiteCoating =
+    surface === "enamel" ||
+    ["Warm white powder coat", "Powder-coated warm white"].includes(result.name);
+  if (
+    whiteCoating &&
+    pbr.metallicFactor === 0 &&
+    Math.min(...rgb) >= 0.32 &&
+    Math.max(...rgb) - Math.min(...rgb) < 0.15 &&
+    !(result.extensions?.KHR_materials_transmission?.transmissionFactor > 0)
+  ) {
+    surface = "micrograin";
+  }
+  const transmission = result.extensions?.KHR_materials_transmission?.transmissionFactor ?? 0;
+  if (transmission > 0.8 && /glass|glazing/i.test(result.name)) {
+    // Transmission already controls transparency. Multiplying by alpha .2
+    // made real glazing disappear and caused incorrect sorting/double blending.
+    if (pbr.baseColorFactor) pbr.baseColorFactor[3] = 1;
+    result.alphaMode = "OPAQUE";
+    if (
+      /clear|laminated|safety|vision/i.test(result.name) &&
+      !/edge|frost|smok/i.test(result.name)
+    ) {
+      pbr.baseColorFactor = [0.96, 0.985, 0.99, 1];
+      pbr.roughnessFactor = 0.015;
+      result.extensions.KHR_materials_transmission.transmissionFactor = 0.98;
+    }
+  }
+  const clearcoat = result.extensions?.KHR_materials_clearcoat;
+  if (clearcoat && !clearcoat.clearcoatFactor) delete result.extensions.KHR_materials_clearcoat;
+  if (result.extensions && !Object.keys(result.extensions).length) delete result.extensions;
   result.extras = {
     ...result.extras,
     labspace_finish_revision: FINISH_REVISION,
     labspace_finish_action: action,
     labspace_finish_family: family,
-    ...(role ? { labspace_finish_role: role } : {}),
+    labspace_finish_role: role,
     labspace_env_intensity: 1.0,
+    ...(surface
+      ? { labspace_surface: surface, labspace_surface_revision: surfaceRevision(surface) }
+      : {}),
   };
   return result;
 }
@@ -192,6 +298,50 @@ export function polishGlb(buffer, id) {
   const jsonLength = buffer.readUInt32LE(12);
   const doc = JSON.parse(buffer.subarray(20, 20 + jsonLength).toString());
   doc.materials = (doc.materials ?? []).map((material) => reviewMaterial(material, id));
+  doc.images ??= [];
+  doc.textures ??= [];
+  doc.samplers ??= [];
+  let sampler = doc.samplers.findIndex((s) => s.name === SURFACE_REVISION);
+  if (sampler < 0) {
+    sampler = doc.samplers.length;
+    doc.samplers.push({
+      name: SURFACE_REVISION,
+      magFilter: 9729,
+      minFilter: 9987,
+      wrapS: 10497,
+      wrapT: 10497,
+    });
+  }
+  const textureFor = (surface, type) => {
+    const uri = `../../materials/pbr/${surface}-${surfaceRevision(surface)}-${type}.png`;
+    let source = doc.images.findIndex((image) => image.uri === uri);
+    if (source < 0) {
+      source = doc.images.length;
+      doc.images.push({ uri });
+    }
+    let index = doc.textures.findIndex(
+      (texture) => texture.source === source && texture.sampler === sampler,
+    );
+    if (index < 0) {
+      index = doc.textures.length;
+      doc.textures.push({ source, sampler });
+    }
+    return {
+      index,
+      extensions: {
+        KHR_texture_transform: {
+          scale: surface === "micrograin" ? [8, 8] : [4, 4],
+        },
+      },
+    };
+  };
+  for (const m of doc.materials) {
+    const surface = m.extras.labspace_surface;
+    if (!surface) continue;
+    m.normalTexture = { ...textureFor(surface, "normal"), scale: 1 };
+    m.pbrMetallicRoughness.metallicRoughnessTexture = textureFor(surface, "roughness");
+  }
+  doc.extensionsUsed = [...new Set([...(doc.extensionsUsed ?? []), "KHR_texture_transform"])];
   doc.asset.extras = {
     ...doc.asset.extras,
     labspace_finish_revision: FINISH_REVISION,
@@ -208,6 +358,7 @@ export function polishGlb(buffer, id) {
 }
 
 if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {
+  buildSurfaceMaps(resolve(root, "public/materials/pbr"));
   const dir = resolve(root, "public/models/hero");
   const ids = readdirSync(dir)
     .filter((name) => name.endsWith(".glb"))
@@ -217,7 +368,19 @@ if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {
     throw new Error("Catalog review must cover every authored asset exactly once.");
   for (const id of ids) {
     const path = resolve(dir, `${id}.glb`);
-    writeFileSync(path, polishGlb(readFileSync(path), id));
+    // A running dev server may be serving this GLB. Never truncate its live
+    // file while a reader is active; publish the complete replacement at once.
+    const next = `${path}.next`;
+    writeFileSync(next, polishGlb(readFileSync(path), id));
+    for (let attempt = 0; ; attempt++) {
+      try {
+        renameSync(next, path);
+        break;
+      } catch (error) {
+        if (attempt >= 8) throw error;
+        await pause(150);
+      }
+    }
   }
   stdout.write(
     `Reviewed finish recipes written for ${ids.length} assets; geometry and storage bindings preserved.\n`,

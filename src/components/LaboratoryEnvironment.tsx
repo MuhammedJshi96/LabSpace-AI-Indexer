@@ -960,7 +960,9 @@ export function LaboratoryEnvironment({
           ))}
         </group>
       )}
-      <EnvironmentLightingRig profile={profile} />
+      {/* Optional ceiling services must not add invisible banks of lights to
+          the calibrated room rig when their fixtures are switched off. */}
+      {visible && overheadVisible && <EnvironmentLightingRig profile={profile} />}
     </group>
   );
 }

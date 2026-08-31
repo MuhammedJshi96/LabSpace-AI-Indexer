@@ -162,8 +162,8 @@ def apply(f):
         roof_front = old_y - normal * .013
         roof_y0, roof_y1 = sorted((roof_front, rear))
         box(f"{name} stepped drawer soffit",
-            Vector((x0 + .018, roof_y0, top + .003)),
-            Vector((x1 - .018, roof_y1, top + .009)), f.MATERIALS["interior"])
+            Vector((x0 + .004, roof_y0, top - .002)),
+            Vector((x1 - .004, roof_y1, top + .009)), f.MATERIALS["interior"])
         if aid == "asymmetric-lab-bench":
             # Keep existing shelf names/IDs; shorten them at the front only.
             for shelf_name in ("Mixed cabinet adjustable shelf", "Mixed cabinet base shelf"):
@@ -187,6 +187,6 @@ def apply(f):
         else:
             for i, z in enumerate((bottom + .018, bottom + (top - bottom) * .52), 1):
                 box(f"{name} recessed shelf {i}",
-                    Vector((x0 + .025, y0, z)), Vector((x1 - .025, y1, z + .018)),
+                    Vector((x0 + .018, y0, z)), Vector((x1 - .018, y1, z + .018)),
                     f.MATERIALS["interior"], "interior shelf")
     bpy.context.view_layer.update()

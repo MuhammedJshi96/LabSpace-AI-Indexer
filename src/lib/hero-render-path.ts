@@ -2,7 +2,7 @@ import type { AssetDefinition } from "../domain/schema";
 
 export type AuthoredRenderView = "isometric" | "top";
 
-const AUTHORED_RENDER_REVISION = "catalog-frame-r2";
+const AUTHORED_RENDER_REVISION = "catalog-light-r3";
 
 /**
  * Resolve the deterministic Blender render generated beside the authored GLB.

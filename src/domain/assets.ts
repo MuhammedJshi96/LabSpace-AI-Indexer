@@ -290,7 +290,7 @@ function asset(
     // that revision in model AND thumbnail URLs so existing rooms refresh their
     // visuals without changing any scene objects or persisted dimensions.
     model3d: options.model3d
-      ? { ...options.model3d, revision: `${options.model3d.revision}-catalog-polish-r3` }
+      ? { ...options.model3d, revision: `${options.model3d.revision}-catalog-polish-r7` }
       : options.model3d,
   });
 }
@@ -420,7 +420,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       material: "white",
       indexingBehavior: "storage",
       description:
-        "Reference-led mixed laboratory casework: two upper drawers above paired cabinet doors recessed 75 mm at left, and a forward three-drawer bank at right. Five real drawer trays, shortened cabinet shelves, stepped side construction and plinth, satin channel pulls and a black phenolic worktop. The setback is a representative interpretation of the supplied photo. Storage locations match the authored openings.",
+        "Reference-led mixed laboratory casework: two upper drawers above paired cabinet doors recessed 75 mm at left, and a forward three-drawer bank at right. Five real drawer trays, shortened cabinet shelves, warm-neutral laminate panels, coated channel pulls and a black phenolic worktop. The setback and finish are representative interpretations of the supplied photo. Storage locations match the authored openings.",
       model3d: {
         ...referencePackModel("asymmetric-lab-bench", [1800, 750, 900]),
         revision: "recessed-casework-r1",
@@ -437,7 +437,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       material: "steel",
       indexingBehavior: "storage",
       description:
-        "Institutional wash cabinet with warm-grey structural casework, porcelain door faces, a continuous formed stainless trough, twin mixers, integrated satin pulls and a recessed graphite plinth. Paired left storage doors and one right service door retain fixed shelves and isolated plumbing. Original logo-free planning model; overall height includes taps and rim height is 900 mm.",
+        "Institutional wash cabinet with warm-grey painted casework, porcelain-painted door faces, a continuous formed stainless trough, twin mixers, coated cabinet pulls and a recessed graphite plinth. Paired left storage doors and one right service door retain fixed shelves and isolated plumbing. Original logo-free planning model; overall height includes taps and rim height is 900 mm.",
       model3d: referencePackModel("institutional-sink-cabinet", [1500, 700, 1200]),
     },
   ),
@@ -658,7 +658,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     material: "dark",
     storageTemplate: standardBenchStorage(),
     description:
-      "Clean Shimadzu-style laboratory base bench with symmetrical three-drawer end banks, a central paired-door cabinet recessed 75 mm behind the drawers, two internal shelves, two adjacent upper drawers, consistent 8 mm face reveals, satin aluminum channel pulls, a stepped recessed plinth, realistic rear service panels, and a black phenolic worktop. The setback is a representative design choice, not a measured manufacturer specification.",
+      "Reference-informed laboratory base bench with warm-neutral laminate panels, coated channel pulls and a black phenolic worktop. Symmetrical three-drawer end banks frame a paired-door cabinet recessed 75 mm behind the drawers, with two internal shelves and two upper drawers. Small hinges and runners remain metal. The setback and finish variant are representative design choices, not manufacturer specifications.",
     model3d: {
       previewSrc: "/models/hero/lab-bench.glb",
       authoredDimensions: { width: 1800, depth: 750, height: 900 },
@@ -775,7 +775,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     material: "dark",
     storageTemplate: standardBenchStorage(),
     description:
-      "Manufactured L-shaped laboratory casework with a continuous black phenolic corner worktop, light powder-coated cabinet runs, drawers, paired doors, recessed plinths, consistent reveals, and satin-aluminum pulls.",
+      "Manufactured L-shaped laboratory casework with a continuous black phenolic corner worktop, warm-neutral laminate cabinet panels, drawers, paired doors, recessed plinths, consistent reveals, and satin coated pulls.",
     model3d: catalogCompletionModel("corner-lab-bench", [1500, 1500, 900]),
   }),
   asset("center-island-bench", "Center island bench", "Furniture", [3000, 1200, 900], {
@@ -885,7 +885,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "cabinet",
     accent: "#6f807d",
     description:
-      "Shimadzu-reference laboratory base cabinet with two adjacent upper drawers over two lower doors, a black satin phenolic top, folded-steel carcass, adjustable interior shelf, slim metallic pulls, consistent face reveals, recessed toe kick, levelling hardware, and rear access construction. This logo-free planning model is not manufacturer-certified.",
+      "Shimadzu-reference laboratory base cabinet with two adjacent upper drawers over two lower doors, a black satin phenolic top, coated carcass, adjustable interior shelf, slim matte-black pulls, consistent face reveals, recessed toe kick, levelling hardware, and rear access construction. This logo-free planning model is not manufacturer-certified.",
     model3d: {
       previewSrc: "/models/hero/base-cabinet.glb",
       authoredDimensions: { width: 900, depth: 600, height: 850 },
@@ -939,7 +939,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "tall",
     accent: "#687d7a",
     description:
-      "Full-height two-door laboratory storage cabinet with wide continuous faces, adjustable interior shelves, slim vertical metallic pulls, restrained hinges, rear access and ventilation, plinth, and levelling feet. This logo-free planning model is not manufacturer-certified.",
+      "Full-height two-door laboratory storage cabinet with wide continuous faces, adjustable interior shelves, slim vertical matte-black pulls, restrained hinges, rear access and ventilation, plinth, and levelling feet. This logo-free planning model is not manufacturer-certified.",
     model3d: {
       previewSrc: "/models/hero/tall-cabinet.glb",
       authoredDimensions: { width: 1000, depth: 600, height: 2100 },
@@ -1005,7 +1005,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "cabinet",
     material: "steel",
     description:
-      "Compact mobile laboratory drawer pedestal with four proportional drawer fronts, integrated satin pulls, stainless top, powder-coated carcass, and four modeled swivel casters.",
+      "Compact mobile laboratory drawer pedestal with four proportional drawer fronts, integrated matte-black pulls, stainless top, powder-coated carcass, and four modeled swivel casters.",
     model3d: catalogCompletionModel("mobile-drawer", [500, 550, 650]),
   }),
   asset("open-shelving", "Open shelving unit", "Storage", [1400, 500, 2100], {

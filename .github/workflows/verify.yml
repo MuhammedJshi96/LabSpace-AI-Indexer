@@ -21,3 +21,5 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run release:check
       - run: npm run test:e2e:webmcp
+      - run: npm run test:e2e -- tests/e2e/render-quality.spec.ts
+      - run: npm run test:e2e:public

@@ -1,4 +1,4 @@
-import rigs from "./storage-rigs.json";
+import rigs from "./storage-rigs.json" with { type: "json" };
 import type { StorageLocation } from "./schema";
 import { storageLocationHighlight } from "./storage-highlight";
 

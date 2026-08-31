@@ -40,6 +40,24 @@ afterEach(() => {
 });
 
 describe("LabSpace browser-agent room planning", () => {
+  it("keeps automatic perimeter storage out of a hosted double-door opening", () => {
+    blankLayoutFixture();
+    const plan = planRoomLayout({
+      roomShell: { widthMm: 6000, depthMm: 6000 },
+      assets: [
+        {
+          assetId: "double-door",
+          quantity: 1,
+          host: { wallIndex: 1, offsetMm: 3000, swing: "inward" },
+        },
+        { assetId: "base-drawer-cabinet", quantity: 1, placement: "perimeter" },
+      ],
+    });
+    expect(plan.unplaced).toEqual([]);
+    const cabinet = plan.proposals.find((entry) => entry.assetId === "base-drawer-cabinet")!;
+    const { xMm, yMm } = cabinet.position;
+    expect(Math.abs(xMm - 3000) >= 1200 || yMm >= 1200).toBe(true);
+  });
   it("offers the reference pack to WebMCP and shares the editor's high-level window default", () => {
     blankLayoutFixture();
     expect(searchLabAssets({ query: "chiller" }).results).toContainEqual(

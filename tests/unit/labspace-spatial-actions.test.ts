@@ -113,6 +113,65 @@ function hostedWindowFixture() {
 }
 
 describe("LabSpace room readiness audit", () => {
+  it("detects hinged door obstructions with rotation, swing side and elevation", () => {
+    const { project, room, wall, left } = hostedWindowFixture();
+    wall.wall!.start = { x: 0, y: 0 };
+    wall.wall!.end = { x: 8000, y: 0 };
+    left.objectType = "door";
+    left.assetDefinitionId = "double-door";
+    left.position = { x: 2000, y: 0, z: 0 };
+    left.dimensions = { width: 1800, depth: 150, height: 2100 };
+    left.opening = { ...left.opening!, width: 1800, height: 2100, sillHeight: 0 };
+    const item: SceneObject = {
+      ...structuredClone(left),
+      id: "obstructing-cabinet",
+      name: "Test cabinet",
+      objectType: "storage",
+      assetDefinitionId: "base-drawer-cabinet",
+      opening: undefined,
+      dimensions: { width: 600, depth: 600, height: 850 },
+      position: { x: 2000, y: 500, z: 0 },
+    };
+    room.scene.objects = [wall, left, item];
+    const conflicts = () =>
+      validateObjectMove(
+        { objectId: item.id, target: { xMm: item.position.x, yMm: item.position.y } },
+        () => project,
+      ).conflicts;
+    expect(conflicts()).toContainEqual(
+      expect.objectContaining({
+        type: "object-collision",
+        objectId: left.id,
+        message: expect.stringContaining("opening envelope"),
+      }),
+    );
+    left.opening.swing = "outward";
+    expect(conflicts()).toEqual([]);
+    left.opening.swing = "sliding";
+    expect(conflicts()).toEqual([]);
+    left.opening.swing = "inward";
+    item.position.z = 2200;
+    item.dimensions.height = 300;
+    expect(conflicts()).toEqual([]);
+    item.position.z = 0;
+    wall.wall!.start = { x: 6000, y: 0 };
+    wall.wall!.end = { x: 6000, y: 8000 };
+    item.position = { x: 5500, y: 2000, z: 0 };
+    expect(conflicts()).toContainEqual(
+      expect.objectContaining({ type: "object-collision", objectId: left.id }),
+    );
+    left.visible = false;
+    expect(conflicts()).toEqual([]);
+  });
+  it("reports the same one-based floor as room creation and Facility", () => {
+    const { project, room } = spatialFixture();
+    room.facilityPlacement = { x: 0, y: 0, rotation: 0, floor: 7 };
+    expect(auditRoom({}, () => project).room.floor).toBe(8);
+    room.facilityPlacement.floor = 0;
+    expect(auditRoom({}, () => project).room.floor).toBe(1);
+    room.facilityPlacement.floor = 14;
+    expect(auditRoom({}, () => project).room.floor).toBe(15);
+  });
   it("summarizes the same deterministic room state without mutation", () => {
     const project = createSeedProject();
     const room = project.rooms.find((entry) => entry.roomKind === "demo")!;

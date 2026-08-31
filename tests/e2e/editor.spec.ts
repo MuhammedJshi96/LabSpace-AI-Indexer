@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PNG } from "pngjs";
 import { BUILD_WEEK_DEMO } from "../../src/domain/build-week-demo";
 import { SHOWCASE_DEMO_ROOM_ID, STARTER_ROOM_ID } from "../../src/domain/seed";
+import type { Project } from "../../src/domain/schema";
 
 test.describe.configure({ mode: "serial" });
 
@@ -196,6 +197,13 @@ test("the 3D canvas renders real pixels and Asset Studio opens safely", async ({
 test("the Spatial Index links indexed search results to the live room and editor", async ({
   page,
 }) => {
+  const project: Project = await (await page.request.get("/api/project")).json();
+  const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
+  const item = room.scene.inventoryItems.find((entry) => entry.name === "Reference standards")!;
+  const location = room.scene.storageLocations.find(
+    (entry) => entry.id === item.storageLocationId,
+  )!;
+  const cabinet = room.scene.objects.find((entry) => entry.id === location.objectId)!;
   await page.goto("/digital-twin");
   await expect(page.getByTestId("digital-twin-page")).toBeVisible();
   await expect(page.getByTestId("3d-view").locator("canvas")).toBeVisible();
@@ -204,41 +212,41 @@ test("the Spatial Index links indexed search results to the live room and editor
   const search = page.getByRole("textbox", {
     name: "Search spatial index",
   });
+  await page.getByRole("button", { name: "This room", exact: true }).click();
   await search.fill("Reference standards");
-  await expect(page.getByTestId("digital-twin-record")).toHaveCount(1);
-  await page.getByTestId("digital-twin-record").click();
+  // The name-first index legitimately also returns "Reference standards drawer".
+  const standardsRecord = page.getByRole("button", { name: /^Reference standards Inventory / });
+  await expect(standardsRecord).toHaveCount(1);
+  await standardsRecord.click();
   await expect(page.getByRole("heading", { name: "Reference standards" })).toBeVisible();
   const detail = page.getByRole("complementary", { name: "Selected record details" });
-  await expect(detail.getByText("Analysis island storage", { exact: true })).toBeVisible();
-  await expect(detail.getByText("Sample bin 01", { exact: true })).toBeVisible();
+  await expect(detail).toContainText(cabinet.name);
+  await expect(detail).toContainText(location.name);
   await expect(
     detail.getByRole("img", { name: "Reference standards evidence image" }),
   ).toHaveAttribute("src", "/images/inventory/reference-standards.png");
-  await expect(page.getByTestId("3d-view")).toHaveAttribute(
-    "data-focus-location-id",
-    "storage-location-0023",
-  );
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-focus-location-id", location.id);
 
   await search.fill("HPLC autosampler vials");
-  await expect(page.getByTestId("digital-twin-record")).toHaveCount(1);
-  await page.getByTestId("digital-twin-record").click();
+  const vialsRecord = page.getByRole("button", {
+    name: /^HPLC autosampler vials, 2 mL Inventory /,
+  });
+  await expect(vialsRecord).toHaveCount(1);
+  await vialsRecord.click();
   await expect(page.getByRole("heading", { name: "HPLC autosampler vials, 2 mL" })).toBeVisible();
   await expect(
     detail.getByRole("img", { name: "HPLC autosampler vials, 2 mL evidence image" }),
   ).toHaveAttribute("src", "/images/inventory/hplc-vials.png");
 
   await search.fill("Reference standards");
-  await page.getByTestId("digital-twin-record").click();
+  await standardsRecord.click();
 
   await page.getByRole("button", { name: "Navigate to location" }).click();
   await expect(page.getByTestId("3d-view")).toHaveAttribute(
     "data-focus-object-id",
     /^[0-9a-f-]{36}$/,
   );
-  await expect(page.getByTestId("3d-view")).toHaveAttribute(
-    "data-focus-location-id",
-    "storage-location-0023",
-  );
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-focus-location-id", location.id);
 
   await page.getByRole("button", { name: "2D fallback" }).click();
   await expect(page.getByTestId("2d-editor")).toBeVisible();
@@ -249,9 +257,9 @@ test("the Spatial Index links indexed search results to the live room and editor
   const editorLink = page.getByRole("link", { name: "Open record in editor" });
   await expect(editorLink).toHaveAttribute("href", /object=.*panel=properties/);
   await editorLink.click();
-  await expect(page.locator(".selection-trace-card")).toContainText("LAB-R809-Z02-CAB-001");
+  await expect(page.locator(".selection-trace-card")).toContainText(cabinet.indexCode);
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:\d+\/$/);
-  await expect(page.getByRole("link", { name: "Open Spatial Index" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Spatial Index", exact: true })).toBeVisible();
 });
 
 test("project search switches to a record in another laboratory and preserves the editor trace", async ({
@@ -299,7 +307,14 @@ test("project search switches to a record in another laboratory and preserves th
     expect(saved.ok()).toBeTruthy();
 
     await page.goto("/digital-twin");
-    await expect(page.getByText("3 labs · 3 rooms", { exact: true })).toBeVisible();
+    const editableCount = project.rooms.filter(
+      (entry: any) => entry.roomKind !== "demo-template",
+    ).length;
+    await expect(
+      page.getByText(`${project.laboratories.length} labs · ${editableCount} rooms`, {
+        exact: true,
+      }),
+    ).toBeVisible();
     await page
       .getByRole("textbox", { name: "Search spatial index" })
       .fill("Cross-room calibration tracer");
@@ -345,6 +360,7 @@ test("an asset can be dragged in, moved, resized, and synchronized", async ({ pa
   const card = page.getByRole("article", { name: /Standard laboratory bench —/ });
   const editor = page.getByTestId("2d-editor");
   await card.dragTo(editor, { targetPosition: { x: 380, y: 360 } });
+  await page.getByRole("tab", { name: "Details", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Standard laboratory bench" })).toBeVisible();
   await expect(page.locator(".selection-trace-card")).toContainText("Standard laboratory bench");
   await expect(page.locator(".spatial-model-loading")).toBeHidden({ timeout: 15000 });
@@ -393,28 +409,43 @@ test("a cabinet receives indexed internals and exact inventory", async ({ page, 
   // This workflow exercises storage/index state only. Keeping the software-rendered
   // WebGL pane mounted makes the role-heavy inventory dialog unnecessarily slow.
   await page.getByRole("button", { name: "2D", exact: true }).click();
-  await page.getByRole("article", { name: /Base cabinet —/ }).dblclick();
+  await page.getByRole("article", { name: /Base drawer cabinet —/ }).dblclick();
+  await page.getByRole("tab", { name: "Details", exact: true }).click();
   await expect(page.getByText("Storage configuration", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Shelf", exact: true }).click();
-  await page.getByRole("button", { name: "Drawer", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "2 internal locations" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "3 internal locations" })).toBeVisible();
   await page.getByRole("button", { name: "Open index" }).click();
-  await page.waitForTimeout(1100);
+  await page.getByRole("button", { name: "Manage storage", exact: true }).click();
+  await page.getByRole("button", { name: "Save now", exact: true }).click();
+  await expect(page.getByTitle("All changes saved", { exact: true })).toBeVisible();
 
-  const project = await (await request.get("/api/project")).json();
-  const room = project.rooms.find((entry: any) => entry.id === project.activeRoomId);
-  const selectedObjectId = room.scene.objects.at(-1).id;
+  const project: Project = await (await request.get("/api/project")).json();
+  const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
+  const selectedObject = room.scene.objects.find(
+    (entry) => entry.assetDefinitionId === "base-drawer-cabinet",
+  )!;
   const drawer = room.scene.storageLocations.find(
-    (entry: any) => entry.objectId === selectedObjectId && entry.type === "drawer",
-  );
+    (entry) => entry.objectId === selectedObject.id && entry.type === "drawer",
+  )!;
   await page
-    .getByRole("button", { name: `${drawer.name} ${drawer.indexCode} Empty`, exact: true })
+    .getByRole("region", { name: "Named storage locations" })
+    .getByRole("button", { name: `drawer ${drawer.name} ${selectedObject.name}`, exact: true })
     .click();
   await page.getByRole("button", { name: "Add item" }).click();
-  await expect(page.getByRole("heading", { name: /inventory items/ })).toBeVisible();
-  await expect(page.getByRole("combobox").last()).toHaveValue(drawer.id);
+  const form = page.getByRole("form", { name: "New item at this location" });
+  await form.getByLabel("Item name", { exact: true }).fill("Drawer assignment regression item");
+  await form.getByLabel("Quantity", { exact: true }).fill("3");
+  await form.getByRole("button", { name: "Create item here", exact: true }).click();
+  await page.getByRole("button", { name: "Save now", exact: true }).click();
+  await expect
+    .poll(async () => {
+      const saved: Project = await (await request.get("/api/project")).json();
+      return saved.rooms
+        .find((entry) => entry.id === room.id)!
+        .scene.inventoryItems.find((entry) => entry.name === "Drawer assignment regression item");
+    })
+    .toMatchObject({ storageLocationId: drawer.id, quantity: 3, unit: "each" });
 
-  const codes = room.scene.storageLocations.map((entry: any) => entry.indexCode);
+  const codes = room.scene.storageLocations.map((entry) => entry.indexCode);
   expect(new Set(codes).size).toBe(codes.length);
 });
 
@@ -426,6 +457,7 @@ test("undo, redo, layer visibility, versions, persistence, and exports work", as
   await page.getByRole("button", { name: "2D", exact: true }).click();
   await expect(page.getByTestId("3d-view")).toHaveCount(0);
   await page.getByRole("article", { name: /Office chair —/ }).dblclick();
+  await page.getByRole("tab", { name: "Details", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Office chair" })).toBeVisible();
   await page.keyboard.press("Control+z");
   await expect(page.getByRole("heading", { name: "Office chair" })).toBeHidden();
@@ -440,7 +472,7 @@ test("undo, redo, layer visibility, versions, persistence, and exports work", as
   await expect(furnitureRow).toHaveClass(/muted/);
   await furnitureRow.getByTitle("Show layer").click();
 
-  await page.getByRole("button", { name: "Save room version" }).click();
+  await page.getByRole("button", { name: "Save a named room version", exact: true }).click();
   await page.getByRole("textbox", { name: "Version name" }).fill("Playwright verified");
   await page.getByRole("button", { name: "Save version", exact: true }).click();
 
@@ -448,13 +480,13 @@ test("undo, redo, layer visibility, versions, persistence, and exports work", as
   await expect(page.getByText("Empty lab plan", { exact: true })).toBeVisible();
   await expect(page.locator(".status-bar .save-ok")).toBeVisible();
 
-  await page.getByRole("button", { name: "Open project menu" }).click();
+  await page.getByRole("button", { name: "Open project workspace", exact: true }).click();
   const jsonDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: /Export project/ }).click();
   expect((await jsonDownload).suggestedFilename()).toMatch(/\.json$/);
 
   await page.getByRole("button", { name: "Close dialog" }).click();
-  await page.getByRole("button", { name: "Reports" }).click();
+  await page.goto("/?dialog=reports");
   const csvDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: /Storage-location register/ }).click();
   expect((await csvDownload).suggestedFilename()).toMatch(/location-register\.csv$/);
@@ -506,6 +538,7 @@ test("a completed autosave never overwrites newer 2D edits", async ({ page, requ
 
   await page.goto("/");
   await page.getByRole("article", { name: /Mobile bench —/ }).dblclick();
+  await page.getByRole("tab", { name: "Details", exact: true }).click();
   await firstSaveStarted;
   await page.getByRole("article", { name: /Vacuum pump —/ }).dblclick();
   await expect(page.getByRole("heading", { name: "Vacuum pump" })).toBeVisible();
@@ -552,6 +585,17 @@ test("principal editor screenshots render without clipping", async ({ page }) =>
         );
       });
       return {
+        undersized: textElements
+          .filter((element) => {
+            const size = Number.parseFloat(getComputedStyle(element).fontSize);
+            return size > 0 && size < 11;
+          })
+          .map((element) => ({
+            text: element.textContent?.slice(0, 90),
+            className: element.className,
+            parent: element.parentElement?.className,
+            fontSize: getComputedStyle(element).fontSize,
+          })),
         minimumFontSize: Math.min(
           ...textElements
             .map((element) => Number.parseFloat(getComputedStyle(element).fontSize))
@@ -565,7 +609,7 @@ test("principal editor screenshots render without clipping", async ({ page }) =>
     });
     // Eleven pixels is reserved for genuinely tertiary technical annotations;
     // normal controls and body copy remain at the 12–14 px product standard.
-    expect(metrics.minimumFontSize).toBeGreaterThanOrEqual(11);
+    expect(metrics.minimumFontSize, JSON.stringify(metrics.undersized)).toBeGreaterThanOrEqual(11);
     expect(metrics.bodyOverflowsHorizontally).toBe(false);
     expect(metrics.workspaceOverflowsHorizontally).toBe(false);
   };
@@ -587,7 +631,7 @@ test("principal editor screenshots render without clipping", async ({ page }) =>
   await page.reload();
   await page.waitForTimeout(900);
   await assertReadableLayout();
-  await page.screenshot({ path: "docs/screenshots/editor-1920x1080.png" });
+  await page.screenshot({ path: "test-results/editor-1920x1080.png" });
 });
 
 test("the asset browser frames both large equipment and small instruments", async ({ page }) => {
@@ -595,11 +639,11 @@ test("the asset browser frames both large equipment and small instruments", asyn
   await page.goto("/asset-preview?asset=compound-microscope");
   await expect(page.getByRole("heading", { name: "Compound microscope" })).toBeVisible();
   await expect(page.locator(".asset-preview-canvas canvas")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Full catalog 94", exact: true })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "Full catalog 104", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".asset-preview-count")).toContainText("94 active · 0 archived");
+  await expect(page.locator(".asset-preview-count")).toContainText("104 active · 0 archived");
   await expect(page.getByText("Straight wall", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Half-height wall", { exact: true })).toHaveCount(0);
   await expect(page.locator(".asset-preview-details")).toContainText("300 × 420 × 480 mm");

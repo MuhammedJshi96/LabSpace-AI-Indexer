@@ -508,6 +508,55 @@ export function validatePlacement(room: Room): ValidationWarning[] {
     }
     const width = object.opening.width;
     const length = wallLength(wall);
+    // A conservative, wall-local envelope for the visible hinged leaf sweep.
+    // This is planning evidence, not a code-compliant egress assessment. Use
+    // the same positive local-Y / outward reflection as the 2D/3D opening.
+    if (
+      object.visible &&
+      object.objectType === "door" &&
+      object.opening.swing !== "sliding" &&
+      length > 0
+    ) {
+      const angle = (wallAngle(wall) * Math.PI) / 180;
+      const cos = Math.cos(angle),
+        sin = Math.sin(angle);
+      const centerX = wall.wall.start.x + cos * object.opening.offset;
+      const centerY = wall.wall.start.y + sin * object.opening.offset;
+      const direction = object.opening.swing === "outward" ? -1 : 1;
+      const leafDepth = width / (object.assetDefinitionId.startsWith("double-") ? 2 : 1);
+      for (const item of placed) {
+        if (
+          item.position.z >= object.opening.sillHeight + object.opening.height ||
+          item.position.z + item.dimensions.height <= object.opening.sillHeight
+        )
+          continue;
+        const dx = item.position.x - centerX,
+          dy = item.position.y - centerY;
+        const localBounds = objectBounds({
+          ...item,
+          position: {
+            ...item.position,
+            x: dx * cos + dy * sin,
+            y: (-dx * sin + dy * cos) * direction,
+          },
+          rotation: { ...item.rotation, z: (item.rotation.z - wallAngle(wall)) * direction },
+        });
+        if (
+          localBounds.right > -width / 2 + 15 &&
+          localBounds.left < width / 2 - 15 &&
+          localBounds.bottom > wall.wall.thickness / 2 + 15 &&
+          localBounds.top < leafDepth - 15
+        ) {
+          warnings.push({
+            id: `overlap-door-${object.id}-${item.id}`,
+            severity: "warning",
+            objectIds: [object.id, item.id],
+            title: "Door opening obstructed",
+            message: `${item.name} occupies ${object.name}'s hinged-door opening envelope. Keep this planning area clear; exact access and egress require review.`,
+          });
+        }
+      }
+    }
     if (
       width > length ||
       object.opening.offset < width / 2 ||

@@ -8707,7 +8707,7 @@ body:has(#procedural-catalog-capture) #root {
   height: 24px;
   place-items: center;
   color: #6a7976;
-  font-size: 10px;
+  font-size: 11px;
   background: #f1f4f3;
   border-radius: 50%;
 }
@@ -9041,7 +9041,7 @@ body:has(#procedural-catalog-capture) #root {
   padding: 3px 7px;
   color: #07675b;
   font-family: Bahnschrift, monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-style: normal;
   background: #e7f5f2;
   border: 1px solid #c2e0da;
@@ -10861,7 +10861,7 @@ body:has(#procedural-catalog-capture) #root {
   min-width: 15px;
   height: 15px;
   padding: 0 3px;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 15px;
   border-radius: 8px;
 }
@@ -10968,6 +10968,7 @@ body:has(#procedural-catalog-capture) #root {
 
 .room-navigator .room-identity small {
   flex-shrink: 0;
+  font-size: 11px;
 }
 
 @media (min-width: 1281px) and (max-width: 1600px) {
@@ -11337,7 +11338,7 @@ body:has(#procedural-catalog-capture) #root {
   padding: 0 4px;
   place-items: center;
   color: #075f55;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   background: #dff2ee;
   border-radius: 9px;
@@ -12063,7 +12064,7 @@ body:has(#procedural-catalog-capture) #root {
 }
 
 .asset-card .asset-card-dimensions {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .asset-preview-layout {

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import type { Project } from "../../src/domain/schema";
 
 // The full DEMO-01 scene intentionally remains loaded for these release tests.
 // Software WebGL in CI can take materially longer than a hardware-backed judge browser.
@@ -21,17 +22,28 @@ test("Spatial Index Finder locates the BÜCHI evaporator and its exact flask dra
   request,
 }) => {
   await createSavedDemo(page);
-  const project = await (await request.get("/api/project")).json();
-  const room = project.rooms.find((entry: any) => entry.id === project.activeRoomId);
+  const project: Project = await (await request.get("/api/project")).json();
+  const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
   const expectedVisibleAssetCount = room.scene.objects.filter(
     (object: any) => !["wall", "door", "window"].includes(object.objectType),
   ).length;
   const flaskItem = room.scene.inventoryItems.find(
-    (item: any) => item.name === "Rotary evaporator flask set",
-  );
+    (item) => item.name === "Rotary evaporator flask set",
+  )!;
+  // The archived showcase assigned flasks to a generic drawer on a glazed
+  // cabinet that has no physical drawers. Arrange only this isolated fixture
+  // at the real base-drawer cabinet; never rewrite the shipped snapshot.
+  const drawerCabinet = room!.scene.objects.find(
+    (object) => object.assetDefinitionId === "base-drawer-cabinet",
+  )!;
+  const verifiedDrawer = room!.scene.storageLocations.find(
+    (location) => location.objectId === drawerCabinet.id && location.type === "drawer",
+  )!;
+  flaskItem.storageLocationId = verifiedDrawer.id;
+  expect((await request.put(`/api/project/${project.id}`, { data: project })).ok()).toBeTruthy();
   const flaskLocation = room.scene.storageLocations.find(
-    (location: any) => location.id === flaskItem.storageLocationId,
-  );
+    (location) => location.id === flaskItem.storageLocationId,
+  )!;
 
   await page.goto("/digital-twin");
   await expect(page.getByRole("link", { name: "Spatial Index" })).toHaveAttribute(

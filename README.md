@@ -108,10 +108,10 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - A dedicated project-wide Spatial Index Finder searches inventory, equipment, and nested storage locations across every laboratory and room, switches the live spatial scene to a selected result, highlights the related 3D asset or drawer/shelf/bin region, and deep-links back to the same room and editor record.
 - Every room owns semantic scene-local layers for walls, openings, furniture, storage, equipment, utilities, safety, labels, and measurements, so placement never depends on seed-owned layer IDs.
 - Laboratory-aware object indexes and equipment IDs use the active laboratory, room, and optional zone codes with normalized, case-insensitive uniqueness checks.
-- 96 original planning assets across architecture, furniture, storage, equipment, utilities, and safety.
-- All 94 user-visible library assets use authored, genuinely orbitable GLB geometry with front, back, side, top construction, and dimension-matched catalog/plan renders.
+- 106 original planning definitions across architecture, furniture, storage, equipment, and safety (including two hidden wall primitives).
+- All 104 user-visible library assets use authored, genuinely orbitable GLB geometry with front, back, side, top construction, and dimension-matched catalog/plan renders.
 - The authored set now includes detailed benches and wash stations, core casework/storage, professional openings, a raised-service-bridge island, a fully rebuilt BÜCHI R-300-class touchscreen rotary evaporator, and manufacturer-class analytical, thermal, cold-storage, imaging, washing, and clean-air equipment.
-- All 96 catalog definitions supply material-aware isometric library images and top-view plan images derived from the same authored GLB or procedural geometry used by the 3D view.
+- All 106 catalog definitions supply material-aware isometric library images and top-view plan images derived from the same authored GLB or procedural geometry used by the 3D view.
 - Only `straight-wall` and `half-height-wall` remain procedural because they are hidden construction primitives controlled by the wall-drawing workflow, not draggable Asset Library products.
 - A visible Asset Studio provides an orbitable PBR preview plus front, back, left, right, top, and isometric camera presets.
 - Interactive select, marquee, pan, wall, door, window, measure, move, resize, rotate, copy, paste, duplicate, delete, lock, hide, and z-order actions.
@@ -142,7 +142,9 @@ The competition workflow is fully testable without an OpenAI Platform API key or
 
 There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's twenty-one structured tools, while the canonical catalog, room planner, room-readiness audit, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
 
-The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 96-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
+The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 104-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
+
+**Low / Balanced / High rendering** is shared across the editor, Spatial Index, Facility and Asset Studio. Balanced is the default with a one-click reset; High adds restrained contact shading and cached finish microtexture at extra GPU cost. Clear panes retain their transparent blue accent. Quality changes preserve camera, selection, storage openings and saved room data. See the [rendering comparison and rollback notes](docs/local-render-quality.md).
 
 ## Start locally
 
@@ -202,7 +204,7 @@ For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUI
 | `npm run dev`                      | Start the local API and Vite development server           |
 | `npm run build`                    | Create the production frontend bundle                     |
 | `npm run start`                    | Start the API and serve the production bundle             |
-| `npm run assets:build`             | Rebuild the 94 visible hero GLBs and 188 catalog renders  |
+| `npm run assets:build`             | Rebuild the 104 visible hero GLBs and 208 catalog renders |
 | `npm run assets:render-procedural` | Rebuild four wall-primitive procedural catalog renders    |
 | `npm run lint`                     | Run ESLint                                                |
 | `npm run typecheck`                | Run strict TypeScript checks                              |

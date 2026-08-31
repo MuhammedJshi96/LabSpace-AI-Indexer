@@ -102,7 +102,7 @@ export function auditRoom(
       name: room.name,
       code: room.code,
       laboratoryCode: laboratory.code,
-      floor: room.facilityPlacement?.floor ?? 1,
+      floor: (room.facilityPlacement?.floor ?? 0) + 1,
     },
     status: errors > 0 ? "blocked" : warningCount > 0 ? "attention" : "ready",
     summary: {

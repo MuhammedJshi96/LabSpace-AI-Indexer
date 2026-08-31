@@ -10,9 +10,12 @@ six representative public GLB, thumbnail, microtexture and HDR files matched
 their local SHA-256 hashes. GitHub's release checks and WebMCP browser suite passed.
 No showcase snapshot, SQLite, IndexedDB schema, room or laboratory data was replaced.
 
-The quality experiment lives on **`codex/local-render-quality`**, locally only.
-Checkpoint: **`local-before-render-quality-2026-08-31`**. Do not push or deploy this
-branch until the user approves the comparison.
+The quality comparison was developed on **`codex/local-render-quality`**.
+On 2026-08-31 the user approved visual QA, judge-flow testing, and publication
+of the verified code (steps 1–3). The baseline remains tagged
+**`local-before-render-quality-2026-08-31`**. Publication changes application code
+only: no saved room/laboratory, showcase snapshot, database, or persistence schema
+is part of this release.
 
 ## Controls and safety
 
@@ -104,6 +107,39 @@ comparison; they have not been batch-regenerated with the experimental lighting.
 
 ## Local verification
 
+- Release-candidate audit: **370 unit tests across 53 files** passed (four workers
+  on the audit workstation), including new floor-number and hinged-door
+  obstruction regressions. A simultaneous unrestricted test-worker run exceeded
+  three 5-second test deadlines; the bounded-worker run passed without changing
+  those assertions. Lint, type checks and all 104 authored models/208 renders
+  also passed validation.
+- Real browser checks covered the asymmetric bench in closed and open states,
+  its continuous end returns, the fume hood, laminar-flow cabinet, blue-glazed
+  storage, and the saved room at several orbit angles. No catalog geometry or
+  source palette was rewritten during this release audit.
+- In the sampled saved room, High rendered 2,132 calls / 2.72 million triangles
+  versus Balanced's 1,627 / 2.06 million, with the same objects and camera. High's
+  bounded normal pass accounts for the extra work; it is not free realism.
+  The renderer stopped advancing frames when idle. These are diagnostics from
+  one scene, not a device-independent frame-rate guarantee.
+- A separate disposable WebMCP workspace verified initial room creation with
+  hosted door/window, desk/chair pairing, reviewed inventory creation, exact
+  drawer evidence, Next/Previous collection and a reviewed move surviving
+  reload. The audit exposed and fixed a zero-based floor display and missing
+  door-opening clearance in automatic planning. Saved user rooms were untouched;
+  the new validator reports existing obstructions rather than rearranging them.
+- Browser regressions cover High reload, camera/open-drawer preservation,
+  bounded AO allocation, releasing the extra geometry on Balanced reset, idle
+  demand rendering, cross-view preference sharing and unchanged project data.
+  These checks and public-workspace persistence tests now run in release CI.
+- Release gates passed: lint, typecheck, asset validation, 370 unit tests and
+  production build; 14 WebMCP browser workflows, both rendering-quality tests,
+  and all seven public persistence tests. The broader editor/catalog/storage
+  checks passed after updating stale fixture assumptions and navigation labels
+  in focused reruns. The 1440 px and 1920 px layout checks caught and corrected
+  undersized room-code, category/count and dimension metadata; no horizontal
+  workspace clipping remained in those captures.
+
 - Reference contact-shading pass: **367 tests across 53 files** passed with lint,
   typecheck, catalog validation and production build. Clean-preview High →
   Balanced kept the camera transform, removed the AO diagnostics/buffers and
@@ -148,7 +184,7 @@ For a visual reversal, use the reset button; no reload or data restore is needed
 It restores base lighting/opaque finishes while retaining clear glazing. The
 intermediate local commit `c6833a1` contains quality controls without material
 variants. The tagged published baseline contains neither local experiment.
-For a complete code reversal, with a clean working tree switch back to
-`webmcp-challenge-2026` (the published baseline). The local experiment remains
-preserved on its own branch. Never reset or import project data to reverse a
-rendering change.
+For a complete code reversal, redeploy the tagged baseline revision
+`local-before-render-quality-2026-08-31` (`db4b8bb`) after approval; the release
+branch will now contain the verified quality controls. Never reset or import
+project data to reverse a rendering change.

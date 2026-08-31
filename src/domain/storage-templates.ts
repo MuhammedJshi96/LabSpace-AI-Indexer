@@ -1,4 +1,4 @@
-import storageRigs from "./storage-rigs.json";
+import storageRigs from "./storage-rigs.json" with { type: "json" };
 import type { StorageAnatomyLocation } from "./storage-access";
 import type { AssetDefinition, SceneObject, StorageLocation } from "./schema";
 import { generateChildIndexCode } from "./indexing";

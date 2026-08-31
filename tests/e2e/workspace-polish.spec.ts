@@ -156,7 +156,7 @@ test("keeps construction primitives out of Asset Studio and contains thumbnails"
   page,
 }) => {
   await page.goto("/asset-preview");
-  await page.getByRole("button", { name: "Full catalog 94" }).click();
+  await page.getByRole("button", { name: "Full catalog 104" }).click();
 
   await expect(page.getByText("Straight wall", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Half-height wall", { exact: true })).toHaveCount(0);
@@ -167,6 +167,6 @@ test("keeps construction primitives out of Asset Studio and contains thumbnails"
 
   await page.getByRole("button", { name: "Standard laboratory bench Furniture" }).click();
   await page.getByRole("button", { name: "Archive from library" }).click();
-  await expect(page.locator(".asset-preview-count")).toContainText("93 active · 1 archived");
+  await expect(page.locator(".asset-preview-count")).toContainText("103 active · 1 archived");
   await expect(page.locator(".asset-archive-list")).toContainText("Standard laboratory bench");
 });

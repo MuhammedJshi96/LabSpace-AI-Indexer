@@ -17,7 +17,7 @@ owner has confirmed the necessary redistribution rights.
 
 The asset manifests, 2D footprints, generated renders, Blender-authored GLBs,
 and Three.js procedural representations were created specifically for LabSpace
-AI Agent Twin. All 94 user-visible Asset Library entries now use original,
+AI Agent Twin. All 104 user-visible Asset Library entries now use original,
 all-sided Blender-authored GLBs with dimension-matched top and isometric
 renders. `straight-wall` and `half-height-wall` remain deterministic procedural
 construction primitives because their dimensions are created interactively by

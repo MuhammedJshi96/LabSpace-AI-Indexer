@@ -401,8 +401,8 @@
             "assetDefinitionId": "base-cabinet",
             "objectType": "storage",
             "position": {
-              "x": 3000,
-              "y": 546.4103546291724,
+              "x": 2900,
+              "y": 1300,
               "z": 0
             },
             "dimensions": {
@@ -1239,7 +1239,7 @@
             "position": {
               "x": 4984.518297493742,
               "y": 3825.5367758994835,
-              "z": 810
+              "z": 900
             },
             "dimensions": {
               "width": 299.99999999999983,
@@ -1307,8 +1307,8 @@
             "assetDefinitionId": "biosafety-cabinet",
             "objectType": "equipment",
             "position": {
-              "x": 445.49948347161893,
-              "y": 2455.1957566195424,
+              "x": 2000,
+              "y": 2450,
               "z": 0
             },
             "dimensions": {
@@ -1319,7 +1319,7 @@
             "rotation": {
               "x": 0,
               "y": 0,
-              "z": -90.00000000000031
+              "z": 270
             },
             "layerId": "layer-equipment-005",
             "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",

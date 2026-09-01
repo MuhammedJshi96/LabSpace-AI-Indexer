@@ -34,10 +34,10 @@
 
 - [ ] `npm ci` passes from a clean tree.
 - [ ] `npm run release:check` passes.
-- [ ] `npm run test:e2e:webmcp` passes 7/7.
+- [ ] `npm run test:e2e:webmcp` reports all 14 cases passing and exits cleanly without a teardown timeout.
 - [ ] Production `/api/health`, `/`, and `/digital-twin` smoke checks pass.
 - [ ] `pre-webmcp-2026-08-27` points to the baseline evidence commit.
-- [ ] `webmcp-submission-v1.1` points to the verified deployed branch commit.
+- [ ] `webmcp-submission-v1.3` points to the verified deployed branch commit.
 - [ ] Apache-2.0 `LICENSE` is visible; separate asset terms remain linked.
 
 ## Submission

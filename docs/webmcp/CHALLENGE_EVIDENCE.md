@@ -8,7 +8,7 @@
 | Application/source baseline behavior       | `b4d8471483472a42901d5fbb20b781666c0a8d3b` |
 | Baseline documentation tag target          | `1d8caa07cc1dbc4b80fc015f9e325dec7973d70a` |
 | Challenge branch                           | `webmcp-challenge-2026`                    |
-| Final challenge evidence                   | Annotated tag `webmcp-submission-v1.1`     |
+| Final challenge evidence                   | Annotated tag `webmcp-submission-v1.3`     |
 
 The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states the green pre-existing release checks and the known historical E2E issue. It contains no WebMCP implementation.
 
@@ -38,17 +38,17 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - A visible, session-only Reviewed/Fast Draft execution boundary. Reviewed stages every project mutation; Fast Draft may apply only a validated additive blank room and its one complete pristine first blueprint, with the blueprint committed as one undoable history update.
 - Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP mission-control inspector that lists the twenty-three browser registrations, their Read/View/Simulate/Create/Review modes, seven copy-ready compositional workflows, and persistent exportable activity evidence.
+- A visible in-product WebMCP mission-control inspector that lists the twenty-three browser registrations, their Read/View/Simulate/Create/Review modes, seven copy-ready compositional workflows, and locally recorded, exportable activity evidence.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
-- Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
+- Bounded activity evidence contains no chain-of-thought and redacts obvious local-path prefixes; ordinary human clicks are not mislabeled as agent calls. A commercial deployment still needs stronger field-aware redaction and scoped retention.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
 - Twenty-six expected-call eval cases plus deterministic contract tests.
 - Independent Playwright coverage for route registration, compact-header evidence, automatic first-room construction, and the complete human-reviewed later-change workflow.
 - Independent, automatically saved browser workspaces survive refresh and deployment; stale tabs cannot silently overwrite newer saves. No account or cloud-sync claim is made.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
-- A complete visible Asset Library conversion: 94 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.
+- A complete visible Asset Library conversion: 104 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.
 
 ## Challenge commits
 
@@ -67,7 +67,7 @@ be108ba fix: support Chrome WebMCP execution context
 a364121 test: cover WebMCP human-reviewed workflow
 ```
 
-Deployment and submission-document commits follow this list. Use `git log --reverse pre-webmcp-2026-08-27..webmcp-submission-v1.1` for the authoritative complete history. The earlier `webmcp-submission-v1` tag remains as an immutable pre-deployment candidate.
+Deployment and submission-document commits follow this list. Use `git log --reverse pre-webmcp-2026-08-27..webmcp-submission-v1.3` for the authoritative complete history. The earlier submission tags remain immutable historical release candidates.
 
 ## Before and after
 
@@ -85,9 +85,9 @@ The challenge did not replace or relabel pre-existing product features as new ag
 
 ## Verification evidence
 
-- `npm run release:check`: lint, TypeScript, 96-asset validation, unit/integration tests, and production build.
+- `npm run release:check`: lint, TypeScript, validation of 106 definitions (104 authored user-visible assets plus two hidden procedural wall primitives), unit/integration tests, and production build.
 - `tests/e2e/webmcp-actions.spec.ts`: independent browser workflow tests including route registration, read-only room audit, visible Inspector evidence, Reviewed room creation, bounded Fast Draft, reload reset, later-change review, room-blueprint approval, and reversal.
-- `docs/webmcp/evals/cases.json`: 24 direct, compositional, room-planning, audit, invalid, recommendation, and safety-oriented tool-selection cases.
+- `docs/webmcp/evals/cases.json`: 26 direct, compositional, room-planning, audit, invalid, recommendation, and safety-oriented tool-selection cases.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 
 ## Historical test note

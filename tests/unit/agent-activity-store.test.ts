@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   ACTIVITY_PAGE_SIZE,
+  MAX_ACTIVITY_EVENTS,
   agentActivityActions,
   recordControlledToolError,
   recordWebMCPToolSuccess,
@@ -40,11 +41,49 @@ describe("Agent Activity evidence", () => {
     expect(useAgentActivityStore.getState().visibleCount).toBe(ACTIVITY_PAGE_SIZE + 8);
   });
 
+  it("retains only the newest bounded activity window", () => {
+    const existing = Array.from({ length: MAX_ACTIVITY_EVENTS }, (_, index) => ({
+      id: `event-${index}`,
+      createdAt: new Date(2026, 8, 1, 0, 0, index).toISOString(),
+      actor: "WebMCP" as const,
+      action: "Context read",
+      subject: `Existing ${index}`,
+      status: "read" as const,
+      evidence: null,
+      toolName: "labspace_get_context",
+      request: "{}",
+      response: "{}",
+      correlationId: null,
+      roomId: null,
+    }));
+    useAgentActivityStore.setState({
+      events: existing,
+      unreadCount: MAX_ACTIVITY_EVENTS,
+    });
+
+    agentActivityActions.record({
+      actor: "WebMCP",
+      action: "Spatial search",
+      subject: "Newest retained event",
+      status: "found",
+      evidence: "1 match",
+    });
+
+    const state = useAgentActivityStore.getState();
+    expect(state.events).toHaveLength(MAX_ACTIVITY_EVENTS);
+    expect(state.events[0].subject).toBe("Newest retained event");
+    expect(state.events.at(-1)?.id).toBe(`event-${MAX_ACTIVITY_EVENTS - 2}`);
+    expect(state.events.some((event) => event.id === `event-${MAX_ACTIVITY_EVENTS - 1}`)).toBe(
+      false,
+    );
+    expect(state.unreadCount).toBe(MAX_ACTIVITY_EVENTS);
+  });
+
   it("compacts evidence and removes local filesystem paths", () => {
     recordControlledToolError(
       "Record inspection",
       new Error(
-        `Unable to open C:\\Users\\Researcher\\private\\record.json ${"detail ".repeat(80)}`,
+        `Unable to open C:\\Users\\Kyushu University\\private records\\record 01.json because access was denied. ${"detail ".repeat(80)}`,
       ),
     );
 
@@ -55,7 +94,9 @@ describe("Agent Activity evidence", () => {
       status: "error",
     });
     expect(event.evidence).toContain("[local path hidden]");
-    expect(event.evidence).not.toContain("Researcher");
+    expect(event.evidence).not.toContain("Kyushu University");
+    expect(event.evidence).not.toContain("private records");
+    expect(event.evidence).not.toContain("record 01.json");
     expect(event.evidence!.length).toBeLessThanOrEqual(220);
   });
 
@@ -63,9 +104,13 @@ describe("Agent Activity evidence", () => {
     recordWebMCPToolSuccess(
       "labspace_search_records",
       "Spatial search",
-      "“Reference standards”",
+      "C:\\Users\\Kyushu University\\QA runs\\search query.txt",
       "found",
-      { query: "Reference standards", privatePath: "C:\\Users\\Researcher\\secret.json" },
+      {
+        query: "Reference standards",
+        privatePath: "C:\\Users\\Kyushu University\\QA runs\\secret file.json",
+        unixPath: "/Users/Kyushu University/QA runs/secret file.json",
+      },
       { totalMatches: 1, results: [{ name: "Reference standards" }] },
     );
 
@@ -75,10 +120,13 @@ describe("Agent Activity evidence", () => {
       toolName: "labspace_search_records",
       action: "Spatial search",
       status: "found",
+      subject: "[local path hidden]",
     });
     expect(event.request).toContain("Reference standards");
     expect(event.request).toContain("[local path hidden]");
-    expect(event.request).not.toContain("Researcher");
+    expect(event.request).not.toContain("Kyushu University");
+    expect(event.request).not.toContain("QA runs");
+    expect(event.request).not.toContain("secret file.json");
     expect(event.response).toContain('"totalMatches":1');
   });
 

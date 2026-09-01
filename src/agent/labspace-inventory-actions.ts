@@ -33,6 +33,15 @@ function rejectUnexpected(record: Record<string, unknown>, allowed: string[]) {
   if (unexpected) throw new LabSpaceActionError(`Unexpected input field: ${unexpected}.`);
 }
 
+function isValidIsoDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
+}
+
 function eligibleRooms(project: Project) {
   return project.rooms.filter((room) => room.roomKind !== "demo-template");
 }
@@ -43,7 +52,9 @@ function resolveRoom(project: Project, roomCode: string) {
   );
   if (matches.length !== 1) {
     throw new LabSpaceActionError(
-      matches.length ? `Room code ${roomCode} is ambiguous.` : `Editable room ${roomCode} was not found.`,
+      matches.length
+        ? `Room code ${roomCode} is ambiguous.`
+        : `Editable room ${roomCode} was not found.`,
     );
   }
   return matches[0];
@@ -92,19 +103,21 @@ export function listInventoryLocations(
         .join(" ")
         .toLowerCase();
       if (term && !searchable.includes(term)) return [];
-      return [{
-        roomId: room.id,
-        roomName: room.name,
-        roomCode: room.code,
-        laboratoryCode: laboratory?.code ?? "LAB",
-        locationId: location.id,
-        indexCode: location.indexCode,
-        locationType: location.type,
-        path,
-        occupiedItems: room.scene.inventoryItems.filter(
-          (item) => item.storageLocationId === location.id,
-        ).length,
-      }];
+      return [
+        {
+          roomId: room.id,
+          roomName: room.name,
+          roomCode: room.code,
+          laboratoryCode: laboratory?.code ?? "LAB",
+          locationId: location.id,
+          indexCode: location.indexCode,
+          locationType: location.type,
+          path,
+          occupiedItems: room.scene.inventoryItems.filter(
+            (item) => item.storageLocationId === location.id,
+          ).length,
+        },
+      ];
     });
   });
   return {
@@ -140,8 +153,14 @@ function normalizeInventoryInput(input: unknown): InventoryEntryRequest[] {
       }
       return value.trim();
     };
-    if (typeof entry.quantity !== "number" || !Number.isFinite(entry.quantity) || entry.quantity < 0) {
-      throw new LabSpaceActionError(`Inventory entry ${index + 1} quantity must be zero or greater.`);
+    if (
+      typeof entry.quantity !== "number" ||
+      !Number.isFinite(entry.quantity) ||
+      entry.quantity < 0
+    ) {
+      throw new LabSpaceActionError(
+        `Inventory entry ${index + 1} quantity must be zero or greater.`,
+      );
     }
     const optionalText = (value: unknown, label: string, maximum: number) => {
       if (value === undefined) return undefined;
@@ -151,15 +170,21 @@ function normalizeInventoryInput(input: unknown): InventoryEntryRequest[] {
       return value.trim();
     };
     const expiryDate = entry.expiryDate;
-    if (expiryDate !== undefined && expiryDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(String(expiryDate))) {
-      throw new LabSpaceActionError(`Inventory entry ${index + 1} expiryDate must use YYYY-MM-DD.`);
+    if (expiryDate !== undefined && expiryDate !== null && !isValidIsoDate(String(expiryDate))) {
+      throw new LabSpaceActionError(
+        `Inventory entry ${index + 1} expiryDate must be a real calendar date in YYYY-MM-DD format.`,
+      );
     }
     return {
       roomCode: requiredText(entry.roomCode, `Inventory entry ${index + 1} roomCode`, 40),
       name: requiredText(entry.name, `Inventory entry ${index + 1} name`, 120),
       quantity: entry.quantity,
       unit: requiredText(entry.unit, `Inventory entry ${index + 1} unit`, 40),
-      storageLocationId: optionalText(entry.storageLocationId, `Inventory entry ${index + 1} storageLocationId`, 120),
+      storageLocationId: optionalText(
+        entry.storageLocationId,
+        `Inventory entry ${index + 1} storageLocationId`,
+        120,
+      ),
       owner: optionalText(entry.owner, `Inventory entry ${index + 1} owner`, 120),
       notes: optionalText(entry.notes, `Inventory entry ${index + 1} notes`, 500),
       expiryDate: expiryDate === undefined || expiryDate === null ? null : String(expiryDate),
@@ -204,9 +229,9 @@ export function planInventory(
     entries,
     assignedEntries: entries.filter((entry) => entry.storageLocationId).length,
     unassignedEntries: entries.filter((entry) => !entry.storageLocationId).length,
-    warnings: entries.filter((entry) => !entry.storageLocationId).map(
-      (entry) => `${entry.name} will be created unassigned in ${entry.roomCode}.`,
-    ),
+    warnings: entries
+      .filter((entry) => !entry.storageLocationId)
+      .map((entry) => `${entry.name} will be created unassigned in ${entry.roomCode}.`),
     requiresHumanApproval: true,
   };
   plans.set(result.planId, {
@@ -235,7 +260,9 @@ export function getInventoryPlan(planId: string) {
   return getStoredInventoryPlan(planId).result;
 }
 
-export function createLabSpaceInventoryActions(readProject: () => Project): LabSpaceInventoryActions {
+export function createLabSpaceInventoryActions(
+  readProject: () => Project,
+): LabSpaceInventoryActions {
   return {
     listInventoryLocations: (input) => listInventoryLocations(input, readProject),
     planInventory: (input) => planInventory(input, readProject),

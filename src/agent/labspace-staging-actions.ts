@@ -9,6 +9,7 @@ import {
 import type {
   AssetDefinition,
   EquipmentRecord,
+  InventoryItem,
   Project,
   Room,
   Scene,
@@ -16,6 +17,10 @@ import type {
   StorageLocation,
 } from "../domain/schema";
 import type { SceneCommand } from "../domain/history";
+import {
+  applyOrganizationCommand,
+  inventoryCreationCommand,
+} from "../domain/inventory-organization";
 import { useEditorStore } from "../store/editor-store";
 import type {
   AgentMoveReviewResult,
@@ -702,12 +707,10 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
       );
     }
     if (definition.objectType === "equipment") {
-      proposedScene.equipmentRecords.push(
-        {
-          ...createEquipmentRecord(object, proposedScene.equipmentRecords),
-          spaceId: primarySpaceId,
-        },
-      );
+      proposedScene.equipmentRecords.push({
+        ...createEquipmentRecord(object, proposedScene.equipmentRecords),
+        spaceId: primarySpaceId,
+      });
     }
     proposedObjectIds.push(object.id);
     proposedObjects.push({
@@ -726,7 +729,9 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
   proposedScene.updatedAt = new Date().toISOString();
   const proposedSpaces = structuredClone(room.spaces);
   if (stored.result.shell.mode === "proposed") {
-    const wallIds = proposedScene.objects.filter((object) => object.wall).map((object) => object.id);
+    const wallIds = proposedScene.objects
+      .filter((object) => object.wall)
+      .map((object) => object.id);
     const primary = proposedSpaces.find((space) => space.id === primarySpaceId);
     if (primary) primary.wallIds = wallIds;
   }
@@ -1341,39 +1346,29 @@ function approveInventory(pending: PendingAgentInventoryChange): AgentMoveReview
   pending.entries.forEach((entry) =>
     entriesByRoom.set(entry.roomId, [...(entriesByRoom.get(entry.roomId) ?? []), entry]),
   );
+  const command = inventoryCreationCommand(
+    pending.entries.map((entry) => ({
+      roomId: entry.roomId,
+      item: {
+        id: entry.itemId,
+        name: entry.name,
+        quantity: entry.quantity,
+        unit: entry.unit,
+        notes: entry.notes,
+        owner: entry.owner,
+        expiryDate: entry.expiryDate,
+        storageLocationId: entry.storageLocationId,
+        createdAt: now,
+        updatedAt: now,
+      } satisfies InventoryItem,
+    })),
+  );
+  const project = applyOrganizationCommand(state.project, command, "apply");
   useEditorStore.setState({
-    project: {
-      ...state.project,
-      updatedAt: now,
-      rooms: state.project.rooms.map((room) => {
-        const entries = entriesByRoom.get(room.id);
-        if (!entries) return room;
-        return {
-          ...room,
-          updatedAt: now,
-          scene: {
-            ...room.scene,
-            updatedAt: now,
-            inventoryItems: [
-              ...room.scene.inventoryItems,
-              ...entries.map((entry) => ({
-                id: entry.itemId,
-                name: entry.name,
-                quantity: entry.quantity,
-                unit: entry.unit,
-                notes: entry.notes,
-                owner: entry.owner,
-                expiryDate: entry.expiryDate,
-                storageLocationId: entry.storageLocationId,
-                createdAt: now,
-                updatedAt: now,
-              })),
-            ],
-          },
-        };
-      }),
-    },
+    project,
     pendingAgentChange: null,
+    history: [...state.history, command],
+    future: [],
     saveStatus: "unsaved",
     dirtyRevision: state.dirtyRevision + 1,
   });
@@ -1392,7 +1387,7 @@ function approveInventory(pending: PendingAgentInventoryChange): AgentMoveReview
     action: "Inventory committed",
     subject: `${entriesByRoom.size} room${entriesByRoom.size === 1 ? "" : "s"}`,
     status: "committed",
-    evidence: "Canonical records created in selected room locations",
+    evidence: "Canonical records created in selected room locations · one Undo available",
   });
   return {
     stageId: pending.stageId,

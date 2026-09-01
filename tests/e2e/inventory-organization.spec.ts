@@ -339,6 +339,8 @@ test("row selection feeds the physical map and commits the exact shelf without c
   root.childIds.push(custom.id);
   project.activeRoomId = room.id;
   expect((await request.put(`/api/project/${project.id}`, { data: project })).ok()).toBeTruthy();
+  const normalizedFixture = (await (await request.get("/api/project")).json()) as Project;
+  const normalizedRoom = normalizedFixture.rooms.find((entry) => entry.id === room.id)!;
   await openInventory(page);
   const records = page.getByRole("region", { name: "Inventory records" });
   await records.getByRole("checkbox", { name: "Select Reference standards in DEMO-01" }).check();
@@ -403,7 +405,7 @@ test("row selection feeds the physical map and commits the exact shelf without c
   const saved = await read();
   const result = saved.rooms.find((entry) => entry.id === room.id)!;
   expect(result.scene.objects).toEqual(room.scene.objects);
-  expect(result.scene.storageLocations).toEqual(room.scene.storageLocations);
+  expect(result.scene.storageLocations).toEqual(normalizedRoom.scene.storageLocations);
   for (const item of targets)
     expect(result.scene.inventoryItems.find((entry) => entry.id === item.id)).toMatchObject({
       ...item,

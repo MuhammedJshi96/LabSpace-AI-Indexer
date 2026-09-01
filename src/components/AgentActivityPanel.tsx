@@ -16,6 +16,7 @@ import {
 } from "@phosphor-icons/react";
 import {
   downloadAgentActivityHistory,
+  MAX_ACTIVITY_EVENTS,
   useAgentActivityStore,
 } from "../agent/agent-activity-store";
 import {
@@ -337,6 +338,15 @@ export function AgentActivityPanel() {
     }
   };
 
+  const clearActivity = () => {
+    if (
+      window.confirm(
+        "Clear all retained WebMCP activity from this browser? Export it first if you need a copy.",
+      )
+    )
+      clear();
+  };
+
   if (!open) return null;
 
   return (
@@ -350,7 +360,7 @@ export function AgentActivityPanel() {
           <small>{bridgeCopy(bridgeStatus, registeredCount)}</small>
         </span>
         {tab === "activity" && events.length > 0 && (
-          <button onClick={clear} aria-label="Clear WebMCP Activity">
+          <button onClick={clearActivity} aria-label="Clear WebMCP Activity">
             <Trash size={15} />
           </button>
         )}
@@ -528,9 +538,15 @@ export function AgentActivityPanel() {
                 </button>
               </div>
               <small>
-                Showing {visibleEvents.length} of {filteredEvents.length} matching events · {events.length}
-                total persisted
+                Showing {visibleEvents.length} of {filteredEvents.length} matching events ·{" "}
+                {events.length}
+                total recorded
                 {unreadCount > 0 ? ` · ${unreadCount} unread` : ""}
+              </small>
+              <small>
+                Up to {MAX_ACTIVITY_EVENTS} newest events are retained. Exports use the current
+                filtered history; if browser storage is unavailable, evidence remains only in this
+                tab.
               </small>
             </div>
           )}

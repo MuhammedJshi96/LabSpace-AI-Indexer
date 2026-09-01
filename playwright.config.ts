@@ -1,7 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 
 const e2ePort = 3104;
 const e2eBaseUrl = `http://127.0.0.1:${e2ePort}`;
+const e2eShutdownToken = process.env.LABSPACE_E2E_SHUTDOWN_TOKEN ?? randomUUID();
+process.env.LABSPACE_E2E_SHUTDOWN_TOKEN = e2eShutdownToken;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -13,6 +16,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],
+  globalTeardown: "./tests/e2e/global-teardown.ts",
   use: {
     baseURL: e2eBaseUrl,
     // Continuous trace/video capture forces repeated WebGL readbacks and can
@@ -30,9 +34,12 @@ export default defineConfig({
       PORT: String(e2ePort),
       LABSPACE_DB_PATH: "data/labspace-e2e.sqlite",
       LABSPACE_DISABLE_HMR: "1",
+      LABSPACE_E2E_SHUTDOWN_TOKEN: e2eShutdownToken,
     },
     url: `${e2eBaseUrl}/api/health`,
-    reuseExistingServer: true,
+    // The test-only shutdown hook below assumes this run owns the dedicated server.
+    // Reusing an unrelated listener could shut down another developer's process.
+    reuseExistingServer: false,
     timeout: 120_000,
     stdout: "ignore",
     stderr: "ignore",

@@ -74,7 +74,7 @@ The runtime remains local and no-billing: LabSpace embeds no model, sends no mod
 
 ### Layout Editor
 
-The complete planning workspace combines the searchable 94-asset library, material-aware 2D plan, synchronized 3D room, editable room data, and surface controls in one desktop composition.
+The complete planning workspace combines the searchable 104-asset library, material-aware 2D plan, synchronized 3D room, editable room data, and surface controls in one desktop composition.
 
 ![Finalized LabSpace Layout Editor with synchronized 2D and 3D views](docs/screenshots/layout-editor-final.png)
 
@@ -302,14 +302,14 @@ media.
 ## Known prototype limitations
 
 - This is a single-user local prototype; it has no authentication, organizations, permissions, or concurrent editing.
-- Project navigation supports multiple laboratories and rooms, but laboratory/room rename, delete, and reorder workflows are not yet implemented.
-- The user-visible 94-asset library is fully authored as orbitable GLBs. Two hidden wall-drawing primitives retain deterministic procedural geometry because their dimensions are created interactively.
+- Project navigation supports multiple laboratories and rooms, deliberate project/laboratory/room renaming, and guarded room deletion. Laboratory deletion and general laboratory/room reordering are not yet implemented.
+- The user-visible 104-asset library is fully authored as orbitable GLBs. Two hidden wall-drawing primitives retain deterministic procedural geometry because their dimensions are created interactively.
 - The Spatial Index workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
-- All 96 definitions have same-geometry top/isometric imagery; authored assets remain planning representations rather than manufacturer-certified BIM objects.
+- All 106 definitions have same-geometry top/isometric imagery; the 104 user-visible assets use authored GLBs and the two hidden wall primitives remain procedural. These are planning representations rather than manufacturer-certified BIM objects.
 - Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
 - Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.
 - Only the optional DEMO-01 environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
-- Light-gray epoxy has photographic material maps. Sealed concrete and welded vinyl currently use synchronized procedural treatments and still need authored photographic maps.
+- The ten floor and ten wall finishes are optimized planning visuals with a mixture of shared photographic and procedural detail. They are not certified wet-lab, fire, slip, or construction specifications.
 - Labels use browser print-to-PDF rather than a bundled PDF engine.
 - The database stores validated project JSON behind a repository adapter; normalized multi-user relational tables are a future migration.
 

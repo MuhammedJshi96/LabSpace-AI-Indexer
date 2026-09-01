@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  listInventoryLocations,
-  planInventory,
-} from "../../src/agent/labspace-inventory-actions";
+import { listInventoryLocations, planInventory } from "../../src/agent/labspace-inventory-actions";
 import {
   approveStagedChange,
   cancelStagedChange,
@@ -19,6 +16,8 @@ function fixture() {
     project,
     hydrated: true,
     pendingAgentChange: null,
+    history: [],
+    future: [],
     dirtyRevision: 3,
     saveStatus: "saved",
     saveError: null,
@@ -60,7 +59,10 @@ describe("human-reviewed WebMCP inventory planning", () => {
     expect(plan).toMatchObject({ assignedEntries: 1, unassignedEntries: 0 });
 
     const firstStage = stageInventoryPlan({ planId: plan.planId });
-    expect(useEditorStore.getState().project.rooms.find((room) => room.id === demo.id)!.scene.inventoryItems).toHaveLength(beforeCount);
+    expect(
+      useEditorStore.getState().project.rooms.find((room) => room.id === demo.id)!.scene
+        .inventoryItems,
+    ).toHaveLength(beforeCount);
     cancelStagedChange(firstStage.stageId);
     expect(useEditorStore.getState().pendingAgentChange).toBeNull();
 
@@ -79,5 +81,47 @@ describe("human-reviewed WebMCP inventory planning", () => {
       saveStatus: "unsaved",
       dirtyRevision: 4,
     });
+    expect(useEditorStore.getState().history).toHaveLength(1);
+
+    useEditorStore.getState().undo();
+    expect(
+      useEditorStore.getState().project.rooms.find((room) => room.id === demo.id)!.scene
+        .inventoryItems,
+    ).toHaveLength(beforeCount);
+    useEditorStore.getState().redo();
+    expect(
+      useEditorStore.getState().project.rooms.find((room) => room.id === demo.id)!.scene
+        .inventoryItems,
+    ).toHaveLength(beforeCount + 1);
+  });
+
+  it("rejects impossible expiry dates and agent-controlled bypass fields", () => {
+    const { demo } = fixture();
+    expect(() =>
+      planInventory({
+        entries: [
+          {
+            roomCode: demo.code,
+            name: "Invalid dated stock",
+            quantity: 1,
+            unit: "box",
+            expiryDate: "2026-02-31",
+          },
+        ],
+      }),
+    ).toThrow(/real calendar date/i);
+    expect(() =>
+      planInventory({
+        entries: [
+          {
+            roomCode: demo.code,
+            name: "Bypass attempt",
+            quantity: 1,
+            unit: "box",
+            executionMode: "fast-draft",
+          },
+        ],
+      }),
+    ).toThrow(/unexpected input field/i);
   });
 });

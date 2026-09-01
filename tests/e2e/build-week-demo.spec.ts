@@ -87,6 +87,12 @@ test("Spatial Index Finder locates the BÜCHI evaporator and its exact flask dra
     "data-focus-location-id",
     flaskLocation.id,
   );
+  // An explicit indexed-location selection now opens verified storage automatically.
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "true");
+  const closePreview = recordDetails.getByRole("button", { name: "Close access preview" });
+  await expect(closePreview).toBeVisible();
+  await closePreview.evaluate((button: HTMLButtonElement) => button.click());
+  await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "false");
   const accessPreview = recordDetails.getByRole("button", { name: "Show access preview" });
   await expect(accessPreview).toBeVisible();
   await accessPreview.evaluate((button: HTMLButtonElement) => button.click());

@@ -1,13 +1,13 @@
 # WebMCP Challenge scorecard
 
-Audited on 2026-08-30 against the [published Devpost judging criteria](https://webmcp.devpost.com/): WebMCP Leverage, Execution, Potential Impact, and Creativity & Ambition.
+Audited on 2026-09-01 against the [published Devpost judging criteria](https://webmcp.devpost.com/): WebMCP Leverage, Execution, Potential Impact, and Creativity & Ambition.
 
 ## WebMCP Leverage — strong evidence
 
-- Twenty-one imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning/addition, bounded creation, material resolution, and guided collection.
+- Twenty-three imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning/addition, bounded creation, material resolution, and guided collection.
 - Tools call the same canonical index, geometry, persistence, history, and validation actions used by the visible product; they do not automate clicks or scrape presentation text.
 - Tool registration survives normal product-route changes and is excluded from internal asset/capture routes.
-- Twenty-six deterministic eval cases and ten dedicated browser E2E cases cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, guided collection, keyboard duplication, and undo.
+- Twenty-six deterministic eval cases and fourteen dedicated browser E2E cases cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, guided collection, keyboard duplication, and undo.
 - The visible WebMCP inspector exposes connection status, registered tools, bounded inputs/results, copy-ready workflows, and a clear usage guide without presenting hidden reasoning.
 
 ## Execution — strong evidence
@@ -15,8 +15,8 @@ Audited on 2026-08-30 against the [published Devpost judging criteria](https://w
 - Public application: <https://labspace-agent-twin.onrender.com/>
 - Public source: <https://github.com/MuhammedJshi96/LabSpace-AI-Indexer>
 - The coherent product includes a multi-room Layout Editor, facility-by-floor view, synchronized 2D/3D planning, Spatial Index, Inventory Studio, Asset Studio, validation, persistence, and browser-agent workflows.
-- The current release gate passes lint, TypeScript, 96 asset definitions, 188 authored renders, 220 unit/integration tests, and a production build.
-- All 94 user-visible catalog assets use original authored GLBs; only two hidden variable-length wall primitives remain procedural.
+- The release gate covers lint, TypeScript, validation of all 106 asset definitions, the complete unit/integration suite, and a production build. The dated release-candidate audit records the final pass totals rather than freezing them in this scorecard.
+- All 104 user-visible catalog assets use original authored GLBs; only two hidden variable-length wall primitives remain procedural.
 
 ## Potential Impact — credible and specific
 

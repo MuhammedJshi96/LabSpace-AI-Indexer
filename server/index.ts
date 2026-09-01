@@ -123,6 +123,18 @@ if (!production) {
   });
 }
 
+const e2eShutdownToken = process.env.LABSPACE_E2E_SHUTDOWN_TOKEN;
+if (!production && e2eShutdownToken) {
+  app.post("/api/testing/shutdown", (request, response) => {
+    if (request.get("x-labspace-e2e-token") !== e2eShutdownToken) {
+      response.status(403).json({ error: "Invalid test shutdown token." });
+      return;
+    }
+    response.status(202).json({ shuttingDown: true });
+    response.once("finish", () => setImmediate(() => void shutdown()));
+  });
+}
+
 if (production) {
   const dist = resolve(root, "dist");
   if (!existsSync(dist)) throw new Error("Production build not found. Run npm run build first.");

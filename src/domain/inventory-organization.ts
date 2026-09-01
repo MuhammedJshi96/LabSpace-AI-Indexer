@@ -1,8 +1,14 @@
-import type { Project, StorageLocation } from "./schema";
+import type { InventoryItem, Project, StorageLocation } from "./schema";
 
 export type InventoryReference = { roomId: string; itemId: string };
 type Placement = InventoryReference & { locationId: string | null };
 export type OrganizationCommand =
+  | {
+      id: string;
+      label: string;
+      kind: "inventory-creation";
+      entries: Array<{ roomId: string; item: InventoryItem }>;
+    }
   | {
       id: string;
       label: string;
@@ -21,6 +27,21 @@ export type OrganizationCommand =
       objectId: string | null;
       objectNameBefore: string | null;
     };
+
+export function inventoryCreationCommand(
+  entries: Array<{ roomId: string; item: InventoryItem }>,
+): OrganizationCommand {
+  if (!entries.length) throw new Error("Create at least one inventory record.");
+  const itemIds = new Set(entries.map((entry) => entry.item.id));
+  if (itemIds.size !== entries.length)
+    throw new Error("Each inventory record must have a unique ID.");
+  return {
+    id: crypto.randomUUID(),
+    kind: "inventory-creation",
+    label: `Create ${entries.length} inventory ${entries.length === 1 ? "record" : "records"}`,
+    entries: structuredClone(entries),
+  };
+}
 
 export function storagePath(locations: readonly StorageLocation[], id: string | null) {
   const path: StorageLocation[] = [];
@@ -106,13 +127,50 @@ export function storageRenameCommand(
   };
 }
 
-/** Only update assignment/name fields. Undo never restores stale stock quantities or geometry. */
+/** Apply bounded inventory organization/creation deltas without restoring unrelated geometry. */
 export function applyOrganizationCommand(
   project: Project,
   command: OrganizationCommand,
   direction: "apply" | "revert",
 ): Project {
   const now = new Date().toISOString();
+  if (command.kind === "inventory-creation") {
+    const ids = new Set(command.entries.map((entry) => entry.item.id));
+    const existing = project.rooms.flatMap((room) => room.scene.inventoryItems);
+    for (const entry of command.entries) editableRoom(project, entry.roomId);
+    if (direction === "apply" && existing.some((item) => ids.has(item.id)))
+      throw new Error("An inventory record with this ID already exists.");
+    if (
+      direction === "revert" &&
+      command.entries.some(
+        (entry) =>
+          !project.rooms
+            .find((room) => room.id === entry.roomId)
+            ?.scene.inventoryItems.some((item) => item.id === entry.item.id),
+      )
+    )
+      throw new Error("An inventory record created by this change no longer exists.");
+    return {
+      ...project,
+      updatedAt: now,
+      rooms: project.rooms.map((room) => {
+        const additions = command.entries.filter((entry) => entry.roomId === room.id);
+        if (!additions.length) return room;
+        return {
+          ...room,
+          updatedAt: now,
+          scene: {
+            ...room.scene,
+            updatedAt: now,
+            inventoryItems:
+              direction === "apply"
+                ? [...room.scene.inventoryItems, ...additions.map((entry) => entry.item)]
+                : room.scene.inventoryItems.filter((item) => !ids.has(item.id)),
+          },
+        };
+      }),
+    };
+  }
   if (command.kind === "storage-name") {
     const room = editableRoom(project, command.roomId);
     if (!room.scene.storageLocations.some((entry) => entry.id === command.locationId))

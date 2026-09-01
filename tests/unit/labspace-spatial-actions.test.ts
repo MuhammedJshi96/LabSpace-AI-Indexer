@@ -9,6 +9,7 @@ import {
 import { createSeedProject } from "../../src/domain/seed";
 import type { Project, Room, SceneObject } from "../../src/domain/schema";
 import { useEditorStore } from "../../src/store/editor-store";
+import { createPublicShowcaseProject } from "../../server/public-showcase";
 
 function spatialFixture() {
   const project = createSeedProject();
@@ -197,6 +198,22 @@ describe("LabSpace room readiness audit", () => {
     });
     expect(result.basis).toContainEqual(expect.stringContaining("not regulatory certification"));
     expect(project).toEqual(before);
+  });
+
+  it("keeps the published DEMO-01 starter ready for a fresh judge session", () => {
+    const project = createPublicShowcaseProject();
+
+    const result = auditRoom({ roomCode: "DEMO-01" }, () => project);
+
+    expect(result.status).toBe("ready");
+    expect(result.issues).toEqual([]);
+    expect(result.checks).toEqual({
+      closedFloorShell: true,
+      hostedOpenings: true,
+      objectsInsideBoundary: true,
+      supportedBenchEquipment: true,
+      uniqueIndexCodes: true,
+    });
   });
 
   it("rejects hidden template rooms and unexpected input", () => {

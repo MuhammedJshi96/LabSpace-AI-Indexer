@@ -698,7 +698,11 @@ function applyHistoryCommandToProject(
   command: EditorCommand,
   direction: "apply" | "revert",
 ) {
-  if (command.kind === "inventory-assignment" || command.kind === "storage-name")
+  if (
+    command.kind === "inventory-creation" ||
+    command.kind === "inventory-assignment" ||
+    command.kind === "storage-name"
+  )
     return applyOrganizationCommand(project, command, direction);
   const room =
     command.kind === "scene" && command.roomId

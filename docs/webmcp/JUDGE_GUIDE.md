@@ -110,6 +110,6 @@ Expected: exactly twenty-three unique `labspace_*` tools on `/`, `/digital-twin`
 
 ## What changed during the challenge
 
-The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, bounded initial-room creation, later-change review, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The corrected deployed evidence tag is `webmcp-submission-v1.1`; `webmcp-submission-v1` preserves the first pre-deployment candidate.
+The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, bounded initial-room creation, later-change review, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The final audited evidence tag is `webmcp-submission-v1.3`; the earlier submission tags preserve historical release candidates.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md), [CHALLENGE_EVIDENCE.md](CHALLENGE_EVIDENCE.md), and [LOCAL_TESTING.md](LOCAL_TESTING.md).

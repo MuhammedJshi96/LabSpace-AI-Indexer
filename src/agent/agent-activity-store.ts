@@ -1,6 +1,9 @@
 import { create } from "zustand";
 
 const ACTIVITY_PAGE_SIZE = 30;
+// Roughly 0.5–1 MB at the bounded field sizes below: generous for a judge/pilot
+// session while preventing a long-lived WebMCP tab from growing without limit.
+const MAX_ACTIVITY_EVENTS = 500;
 const ACTIVITY_STORAGE_KEY = "labspace-agent-activity-v2";
 const MAX_SUBJECT_LENGTH = 140;
 const MAX_EVIDENCE_LENGTH = 220;
@@ -65,25 +68,37 @@ type AgentActivityState = {
 
 function compact(value: string, maximum: number) {
   const normalized = value.replace(/\s+/g, " ").trim();
-  return normalized.length <= maximum
-    ? normalized
-    : `${normalized.slice(0, maximum - 1)}…`;
+  return normalized.length <= maximum ? normalized : `${normalized.slice(0, maximum - 1)}…`;
+}
+
+function redactEvidencePaths(value: string) {
+  // Evidence is prose rather than JSON. Once a local path begins, discard the
+  // remainder instead of guessing where a path containing spaces ends.
+  return value
+    .replace(/[A-Za-z]:\\.*$/g, "[local path hidden]")
+    .replace(/(?:file:\/\/|\/Users\/|\/home\/).*$/gi, "[local path hidden]");
+}
+
+function redactStructuredPaths(value: string) {
+  // JSON.stringify escapes Windows separators (C:\\Users\\…). Match either
+  // escaped or plain separators and stop at the JSON string's closing quote.
+  return value
+    .replace(/[A-Za-z]:(?:\\\\|\\)[^"]*/g, "[local path hidden]")
+    .replace(/(?:file:\/\/|\/(?:Users|home)\/)[^"]*/gi, "[local path hidden]");
 }
 
 function safeEvidence(value: string | null | undefined) {
   if (!value) return null;
-  const withoutLocalPaths = value
-    .replace(/[A-Za-z]:\\[^\s]+/g, "[local path hidden]")
-    .replace(/(?:file:\/\/|\/Users\/|\/home\/)[^\s]+/gi, "[local path hidden]");
-  return compact(withoutLocalPaths, MAX_EVIDENCE_LENGTH);
+  return compact(redactEvidencePaths(value), MAX_EVIDENCE_LENGTH);
+}
+
+function safeSubject(value: string) {
+  return compact(redactEvidencePaths(value), MAX_SUBJECT_LENGTH);
 }
 
 function safeToolPayload(value: string | null | undefined) {
   if (!value) return null;
-  const withoutLocalPaths = value
-    .replace(/[A-Za-z]:\\\\[^\s"}]+/g, "[local path hidden]")
-    .replace(/(?:file:\/\/|\/Users\/|\/home\/)[^\s"}]+/gi, "[local path hidden]");
-  return compact(withoutLocalPaths, MAX_TOOL_PAYLOAD_LENGTH);
+  return compact(redactStructuredPaths(value), MAX_TOOL_PAYLOAD_LENGTH);
 }
 
 function boundedJson(value: unknown) {
@@ -108,7 +123,20 @@ function loadStoredEvents(): AgentActivityEvent[] {
           typeof event.createdAt === "string" &&
           typeof event.action === "string",
       )
-      .map((event) => ({ ...event, correlationId: event.correlationId ?? null, roomId: event.roomId ?? null }));
+      .map((event) => ({
+        ...event,
+        action: compact(event.action, 60),
+        subject: safeSubject(
+          typeof event.subject === "string" ? event.subject : "Recorded activity",
+        ),
+        evidence: safeEvidence(typeof event.evidence === "string" ? event.evidence : null),
+        toolName: typeof event.toolName === "string" ? compact(event.toolName, 60) : null,
+        request: safeToolPayload(typeof event.request === "string" ? event.request : null),
+        response: safeToolPayload(typeof event.response === "string" ? event.response : null),
+        correlationId: event.correlationId ?? null,
+        roomId: event.roomId ?? null,
+      }))
+      .slice(0, MAX_ACTIVITY_EVENTS);
   } catch {
     return [];
   }
@@ -119,7 +147,7 @@ function persistEvents(events: AgentActivityEvent[]) {
   try {
     window.localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(events));
   } catch {
-    // Activity remains complete for this session if the browser's local quota is unavailable.
+    // The retained activity window remains available for this tab if local quota is unavailable.
   }
 }
 
@@ -144,7 +172,8 @@ export function serializeAgentActivityHistory(
   events: AgentActivityEvent[],
   format: "json" | "csv",
 ) {
-  if (format === "json") return JSON.stringify({ exportedAt: new Date().toISOString(), events }, null, 2);
+  if (format === "json")
+    return JSON.stringify({ exportedAt: new Date().toISOString(), events }, null, 2);
   const header = [
     "createdAt",
     "actor",
@@ -180,10 +209,7 @@ export function serializeAgentActivityHistory(
   ].join("\n");
 }
 
-export function downloadAgentActivityHistory(
-  events: AgentActivityEvent[],
-  format: "json" | "csv",
-) {
+export function downloadAgentActivityHistory(events: AgentActivityEvent[], format: "json" | "csv") {
   const blob = new Blob([serializeAgentActivityHistory(events, format)], {
     type: format === "json" ? "application/json" : "text/csv",
   });
@@ -213,7 +239,7 @@ export const useAgentActivityStore = create<AgentActivityState>((set) => ({
           id: crypto.randomUUID(),
           createdAt: new Date().toISOString(),
           action: compact(event.action, 60),
-          subject: compact(event.subject, MAX_SUBJECT_LENGTH),
+          subject: safeSubject(event.subject),
           evidence: safeEvidence(event.evidence),
           toolName: event.toolName ? compact(event.toolName, 60) : null,
           request: safeToolPayload(event.request),
@@ -222,11 +248,13 @@ export const useAgentActivityStore = create<AgentActivityState>((set) => ({
           roomId: event.roomId ? compact(event.roomId, 120) : null,
         },
         ...state.events,
-      ];
+      ].slice(0, MAX_ACTIVITY_EVENTS);
       persistEvents(events);
       return {
         events,
-        unreadCount: state.open ? state.unreadCount : state.unreadCount + 1,
+        unreadCount: state.open
+          ? state.unreadCount
+          : Math.min(MAX_ACTIVITY_EVENTS, state.unreadCount + 1),
       };
     }),
   setOpen: (open) =>
@@ -275,7 +303,9 @@ export function recordWebMCPToolSuccess(
     response: boundedJson(result),
     correlationId: activityCorrelation(input, result),
     roomId:
-      result && typeof result === "object" && typeof (result as Record<string, unknown>).roomId === "string"
+      result &&
+      typeof result === "object" &&
+      typeof (result as Record<string, unknown>).roomId === "string"
         ? String((result as Record<string, unknown>).roomId)
         : null,
   });
@@ -300,4 +330,4 @@ export function recordControlledToolError(
   });
 }
 
-export { ACTIVITY_PAGE_SIZE, MAX_TOOL_PAYLOAD_LENGTH };
+export { ACTIVITY_PAGE_SIZE, MAX_ACTIVITY_EVENTS, MAX_TOOL_PAYLOAD_LENGTH };

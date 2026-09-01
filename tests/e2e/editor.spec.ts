@@ -253,8 +253,13 @@ test("the Spatial Index links indexed search results to the live room and editor
 test("the Spatial Index fallback and editor deep link preserve exact-location evidence", async ({
   page,
 }) => {
+  await page.request.post("/api/testing/reset");
   const project: Project = await (await page.request.get("/api/project")).json();
-  const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
+  const room = project.rooms.find(
+    (entry) =>
+      entry.roomKind !== "demo-template" &&
+      entry.scene.inventoryItems.some((item) => item.name === "Reference standards"),
+  )!;
   const item = room.scene.inventoryItems.find((entry) => entry.name === "Reference standards")!;
   const location = room.scene.storageLocations.find(
     (entry) => entry.id === item.storageLocationId,
@@ -277,11 +282,18 @@ test("the Spatial Index fallback and editor deep link preserve exact-location ev
 });
 
 test("the Spatial Index presents the selected inventory evidence image", async ({ page }) => {
+  await page.request.post("/api/testing/reset");
+  const project: Project = await (await page.request.get("/api/project")).json();
+  const room = project.rooms.find(
+    (entry) =>
+      entry.roomKind !== "demo-template" &&
+      entry.scene.inventoryItems.some((item) => item.name === "HPLC autosampler vials, 2 mL"),
+  )!;
+  project.activeRoomId = room.id;
+  expect((await page.request.put(`/api/project/${project.id}`, { data: project })).ok()).toBe(true);
   await page.goto("/digital-twin");
   await page.getByRole("button", { name: "This room", exact: true }).click();
-  await page
-    .getByRole("textbox", { name: "Search spatial index" })
-    .fill("HPLC autosampler vials");
+  await page.getByRole("textbox", { name: "Search spatial index" }).fill("HPLC autosampler vials");
   const vialsRecord = page.getByRole("button", {
     name: /^HPLC autosampler vials, 2 mL Inventory /,
   });
@@ -644,7 +656,7 @@ test("principal editor screenshots render without clipping", async ({ page }) =>
   };
 
   await assertReadableLayout();
-  await page.screenshot({ path: "docs/screenshots/editor-1440x900.png" });
+  await page.screenshot({ path: "test-results/editor-1440x900.png" });
 
   await page.getByRole("button", { name: "3D", exact: true }).click();
   await expect(page.getByTestId("3d-view")).toBeVisible();
@@ -653,7 +665,7 @@ test("principal editor screenshots render without clipping", async ({ page }) =>
     await wallToggle.click();
   }
   await page.waitForTimeout(1200);
-  await page.screenshot({ path: "docs/screenshots/room809-authored-3d-1440x900.png" });
+  await page.screenshot({ path: "test-results/room809-authored-3d-1440x900.png" });
 
   await page.getByRole("button", { name: "Split", exact: true }).click();
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -682,11 +694,11 @@ test("the asset browser frames both large equipment and small instruments", asyn
     "true",
   );
   await page.waitForTimeout(700);
-  await page.screenshot({ path: "docs/screenshots/asset-microscope-1440x900.png" });
+  await page.screenshot({ path: "test-results/asset-microscope-1440x900.png" });
 
   await page.goto("/asset-preview?asset=fume-hood");
   await expect(page.getByRole("heading", { name: "Fume hood" })).toBeVisible();
   await expect(page.locator(".asset-preview-details")).toContainText("1500 × 850 × 2400 mm");
   await page.waitForTimeout(700);
-  await page.screenshot({ path: "docs/screenshots/asset-fume-hood-1440x900.png" });
+  await page.screenshot({ path: "test-results/asset-fume-hood-1440x900.png" });
 });

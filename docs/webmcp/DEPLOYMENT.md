@@ -28,7 +28,7 @@ No credential belongs in this repository.
 
 ## Public judge-session behavior
 
-With `LABSPACE_PUBLIC_DEMO=1`, first-time visitors adopt their current server-session project and named room versions into IndexedDB. If no prior server session exists, the approved `server/public-showcase-project.json` provides the initial project. This release does not change that snapshot, local SQLite, or test seeds.
+With `LABSPACE_PUBLIC_DEMO=1`, first-time visitors adopt their current server-session project and named room versions into IndexedDB. If no prior server session exists, the approved `server/public-showcase-project.json` provides the initial project. This release corrects only the three owner-approved DEMO-01 readiness transforms in that starter snapshot; it does not replace existing browser workspaces, local SQLite, or test seeds.
 
 Once a browser workspace exists, it is the authoritative save. Loads do not depend on project APIs and never merge with or replace it from the server snapshot. Project saves resolve only after an atomic IndexedDB transaction completes. Named versions use the same database. Render restarts, deployments, four-hour server-session expiry and cookie removal do not reset browser saves. Database names are stable across build revisions. Revision checks prevent stale tabs from overwriting newer saves. Invalid saved data is not overwritten with defaults; quota/permission failures show an actionable error and leave current unsaved work exportable.
 
@@ -40,12 +40,12 @@ The server still limits bootstrap memory sessions to four hours/250 entries. `/a
 
 Run `npm run build` then `npm run test:e2e:public`. The suite owns an isolated production/public-mode server on port 3114, creates rooms through the UI, verifies exported project identity through reload and a real process restart, checks version survival, disables project APIs, checks browser isolation and stale-tab conflicts, and simulates a storage-quota failure. It never resets or stops the user's development server.
 
-### Verification — 2026-08-31
+### Verification — 2026-09-02
 
-- Release checks passed: lint, TypeScript, 96 asset definitions, catalog renders, 251 unit tests and production build. Existing large-bundle warnings remain non-blocking.
+- Release checks passed: lint, strict TypeScript, 106 asset definitions, 212 catalog renders, 59 files / 420 tests and the production build. Existing large-bundle warnings remain non-blocking.
 - Public persistence: 7/7 browser tests passed, including real server restart, full project export equality, named versions, visitor isolation, stale tabs, storage failures, incompatible data, explicit import and deletion without reseeding.
-- Existing Storage/Inventory regressions: 7/7 passed. Existing WebMCP browser regressions: 13/14 passed.
-- Known verification limitation: `dismisses exact-location selection without reloading or changing room data` repeatedly timed out at the 10-second `2D fallback` click after focusing a record. Its test and the 3D renderer are unchanged in this release. This is recorded separately; the complete E2E suite is not claimed green.
+- Core product and WebMCP browser coverage: 55/55 scenarios passed with one worker and isolated test data.
+- The saved DEMO-01 and published starter both pass the deterministic room audit with zero errors and zero warnings.
 
 ## Production smoke test
 

@@ -6,6 +6,7 @@ import {
 } from "../../src/agent/labspace-navigation-actions";
 import { buildDigitalTwinIndex, type DigitalTwinRecord } from "../../src/domain/digital-twin-index";
 import { createSeedProject } from "../../src/domain/seed";
+import { resolveStorageAccess } from "../../src/domain/storage-access";
 import type { Project } from "../../src/domain/schema";
 import { useEditorStore, type SpatialFocusRequest } from "../../src/store/editor-store";
 
@@ -205,7 +206,17 @@ describe("LabSpace spatial record focus", () => {
       recordId: record.id,
       objectId: record.objectId,
       locationId: record.locationId,
-      showStorageAccess: true,
+      showStorageAccess: Boolean(
+        resolveStorageAccess(
+          beforeState.project.rooms
+            .find((room) => room.id === record.roomId)!
+            .scene.objects.find((object) => object.id === record.objectId)!.assetDefinitionId,
+          record.objectId!,
+          record.locationId!,
+          beforeState.project.rooms.find((room) => room.id === record.roomId)!.scene
+            .storageLocations,
+        ).parts.length,
+      ),
     });
     expect(after.cameraPreset).toBe("isometric");
     expect(after.presentation).toBe("split");

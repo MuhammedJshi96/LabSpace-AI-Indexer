@@ -36,13 +36,15 @@ import { useRenderSettings } from "../store/render-settings-store";
 import { getAssetDefinition } from "../domain/assets";
 import {
   cameraCommandKey,
+  chooseDigitalTwinFocusCameraPosition,
   digitalTwinCameraApproach,
+  digitalTwinFocusDistance,
   editorInitialIsometricPosition,
   isCameraFocusClear,
   type CameraCommandInput,
 } from "../domain/camera-command";
-import { shouldCutawayWall } from "../domain/digital-twin-cutaway";
-import { mmToMetres, wallAngle, wallLength } from "../domain/geometry";
+import { shouldCutawayWall, shouldCutawayWallForFocus } from "../domain/digital-twin-cutaway";
+import { mmToMetres, objectBounds, wallAngle, wallLength } from "../domain/geometry";
 import { hasLaboratoryEnvironmentProfile } from "../domain/laboratory-environment";
 import { wallFinishForObject } from "../domain/laboratory-wall-materials";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
@@ -69,11 +71,13 @@ function Wall3D({
   room,
   transparentOverride,
   presentation,
+  focusTarget,
 }: {
   wall: SceneObject;
   room: Room;
   transparentOverride?: boolean;
   presentation: "editor" | "digital-twin";
+  focusTarget?: { x: number; y: number; z: number } | null;
 }) {
   const editorWallTransparent = useEditorStore((state) => state.wallTransparent);
   const wallTransparent = transparentOverride ?? editorWallTransparent;
@@ -81,10 +85,14 @@ function Wall3D({
   const camera = useThree((state) => state.camera);
   useFrame(() => {
     if (!wallGroupRef.current) return;
+    const focusOccludes =
+      presentation === "digital-twin" &&
+      shouldCutawayWallForFocus(wall, room, camera.position, focusTarget);
     wallGroupRef.current.visible =
-      !wallTransparent ||
-      presentation !== "digital-twin" ||
-      !shouldCutawayWall(wall, room, camera.position);
+      !focusOccludes &&
+      (!wallTransparent ||
+        presentation !== "digital-twin" ||
+        !shouldCutawayWall(wall, room, camera.position));
   });
   if (!wall.wall) return null;
   const length = mmToMetres(wallLength(wall));
@@ -182,11 +190,13 @@ function WallJoints3D({
   room,
   presentation,
   transparentOverride,
+  focusTarget,
 }: {
   walls: SceneObject[];
   room: Room;
   presentation: "editor" | "digital-twin";
   transparentOverride?: boolean;
+  focusTarget?: { x: number; y: number; z: number } | null;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const camera = useThree((state) => state.camera);
@@ -216,17 +226,25 @@ function WallJoints3D({
     if (!groupRef.current) return;
     groupRef.current.children.forEach((child, index) => {
       const joint = joints[index];
-      child.visible =
-        !wallTransparent ||
-        presentation !== "digital-twin" ||
-        joint.walls.some((wall) => !shouldCutawayWall(wall, room, camera.position));
+      child.visible = joint.walls.some((wall) => {
+        const focusOccludes =
+          presentation === "digital-twin" &&
+          shouldCutawayWallForFocus(wall, room, camera.position, focusTarget);
+        const roomCutaway =
+          wallTransparent &&
+          presentation === "digital-twin" &&
+          shouldCutawayWall(wall, room, camera.position);
+        return !focusOccludes && !roomCutaway;
+      });
     });
   });
   return (
     <group ref={groupRef}>
       {joints.map((joint, index) => {
         const thickness = Math.max(...joint.walls.map((wall) => wall.wall!.thickness));
-        const height = Math.max(...joint.walls.map((wall) => wall.wall!.height));
+        // Only close the shared portion: a half-height partition must not grow
+        // a full-height post where it meets a taller wall.
+        const height = Math.min(...joint.walls.map((wall) => wall.wall!.height));
         const finish = wallFinishForObject(joint.walls[0].metadata, room.wallFinish);
         return (
           <RoomWallBlock
@@ -252,22 +270,28 @@ function Opening3D({
   selected,
   transparentOverride,
   presentation,
+  focusTarget,
 }: {
   object: SceneObject;
   room: Room;
   selected: boolean;
   transparentOverride?: boolean;
   presentation: "editor" | "digital-twin";
+  focusTarget?: { x: number; y: number; z: number } | null;
 }) {
   const resolved = resolveHostedOpening(object, room.scene.objects);
   const openingGroupRef = useRef<THREE.Group>(null);
   const camera = useThree((state) => state.camera);
   useFrame(() => {
     if (!openingGroupRef.current) return;
+    const focusOccludes =
+      presentation === "digital-twin" &&
+      shouldCutawayWallForFocus(resolved?.wall, room, camera.position, focusTarget);
     openingGroupRef.current.visible =
-      !transparentOverride ||
-      presentation !== "digital-twin" ||
-      !shouldCutawayWall(resolved?.wall, room, camera.position);
+      !focusOccludes &&
+      (!transparentOverride ||
+        presentation !== "digital-twin" ||
+        !shouldCutawayWall(resolved?.wall, room, camera.position));
   });
   const definition = getAssetDefinition(object.assetDefinitionId);
   const setSelected = useEditorStore((state) => state.setSelected);
@@ -581,19 +605,41 @@ function CameraRig({
     const focusObject = commandRoom.scene.objects.find(
       (object) => object.id === commandFocusObjectId,
     );
-    const storageHighlight = focusObject
-      ? storageLocationHighlight(
-          commandFocusLocationId ?? null,
-          focusObject.id,
-          commandRoom.scene.storageLocations,
-          focusObject.dimensions,
-        )
-      : null;
+    const focusAccess =
+      focusObject && commandFocusLocationId
+        ? resolveStorageAccess(
+            focusObject.assetDefinitionId,
+            focusObject.id,
+            commandFocusLocationId,
+            commandRoom.scene.storageLocations,
+          )
+        : null;
+    const region = focusAccess?.region;
+    const storageHighlight =
+      focusObject && region
+        ? {
+            position: [
+              region.x * mmToMetres(focusObject.dimensions.width),
+              region.y * mmToMetres(focusObject.dimensions.height),
+              region.z * mmToMetres(focusObject.dimensions.depth),
+            ] as [number, number, number],
+            width: region.width * mmToMetres(focusObject.dimensions.width),
+            height: region.height * mmToMetres(focusObject.dimensions.height),
+            depth: (region.depth ?? 0) * mmToMetres(focusObject.dimensions.depth),
+          }
+        : focusObject
+          ? storageLocationHighlight(
+              commandFocusLocationId ?? null,
+              focusObject.id,
+              commandRoom.scene.storageLocations,
+              focusObject.dimensions,
+            )
+          : null;
     const rotatedStorageOffset = storageHighlight
       ? new THREE.Vector3(
-          storageHighlight.position[0],
+          storageHighlight.position[0] * (focusObject?.flipHorizontal ? -1 : 1),
           0,
-          storageHighlight.position[2],
+          storageHighlight.position[2] * (focusObject?.flipVertical ? -1 : 1),
         ).applyAxisAngle(
           new THREE.Vector3(0, 1, 0),
           -THREE.MathUtils.degToRad(focusObject?.rotation.z ?? 0),
@@ -622,13 +668,13 @@ function CameraRig({
           )
         : 0;
     const distance = focusObject
-      ? commandFocusLocationId && commandPresentation === "digital-twin"
-        ? Math.max(4.8, focusedEnvelope * 5, Math.min(7.2, Math.max(roomWidth, roomDepth) * 0.72))
-        : Math.max(
-            commandPresentation === "digital-twin" ? 4.4 : 2.8,
-            focusedEnvelope * 3.4,
-            commandPresentation === "digital-twin" ? Math.max(roomWidth, roomDepth) * 0.55 : 0,
-          )
+      ? commandPresentation === "digital-twin"
+        ? digitalTwinFocusDistance({
+            roomExtent: Math.max(roomWidth, roomDepth),
+            focusedEnvelope,
+            exactLocation: Boolean(commandFocusLocationId),
+          })
+        : Math.max(2.8, focusedEnvelope * 3.4)
       : Math.max(roomWidth, roomDepth) * (commandPresentation === "digital-twin" ? 0.93 : 1.1);
     const focusApproach = focusObject
       ? digitalTwinCameraApproach({
@@ -637,14 +683,51 @@ function CameraRig({
           objectXmm: focusObject.position.x,
           objectYmm: focusObject.position.y,
           objectRotationDeg: focusObject.rotation.z,
+          flipHorizontal: focusObject.flipHorizontal,
+          flipVertical: focusObject.flipVertical,
+          face:
+            region && (region.depth ?? 0) > region.width * 3
+              ? { x: Math.sign(region.x) || 1, z: 0 }
+              : { x: 0, z: region && region.z < 0 ? -1 : 1 },
+        })
+      : null;
+    const visibleLayers = new Map(
+      commandRoom.scene.layers.map((layer) => [layer.id, layer.visible]),
+    );
+    const cameraObstacles = commandRoom.scene.objects
+      .filter(
+        (object) =>
+          object.id !== focusObject?.id &&
+          object.visible &&
+          visibleLayers.get(object.layerId) !== false &&
+          !["wall", "door", "window", "label", "measurement"].includes(object.objectType),
+      )
+      .map((object) => {
+        const bounds = objectBounds(object);
+        const padding = 80;
+        return {
+          id: object.id,
+          minX: mmToMetres(bounds.left - padding - commandRoom.width / 2),
+          maxX: mmToMetres(bounds.right + padding - commandRoom.width / 2),
+          minY: mmToMetres(object.position.z),
+          maxY: mmToMetres(object.position.z + object.dimensions.height),
+          minZ: mmToMetres(bounds.top - padding - commandRoom.depth / 2),
+          maxZ: mmToMetres(bounds.bottom + padding - commandRoom.depth / 2),
+        };
+      });
+    const selectedFocusPosition = focusApproach
+      ? chooseDigitalTwinFocusCameraPosition({
+          target: { x: target[0], y: target[1], z: target[2] },
+          desiredDistance: distance,
+          approach: focusApproach,
+          roomWidth,
+          roomDepth,
+          exactLocation: Boolean(commandFocusLocationId),
+          obstacles: cameraObstacles,
         })
       : null;
     const digitalTwinFocusPosition: [number, number, number] | null = focusApproach
-      ? [
-          target[0] + distance * (focusApproach.forwardX * 0.9 + focusApproach.lateralX * 0.22),
-          target[1] + distance * (storageHighlight ? 0.58 : 0.66),
-          target[2] + distance * (focusApproach.forwardZ * 0.9 + focusApproach.lateralZ * 0.22),
-        ]
+      ? [selectedFocusPosition!.x, selectedFocusPosition!.y, selectedFocusPosition!.z]
       : null;
     const positions: Record<CameraPreset, [number, number, number]> = {
       perspective: focusObject
@@ -712,7 +795,7 @@ function CameraRig({
       makeDefault
       enableDamping
       dampingFactor={0.08}
-      minDistance={3}
+      minDistance={presentation === "digital-twin" && focusObjectId ? 1.2 : 3}
       maxDistance={30}
       maxPolarAngle={Math.PI / 2.04}
       onStart={() => {
@@ -807,6 +890,16 @@ const RoomScene = memo(function RoomScene({
     if (!object.visible || layers.get(object.layerId) === false) return false;
     return true;
   });
+  const focusObject = focusObjectId
+    ? objects.find((object) => object.id === focusObjectId)
+    : undefined;
+  const focusTarget = focusObject
+    ? {
+        x: mmToMetres(focusObject.position.x - room.width / 2),
+        y: mmToMetres(focusObject.position.z + focusObject.dimensions.height * 0.42),
+        z: mmToMetres(focusObject.position.y - room.depth / 2),
+      }
+    : null;
   const roomWidthMetres = mmToMetres(room.width);
   const roomDepthMetres = mmToMetres(room.depth);
   const lighting = roomLightingLayout(room.width, room.depth, room.wallHeight);
@@ -868,6 +961,7 @@ const RoomScene = memo(function RoomScene({
             room={room}
             transparentOverride={wallTransparentOverride}
             presentation={presentation}
+            focusTarget={focusTarget}
           />
         ))}
       <WallJoints3D
@@ -875,6 +969,7 @@ const RoomScene = memo(function RoomScene({
         room={room}
         presentation={presentation}
         transparentOverride={wallTransparentOverride}
+        focusTarget={focusTarget}
       />
       {objects
         .filter((object) => object.objectType === "door" || object.objectType === "window")
@@ -886,6 +981,7 @@ const RoomScene = memo(function RoomScene({
             selected={selectedIds.includes(opening.id)}
             transparentOverride={wallTransparentOverride}
             presentation={presentation}
+            focusTarget={focusTarget}
           />
         ))}
       {objects

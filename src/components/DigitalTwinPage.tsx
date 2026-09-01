@@ -39,6 +39,7 @@ import { ThreeDView } from "./ThreeDView";
 import { RenderQualityControl } from "./RenderQualityControl";
 import { TopBar } from "./TopBar";
 import { CollectionGuide } from "./CollectionGuide";
+import { ProcessTracker } from "./ProcessTracker";
 import { TwoDEditor } from "./TwoDEditor";
 
 class TwinRendererBoundary extends Component<
@@ -141,6 +142,7 @@ const navItems: Array<{
 ];
 
 export function DigitalTwinPage() {
+  const [processOpen, setProcessOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<TwinMode>("browse");
   const [scope, setScope] = useState<DigitalTwinScope>("project");
@@ -233,7 +235,7 @@ export function DigitalTwinPage() {
       if (selectedRecord) {
         labSpaceNavigationActions.focusLabRecord(
           { recordId: selectedRecord.id },
-          { revealStorage: false },
+          { revealStorage: true },
         );
       }
     }, 320);
@@ -291,7 +293,7 @@ export function DigitalTwinPage() {
       return;
     }
     try {
-      labSpaceNavigationActions.focusLabRecord({ recordId: record.id }, { revealStorage: false });
+      labSpaceNavigationActions.focusLabRecord({ recordId: record.id }, { revealStorage: true });
     } catch (error) {
       pushToast(error instanceof Error ? error.message : "Record could not be focused.", "error");
     }
@@ -473,6 +475,14 @@ export function DigitalTwinPage() {
             })}
           </div>
           <div className="twin-nav-secondary">
+            <button
+              className="process-tracker-trigger"
+              aria-pressed={processOpen}
+              onClick={() => setProcessOpen(!processOpen)}
+            >
+              <Database size={20} />
+              <span>Process tracker</span>
+            </button>
             <a href="/?dialog=reports">
               <FileCsv size={20} />
               <span>Reports</span>
@@ -614,8 +624,10 @@ export function DigitalTwinPage() {
         </main>
 
         <aside className="twin-detail" aria-label="Selected record details">
-          <CollectionGuide embedded />
-          {selectedRecord ? (
+          {!processOpen && <CollectionGuide embedded />}
+          {processOpen ? (
+            <ProcessTracker onClose={() => setProcessOpen(false)} />
+          ) : selectedRecord ? (
             <>
               <header className="twin-detail-heading">
                 <span>
@@ -717,6 +729,14 @@ export function DigitalTwinPage() {
                       {storageAccess?.reason ??
                         `${storageAccess?.description}. Visual preview only; no inventory or room data changes.`}
                     </p>
+                    {!storageAccess?.parts.length && !storageAccess?.region && (
+                      <a
+                        className="storage-repair-link"
+                        href={`/inventory?view=storage&room=${encodeURIComponent(selectedRecord.roomId)}&object=${encodeURIComponent(selectedRecord.objectId)}&location=${encodeURIComponent(selectedRecord.locationId)}`}
+                      >
+                        Link this record to a physical location →
+                      </a>
+                    )}
                   </>
                 )}
                 <a

@@ -224,7 +224,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_collection_step",
       title: "Navigate the collection guide",
       description:
-        "Read guide status, focus the next or previous exact location, or finish. No inventory is consumed, reserved, or edited. Missing records fail with a controlled error.",
+        "Read guide status or project-scoped session history (action: history), focus next/previous, or finish. Navigation is timestamped but does not confirm collection. Human-only checkpoints and start-time record snapshots are available in history. No stock is consumed or reserved; this is not a certified audit log. Missing records fail with a controlled error.",
       inputSchema: collectionStepSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>

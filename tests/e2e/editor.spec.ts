@@ -11,6 +11,18 @@ test.beforeAll(async ({ request }) => {
   expect(response.ok()).toBeTruthy();
 });
 
+test.beforeEach(async ({ page }) => {
+  // Rendering tiers have dedicated end-to-end coverage. Keep this interaction-
+  // heavy serial suite on Low so repeated WebGL contexts do not exhaust the
+  // software renderer while layout, navigation and persistence are exercised.
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "labspace-render-settings-v1",
+      JSON.stringify({ version: 1, quality: "low" }),
+    );
+  });
+});
+
 test("the compact orientation cube exposes only distinct camera commands", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("Empty lab plan", { exact: true })).toBeVisible();
@@ -227,20 +239,6 @@ test("the Spatial Index links indexed search results to the live room and editor
   ).toHaveAttribute("src", "/images/inventory/reference-standards.png");
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-focus-location-id", location.id);
 
-  await search.fill("HPLC autosampler vials");
-  const vialsRecord = page.getByRole("button", {
-    name: /^HPLC autosampler vials, 2 mL Inventory /,
-  });
-  await expect(vialsRecord).toHaveCount(1);
-  await vialsRecord.click();
-  await expect(page.getByRole("heading", { name: "HPLC autosampler vials, 2 mL" })).toBeVisible();
-  await expect(
-    detail.getByRole("img", { name: "HPLC autosampler vials, 2 mL evidence image" }),
-  ).toHaveAttribute("src", "/images/inventory/hplc-vials.png");
-
-  await search.fill("Reference standards");
-  await standardsRecord.click();
-
   await page.getByRole("button", { name: "Navigate to location" }).click();
   await expect(page.getByTestId("3d-view")).toHaveAttribute(
     "data-focus-object-id",
@@ -248,18 +246,52 @@ test("the Spatial Index links indexed search results to the live room and editor
   );
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-focus-location-id", location.id);
 
+  const editorLink = page.getByRole("link", { name: "Open record in editor" });
+  await expect(editorLink).toHaveAttribute("href", /object=.*panel=properties/);
+});
+
+test("the Spatial Index fallback and editor deep link preserve exact-location evidence", async ({
+  page,
+}) => {
+  const project: Project = await (await page.request.get("/api/project")).json();
+  const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
+  const item = room.scene.inventoryItems.find((entry) => entry.name === "Reference standards")!;
+  const location = room.scene.storageLocations.find(
+    (entry) => entry.id === item.storageLocationId,
+  )!;
+  const cabinet = room.scene.objects.find((entry) => entry.id === location.objectId)!;
+
+  await page.goto("/digital-twin");
   await page.getByRole("button", { name: "2D fallback" }).click();
   await expect(page.getByTestId("2d-editor")).toBeVisible();
   await expect(page.getByRole("button", { name: "Return to 3D" })).toBeVisible();
   await page.getByRole("button", { name: "Return to 3D" }).click();
   await expect(page.getByTestId("3d-view").locator("canvas")).toBeVisible();
 
-  const editorLink = page.getByRole("link", { name: "Open record in editor" });
-  await expect(editorLink).toHaveAttribute("href", /object=.*panel=properties/);
-  await editorLink.click();
+  await page.goto(
+    `/?room=${encodeURIComponent(room.id)}&object=${encodeURIComponent(cabinet.id)}&location=${encodeURIComponent(location.id)}&panel=properties`,
+  );
   await expect(page.locator(".selection-trace-card")).toContainText(cabinet.indexCode);
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:\d+\/$/);
   await expect(page.getByRole("link", { name: "Spatial Index", exact: true })).toBeVisible();
+});
+
+test("the Spatial Index presents the selected inventory evidence image", async ({ page }) => {
+  await page.goto("/digital-twin");
+  await page.getByRole("button", { name: "This room", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Search spatial index" })
+    .fill("HPLC autosampler vials");
+  const vialsRecord = page.getByRole("button", {
+    name: /^HPLC autosampler vials, 2 mL Inventory /,
+  });
+  await expect(vialsRecord).toHaveCount(1);
+  await vialsRecord.click();
+  const detail = page.getByRole("complementary", { name: "Selected record details" });
+  await expect(page.getByRole("heading", { name: "HPLC autosampler vials, 2 mL" })).toBeVisible();
+  await expect(
+    detail.getByRole("img", { name: "HPLC autosampler vials, 2 mL evidence image" }),
+  ).toHaveAttribute("src", "/images/inventory/hplc-vials.png");
 });
 
 test("project search switches to a record in another laboratory and preserves the editor trace", async ({
@@ -426,10 +458,7 @@ test("a cabinet receives indexed internals and exact inventory", async ({ page, 
   const drawer = room.scene.storageLocations.find(
     (entry) => entry.objectId === selectedObject.id && entry.type === "drawer",
   )!;
-  await page
-    .getByRole("region", { name: "Named storage locations" })
-    .getByRole("button", { name: `drawer ${drawer.name} ${selectedObject.name}`, exact: true })
-    .click();
+  await page.getByLabel("Storage location").selectOption(drawer.id);
   await page.getByRole("button", { name: "Add item" }).click();
   const form = page.getByRole("form", { name: "New item at this location" });
   await form.getByLabel("Item name", { exact: true }).fill("Drawer assignment regression item");

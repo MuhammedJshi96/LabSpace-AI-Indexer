@@ -283,7 +283,7 @@ export function getClosedWallFloorPolygon(
   objects: SceneObject[],
   tolerance = DEFAULT_TOLERANCE_MM,
 ): ClosedWallFloorPolygon | null {
-  const walls = objects.filter((object) => object.wall);
+  const walls = objects.filter((object) => object.wall && !object.wall.halfHeight);
   if (walls.length < 3) return null;
   const boundary = getOuterWallBoundary(walls, tolerance);
   if (!boundary) return null;
@@ -440,10 +440,7 @@ export function normalizeClosedRoomFromWallLoop(
 }
 
 /** Repairs older saved rooms that closed visually before endpoint-priority snapping existed. */
-export function normalizeRoomFloorEnvelope(
-  room: Room,
-  tolerance = DEFAULT_TOLERANCE_MM,
-): Room {
+export function normalizeRoomFloorEnvelope(room: Room, tolerance = DEFAULT_TOLERANCE_MM): Room {
   const normalized = normalizeClosedRoomFromWallLoop(room.scene.objects, tolerance);
   if (!normalized) return room;
   const objectsChanged = normalized.objects.some(

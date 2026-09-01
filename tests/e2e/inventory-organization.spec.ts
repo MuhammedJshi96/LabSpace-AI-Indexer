@@ -38,17 +38,19 @@ test("bulk assignment uses named storage and preserves records through Undo, Red
   const tips = demo.scene.inventoryItems.find((item) => item.name === "Pipette tips, 200 µL")!;
 
   await page.getByRole("button", { name: "Assign inventory", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Assign inventory", exact: true });
-  await dialog.getByLabel("Destination room").selectOption(demo.id);
+  const dialog = page.getByRole("region", { name: "Storage workspace", exact: true });
+  await dialog.getByRole("button", { name: "Choose cabinet", exact: true }).click();
+  await dialog.getByLabel("Location filter").selectOption(demo.id);
+  await dialog.getByRole("button", { name: "Manage Wall cabinet in DEMO-01", exact: true }).click();
   await dialog
     .getByRole("checkbox", { name: "Select Autosampler vial caps, blue in CHR-A" })
     .check();
   await dialog.getByRole("checkbox", { name: "Select Pipette tips, 200 µL in DEMO-01" }).check();
-  await dialog.getByRole("button", { name: "Choose Wall cabinet", exact: true }).click();
-  await dialog.getByRole("button", { name: "Choose Shelf 01", exact: true }).click();
-  await expect(dialog.locator(".organizer-final-address")).toContainText("Wall cabinet → Shelf 01");
-  await dialog.getByRole("button", { name: "Assign 2 items", exact: true }).click();
-  await expect(dialog).toHaveCount(0);
+  await dialog.getByLabel("Storage location").selectOption(shelf.id);
+  await dialog.getByRole("button", { name: "Place 2 items here", exact: true }).click();
+  await expect(dialog.getByRole("button", { name: "Place 2 items here", exact: true })).toHaveCount(
+    0,
+  );
   await page.getByRole("button", { name: "Save now", exact: true }).click();
   const read = async () => (await (await request.get("/api/project")).json()) as Project;
   await expect
@@ -73,7 +75,7 @@ test("bulk assignment uses named storage and preserves records through Undo, Red
     demo.scene.objects,
   );
 
-  await page.getByRole("button", { name: "Undo last change" }).click();
+  await page.getByRole("button", { name: /^Undo last (storage )?change$/ }).click();
   await page.getByRole("button", { name: "Save now", exact: true }).click();
   await expect
     .poll(
@@ -88,7 +90,7 @@ test("bulk assignment uses named storage and preserves records through Undo, Red
       .find((room) => room.id === demo.id)!
       .scene.inventoryItems.find((item) => item.id === tips.id)?.storageLocationId,
   ).toBe(tips.storageLocationId);
-  await page.getByRole("button", { name: "Redo last change" }).click();
+  await page.getByRole("button", { name: /^Redo last (storage )?change$/ }).click();
   await page.getByRole("button", { name: "Save now", exact: true }).click();
   await expect
     .poll(
@@ -99,6 +101,7 @@ test("bulk assignment uses named storage and preserves records through Undo, Red
     )
     .toBe(shelf.id);
   await page.reload();
+  await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   await expect(
     page.getByRole("region", { name: "Inventory records" }).getByRole("button", {
       name: /Autosampler vial caps, blue.*DEMO-01.*Wall cabinet.*Shelf 01/,
@@ -122,8 +125,9 @@ test("cabinet and shelf naming is discoverable, keyboard-accessible and persists
   const shelf = demo.scene.storageLocations.find(
     (location) => location.parentId === root.id && location.name === "Shelf 01",
   )!;
-  await page.getByRole("button", { name: "Manage storage", exact: true }).click();
+  await page.getByRole("tab", { name: "Storage", exact: true }).click();
   const names = page.getByRole("region", { name: "Storage workspace", exact: true });
+  await names.getByRole("button", { name: "Choose cabinet", exact: true }).click();
   await names.getByLabel("Location filter", { exact: true }).selectOption(demo.id);
   await names.getByRole("button", { name: "Manage Wall cabinet in DEMO-01", exact: true }).click();
   await names.getByRole("button", { name: "Rename cabinet", exact: true }).click();
@@ -131,21 +135,18 @@ test("cabinet and shelf naming is discoverable, keyboard-accessible and persists
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(rename.getByLabel("Storage name")).toBeFocused();
   expect((await rename.boundingBox())!.height).toBeLessThan(500);
-  await rename.getByLabel("Storage name").fill("Student supplies");
+  await rename.getByLabel("Storage name").fill("Laboratory bench with overhead cabinets");
   await rename.getByRole("button", { name: "Save name", exact: true }).click();
   await expect(names.getByRole("button", { name: "Rename cabinet", exact: true })).toBeFocused();
-  await names
-    .getByRole("region", { name: "Named storage locations" })
-    .getByRole("button", { name: "shelf Shelf 01 Student supplies", exact: true })
-    .click();
+  await names.getByLabel("Storage location").selectOption(shelf.id);
   await names.getByRole("button", { name: "Rename shelf", exact: true }).click();
   const renameShelf = page.getByRole("form", { name: "Rename shelf", exact: true });
   await renameShelf.getByLabel("Storage name").fill("Daily supplies");
   await renameShelf.getByLabel("Storage name").press("Enter");
-  await expect(
-    names.getByRole("complementary", { name: "Selected storage contents" }),
-  ).toContainText("Daily supplies");
-  const frame = names.locator(".storage-map-heading .organizer-asset");
+  await expect(names.getByRole("region", { name: "Selected storage contents" })).toContainText(
+    "Daily supplies",
+  );
+  const frame = names.locator(".storage-context-model");
   const thumbnail = frame.locator("img");
   await expect(thumbnail).toBeVisible();
   expect((await thumbnail.boundingBox())!.height).toBeLessThanOrEqual(
@@ -170,19 +171,29 @@ test("cabinet and shelf naming is discoverable, keyboard-accessible and persists
     updatedAt: expect.any(String),
   });
   expect(room.scene.objects.find((object) => object.id === root.objectId)?.name).toBe(
-    "Student supplies",
+    "Laboratory bench with overhead cabinets",
   );
   await page.reload();
   await expect(
-    page
-      .getByRole("region", { name: "Inventory records" })
-      .getByRole("button", { name: /Reference standards.*Student supplies.*Daily supplies/ }),
+    page.getByRole("region", { name: "Inventory records" }).getByRole("button", {
+      name: /Reference standards.*Laboratory bench with overhead cabinets.*Daily supplies/,
+    }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Assign inventory", exact: true }).click();
-  const assignment = page.getByRole("dialog", { name: "Assign inventory", exact: true });
-  await assignment.getByLabel("Search inventory to assign").press("Escape");
-  await expect(assignment).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Assign inventory", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Choose cabinet", exact: true }).click();
+  await page.getByLabel("Location filter", { exact: true }).selectOption(demo.id);
+  const longBench = page.getByRole("button", {
+    name: "Manage Laboratory bench with overhead cabinets in DEMO-01",
+    exact: true,
+  });
+  await expect(longBench).toContainText("Lab bench · overhead cabinets");
+  await expect(longBench).toHaveAttribute(
+    "title",
+    "Laboratory bench with overhead cabinets · Build Week Demo · DEMO-01",
+  );
+  await page.getByLabel("Search storage").press("Escape");
+  await expect(page.getByRole("region", { name: "Choose a cabinet", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Choose cabinet", exact: true })).toBeFocused();
 });
 
 test("the Storage inspector opens the full workspace at the selected shelf and preserves the layout on return", async ({
@@ -218,16 +229,20 @@ test("the Storage inspector opens the full workspace at the selected shelf and p
     .click();
   await page.getByRole("button", { name: "Manage storage", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Storage workspace", exact: true })).toBeVisible();
-  await expect(
-    page.getByRole("complementary", { name: "Selected storage contents" }),
-  ).toContainText(shelf.indexCode);
-  await page.getByRole("button", { name: "Assign items", exact: true }).click();
-  const chooser = page.getByRole("dialog", { name: "Assign inventory", exact: true });
-  await expect(chooser.getByLabel("Destination room")).toHaveValue(room.id);
-  await expect(chooser.locator(".organizer-final-address")).toContainText(
-    "Wall cabinet → Shelf 01",
+  await expect(page.getByRole("region", { name: "Selected storage contents" })).toContainText(
+    shelf.name,
   );
-  await chooser.getByRole("button", { name: "Cancel", exact: true }).click();
+  await page.getByText("Advanced details", { exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Index code", exact: true })).toHaveValue(
+    shelf.indexCode,
+  );
+  await page.getByText("Advanced details", { exact: true }).click();
+  await expect(page.getByLabel("Storage location")).toHaveValue(shelf.id);
+  await page
+    .getByRole("checkbox", { name: "Select Reference standards in DEMO-01", exact: true })
+    .check();
+  await expect(page.getByRole("button", { name: "Place item here", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Clear selection", exact: true }).click();
   await page.getByRole("button", { name: "Rename shelf", exact: true }).click();
   const rename = page.getByRole("form", { name: "Rename shelf", exact: true });
   await expect(rename.getByLabel("Storage name")).toHaveValue("Shelf 01");
@@ -331,21 +346,22 @@ test("row selection feeds the physical map and commits the exact shelf without c
   await page.getByRole("textbox", { name: "Search inventory", exact: true }).fill("No such record");
   await expect(records.getByText("2 hidden by filters", { exact: true })).toBeVisible();
   await records.getByRole("button", { name: "Assign selected (2)" }).click();
-  const dialog = page.getByRole("dialog", { name: "Assign inventory", exact: true });
+  const dialog = page.getByRole("region", { name: "Storage workspace", exact: true });
   await expect(
     dialog.getByRole("checkbox", { name: "Select Reference standards in DEMO-01" }),
   ).toBeChecked();
   await expect(
     dialog.getByRole("checkbox", { name: "Select Pipette tips, 200 µL in DEMO-01" }),
   ).toBeChecked();
-  await dialog.getByRole("button", { name: "Choose Wall cabinet", exact: true }).click();
+  await dialog.getByRole("button", { name: "Choose cabinet", exact: true }).click();
+  await dialog.getByRole("button", { name: "Manage Wall cabinet in DEMO-01", exact: true }).click();
   const map = dialog.getByRole("region", { name: "Visual storage picker" });
   await expect(map.getByText(/saved locations are not linked to model geometry/)).toBeVisible();
   await expect(
     map.getByRole("button", { name: "Select Hand-labelled box on storage map" }),
   ).toHaveCount(0);
   await expect(
-    dialog.getByRole("button", { name: "Choose Hand-labelled box", exact: true }),
+    dialog.getByRole("combobox", { name: "Storage location", exact: true }),
   ).toBeVisible();
   await map
     .getByRole("button", { name: "Select Wall cabinet on storage map", exact: true })
@@ -357,18 +373,20 @@ test("row selection feeds the physical map and commits the exact shelf without c
   await expect(
     map.getByRole("button", { name: "Select Shelf 02 on storage map", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(dialog.locator(".organizer-final-address")).toContainText("Shelf 02");
+  await expect(dialog.getByLabel("Storage location")).toHaveValue(destination.id);
   await dialog.getByRole("button", { name: "Rename shelf", exact: true }).click();
   const rename = dialog.getByRole("form", { name: "Rename shelf", exact: true });
   await rename.getByLabel("Storage name").fill("Do not save this");
   await rename.getByLabel("Storage name").press("Escape");
   await expect(rename).toHaveCount(0);
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("button", { name: "Rename shelf", exact: true })).toBeFocused();
-  await page.screenshot({ path: test.info().outputPath("visual-assignment-desktop.png") });
-  await dialog.getByRole("button", { name: "Assign 2 items", exact: true }).click();
-  await expect(dialog).toHaveCount(0);
-  await expect(records.getByRole("button", { name: "Assign selected (2)" })).toHaveCount(0);
+  await page.screenshot({ path: test.info().outputPath("direct-placement-desktop.png") });
+  // Real native drag: all checked records move together to the exact mapped shelf.
+  await dialog
+    .getByRole("article", { name: "Drag Reference standards from DEMO-01", exact: true })
+    .dragTo(map.getByRole("button", { name: "Select Shelf 02 on storage map", exact: true }));
+  await expect(dialog.getByRole("button", { name: "Place 2 items here", exact: true })).toHaveCount(
+    0,
+  );
   await page.getByRole("button", { name: "Save now", exact: true }).click();
   const read = async () => (await (await request.get("/api/project")).json()) as Project;
   const targets = room.scene.inventoryItems.filter((item) =>
@@ -392,6 +410,7 @@ test("row selection feeds the physical map and commits the exact shelf without c
       storageLocationId: destination.id,
       updatedAt: expect.any(String),
     });
+  await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   await page.getByRole("textbox", { name: "Search inventory", exact: true }).fill("");
   await expect(
     records.getByRole("button", { name: /Reference standards.*Shelf 02.*12 vials/ }),
@@ -426,7 +445,7 @@ test("inventory stock, bulk controls and inline naming remain usable at compact 
     await page.screenshot({ path: test.info().outputPath(`inventory-${width}.png`) });
   }
   await records.getByRole("button", { name: /Reference standards.*Shelf 01/ }).click();
-  await page.getByRole("button", { name: "Manage storage", exact: true }).click();
+  await page.getByRole("button", { name: "Manage this storage", exact: true }).click();
   const names = page.getByRole("region", { name: "Storage workspace", exact: true });
   await names.getByRole("button", { name: "Rename shelf", exact: true }).click();
   const form = names.getByRole("form", { name: "Rename shelf", exact: true });
@@ -451,17 +470,12 @@ test("full storage workspace creates inventory at an exact location without swit
   const room = before.rooms.find((entry) => entry.code === "CHR-A")!;
   const drawer = room.scene.storageLocations.find((entry) => entry.name === "Drawer 01")!;
   await page.getByRole("tab", { name: "Storage", exact: true }).click();
+  await page.getByRole("button", { name: "Choose cabinet", exact: true }).click();
   await page
     .getByRole("button", { name: "Manage Chromatography consumables cabinet in CHR-A" })
     .click();
-  await page
-    .getByRole("region", { name: "Named storage locations" })
-    .getByRole("button", {
-      name: "drawer Drawer 01 Chromatography consumables cabinet",
-      exact: true,
-    })
-    .click();
-  const detail = page.getByRole("complementary", { name: "Selected storage contents" });
+  await page.getByLabel("Storage location").selectOption(drawer.id);
+  const detail = page.getByRole("region", { name: "Selected storage contents" });
   await detail.getByRole("button", { name: "Add item", exact: true }).click();
   const form = detail.getByRole("form", { name: "New item at this location" });
   await form.getByLabel("Item name").fill("Storage workspace test vials");
@@ -483,13 +497,35 @@ test("full storage workspace creates inventory at an exact location without swit
   expect(updated.scene.objects).toEqual(room.scene.objects);
   expect(updated.scene.storageLocations).toEqual(room.scene.storageLocations);
   await detail.getByRole("button", { name: "Storage workspace test vials", exact: true }).click();
-  await expect(page.getByRole("tab", { name: "Inventory", exact: true })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
+  await expect(page.getByRole("dialog", { name: "Inventory item details" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Recorded stock" })).toContainText("6 boxes");
+  await expect(page.getByRole("region", { name: "Exact location" })).toContainText(drawer.name);
+  await page.getByRole("button", { name: "Edit item details", exact: true }).click();
   await expect(page.getByLabel("Item name", { exact: true })).toHaveValue(
     "Storage workspace test vials",
   );
+  await page.getByRole("button", { name: "Close item details", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Search inventory", exact: true })
+    .fill("Storage workspace test vials");
+  await page
+    .getByRole("region", { name: "Inventory records" })
+    .getByRole("button", { name: /Storage workspace test vials/ })
+    .click();
+  await page.getByRole("button", { name: "Edit item details", exact: true }).click();
+  await page.getByLabel("Item name", { exact: true }).fill("Prepared sample vials");
+  await expect(page.getByLabel("Item name", { exact: true })).toHaveValue("Prepared sample vials");
+  await expect(page.getByLabel("Quantity", { exact: true })).toHaveValue("6");
+  await page.getByRole("button", { name: "Close item details", exact: true }).click();
+  await page.getByRole("button", { name: "Save now", exact: true }).click();
+  await expect
+    .poll(async () => {
+      const saved: Project = await (await request.get("/api/project")).json();
+      return saved.rooms
+        .find((entry) => entry.id === room.id)!
+        .scene.inventoryItems.find((item) => item.name === "Prepared sample vials");
+    })
+    .toMatchObject({ quantity: 6, unit: "boxes", storageLocationId: drawer.id });
 });
 
 test("storage preview is opt-in and returns to the map without changing project data", async ({
@@ -509,7 +545,7 @@ test("storage preview is opt-in and returns to the map without changing project 
   );
   await expect(page.getByTitle("All changes saved", { exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Isolated cabinet preview" })).toHaveCount(0);
-  await page.getByRole("button", { name: "3D access preview", exact: true }).click();
+  await page.getByRole("button", { name: "3D preview", exact: true }).click();
   const preview = page.getByRole("region", { name: "Isolated cabinet preview" });
   await expect(preview.getByText("Loading cabinet preview…", { exact: true })).toHaveCount(0, {
     timeout: 15000,
@@ -521,10 +557,73 @@ test("storage preview is opt-in and returns to the map without changing project 
   await page.screenshot({ path: test.info().outputPath("storage-access-preview.png") });
   await page.getByRole("button", { name: "Storage map", exact: true }).click();
   await expect(preview).toHaveCount(0);
-  await page.getByRole("button", { name: "3D access preview", exact: true }).click();
+  await page.getByRole("button", { name: "3D preview", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Show access preview", exact: true }),
   ).toHaveAttribute("aria-pressed", "false");
   const after: Project = await (await request.get("/api/project")).json();
   expect(after).toEqual(before);
+});
+
+test("inventory pictures accept a project link or an optimized local file and survive reload", async ({
+  page,
+  request,
+}) => {
+  await openInventory(page);
+  const before: Project = await (await request.get("/api/project")).json();
+  const room = before.rooms.find(
+    (entry) => entry.code === "DEMO-01" && entry.roomKind !== "demo-template",
+  )!;
+  const item = room.scene.inventoryItems.find((entry) => entry.name === "Nitrile gloves, M")!;
+  await page
+    .getByRole("region", { name: "Inventory records" })
+    .getByRole("button", { name: /Nitrile gloves, M/ })
+    .click();
+  await page.getByRole("button", { name: "Edit item details", exact: true }).click();
+  const picture = page.getByRole("region", { name: "Inventory item picture", exact: true });
+  const preview = picture.getByRole("img", { name: /Nitrile gloves, M inventory reference/ });
+
+  await picture
+    .getByRole("textbox", { name: "Online inventory image URL", exact: true })
+    .fill("/images/inventory/reference-standards.png");
+  await picture.getByRole("button", { name: "Use link", exact: true }).click();
+  await expect(preview).toHaveAttribute("src", "/images/inventory/reference-standards.png");
+
+  await picture.locator('input[type="file"]').setInputFiles({
+    name: "inventory-photo.png",
+    mimeType: "image/png",
+    buffer: readFileSync("public/images/inventory/nitrile-gloves.png"),
+  });
+  await expect(preview).toHaveAttribute("src", /^data:image\/webp;base64,/);
+  await page.getByRole("button", { name: "Close item details", exact: true }).click();
+  await page.getByRole("button", { name: "Save now", exact: true }).click();
+  await expect
+    .poll(async () => {
+      const saved: Project = await (await request.get("/api/project")).json();
+      return saved.rooms
+        .find((entry) => entry.id === room.id)!
+        .scene.inventoryItems.find((entry) => entry.id === item.id)?.imageSrc;
+    })
+    .toMatch(/^data:image\/webp;base64,/);
+
+  const saved: Project = await (await request.get("/api/project")).json();
+  const savedSource = saved.rooms
+    .find((entry) => entry.id === room.id)!
+    .scene.inventoryItems.find((entry) => entry.id === item.id)?.imageSrc;
+  expect(savedSource!.length).toBeLessThanOrEqual(360_000);
+  expect(saved.rooms.find((entry) => entry.id === room.id)!.scene.objects).toEqual(
+    room.scene.objects,
+  );
+
+  await page.reload();
+  await page
+    .getByRole("region", { name: "Inventory records" })
+    .getByRole("button", { name: /Nitrile gloves, M/ })
+    .click();
+  await page.getByRole("button", { name: "Edit item details", exact: true }).click();
+  await expect(
+    page
+      .getByRole("region", { name: "Inventory item picture", exact: true })
+      .getByText("Saved with project", { exact: true }),
+  ).toBeVisible();
 });

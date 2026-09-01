@@ -29,7 +29,7 @@ function isRefractiveGlassware(material: THREE.Material) {
   return /borosilicate|solvent bottle/i.test(role);
 }
 
-export type RealisticSurface = "coating" | "brushed" | "phenolic" | "polymer";
+export type RealisticSurface = "coating" | "casework" | "brushed" | "phenolic" | "polymer";
 export const REALISTIC_TEXTURE_SIZE = 256;
 const textures = new Map<
   RealisticSurface,
@@ -41,7 +41,7 @@ function noise(x: number, y: number) {
   return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
 }
 
-/** Four illumination-free, tileable pairs shared by every High-mode material.
+/** Small illumination-free, tileable pairs shared by every High-mode material.
  * No albedo repainting, geometry subdivision or runtime image downloads. */
 export function realisticSurfaceMaps(surface: RealisticSurface) {
   const existing = textures.get(surface);
@@ -52,6 +52,15 @@ export function realisticSurfaceMaps(surface: RealisticSurface) {
   const height = (x: number, y: number) => {
     const grain = (noise(x, y) + noise(x + 1, y) + noise(x, y + 1)) / 3;
     if (surface === "brushed") return noise(0, y) * 0.9 + grain * 0.1;
+    // Soft stipple over fine mesh grain for coated cabinet panels. A separate
+    // finish, not a noisy albedo overlay or a change to glass/metal/bench paint.
+    if (surface === "casework")
+      return (
+        grain * 0.6 +
+        (noise((x & 255) >> 1, (y & 255) >> 1) +
+          noise(((x + 1) & 255) >> 1, ((y + 1) & 255) >> 1)) *
+          0.2
+      );
     if (surface === "coating") {
       const cross = Math.cos((x * Math.PI) / 2) * Math.cos((y * Math.PI) / 2);
       return grain * 0.78 + cross * 0.12;
@@ -61,7 +70,7 @@ export function realisticSurfaceMaps(surface: RealisticSurface) {
   const amplitude =
     surface === "brushed"
       ? 0.095
-      : surface === "coating"
+      : surface === "coating" || surface === "casework"
         ? 0.14
         : surface === "phenolic"
           ? 0.055
@@ -90,7 +99,8 @@ export function realisticSurfaceMaps(surface: RealisticSurface) {
     map.name = `realistic-finish-v1:${surface}:${suffix}`;
     map.colorSpace = THREE.NoColorSpace;
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
-    map.repeat.set(surface === "coating" ? 8 : 4, surface === "coating" ? 8 : 4);
+    const repeats = surface === "coating" || surface === "casework" ? 8 : 4;
+    map.repeat.set(repeats, repeats);
     map.minFilter = THREE.LinearMipmapLinearFilter;
     map.magFilter = THREE.LinearFilter;
     map.anisotropy = 4;
@@ -108,6 +118,12 @@ function surfaceFor(material: THREE.MeshStandardMaterial): RealisticSurface | un
   if (surface === "brushed" && material.metalness > 0.7) return "brushed";
   if (surface === "phenolic") return "phenolic";
   if (surface === "polymer") return "polymer";
+  if (
+    ["storage", "lockers"].includes(material.userData.labspace_finish_family) &&
+    ["face", "structure", "lockerFace"].includes(material.userData.labspace_finish_role) &&
+    ["micrograin", "enamel"].includes(surface)
+  )
+    return "casework";
   if (surface === "micrograin" || surface === "enamel") return "coating";
   return undefined;
 }
@@ -154,7 +170,7 @@ export function acquirePresentationMaterial(source: THREE.Material, quality: Ren
   ) {
     return { material: source, release: () => {} };
   }
-  const key = clear ? "clear-glass-v1" : "high-finish-v1";
+  const key = clear ? "clear-glass-v1" : "high-finish-v2";
   let cache = variants.get(source);
   if (!cache) {
     cache = new Map();
@@ -198,15 +214,19 @@ export function acquirePresentationMaterial(source: THREE.Material, quality: Ren
       material.normalMap = maps.normalMap;
       material.roughnessMap = material.metalnessMap = maps.roughnessMap;
       material.bumpMap = null;
-      material.normalScale.setScalar(surface === "coating" ? 0.7 : 0.85);
+      material.normalScale.setScalar(
+        surface === "casework" ? 1.1 : surface === "coating" ? 0.7 : 0.85,
+      );
       material.roughness =
         surface === "brushed"
           ? 0.29
           : surface === "phenolic"
             ? 0.34
-            : surface === "coating"
-              ? 0.43
-              : Math.max(0.57, source.roughness);
+            : surface === "casework"
+              ? 0.48
+              : surface === "coating"
+                ? 0.43
+                : Math.max(0.57, source.roughness);
       // Batched catalog geometry has no authored tangent frame. Enabling the
       // physical anisotropy lobe on degenerate generated UVs creates blown-out
       // metal faces. Directional normal/roughness grain is both robust and cheap.

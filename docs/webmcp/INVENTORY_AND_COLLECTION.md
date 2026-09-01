@@ -27,6 +27,17 @@ Ask: “Add 12 boxes of pipette tips to DEMO-01. Find a storage destination and 
 
 Without a storage ID the item is explicitly unassigned; LabSpace does not guess. Use an actual discovered ID to assign it. Existing `plan_inventory` → `stage_inventory_plan` remains available for agents that separate planning from review.
 
+## Place inventory by hand
+
+Inventory Studio starts with one searchable stock list. Open a row for its details; **Assign inventory** and **Assign selected** open the two-area Storage workspace, without a second assignment dialog.
+
+1. Use **Choose cabinet** to select a destination in any editable room.
+2. Drag an item from the inventory tray onto a named drawer or shelf. To move several records together, select their checkboxes and drag one of them.
+3. For keyboard or touch, select the items, choose a map location (or the **Location** menu), then press **Place here**.
+4. Undo/Redo uses the normal project history. Assignments preserve item IDs, names, quantities and other stock details, and do not move furniture or switch the editor's active room.
+
+The map depicts storage zones above shelf boards; it is not a capacity or compatibility assessment. Unlinked custom locations stay available in the Location menu but are not invented as physical model parts. The 3D preview is optional. These are direct human edits; WebMCP inventory proposals retain their separate review requirements.
+
 ## Turn a material list into a collection guide
 
 Ask: “Use my approved preparation list, match it against our inventory, show anything missing, then guide me through the locations I select.”
@@ -34,7 +45,9 @@ Ask: “Use my approved preparation list, match it against our inventory, show a
 - The agent may propose a checklist based on your task, but must label suggestions and ask for the approved protocol when necessary.
 - `labspace_resolve_materials` takes `{brief, materials:["Reference standards", "Nitrile gloves"]}` and checks canonical inventory/equipment across eligible rooms. It returns exact matches, review candidates, quantities/status as recorded, and missing items. Factory templates are excluded.
 - The researcher chooses the relevant records. `labspace_start_collection` takes `{title, recordIds:[...]}` using those real IDs and starts a room-grouped itinerary.
-- The visible **Collection guide** has **Previous**, **Next**, **Focus**, and **All stops**. `labspace_collection_step` offers the same `previous`, `next`, `status`, and `finish` operations to the agent.
+- The visible **Collection guide** has **Previous**, **Next**, **Focus**, and **All stops**. `labspace_collection_step` offers `previous`, `next`, `status`, `finish`, and read-only `history` operations to the agent.
+- The Spatial Index **Process tracker** records guide-start snapshots (names, room/path, recorded amounts), timestamped navigation and explicit human **Confirm location checked** checkpoints. Next/Previous never confirms collection, consumes stock or approves a procedure. Matching physical drawers and cabinet doors open automatically on focus; legacy mismatches have a physical-link repair path in Storage.
+- History retains eight ended guides plus the active guide in this tab's session storage. Reloading the tab preserves them; this is not cloud sync, a permanent audit service or a tamper-proof log. Export JSON evidence before closing the tab. `labspace_collection_step({action:"history"})` returns only the current project's runs and cannot record a human checkpoint.
 - Each stop focuses the canonical room object and storage location while retaining your chosen 2D/3D view. The guide survives navigation in the same browser tab. It does not deduct, reserve, or fabricate stock.
 
 This is a collection checklist, **not** a validated pedestrian route, regulatory safety assessment, or authorization to run an experiment. It does not infer safe substitutions or chemical compatibility. Unlocated/deleted records fail explicitly.

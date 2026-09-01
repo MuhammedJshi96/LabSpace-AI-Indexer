@@ -207,6 +207,17 @@ test("adds reviewed inventory through one tool and guides exact collection stops
   await guide.getByRole("button", { name: "Previous", exact: true }).click();
   await expect(guide).toContainText("1 / 2");
   await expect(guide).toContainText("Stock is not deducted");
+  await guide.getByRole("button", { name: "Confirm location checked", exact: true }).click();
+  await expect(guide).toContainText("1 of 2 locations checked");
+  await page.getByRole("button", { name: "Process tracker", exact: true }).click();
+  const tracker = page.getByRole("region", { name: "Process tracker", exact: true });
+  await expect(tracker).toContainText("1/2 checked");
+  await expect(tracker).toContainText("Checked by you");
+  await tracker.screenshot({ path: "test-results/process-tracker.png" });
+  const evidence = await executeTool<{ runs: Array<{ checked: unknown[]; trail: Array<{ actor: string }> }> }>(page, "labspace_collection_step", { action: "history" });
+  expect(evidence.runs[0].checked).toHaveLength(1);
+  expect(evidence.runs[0].trail.at(-1)?.actor).toBe("Human");
+  await page.getByRole("button", { name: "Close process tracker", exact: true }).click();
   expect((await readProject(page)).rooms).toEqual(before.rooms);
   await executeTool(page, "labspace_collection_step", { action: "finish" });
   await expect(guide).not.toBeVisible();
@@ -323,6 +334,7 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
   await page.getByRole("button", { name: /Open WebMCP Inspector/ }).click();
   const inspector = page.getByRole("complementary", { name: "WebMCP Inspector" });
   await expect(inspector).toBeVisible();
+  await inspector.getByRole("tab", { name: "Use WebMCP" }).click();
   await expect(inspector).toContainText("Type this in your browser-agent conversation");
   await expect(inspector).toContainText("there is no second chat box");
 
@@ -806,13 +818,13 @@ test("opens real cabinet doors and drawers without changing saved room data", as
   await page.getByRole("textbox", { name: "Search spatial index" }).fill("Reference standards");
   await page.getByRole("button", { name: "Find indexed records" }).click();
   const open = page.getByRole("button", { name: "Show access preview", exact: true });
-  await expect(open).toHaveAttribute("aria-pressed", "false");
-  await expect(open).toHaveAttribute(
+  const close = page.getByRole("button", { name: "Close access preview", exact: true });
+  await expect(close).toHaveAttribute("aria-pressed", "true");
+  await expect(close).toHaveAttribute(
     "data-storage-parts",
     "wall cabinet left door|wall cabinet right door",
   );
-  await expect(page.locator("#storage-access-note")).toContainText("2 fixed internal shelves");
-  await open.click();
+  await expect(page.locator("#storage-access-note")).toContainText("fixed interior shelves");
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "true");
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true");
   await page
@@ -833,14 +845,15 @@ test("opens real cabinet doors and drawers without changing saved room data", as
   cabinet.position.z = 0;
   shelf.type = "drawer";
   shelf.name = "Drawer 01";
+  delete shelf.anatomyKey;
+  delete shelf.normalizedBounds;
   expect(
     (await page.request.put(`/api/project/${fixture.id}`, { data: fixture })).ok(),
   ).toBeTruthy();
   await page.reload();
   await page.getByRole("textbox", { name: "Search spatial index" }).fill("Reference standards");
   await page.getByRole("button", { name: "Find indexed records" }).click();
-  await expect(open).toHaveAttribute("data-storage-parts", "Three-drawer bank drawer 3");
-  await open.click();
+  await expect(close).toHaveAttribute("data-storage-parts", "Three-drawer bank drawer 3");
   await expect(page.locator("#storage-access-note")).toContainText("1 drawer");
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-storage-access-open", "true");
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true");

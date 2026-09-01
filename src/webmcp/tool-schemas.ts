@@ -539,7 +539,9 @@ export const startCollectionSchema = {
 
 export const collectionStepSchema = {
   type: "object",
-  properties: { action: { type: "string", enum: ["status", "next", "previous", "finish"] } },
+  properties: {
+    action: { type: "string", enum: ["status", "next", "previous", "finish", "history"] },
+  },
   required: ["action"],
   additionalProperties: false,
 } as const;

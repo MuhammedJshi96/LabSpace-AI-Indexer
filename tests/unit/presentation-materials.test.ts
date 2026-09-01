@@ -150,9 +150,23 @@ describe("local realistic material presentation", () => {
     c.release();
   });
 
-  it("bounds all High finish maps below 3 MiB and never encodes mirror roughness", () => {
+  it("textures only explicit cabinet coating roles and preserves baseline, paint and glazing", () => {
+    const source = coated();
+    Object.assign(source.userData, {
+      labspace_finish_family: "storage",
+      labspace_finish_role: "face",
+    });
+    const high = acquirePresentationMaterial(source, "high");
+    const m = high.material as THREE.MeshPhysicalMaterial;
+    expect(m.normalMap).toBe(realisticSurfaceMaps("casework").normalMap);
+    expect(m.color.equals(source.color)).toBe(true);
+    expect(m.metalness).toBe(0);
+    expect(acquirePresentationMaterial(source, "balanced").material).toBe(source);
+    high.release();
+  });
+  it("bounds all High finish maps below 4 MiB and never encodes mirror roughness", () => {
     let bytes = 0;
-    for (const kind of ["coating", "brushed", "phenolic", "polymer"] as const) {
+    for (const kind of ["coating", "casework", "brushed", "phenolic", "polymer"] as const) {
       const maps = realisticSurfaceMaps(kind);
       expect(maps).toBe(realisticSurfaceMaps(kind));
       for (const map of Object.values(maps)) {
@@ -166,6 +180,6 @@ describe("local realistic material presentation", () => {
       for (let i = 1; i < data.length; i += 4) minimum = Math.min(minimum, data[i]);
       expect(minimum).toBeGreaterThanOrEqual(216);
     }
-    expect((bytes * 4) / 3).toBeLessThan(3 * 1024 * 1024);
+    expect((bytes * 4) / 3).toBeLessThan(4 * 1024 * 1024);
   });
 });

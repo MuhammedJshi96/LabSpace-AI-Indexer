@@ -11,16 +11,20 @@ import {
   ArrowClockwise,
   Trash,
   Archive,
+  CaretRight,
+  ArrowLeft,
+  X,
 } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { InventoryItem, Room, StorageLocation } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
 import { Dialogs, Toasts } from "./Dialogs";
 import { TopBar } from "./TopBar";
-import { InventoryOrganizer, type InventoryOrganizerOptions } from "./InventoryOrganizer";
 import { InventoryThumbnail } from "./InventoryThumbnail";
+import { InventoryImageEditor } from "./InventoryImageEditor";
 import { StorageNameEditor } from "./StorageNameEditor";
 import { storagePath, type InventoryReference } from "../domain/inventory-organization";
+import { compactStorageLabel } from "../domain/storage-display";
 import { StorageWorkspace, type StorageSelection } from "./StorageWorkspace";
 import { navigateWorkspace } from "../lib/workspace-navigation";
 import "./InventoryPage.css";
@@ -31,23 +35,11 @@ type InventoryRow = {
   laboratoryName: string;
   laboratoryCode: string;
   location: StorageLocation | null;
-  path: string[];
+  path: StorageLocation[];
 };
 
 function locationPath(room: Room, locationId: string | null) {
-  if (!locationId) return [];
-  const locations = room.scene.storageLocations;
-  const names: string[] = [];
-  const visited = new Set<string>();
-  let current = locations.find((entry) => entry.id === locationId);
-  while (current && !visited.has(current.id)) {
-    visited.add(current.id);
-    names.unshift(current.name);
-    current = current.parentId
-      ? locations.find((entry) => entry.id === current?.parentId)
-      : undefined;
-  }
-  return names;
+  return storagePath(room.scene.storageLocations, locationId);
 }
 
 function statusFor(item: InventoryItem) {
@@ -78,7 +70,10 @@ export function InventoryPage() {
     "all",
   );
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [organizer, setOrganizer] = useState<InventoryOrganizerOptions | null>(null);
+  const [editingItem, setEditingItem] = useState(false);
+  const [placementItems, setPlacementItems] = useState<InventoryReference[]>([]);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const detailDialog = useRef<HTMLDialogElement>(null);
   const [checkedReferences, setChecked] = useState<InventoryReference[]>([]);
   const [view, setView] = useState<"inventory" | "storage">(() =>
     new URLSearchParams(window.location.search).get("view") === "storage" ? "storage" : "inventory",
@@ -105,6 +100,9 @@ export function InventoryPage() {
   };
 
   useEffect(() => void hydrate(), [hydrate]);
+  useEffect(() => {
+    if (detailOpen) detailDialog.current?.showModal();
+  }, [detailOpen]);
   useEffect(() => {
     if (!hydrated || saveStatus !== "unsaved" || dirtyRevision === 0) return;
     const timer = window.setTimeout(() => void saveNow(), 900);
@@ -143,15 +141,38 @@ export function InventoryPage() {
           row.laboratoryName,
           row.laboratoryCode,
           row.location?.indexCode,
-          ...row.path,
+          ...row.path.map((location) => location.name),
         ]
           .join(" ")
           .toLowerCase()
           .includes(term))
     );
   });
+  // Keep the dossier on its explicit record while an edit changes the active
+  // search/filter match; never redirect subsequent keystrokes to another item.
   const selected =
-    filteredRows.find((row) => row.item.id === selectedItemId) ?? filteredRows[0] ?? null;
+    (editingItem ? rows : filteredRows).find((row) => row.item.id === selectedItemId) ??
+    filteredRows[0] ??
+    null;
+  const openStorageAt = (row: InventoryRow | null) =>
+    changeView(
+      "storage",
+      row?.location
+        ? {
+            roomId: row.room.id,
+            objectId: row.location.objectId,
+            locationId: row.location.id,
+          }
+        : { roomId: row?.room.id ?? project.activeRoomId, objectId: null, locationId: null },
+    );
+  const startPlacement = (items: InventoryReference[] = []) => {
+    const firstSelected = items.length
+      ? rows.find((row) => row.room.id === items[0].roomId && row.item.id === items[0].itemId)
+      : selected;
+    setPlacementItems(items);
+    setDetailOpen(false);
+    openStorageAt(firstSelected ?? null);
+  };
   const checked = checkedReferences.filter((entry) =>
     rows.some((row) => row.room.id === entry.roomId && row.item.id === entry.itemId),
   );
@@ -170,6 +191,8 @@ export function InventoryPage() {
     const id = addItem(room.id, null, { name: "New inventory item", quantity: 1, unit: "item" });
     if (id) {
       setSelectedItemId(id);
+      setEditingItem(true);
+      setDetailOpen(true);
       setQuery("");
       setRoomFilter("all");
       setStatusFilter("all");
@@ -177,55 +200,36 @@ export function InventoryPage() {
   };
 
   return (
-    <div className="app-shell inventory-page-shell">
+    <div className="app-shell inventory-page-shell studio-refined studio-simple">
       <TopBar activeArea="inventory" contextLabel="Inventory Studio" />
       <main
         className={`inventory-studio has-workspace-tabs${view === "storage" ? " is-storage-view" : ""}`}
       >
         <header className="inventory-studio-header">
           <div>
-            <span className="eyebrow">Project-wide index</span>
+            <span className="eyebrow">LabSpace / Resources</span>
             <h1>{view === "storage" ? "Storage workspace" : "Inventory Studio"}</h1>
             <p>
               {view === "storage"
-                ? "Name every place. See what belongs there. Keep your place in the editor."
-                : "One shared inventory registry across every laboratory, room, and storage location."}
+                ? "Choose a cabinet. Drop items into place."
+                : "Find your stock. Open an item to edit it, or place it in storage."}
             </p>
           </div>
           {view === "inventory" && (
             <div className="inventory-create-control">
-              <button
-                className="inventory-secondary-action"
-                onClick={() =>
-                  changeView("storage", {
-                    roomId: selected?.room.id ?? project.activeRoomId,
-                    objectId: selected?.location?.objectId,
-                    locationId: selected?.location?.id,
-                  })
-                }
-              >
-                <PencilSimple size={17} />
-                Manage storage
-              </button>
-              <button className="inventory-secondary-action" onClick={() => setOrganizer({})}>
+              <button className="inventory-secondary-action" onClick={() => startPlacement()}>
                 <MapPin size={17} />
                 Assign inventory
               </button>
-              <span className="inventory-registry-badge">
-                <Buildings size={17} weight="duotone" />
-                <span>
-                  <b>Universal registry</b>
-                  <small>
-                    {project.laboratories.length}{" "}
-                    {project.laboratories.length === 1 ? "laboratory" : "laboratories"} ·{" "}
-                    {rows.length} records
-                  </small>
-                </span>
-              </span>
               <button className="primary-action" onClick={createItem}>
                 <Plus size={17} /> New inventory item
               </button>
             </div>
+          )}
+          {view === "storage" && (
+            <button className="inventory-secondary-action" onClick={() => navigateWorkspace("/")}>
+              <ArrowLeft size={17} /> Back to layout
+            </button>
           )}
         </header>
         <div className="inventory-workspace-bar">
@@ -240,7 +244,7 @@ export function InventoryPage() {
               onKeyDown={(event) => {
                 if (["ArrowLeft", "ArrowRight", "End"].includes(event.key)) {
                   event.preventDefault();
-                  changeView("storage");
+                  startPlacement();
                   document.getElementById("storage-view-tab")?.focus();
                 }
               }}
@@ -253,7 +257,7 @@ export function InventoryPage() {
               aria-selected={view === "storage"}
               aria-controls="storage-view-panel"
               tabIndex={view === "storage" ? 0 : -1}
-              onClick={() => changeView("storage")}
+              onClick={() => startPlacement()}
               onKeyDown={(event) => {
                 if (["ArrowLeft", "ArrowRight", "Home"].includes(event.key)) {
                   event.preventDefault();
@@ -265,11 +269,25 @@ export function InventoryPage() {
               <Archive size={18} /> Storage
             </button>
           </div>
+          <span className="studio-scope">
+            <Buildings size={15} /> {project.laboratories.length}{" "}
+            {project.laboratories.length === 1 ? "laboratory" : "laboratories"}
+            <span>·</span>
+            {editableRooms.length} rooms
+          </span>
           <div className="inventory-workspace-history">
-            <button aria-label="Undo last storage change" disabled={!canUndo} onClick={undo}>
+            <button
+              aria-label={view === "storage" ? "Undo last storage change" : "Undo last change"}
+              disabled={!canUndo}
+              onClick={undo}
+            >
               <ArrowCounterClockwise size={16} /> Undo
             </button>
-            <button aria-label="Redo last storage change" disabled={!canRedo} onClick={redo}>
+            <button
+              aria-label={view === "storage" ? "Redo last storage change" : "Redo last change"}
+              disabled={!canRedo}
+              onClick={redo}
+            >
               <ArrowClockwise size={16} /> Redo
             </button>
           </div>
@@ -283,9 +301,16 @@ export function InventoryPage() {
           >
             <StorageWorkspace
               selection={storageSelection}
+              initialItems={placementItems}
+              onAssigned={() => {
+                setChecked([]);
+                setPlacementItems([]);
+              }}
               onSelection={(value) => changeView("storage", value)}
               onOpenItem={(_roomId, itemId) => {
                 setSelectedItemId(itemId);
+                setEditingItem(false);
+                setDetailOpen(true);
                 setQuery("");
                 setRoomFilter("all");
                 setStatusFilter("all");
@@ -300,385 +325,515 @@ export function InventoryPage() {
             aria-labelledby="inventory-view-tab"
             className="inventory-studio-body"
           >
-            <aside className="inventory-filter-rail">
-              <label className="inventory-search">
-                <MagnifyingGlass size={18} />
-                <input
-                  aria-label="Search inventory"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search inventory…"
-                />
-              </label>
-              <label>
-                <span>
-                  <Buildings size={15} /> Location filter
-                </span>
-                <select value={roomFilter} onChange={(event) => setRoomFilter(event.target.value)}>
-                  <option value="all">All locations</option>
-                  {project.laboratories.map((laboratory) => (
-                    <optgroup key={laboratory.id} label={`${laboratory.name} · ${laboratory.code}`}>
-                      {editableRooms
-                        .filter((room) => room.laboratoryId === laboratory.id)
-                        .map((room) => (
-                          <option key={room.id} value={room.id}>
-                            {room.name} · {room.code}
-                          </option>
-                        ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </label>
-              <div className="inventory-status-filters">
-                <span>
-                  <Funnel size={15} /> Assignment state
-                </span>
-                {(["all", "indexed", "unassigned", "expired"] as const).map((status) => (
-                  <button
-                    key={status}
-                    className={statusFilter === status ? "active" : ""}
-                    onClick={() => setStatusFilter(status)}
-                  >
-                    <span>{status[0].toUpperCase() + status.slice(1)}</span>
-                    <em>
-                      {status === "all"
-                        ? rows.length
-                        : rows.filter((row) => statusFor(row.item) === status).length}
-                    </em>
-                  </button>
-                ))}
-              </div>
-            </aside>
-
-            <section className="inventory-record-list" aria-label="Inventory records">
-              <header>
-                <span>
-                  <b>{filteredRows.length}</b> matching records
-                </span>
-                <small>
-                  {rows.length} total · {editableRooms.length} rooms
-                </small>
-                <div className="inventory-history-actions">
-                  <button
-                    aria-label="Undo last change"
-                    title="Undo last change"
-                    disabled={!canUndo}
-                    onClick={undo}
-                  >
-                    <ArrowCounterClockwise size={17} />
-                  </button>
-                  <button
-                    aria-label="Redo last change"
-                    title="Redo last change"
-                    disabled={!canRedo}
-                    onClick={redo}
-                  >
-                    <ArrowClockwise size={17} />
-                  </button>
-                </div>
-              </header>
-              <div className={`inventory-selection-bar ${checked.length ? "has-selection" : ""}`}>
-                <label>
+            <div className="inventory-ledger">
+              <aside className="inventory-filter-rail">
+                <label className="inventory-search">
+                  <MagnifyingGlass size={18} />
                   <input
-                    type="checkbox"
-                    aria-label="Select all matching inventory"
-                    checked={allChecked}
-                    ref={(node) => {
-                      if (node) node.indeterminate = !allChecked && filteredRows.some(isChecked);
-                    }}
-                    onChange={() =>
-                      setChecked((entries) =>
-                        allChecked
-                          ? entries.filter(
-                              (entry) =>
-                                !filteredRows.some(
-                                  (row) =>
-                                    row.room.id === entry.roomId && row.item.id === entry.itemId,
-                                ),
-                            )
-                          : [
-                              ...entries,
-                              ...filteredRows
-                                .filter((row) => !isChecked(row))
-                                .map((row) => ({ roomId: row.room.id, itemId: row.item.id })),
-                            ],
-                      )
-                    }
+                    aria-label="Search inventory"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search inventory…"
                   />
-                  <span>{checked.length ? `${checked.length} selected` : "Select items"}</span>
                 </label>
-                {checked.length > 0 ? (
-                  <>
-                    {hiddenChecked > 0 && <small>{hiddenChecked} hidden by filters</small>}
-                    <button className="inventory-clear-selection" onClick={() => setChecked([])}>
-                      Clear selection
-                    </button>
-                    <button
-                      className="inventory-bulk-assign"
-                      onClick={() => setOrganizer({ initialItems: checked })}
-                    >
-                      <MapPin size={16} />
-                      Assign selected ({checked.length})
-                    </button>
-                  </>
-                ) : (
-                  <small>Select several records to assign them together.</small>
-                )}
-              </div>
-              <div className="inventory-record-scroll">
-                <div className="inventory-column-labels" aria-hidden="true">
-                  <span>Item & location</span>
-                  <span>Stock</span>
-                  <span>State</span>
-                </div>
-                {filteredRows.map((row) => {
-                  const status = statusFor(row.item);
-                  return (
-                    <div
-                      className={`inventory-registry-row ${selected?.item.id === row.item.id ? "is-selected" : ""} ${isChecked(row) ? "is-checked" : ""}`}
-                      key={`${row.room.id}-${row.item.id}`}
-                    >
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${row.item.name} in ${row.room.code}`}
-                        checked={isChecked(row)}
-                        onChange={() =>
-                          setChecked((entries) =>
-                            isChecked(row)
-                              ? entries.filter(
-                                  (entry) =>
-                                    entry.roomId !== row.room.id || entry.itemId !== row.item.id,
-                                )
-                              : [...entries, { roomId: row.room.id, itemId: row.item.id }],
-                          )
-                        }
-                      />
-                      <button
-                        className="inventory-record-open"
-                        aria-pressed={selected?.item.id === row.item.id}
-                        onClick={() => setSelectedItemId(row.item.id)}
+                <label>
+                  <span>
+                    <Buildings size={15} /> Location filter
+                  </span>
+                  <select
+                    aria-label="Location filter"
+                    value={roomFilter}
+                    onChange={(event) => setRoomFilter(event.target.value)}
+                  >
+                    <option value="all">All locations</option>
+                    {project.laboratories.map((laboratory) => (
+                      <optgroup
+                        key={laboratory.id}
+                        label={`${laboratory.name} · ${laboratory.code}`}
                       >
-                        <InventoryThumbnail item={row.item} />
-                        <span className="inventory-record-copy">
-                          <b>{row.item.name}</b>
-                          <small>
-                            {row.laboratoryCode} · {row.room.name} · {row.room.code}
-                          </small>
-                          <em title={row.path.join(" → ")}>
-                            {row.path.length ? row.path.join(" / ") : "Location not assigned"}
-                          </em>
-                        </span>
-                        <strong className="inventory-stock">
-                          <span>{row.item.quantity}</span>
-                          <small>{row.item.unit}</small>
-                        </strong>
-                        <span className={`inventory-record-status ${status}`}>{status}</span>
-                      </button>
-                    </div>
-                  );
-                })}
-                {!filteredRows.length && (
-                  <div className="inventory-empty-state">
-                    <Package size={36} weight="duotone" />
-                    <b>No matching inventory</b>
-                    <span>Adjust the project filters or create a new record.</span>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <aside className="inventory-detail-panel">
-              {selected ? (
-                <>
-                  <header>
-                    <InventoryThumbnail item={selected.item} />
-                    <span>
-                      <small>
-                        {selected.laboratoryCode} / {selected.room.code}
-                      </small>
-                      <h2>{selected.item.name}</h2>
-                    </span>
-                  </header>
-                  <div className="inventory-detail-location">
-                    <MapPin size={18} />
-                    <span>
-                      <small>Exact location</small>
-                      <b>{selected.path.length ? selected.path.join(" → ") : "Unassigned"}</b>
-                      <em>{selected.location?.indexCode ?? "No canonical location code"}</em>
-                    </span>
-                  </div>
-                  {selected.location && (
-                    <details className="inventory-storage-names" key={selected.location.id}>
-                      <summary>
-                        <PencilSimple size={15} />
-                        Name this storage
-                      </summary>
-                      <p>
-                        Edit the labels along this item's address. Codes and contents stay
-                        unchanged.
-                      </p>
-                      {storagePath(selected.room.scene.storageLocations, selected.location.id).map(
-                        (location) => (
-                          <div key={location.id}>
-                            <small>{location.type}</small>
-                            <StorageNameEditor roomId={selected.room.id} locationId={location.id} />
-                          </div>
-                        ),
-                      )}
-                    </details>
-                  )}
-                  <div className="inventory-detail-form">
-                    <label className="wide">
-                      <span>Item name</span>
-                      <input
-                        value={selected.item.name}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            name: event.target.value,
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      <span>Quantity</span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={selected.item.quantity}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            quantity: Number(event.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      <span>Unit</span>
-                      <input
-                        value={selected.item.unit}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            unit: event.target.value,
-                          })
-                        }
-                      />
-                    </label>
-                    <label className="wide">
-                      <span>Owner</span>
-                      <input
-                        value={selected.item.owner}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            owner: event.target.value,
-                          })
-                        }
-                        placeholder="Shared or responsible person"
-                      />
-                    </label>
-                    <div className="inventory-assignment-heading wide">
-                      <span className="eyebrow">Physical assignment</span>
-                      <p>
-                        Choose a named cabinet, drawer or shelf in any laboratory. The same
-                        inventory record moves with you.
-                      </p>
-                    </div>
+                        {editableRooms
+                          .filter((room) => room.laboratoryId === laboratory.id)
+                          .map((room) => (
+                            <option key={room.id} value={room.id}>
+                              {room.name} · {room.code}
+                            </option>
+                          ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </label>
+                <div className="inventory-status-filters">
+                  <span>
+                    <Funnel size={15} /> Status
+                  </span>
+                  {(["all", "indexed", "unassigned", "expired"] as const).map((status) => (
                     <button
-                      className="inventory-choose-location wide"
-                      onClick={() =>
-                        setOrganizer({
-                          initialItems: [{ roomId: selected.room.id, itemId: selected.item.id }],
-                          initialRoomId: selected.room.id,
-                          initialLocationId: selected.item.storageLocationId,
-                        })
-                      }
+                      key={status}
+                      className={statusFilter === status ? "active" : ""}
+                      aria-pressed={statusFilter === status}
+                      onClick={() => setStatusFilter(status)}
                     >
-                      <MapPin size={18} />
                       <span>
-                        {selected.location ? "Change location" : "Choose location"}
-                        <small>
-                          {selected.laboratoryName} · {selected.room.code}
-                        </small>
+                        {status === "indexed"
+                          ? "Located"
+                          : status === "unassigned"
+                            ? "Needs a place"
+                            : status[0].toUpperCase() + status.slice(1)}
                       </span>
-                      <ArrowRight size={18} />
+                      <em>
+                        {status === "all"
+                          ? rows.length
+                          : rows.filter((row) => statusFor(row.item) === status).length}
+                      </em>
                     </button>
-                    <label className="wide">
-                      <span>Evidence image URL</span>
-                      <input
-                        type="url"
-                        value={selected.item.imageSrc ?? ""}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            imageSrc: event.target.value || undefined,
-                          })
-                        }
-                        placeholder="/images/inventory/example.png"
-                      />
-                    </label>
-                    <label className="wide">
-                      <span>Expiry date</span>
-                      <input
-                        type="date"
-                        value={selected.item.expiryDate ?? ""}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            expiryDate: event.target.value || null,
-                          })
-                        }
-                      />
-                    </label>
-                    <label className="wide">
-                      <span>Notes</span>
-                      <textarea
-                        rows={4}
-                        value={selected.item.notes}
-                        onChange={(event) =>
-                          updateItem(selected.room.id, selected.item.id, {
-                            notes: event.target.value,
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
-                  <footer>
-                    <button
-                      onClick={() => {
-                        switchRoom(selected.room.id);
-                        navigateWorkspace("/");
-                      }}
-                    >
-                      Open room <ArrowRight size={16} />
-                    </button>
-                    <button
-                      className="danger"
-                      onClick={() => {
-                        if (!window.confirm(`Delete “${selected.item.name}” from inventory?`))
-                          return;
-                        removeItem(selected.room.id, selected.item.id);
-                        setSelectedItemId(null);
-                      }}
-                    >
-                      <Trash size={16} /> Delete record
-                    </button>
-                  </footer>
-                </>
-              ) : (
-                <div className="inventory-empty-state">
-                  <Package size={36} />
-                  <b>Select an inventory record</b>
+                  ))}
                 </div>
-              )}
-            </aside>
+              </aside>
+
+              <section className="inventory-record-list" aria-label="Inventory records">
+                <div className={`inventory-selection-bar ${checked.length ? "has-selection" : ""}`}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label="Select all matching inventory"
+                      checked={allChecked}
+                      ref={(node) => {
+                        if (node) node.indeterminate = !allChecked && filteredRows.some(isChecked);
+                      }}
+                      onChange={() =>
+                        setChecked((entries) =>
+                          allChecked
+                            ? entries.filter(
+                                (entry) =>
+                                  !filteredRows.some(
+                                    (row) =>
+                                      row.room.id === entry.roomId && row.item.id === entry.itemId,
+                                  ),
+                              )
+                            : [
+                                ...entries,
+                                ...filteredRows
+                                  .filter((row) => !isChecked(row))
+                                  .map((row) => ({ roomId: row.room.id, itemId: row.item.id })),
+                              ],
+                        )
+                      }
+                    />
+                    <span>{checked.length ? `${checked.length} selected` : "Select all"}</span>
+                  </label>
+                  {checked.length > 0 ? (
+                    <>
+                      {hiddenChecked > 0 && <small>{hiddenChecked} hidden by filters</small>}
+                      <button className="inventory-clear-selection" onClick={() => setChecked([])}>
+                        Clear selection
+                      </button>
+                      <button
+                        className="inventory-bulk-assign"
+                        onClick={() => startPlacement(checked)}
+                      >
+                        <MapPin size={16} />
+                        Assign selected ({checked.length})
+                      </button>
+                    </>
+                  ) : (
+                    <small className="studio-record-count">
+                      {filteredRows.length} {filteredRows.length === 1 ? "record" : "records"}
+                      {filteredRows.length !== rows.length && ` of ${rows.length}`}
+                    </small>
+                  )}
+                </div>
+                <div className="inventory-record-scroll">
+                  <div className="inventory-column-labels" aria-hidden="true">
+                    <span>Item & location</span>
+                    <span>Stock</span>
+                    <span>State</span>
+                  </div>
+                  {filteredRows.map((row) => {
+                    const status = statusFor(row.item);
+                    return (
+                      <div
+                        className={`inventory-registry-row ${detailOpen && selected?.item.id === row.item.id ? "is-selected" : ""} ${isChecked(row) ? "is-checked" : ""}`}
+                        key={`${row.room.id}-${row.item.id}`}
+                      >
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${row.item.name} in ${row.room.code}`}
+                          checked={isChecked(row)}
+                          onChange={() =>
+                            setChecked((entries) =>
+                              isChecked(row)
+                                ? entries.filter(
+                                    (entry) =>
+                                      entry.roomId !== row.room.id || entry.itemId !== row.item.id,
+                                  )
+                                : [...entries, { roomId: row.room.id, itemId: row.item.id }],
+                            )
+                          }
+                        />
+                        <button
+                          className="inventory-record-open"
+                          aria-label={[
+                            row.item.name,
+                            row.room.name,
+                            row.room.code,
+                            row.path.map((location) => location.name).join(" / "),
+                            `${row.item.quantity} ${row.item.unit}`,
+                            status === "indexed"
+                              ? "Located"
+                              : status === "unassigned"
+                                ? "Needs a place"
+                                : "Expired",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          aria-pressed={detailOpen && selected?.item.id === row.item.id}
+                          onClick={() => {
+                            setSelectedItemId(row.item.id);
+                            setEditingItem(false);
+                            setDetailOpen(true);
+                          }}
+                        >
+                          <InventoryThumbnail item={row.item} />
+                          <span className="inventory-record-copy">
+                            <b>{row.item.name}</b>
+                            <small>
+                              {row.room.name}{" "}
+                              <span className="inventory-room-code">{row.room.code}</span>
+                            </small>
+                            <em
+                              className="inventory-location-breadcrumb"
+                              title={row.path.map((location) => location.name).join(" → ")}
+                            >
+                              {row.path.length ? (
+                                row.path.slice(-2).map((location, index) => (
+                                  <span key={location.id}>
+                                    <span>{compactStorageLabel(location.name, location.type)}</span>
+                                    {index < Math.min(row.path.length, 2) - 1 && (
+                                      <CaretRight size={11} aria-hidden />
+                                    )}
+                                  </span>
+                                ))
+                              ) : (
+                                <span>Location not assigned</span>
+                              )}
+                            </em>
+                          </span>
+                          <strong className="inventory-stock">
+                            <span>{row.item.quantity}</span>
+                            <small>{row.item.unit}</small>
+                          </strong>
+                          <span className={`inventory-record-status ${status}`}>
+                            {status === "indexed"
+                              ? "Located"
+                              : status === "unassigned"
+                                ? "Needs a place"
+                                : "Expired"}
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {!filteredRows.length && (
+                    <div className="inventory-empty-state">
+                      <Package size={36} weight="duotone" />
+                      <b>No matching inventory</b>
+                      <span>Adjust the project filters or create a new record.</span>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            {detailOpen && (
+              <dialog
+                ref={detailDialog}
+                className="inventory-detail-dialog"
+                aria-label="Inventory item details"
+                onCancel={() => setDetailOpen(false)}
+              >
+                <button
+                  className="inventory-detail-close"
+                  aria-label="Close item details"
+                  onClick={() => setDetailOpen(false)}
+                >
+                  <X size={20} />
+                </button>
+                <aside className="inventory-detail-panel" aria-label="Selected inventory item">
+                  {selected ? (
+                    <>
+                      <header>
+                        <InventoryThumbnail item={selected.item} />
+                        <span>
+                          <small>Inventory record</small>
+                          <h2>{selected.item.name}</h2>
+                          <span className={`studio-record-state ${statusFor(selected.item)}`}>
+                            <span />
+                            {statusFor(selected.item) === "indexed"
+                              ? "Located in your laboratory"
+                              : statusFor(selected.item) === "expired"
+                                ? "Expiry needs review"
+                                : "Location not assigned"}
+                          </span>
+                        </span>
+                      </header>
+                      <div className="studio-item-tabs" role="group" aria-label="Item view">
+                        <button aria-pressed={!editingItem} onClick={() => setEditingItem(false)}>
+                          Overview
+                        </button>
+                        <button
+                          aria-pressed={editingItem}
+                          onClick={() => {
+                            setSelectedItemId(selected.item.id);
+                            setEditingItem(true);
+                          }}
+                        >
+                          <PencilSimple size={14} />
+                          Edit item details
+                        </button>
+                      </div>
+                      <div className="inventory-dossier-scroll">
+                        {!editingItem && (
+                          <>
+                            <section className="studio-stock-fact" aria-label="Recorded stock">
+                              <span>Recorded stock</span>
+                              <strong>
+                                {selected.item.quantity} <small>{selected.item.unit}</small>
+                              </strong>
+                              <Package size={21} />
+                              <small>As recorded in your inventory</small>
+                            </section>
+                            <section className="studio-address" aria-label="Exact location">
+                              <header>
+                                <MapPin size={17} />
+                                <h3>Where to find it</h3>
+                              </header>
+                              <ol>
+                                <li>
+                                  <small>Laboratory</small>
+                                  <b>{selected.laboratoryName}</b>
+                                </li>
+                                <li>
+                                  <small>Room · {selected.room.code}</small>
+                                  <b>{selected.room.name}</b>
+                                </li>
+                                {selected.path.map((location, index) => (
+                                  <li
+                                    key={location.id}
+                                    className={
+                                      index === selected.path.length - 1
+                                        ? "address-destination"
+                                        : ""
+                                    }
+                                  >
+                                    <small>
+                                      {index === 0
+                                        ? "Storage unit"
+                                        : index === selected.path.length - 1
+                                          ? "Exact location"
+                                          : "Inside"}
+                                    </small>
+                                    <b title={location.name}>
+                                      {compactStorageLabel(location.name, location.type)}
+                                    </b>
+                                  </li>
+                                ))}
+                              </ol>
+                              {!selected.location && (
+                                <p className="studio-address-empty">
+                                  Give this item a home to find it in the spatial index.
+                                </p>
+                              )}
+                              {selected.location && (
+                                <button
+                                  className="studio-storage-link"
+                                  onClick={() => {
+                                    setDetailOpen(false);
+                                    changeView("storage", {
+                                      roomId: selected.room.id,
+                                      objectId: selected.location?.objectId,
+                                      locationId: selected.location?.id,
+                                    });
+                                  }}
+                                >
+                                  <Archive size={16} />
+                                  Manage this storage
+                                  <ArrowRight size={15} />
+                                </button>
+                              )}
+                            </section>
+                          </>
+                        )}
+                        {editingItem && (
+                          <div className="inventory-detail-form">
+                            <label className="wide">
+                              <span>Item name</span>
+                              <input
+                                value={selected.item.name}
+                                onChange={(event) =>
+                                  updateItem(selected.room.id, selected.item.id, {
+                                    name: event.target.value,
+                                  })
+                                }
+                              />
+                            </label>
+                            <label>
+                              <span>Quantity</span>
+                              <input
+                                type="number"
+                                min="0"
+                                value={selected.item.quantity}
+                                onChange={(event) =>
+                                  updateItem(selected.room.id, selected.item.id, {
+                                    quantity: Number(event.target.value),
+                                  })
+                                }
+                              />
+                            </label>
+                            <label>
+                              <span>Unit</span>
+                              <input
+                                value={selected.item.unit}
+                                onChange={(event) =>
+                                  updateItem(selected.room.id, selected.item.id, {
+                                    unit: event.target.value,
+                                  })
+                                }
+                              />
+                            </label>
+                            <InventoryImageEditor
+                              key={selected.item.id}
+                              source={selected.item.imageSrc}
+                              itemName={selected.item.name}
+                              onChange={(imageSrc) =>
+                                updateItem(selected.room.id, selected.item.id, { imageSrc })
+                              }
+                            />
+                            {selected.location && (
+                              <details
+                                className="inventory-storage-names wide"
+                                key={selected.location.id}
+                              >
+                                <summary>
+                                  <PencilSimple size={15} /> Name this storage
+                                </summary>
+                                <p>
+                                  Edit the labels along this item's address. Codes and contents stay
+                                  unchanged.
+                                </p>
+                                {storagePath(
+                                  selected.room.scene.storageLocations,
+                                  selected.location.id,
+                                ).map((location) => (
+                                  <div key={location.id}>
+                                    <small>{location.type}</small>
+                                    <StorageNameEditor
+                                      roomId={selected.room.id}
+                                      locationId={location.id}
+                                    />
+                                  </div>
+                                ))}
+                              </details>
+                            )}
+                            <details
+                              className="inventory-extra-details wide"
+                              key={`details-${selected.item.id}`}
+                            >
+                              <summary>
+                                More details <small>Owner, expiry & notes</small>
+                              </summary>
+                              <label className="wide">
+                                <span>Owner</span>
+                                <input
+                                  value={selected.item.owner}
+                                  placeholder="Shared or responsible person"
+                                  onChange={(event) =>
+                                    updateItem(selected.room.id, selected.item.id, {
+                                      owner: event.target.value,
+                                    })
+                                  }
+                                />
+                              </label>
+                              <label className="wide">
+                                <span>Expiry date</span>
+                                <input
+                                  type="date"
+                                  value={selected.item.expiryDate ?? ""}
+                                  onChange={(event) =>
+                                    updateItem(selected.room.id, selected.item.id, {
+                                      expiryDate: event.target.value || null,
+                                    })
+                                  }
+                                />
+                              </label>
+                              <label className="wide">
+                                <span>Notes</span>
+                                <textarea
+                                  rows={4}
+                                  value={selected.item.notes}
+                                  onChange={(event) =>
+                                    updateItem(selected.room.id, selected.item.id, {
+                                      notes: event.target.value,
+                                    })
+                                  }
+                                />
+                              </label>
+                              <p className="inventory-canonical-code">
+                                Location code{" "}
+                                <code>{selected.location?.indexCode ?? "Not assigned"}</code>
+                              </p>
+                            </details>
+                            <button
+                              className="studio-delete-record wide"
+                              onClick={() => {
+                                if (
+                                  !window.confirm(`Delete “${selected.item.name}” from inventory?`)
+                                )
+                                  return;
+                                removeItem(selected.room.id, selected.item.id);
+                                setSelectedItemId(null);
+                                setEditingItem(false);
+                              }}
+                            >
+                              <Trash size={15} />
+                              Delete record
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <footer>
+                        <button
+                          className="studio-address-action"
+                          onClick={() =>
+                            startPlacement([{ roomId: selected.room.id, itemId: selected.item.id }])
+                          }
+                        >
+                          <MapPin size={16} />
+                          {selected.location ? "Change location" : "Choose location"}
+                          <CaretRight size={16} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            switchRoom(selected.room.id);
+                            navigateWorkspace("/");
+                          }}
+                        >
+                          Open room <ArrowRight size={16} />
+                        </button>
+                      </footer>
+                    </>
+                  ) : (
+                    <div className="inventory-empty-state">
+                      <Package size={36} />
+                      <b>Select an inventory record</b>
+                    </div>
+                  )}
+                </aside>
+              </dialog>
+            )}
           </section>
         )}
       </main>
       <Dialogs />
-      {organizer && (
-        <InventoryOrganizer
-          {...organizer}
-          onAssigned={() => setChecked([])}
-          onClose={() => setOrganizer(null)}
-        />
-      )}
       <Toasts />
     </div>
   );

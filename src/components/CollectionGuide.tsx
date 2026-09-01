@@ -3,6 +3,7 @@ import "./collection-guide.css";
 import { ArrowLeft, ArrowRight, ListChecks, MapPin, X } from "@phosphor-icons/react";
 import {
   controlCollection,
+  confirmCollectionStop,
   focusCollectionRecord,
   useCollectionStore,
 } from "../agent/labspace-collection-actions";
@@ -30,7 +31,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
   const current = index.find((record) => record.id === route.recordIds[route.step]);
   const act = (action: "next" | "previous" | "finish") => {
     try {
-      controlCollection({ action });
+      controlCollection({ action }, "Human");
       setError("");
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "This stop is unavailable.");
@@ -57,6 +58,12 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
           <X size={18} />
         </button>
       </header>
+      <div className="collection-progress">
+        <span>
+          {route.checked.length} of {route.recordIds.length} locations checked
+        </span>
+        <progress value={route.checked.length} max={route.recordIds.length} />
+      </div>
       <div className="collection-current" aria-live="polite">
         <strong>{current?.name ?? "Record unavailable"}</strong>
         <span>
@@ -78,6 +85,24 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
           Next <ArrowRight size={16} />
         </button>
       </nav>
+      <button
+        className="collection-confirm"
+        disabled={
+          !current?.objectId || route.checked.some((entry) => entry.recordId === current.id)
+        }
+        onClick={() => {
+          try {
+            confirmCollectionStop();
+            setError("");
+          } catch (failure) {
+            setError(failure instanceof Error ? failure.message : "Cannot confirm this stop.");
+          }
+        }}
+      >
+        {route.checked.some((entry) => entry.recordId === current?.id)
+          ? "Location checked"
+          : "Confirm location checked"}
+      </button>
       <div className="collection-links">
         <button onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
           {expanded ? "Hide stops" : "All stops"}
@@ -104,6 +129,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
         <ol>
           {route.recordIds.map((id, step) => (
             <li key={id} aria-current={step === route.step ? "step" : undefined}>
+              {route.checked.some((entry) => entry.recordId === id) ? "✓ " : "○ "}
               {index.find((record) => record.id === id)?.name ?? "Record unavailable"}
             </li>
           ))}

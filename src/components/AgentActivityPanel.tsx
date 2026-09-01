@@ -97,7 +97,7 @@ const WEBMCP_TOOL_CATALOG = [
     label: "Follow collection guide",
     mode: "Navigate",
     description:
-      "Next, previous, status or finish. Never consumes inventory or claims a safe walking path.",
+      "Next, previous, status, finish or history. Timestamped navigation and human checkpoints stay separate. No stock is consumed.",
   },
   {
     name: "labspace_audit_room",
@@ -303,7 +303,7 @@ export function AgentActivityPanel() {
         <span className="webmcp-status-dot" aria-hidden="true" />
         <strong>
           {bridgeStatus === "ready"
-            ? "Browser agent connected"
+            ? "Ready for your browser agent"
             : bridgeCopy(bridgeStatus, registeredCount)}
         </strong>
         <small>
@@ -311,7 +311,7 @@ export function AgentActivityPanel() {
             ? "Calls use the same room, index, validator, and history as the visible interface."
             : (bridgeMessage ?? "LabSpace remains fully usable without browser-agent access.")}
         </small>
-        {bridgeStatus === "ready" && (
+        {bridgeStatus === "ready" && tab === "guide" && (
           <button
             className="webmcp-check-button"
             onClick={() => void runReadOnlyCheck()}
@@ -321,7 +321,7 @@ export function AgentActivityPanel() {
           </button>
         )}
         {connectionError && <em>{connectionError}</em>}
-        {bridgeStatus === "ready" && (
+        {bridgeStatus === "ready" && tab === "guide" && (
           <p className="webmcp-example-prompt">
             <b>Type this in your browser-agent conversation</b>
             <small>
@@ -334,16 +334,6 @@ export function AgentActivityPanel() {
             </span>
           </p>
         )}
-      </div>
-
-      <div className="webmcp-flow" aria-label="WebMCP action flow">
-        <span>Browser agent</span>
-        <i aria-hidden="true">→</i>
-        <span>WebMCP</span>
-        <i aria-hidden="true">→</i>
-        <span>LabSpace</span>
-        <i aria-hidden="true">→</i>
-        <span>Human review</span>
       </div>
 
       <div className="webmcp-tabs" role="tablist" aria-label="WebMCP inspector sections">
@@ -381,25 +371,28 @@ export function AgentActivityPanel() {
                   <time dateTime={event.createdAt}>{eventTime(event.createdAt)}</time>
                   <span>{event.status}</span>
                 </div>
-                {event.toolName && <code className="webmcp-tool-name">{event.toolName}</code>}
                 <strong>{event.action}</strong>
                 <p>{event.subject}</p>
-                {event.evidence && <small>{event.evidence}</small>}
                 {(event.request || event.response) && (
-                  <dl className="webmcp-payloads">
-                    {event.request && (
-                      <div>
-                        <dt>Input</dt>
-                        <dd>{event.request}</dd>
-                      </div>
-                    )}
-                    {event.response && (
-                      <div>
-                        <dt>Result</dt>
-                        <dd>{event.response}</dd>
-                      </div>
-                    )}
-                  </dl>
+                  <details className="webmcp-event-detail">
+                    <summary>Tool evidence</summary>
+                    {event.toolName && <code className="webmcp-tool-name">{event.toolName}</code>}
+                    {event.evidence && <small>{event.evidence}</small>}
+                    <dl className="webmcp-payloads">
+                      {event.request && (
+                        <div>
+                          <dt>Input</dt>
+                          <dd>{event.request}</dd>
+                        </div>
+                      )}
+                      {event.response && (
+                        <div>
+                          <dt>Result</dt>
+                          <dd>{event.response}</dd>
+                        </div>
+                      )}
+                    </dl>
+                  </details>
                 )}
               </article>
             ))
@@ -419,14 +412,19 @@ export function AgentActivityPanel() {
               </small>
             </span>
           </header>
-          {WEBMCP_WORKFLOWS.map((workflow, index) => (
+          {WEBMCP_WORKFLOWS.map((workflow) => (
             <article key={workflow.id}>
-              <span className="webmcp-workflow-number">0{index + 1}</span>
+              <span className="webmcp-workflow-number">
+                <Path size={18} />
+              </span>
               <div>
                 <span className="webmcp-workflow-mode">{workflow.mode}</span>
                 <strong>{workflow.title}</strong>
                 <small>{workflow.outcome}</small>
-                <p>{workflow.prompt}</p>
+                <details className="webmcp-prompt-detail">
+                  <summary>View prompt</summary>
+                  <p>{workflow.prompt}</p>
+                </details>
               </div>
               <button
                 onClick={() => void copyWorkflow(workflow.id, workflow.prompt)}

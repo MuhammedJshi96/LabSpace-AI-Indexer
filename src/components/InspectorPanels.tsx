@@ -41,6 +41,7 @@ import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import type { EquipmentRecord, SceneObject } from "../domain/schema";
 import { selectActiveRoom, useEditorStore, type InspectorPanel } from "../store/editor-store";
 import { InventoryOrganizer, type InventoryOrganizerOptions } from "./InventoryOrganizer";
+import { AssetThumbnail } from "./AssetThumbnail";
 import { StorageInspector } from "./StorageInspector";
 
 const panelTabs: Array<{ id: InspectorPanel; label: string; icon: typeof Info }> = [
@@ -115,49 +116,88 @@ function SurfaceMaterialPicker({
   compact?: boolean;
 }) {
   const selectedChoice = choices.find((choice) => choice.id === value);
+  const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState("");
   return (
-    <div className={`surface-material-group ${compact ? "is-compact" : ""}`}>
-      <div className="surface-material-heading">
-        <span>{label}</span>
-        <em>{selectedChoice?.label ?? "Custom"}</em>
-      </div>
-      {compact && selectedChoice && (
-        <p className="surface-material-description">{selectedChoice.description}</p>
-      )}
-      <div className="surface-material-grid" role="list" aria-label={`${label} material library`}>
-        {choices.map((choice) => (
-          <button
-            key={choice.id}
-            type="button"
-            className={`surface-material-card ${choice.id === value ? "active" : ""}`}
-            aria-pressed={choice.id === value}
-            onClick={() => onChange(choice.id)}
-            title={choice.description}
+    <div className={`surface-material-group finish-chooser ${compact ? "is-compact" : ""}`}>
+      <button
+        className="finish-current"
+        aria-label={`Change ${label.toLowerCase()}`}
+        aria-expanded={expanded}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <i
+          style={{
+            backgroundColor: selectedChoice?.color,
+            backgroundImage: selectedChoice?.textureKind
+              ? `url(${LABORATORY_MATERIAL_TEXTURES[selectedChoice.textureKind].url})`
+              : undefined,
+          }}
+        />
+        <span>
+          <small>{label}</small>
+          <b>{selectedChoice?.label ?? "Custom finish"}</b>
+          <em>{expanded ? "Close finish library" : "Choose another finish"}</em>
+        </span>
+        <CaretRight size={16} />
+      </button>
+      {expanded && (
+        <div className="finish-library">
+          <input
+            aria-label={`Search ${label.toLowerCase()} materials`}
+            placeholder="Find a finish…"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <div
+            className="surface-material-grid"
+            role="list"
+            aria-label={`${label} material library`}
           >
-            <i
-              className={choice.pattern ? `pattern-${choice.pattern}` : ""}
-              style={
-                {
-                  "--surface-color": choice.color,
-                  "--surface-accent": choice.accent,
-                  ...(choice.textureKind
-                    ? {
-                        backgroundImage: `url(${LABORATORY_MATERIAL_TEXTURES[choice.textureKind].url})`,
-                        backgroundSize: "cover",
-                        backgroundBlendMode: "multiply",
-                        backgroundColor: choice.color,
-                      }
-                    : {}),
-                } as CSSProperties
-              }
-            />
-            <span>
-              <b>{choice.label}</b>
-              {!compact && <small>{choice.description}</small>}
-            </span>
-          </button>
-        ))}
-      </div>
+            {choices
+              .filter((choice) =>
+                `${choice.label} ${choice.description}`
+                  .toLowerCase()
+                  .includes(search.toLowerCase()),
+              )
+              .map((choice) => (
+                <button
+                  key={choice.id}
+                  type="button"
+                  className={`surface-material-card ${choice.id === value ? "active" : ""}`}
+                  aria-pressed={choice.id === value}
+                  onClick={() => {
+                    onChange(choice.id);
+                    setExpanded(false);
+                  }}
+                  title={choice.description}
+                >
+                  <i
+                    className={choice.pattern ? `pattern-${choice.pattern}` : ""}
+                    style={
+                      {
+                        "--surface-color": choice.color,
+                        "--surface-accent": choice.accent,
+                        ...(choice.textureKind
+                          ? {
+                              backgroundImage: `url(${LABORATORY_MATERIAL_TEXTURES[choice.textureKind].url})`,
+                              backgroundSize: "cover",
+                              backgroundBlendMode: "multiply",
+                              backgroundColor: choice.color,
+                            }
+                          : {}),
+                      } as CSSProperties
+                    }
+                  />
+                  <span>
+                    <b>{choice.label}</b>
+                    {!compact && <small>{choice.description}</small>}
+                  </span>
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -169,9 +209,6 @@ function RoomPanel() {
   const closedFloor = getClosedWallFloorPolygon(room.scene.objects);
   const registeredFloorFinish = findLaboratoryFloorFinish(room.floorFinish);
   const registeredWallFinish = findLaboratoryWallFinish(room.wallFinish);
-  const utilityCount = room.scene.objects.filter(
-    (object) => object.objectType === "utility",
-  ).length;
   const [surfaceTarget, setSurfaceTarget] = useState<"floor" | "walls">("floor");
   const floorChoices = LABORATORY_FLOOR_FINISHES.map((finish) => ({
     id: finish.id,
@@ -191,17 +228,22 @@ function RoomPanel() {
     textureKind: finish.textureKind,
   }));
   return (
-    <div className="inspector-scroll">
-      <section className="inspector-section room-summary">
-        <div className="room-code-mark">
-          <Cube size={28} weight="duotone" />
-          <span>
-            <b>
-              {room.name} <em>{room.code}</em>
-            </b>
-            {laboratoryFloorFinishLabel(room.floorFinish)} floor
+    <div className="inspector-scroll inspector-studio-panel room-inspector-studio">
+      <section className="inspector-section room-summary inspector-dossier room-dossier">
+        <header>
+          <div className="room-code-mark">
+            <Cube size={28} weight="duotone" />
+            <span>
+              <small>Active room</small>
+              <b>Room · {room.name}</b>
+              <em>{room.code}</em>
+            </span>
+          </div>
+          <span className="dossier-status">
+            <i /> {stats.totalLocations} indexed locations
           </span>
-        </div>
+        </header>
+        <p>{laboratoryFloorFinishLabel(room.floorFinish)} floor · editable spatial workspace</p>
         <div className="stat-grid">
           <Stat
             label="Floor area"
@@ -213,18 +255,28 @@ function RoomPanel() {
           />
           <Stat label="Wall height" value={`${(room.wallHeight / 1000).toFixed(2)} m`} />
           <Stat label="Equipment" value={stats.equipment} />
-          <Stat label="Utilities" value={utilityCount} />
-          <Stat label="Occupancy" value={0} />
         </div>
       </section>
-      <section className="inspector-section">
-        <h3>Room information</h3>
-        <TextField label="Room name" value={room.name} onChange={(name) => updateRoom({ name })} />
-        <TextField
-          label="Room code"
-          value={room.code}
-          onChange={(code) => updateRoom({ code: code.toUpperCase() })}
-        />
+      <details className="inspector-section inspector-card inspector-disclosure room-identity-card">
+        <summary>
+          <span>
+            <h3>Room information</h3>
+            <small>Name, code, notes and 3D context</small>
+          </span>
+          <CaretRight size={16} />
+        </summary>
+        <div className="property-grid two room-identity-fields">
+          <TextField
+            label="Room name"
+            value={room.name}
+            onChange={(name) => updateRoom({ name })}
+          />
+          <TextField
+            label="Room code"
+            value={room.code}
+            onChange={(code) => updateRoom({ code: code.toUpperCase() })}
+          />
+        </div>
         <TextField
           label="Description"
           value={room.notes}
@@ -252,12 +304,12 @@ function RoomPanel() {
           <span>Last updated: {new Date(room.updatedAt).toLocaleString()}</span>
           <a href={`/digital-twin?room=${encodeURIComponent(room.id)}`}>View in Spatial Index</a>
         </div>
-      </section>
-      <section className="inspector-section surface-library-section">
+      </details>
+      <section className="inspector-section inspector-card surface-library-section">
         <div className="surface-library-header">
           <span>
-            <span className="eyebrow">Predefined library</span>
-            <h3>Room surface materials</h3>
+            <small className="eyebrow">Room finishes</small>
+            <h3>Surfaces</h3>
           </span>
           <div className="surface-target-tabs" role="tablist" aria-label="Surface type">
             <button
@@ -663,13 +715,13 @@ function ObjectProperties({ object }: { object: SceneObject }) {
     updateObject(object.id, { [group]: { ...current, [key]: Number(value) } }, `Edit ${key}`);
   };
   return (
-    <div className="inspector-scroll object-properties-panel">
-      <section className="inspector-section selected-summary property-hero">
+    <div className="inspector-scroll inspector-studio-panel object-properties-panel">
+      <section className="inspector-section selected-summary property-hero inspector-dossier">
         <div className="selected-preview">
-          <Cube size={28} weight="duotone" />
+          <AssetThumbnail asset={definition} />
         </div>
         <div>
-          <span className="eyebrow">{object.objectType}</span>
+          <span className="eyebrow">Selected {object.objectType}</span>
           <h3>{object.name}</h3>
           <code>{object.indexCode}</code>
           <span className="property-hero-meta">
@@ -683,114 +735,131 @@ function ObjectProperties({ object }: { object: SceneObject }) {
       </section>
       <section className="inspector-section property-card identity-property-card">
         <div className="property-section-title">
-          <span className="eyebrow">Record identity</span>
-          <h3>Name and classification</h3>
+          <span className="eyebrow">Identity</span>
+          <h3>Object record</h3>
         </div>
         <TextField
           label="Name"
           value={object.name}
           onChange={(name) => updateObject(object.id, { name })}
         />
-        <TextField
-          label="Index code"
-          value={object.indexCode}
-          onChange={(indexCode) => updateObject(object.id, { indexCode: indexCode.toUpperCase() })}
-        />
-        <label className="property-field">
-          <span>Layer</span>
-          <select
-            value={object.layerId}
-            onChange={(event) => updateObject(object.id, { layerId: event.target.value })}
-          >
-            {room.scene.layers.map((layer) => (
-              <option key={layer.id} value={layer.id}>
-                {layer.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="property-field">
-          <span>Zone</span>
-          <select
-            value={object.zoneId ?? ""}
-            onChange={(event) => updateObject(object.id, { zoneId: event.target.value || null })}
-          >
-            <option value="">None</option>
-            {room.scene.zones.map((zone) => (
-              <option key={zone.id} value={zone.id}>
-                {zone.code} · {zone.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <details className="property-disclosure" key={`identity-${object.id}`}>
+          <summary>Classification & codes</summary>
+          <TextField
+            label="Index code"
+            value={object.indexCode}
+            onChange={(indexCode) =>
+              updateObject(object.id, { indexCode: indexCode.toUpperCase() })
+            }
+          />
+          <label className="property-field">
+            <span>Layer</span>
+            <select
+              value={object.layerId}
+              onChange={(event) => updateObject(object.id, { layerId: event.target.value })}
+            >
+              {room.scene.layers.map((layer) => (
+                <option key={layer.id} value={layer.id}>
+                  {layer.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="property-field">
+            <span>Zone</span>
+            <select
+              value={object.zoneId ?? ""}
+              onChange={(event) => updateObject(object.id, { zoneId: event.target.value || null })}
+            >
+              <option value="">None</option>
+              {room.scene.zones.map((zone) => (
+                <option key={zone.id} value={zone.id}>
+                  {zone.code} · {zone.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </details>
       </section>
       <section className="inspector-section property-card transform-property-card">
         <div className="property-section-title">
-          <span className="eyebrow">Spatial properties</span>
+          <span className="eyebrow">Geometry</span>
           <h3>Position and dimensions</h3>
         </div>
         {!isHostedOpening && (
-          <div className={`property-grid ${supportsFreeTransform ? "three" : "two"}`}>
-            <TextField
-              label="X"
-              value={Math.round(object.position.x)}
-              type="number"
-              suffix="mm"
-              onChange={(value) => setNumber("position", "x", value)}
-            />
-            <TextField
-              label="Y"
-              value={Math.round(object.position.y)}
-              type="number"
-              suffix="mm"
-              onChange={(value) => setNumber("position", "y", value)}
-            />
-            {supportsFreeTransform && (
+          <div className="property-coordinate-group">
+            <div className="property-subsection-label">
+              <span>Coordinates</span>
+              <small>Room origin · millimetres</small>
+            </div>
+            <div className={`property-grid ${supportsFreeTransform ? "three" : "two"}`}>
               <TextField
-                label="Raised from floor"
-                value={Math.round(object.position.z)}
+                label="X"
+                value={Math.round(object.position.x)}
                 type="number"
                 suffix="mm"
-                onChange={(value) =>
-                  updateObject(
-                    object.id,
-                    {
-                      position: {
-                        ...object.position,
-                        z: normalizeRaisedFromFloorMm(value, object.position.z),
-                      },
-                    },
-                    "Set raised from floor",
-                  )
-                }
+                onChange={(value) => setNumber("position", "x", value)}
               />
-            )}
+              <TextField
+                label="Y"
+                value={Math.round(object.position.y)}
+                type="number"
+                suffix="mm"
+                onChange={(value) => setNumber("position", "y", value)}
+              />
+              {supportsFreeTransform && (
+                <TextField
+                  label="Elevation"
+                  value={Math.round(object.position.z)}
+                  type="number"
+                  suffix="mm"
+                  onChange={(value) =>
+                    updateObject(
+                      object.id,
+                      {
+                        position: {
+                          ...object.position,
+                          z: normalizeRaisedFromFloorMm(value, object.position.z),
+                        },
+                      },
+                      "Set raised from floor",
+                    )
+                  }
+                />
+              )}
+            </div>
           </div>
         )}
-        <div className={`property-grid ${isHostedOpening ? "two" : "three"}`}>
-          <TextField
-            label="Width"
-            value={Math.round(object.dimensions.width)}
-            type="number"
-            suffix="mm"
-            onChange={(value) => setNumber("dimensions", "width", value)}
-          />
-          {!isHostedOpening && (
+        <div className="property-coordinate-group">
+          <div className="property-subsection-label">
+            <span>Physical size</span>
+            <small>Authored envelope</small>
+          </div>
+          <div className={`property-grid ${isHostedOpening ? "two" : "three"}`}>
             <TextField
-              label="Depth"
-              value={Math.round(object.dimensions.depth)}
+              label="Width"
+              value={Math.round(object.dimensions.width)}
               type="number"
               suffix="mm"
-              onChange={(value) => setNumber("dimensions", "depth", value)}
+              onChange={(value) => setNumber("dimensions", "width", value)}
             />
-          )}
-          <TextField
-            label="Height"
-            value={Math.round(object.dimensions.height)}
-            type="number"
-            suffix="mm"
-            onChange={(value) => setNumber("dimensions", "height", value)}
-          />
+            {!isHostedOpening && (
+              <TextField
+                label="Depth"
+                value={Math.round(object.dimensions.depth)}
+                type="number"
+                suffix="mm"
+                onChange={(value) => setNumber("dimensions", "depth", value)}
+              />
+            )}
+            <TextField
+              label="Height"
+              value={Math.round(object.dimensions.height)}
+              type="number"
+              suffix="mm"
+              onChange={(value) => setNumber("dimensions", "height", value)}
+            />
+          </div>
         </div>
         {!isHostedOpening && (
           <TextField
@@ -833,7 +902,7 @@ function ObjectProperties({ object }: { object: SceneObject }) {
             </button>
           </div>
         )}
-        <div className="toggle-row">
+        <div className="toggle-row property-state-bar">
           <span>Locked</span>
           <button
             className={object.locked ? "active" : ""}
@@ -851,7 +920,8 @@ function ObjectProperties({ object }: { object: SceneObject }) {
             {object.visible ? "Shown" : "Hidden"}
           </button>
         </div>
-        <div className="property-notes-block">
+        <details className="property-notes-block property-disclosure" key={`notes-${object.id}`}>
+          <summary>Notes</summary>
           <TextField
             label="Notes"
             value={String(object.metadata.notes ?? "")}
@@ -860,7 +930,7 @@ function ObjectProperties({ object }: { object: SceneObject }) {
               updateObject(object.id, { metadata: { ...object.metadata, notes } })
             }
           />
-        </div>
+        </details>
       </section>
       {object.wall && (
         <section className="inspector-section surface-library-section">
@@ -1498,22 +1568,24 @@ export function InspectorPanels({ collapsed = false, onCollapsedChange }: Inspec
     <section id="room-inspector-panel" className="inspector" aria-label="Room inspector">
       <div className="inspector-tab-row">
         <div className="inspector-tabs" role="tablist">
-          {panelTabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={panel === tab.id}
-                className={panel === tab.id ? "active" : ""}
-                onClick={() => setPanel(tab.id)}
-              >
-                <Icon size={16} />
-                <span>{tab.label}</span>
-                {tab.id === "validation" && warningCount > 0 && <em>{warningCount}</em>}
-              </button>
-            );
-          })}
+          {panelTabs
+            .filter((tab) => !["index", "inventory"].includes(tab.id))
+            .map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={panel === tab.id}
+                  className={panel === tab.id ? "active" : ""}
+                  onClick={() => setPanel(tab.id)}
+                >
+                  <Icon size={16} />
+                  <span>{tab.label}</span>
+                  {tab.id === "validation" && warningCount > 0 && <em>{warningCount}</em>}
+                </button>
+              );
+            })}
         </div>
         <button
           className="inspector-collapse-control"
@@ -1525,6 +1597,26 @@ export function InspectorPanels({ collapsed = false, onCollapsedChange }: Inspec
         >
           <CaretRight size={17} />
         </button>
+      </div>
+      <div className="inspector-workspace-links" role="tablist" aria-label="Storage and inventory">
+        {panelTabs
+          .filter((tab) => ["index", "inventory"].includes(tab.id))
+          .map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-label={tab.label}
+              aria-selected={panel === tab.id}
+              onClick={() => setPanel(tab.id)}
+            >
+              <tab.icon size={16} />
+              <span>
+                <b>{tab.label}</b>
+                <small>{tab.id === "index" ? "Locations & names" : "Room items"}</small>
+              </span>
+              <CaretRight size={13} />
+            </button>
+          ))}
       </div>
       <div className="inspector-content" role="tabpanel">
         {panel === "room" && <RoomPanel />}

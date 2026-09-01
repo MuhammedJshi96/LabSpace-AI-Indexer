@@ -30,6 +30,59 @@ function location(
 const root = location("root", "cabinet", 0, null);
 
 describe("authored storage access", () => {
+  it("maps original generated drawer labels despite additive anatomy rows, without touching identities", () => {
+    const locations = [
+      root,
+      { ...location("legacy", "drawer"), name: "Drawer 01" },
+      ...rigs["base-drawer-cabinet"].locations.map((slot, i) => ({
+        ...location(`bound-${i}`, "drawer", i + 1),
+        name: slot.name,
+        anatomyKey: slot.key,
+      })),
+    ];
+    const before = JSON.stringify(locations);
+    const access = resolveStorageAccess("base-drawer-cabinet", "object", "legacy", locations);
+    expect(access.parts).toHaveLength(1);
+    expect(access.parts[0].id).toBe("Three-drawer bank drawer 3");
+    expect(JSON.stringify(locations)).toBe(before);
+    const invalid = { ...location("invalid", "drawer"), name: "Drawer 04" };
+    expect(
+      resolveStorageAccess("base-drawer-cabinet", "object", "invalid", [...locations, invalid])
+        .parts,
+    ).toHaveLength(0);
+  });
+  it("opens the correct legacy upper/lower sliding bay and one leaf per track", () => {
+    const locations = [
+      root,
+      { ...location("upper", "compartment"), name: "Upper Compartment" },
+      { ...location("lower", "compartment", 1), name: "Lower Compartment" },
+    ];
+    expect(
+      resolveStorageAccess("glazed-sliding-cabinet", "object", "upper", locations).parts.map(
+        (part) => part.bay,
+      ),
+    ).toEqual(["Upper glass"]);
+    expect(
+      resolveStorageAccess("glazed-sliding-cabinet", "object", "lower", locations).parts.map(
+        (part) => part.bay,
+      ),
+    ).toEqual(["Lower steel"]);
+    expect(
+      resolveStorageAccess("glazed-sliding-cabinet", "object", "root", locations).parts.map(
+        (part) => part.bay,
+      ),
+    ).toEqual(["Lower steel", "Upper glass"]);
+  });
+  it("never silently remaps an obsolete explicit physical binding", () => {
+    const selected = {
+      ...location("drawer", "drawer"),
+      name: "Drawer 01",
+      anatomyKey: "deleted-physical-drawer",
+    };
+    expect(
+      resolveStorageAccess("base-drawer-cabinet", "object", selected.id, [root, selected]).reason,
+    ).toContain("saved physical link");
+  });
   it("opens the two actual opposing wall-cabinet leaves and selects its top shelf", () => {
     const locations = [root, location("shelf", "shelf")];
     const before = JSON.stringify(locations);

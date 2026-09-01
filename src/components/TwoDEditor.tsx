@@ -30,7 +30,8 @@ import {
   synchronizeClosedRoomAfterWallEdit,
 } from "../domain/room-geometry";
 import { wallFinishForObject } from "../domain/laboratory-wall-materials";
-import type { SceneObject } from "../domain/schema";
+import type { Room, SceneObject } from "../domain/schema";
+import { translateSelection } from "../domain/selection-drag";
 import { advanceWallChain, type WallPoint } from "../domain/wall-drawing";
 import { editWallEndpoint, translateWall, type WallEndpoint } from "../domain/wall-editing";
 import {
@@ -444,6 +445,41 @@ function ClearanceMeasurements({
   );
 }
 
+function useSelectionDrag(object: SceneObject) {
+  const draft = useRef<{ room: Room; ids: string[]; error: string | null } | null>(null);
+  return {
+    begin() {
+      const state = useEditorStore.getState();
+      if (!state.selectedIds.includes(object.id) || state.selectedIds.length < 2) return false;
+      draft.current = {
+        room: structuredClone(selectActiveRoom(state)),
+        ids: [...state.selectedIds],
+        error: null,
+      };
+      return true;
+    },
+    move(delta: { x: number; y: number }) {
+      if (!draft.current) return false;
+      const result = translateSelection(draft.current.room, draft.current.ids, delta);
+      draft.current.error = result.error;
+      useEditorStore
+        .getState()
+        .previewObjects(result.error ? draft.current.room.scene.objects : result.objects);
+      return true;
+    },
+    finish() {
+      if (!draft.current) return false;
+      const { room, ids, error } = draft.current;
+      draft.current = null;
+      const state = useEditorStore.getState();
+      if (error) state.pushToast(error, "error");
+      else state.commitPreviewBatch(room.scene.objects, `Move ${ids.length} selected items`);
+      state.setGuides([]);
+      return true;
+    },
+  };
+}
+
 function PlanObject({
   object,
   selected,
@@ -472,6 +508,7 @@ function PlanObject({
   const updateObject = useEditorStore((state) => state.updateObject);
   const pushToast = useEditorStore((state) => state.pushToast);
   const beforeRef = useRef<SceneObject | null>(null);
+  const groupDrag = useSelectionDrag(object);
   const dragOffsetRef = useRef<{ x: number; y: number } | null>(null);
   const layer = room.scene.layers.find((entry) => entry.id === object.layerId);
   const locked = object.locked || layer?.locked;
@@ -509,6 +546,8 @@ function PlanObject({
         onMouseEnter={() => setHovered(object.id)}
         onMouseLeave={() => setHovered(null)}
         onDragStart={(event) => {
+          event.cancelBubble = true;
+          groupDrag.begin();
           beforeRef.current = structuredClone(object);
           if (!selectedIds.includes(object.id)) setSelected([object.id]);
           const stage = event.target.getStage();
@@ -535,15 +574,30 @@ function PlanObject({
             };
           }
           if (snapEnabled) {
-            const snapped = snapPoint(next, room.scene, {
-              gridSize,
-              tolerance: snapTolerance,
-              excludeId: object.id,
-            });
+            const snapped = snapPoint(
+              next,
+              {
+                ...room.scene,
+                objects: room.scene.objects.filter((entry) => !selectedIds.includes(entry.id)),
+              },
+              {
+                gridSize,
+                tolerance: snapTolerance,
+                excludeId: object.id,
+              },
+            );
             next = { x: snapped.x, y: snapped.y };
             setGuides(snapped.guides);
           }
           event.target.position(next);
+          if (
+            beforeRef.current &&
+            groupDrag.move({
+              x: next.x - beforeRef.current.position.x,
+              y: next.y - beforeRef.current.position.y,
+            })
+          )
+            return;
           let position = { ...(beforeRef.current?.position ?? object.position), ...next };
           if (requiresBenchSupport(object)) {
             const candidate = { ...object, position };
@@ -553,6 +607,11 @@ function PlanObject({
           previewObject(object.id, { position });
         }}
         onDragEnd={() => {
+          if (groupDrag.finish()) {
+            beforeRef.current = null;
+            dragOffsetRef.current = null;
+            return;
+          }
           if (beforeRef.current) {
             if (requiresBenchSupport(object)) {
               const currentState = useEditorStore.getState();
@@ -879,6 +938,8 @@ function WallPlan({
   const gridSize = useEditorStore((state) => state.gridSize);
   const snapTolerance = useEditorStore((state) => state.snapTolerance);
   const beforeObjectsRef = useRef<SceneObject[] | null>(null);
+  const groupDrag = useSelectionDrag(object);
+  const dragOrigin = useRef<{ x: number; y: number } | null>(null);
   if (!object.wall) return null;
   const layer = room.scene.layers.find((entry) => entry.id === object.layerId);
   const locked = object.locked || layer?.locked;
@@ -949,9 +1010,35 @@ function WallPlan({
         onTap={selectWall}
         onDragStart={(event) => {
           event.cancelBubble = true;
+          groupDrag.begin();
           beginWallEdit();
+          const pointer = event.target.getStage()?.getPointerPosition();
+          dragOrigin.current = pointer
+            ? event.target.getParent()!.getAbsoluteTransform().copy().invert().point(pointer)
+            : null;
+        }}
+        onDragMove={(event) => {
+          const pointer = event.target.getStage()?.getPointerPosition();
+          const point = pointer
+            ? event.target.getParent()!.getAbsoluteTransform().copy().invert().point(pointer)
+            : null;
+          const delta =
+            point && dragOrigin.current
+              ? { x: point.x - dragOrigin.current.x, y: point.y - dragOrigin.current.y }
+              : { x: event.target.x(), y: event.target.y() };
+          if (snapEnabled) {
+            delta.x = snapValue(delta.x, gridSize, snapTolerance);
+            delta.y = snapValue(delta.y, gridSize, snapTolerance);
+          }
+          if (groupDrag.move(delta)) event.target.position({ x: 0, y: 0 });
         }}
         onDragEnd={(event) => {
+          dragOrigin.current = null;
+          if (groupDrag.finish()) {
+            event.target.position({ x: 0, y: 0 });
+            beforeObjectsRef.current = null;
+            return;
+          }
           const before = beforeObjectsRef.current;
           beforeObjectsRef.current = null;
           if (!before) return;
@@ -1049,6 +1136,8 @@ function OpeningPlan({
   const commitPreview = useEditorStore((state) => state.commitPreview);
   const tool = useEditorStore((state) => state.tool);
   const beforeRef = useRef<SceneObject | null>(null);
+  const groupDrag = useSelectionDrag(object);
+  const dragOrigin = useRef<{ x: number; y: number } | null>(null);
   const resolved = resolveHostedOpening(object, room.scene.objects);
   const width = object.dimensions.width;
   const isDoor = object.objectType === "door";
@@ -1078,12 +1167,18 @@ function OpeningPlan({
       onClick={(event) => {
         if (tool !== "select") return;
         event.cancelBubble = true;
-        setSelected([object.id]);
+        setSelected([object.id], event.evt.shiftKey);
       }}
       onMouseEnter={() => setHovered(object.id)}
       onMouseLeave={() => setHovered(null)}
-      onDragStart={() => {
+      onDragStart={(event) => {
+        event.cancelBubble = true;
+        groupDrag.begin();
         beforeRef.current = structuredClone(object);
+        const pointer = event.target.getStage()?.getPointerPosition();
+        dragOrigin.current = pointer
+          ? event.target.getParent()!.getAbsoluteTransform().copy().invert().point(pointer)
+          : null;
       }}
       onDragMove={(event) => {
         const stage = event.target.getStage();
@@ -1091,6 +1186,14 @@ function OpeningPlan({
         const parent = event.target.getParent();
         if (!pointerPosition || !parent) return;
         const scenePoint = parent.getAbsoluteTransform().copy().invert().point(pointerPosition);
+        if (
+          dragOrigin.current &&
+          groupDrag.move({
+            x: scenePoint.x - dragOrigin.current.x,
+            y: scenePoint.y - dragOrigin.current.y,
+          })
+        )
+          return;
         const projection = findNearestWallProjection(
           room.scene.objects,
           scenePoint,
@@ -1117,6 +1220,11 @@ function OpeningPlan({
         previewObject(object.id, patch);
       }}
       onDragEnd={() => {
+        dragOrigin.current = null;
+        if (groupDrag.finish()) {
+          beforeRef.current = null;
+          return;
+        }
         if (beforeRef.current) commitPreview(beforeRef.current, `Move ${object.name} along wall`);
         beforeRef.current = null;
       }}

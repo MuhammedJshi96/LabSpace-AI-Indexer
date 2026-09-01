@@ -1,6 +1,7 @@
 import { Archive, ArrowLeft, Cube, ListBullets } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { getAssetDefinition } from "../domain/assets";
+import { compactStorageLabel, storageMapMarker } from "../domain/storage-display";
 import { buildStorageMap, storageMapMinimumWidth, type StorageFace } from "../domain/storage-map";
 import type { Room, SceneObject } from "../domain/schema";
 import { AssetThumbnail } from "./AssetThumbnail";
@@ -11,12 +12,21 @@ export function StorageMap({
   object,
   selectedId,
   onChoose,
+  showHeading = true,
+  named = false,
+  dropEnabled = false,
+  onDropItems,
 }: {
   room: Room;
   object: SceneObject;
   selectedId: string | null;
   onChoose: (id: string) => void;
+  showHeading?: boolean;
+  named?: boolean;
+  dropEnabled?: boolean;
+  onDropItems?: (locationId: string) => void;
 }) {
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
   const { slots, faces, unlinked } = buildStorageMap(object, room.scene.storageLocations);
   const selectedSlot = slots.find((slot) => slot.location?.id === selectedId);
   const [faceChoice, setFaceChoice] = useState<{
@@ -54,13 +64,39 @@ export function StorageMap({
   const viewHeight = Math.max(1, height);
   const focusBox = container ?? { x: 0, y: 0, width: 1, height: 1 };
   const minimumWidth = storageMapMinimumWidth(visible, viewWidth, viewHeight, focusBox.width);
-  const position = (slot: (typeof slots)[number]) => ({
-    left: `${((slot.x - focusBox.x) / focusBox.width) * 100}%`,
-    top: `${((slot.y - focusBox.y) / focusBox.height) * 100}%`,
-    width: `${(slot.width / focusBox.width) * 100}%`,
-    height: `${(slot.height / focusBox.height) * 100}%`,
-  });
+  const physicalAspect = (viewWidth * focusBox.width) / (viewHeight * focusBox.height);
+  const diagramAspect = named ? Math.max(2.2, Math.min(3.8, physicalAspect)) : physicalAspect;
+  const position = (slot: (typeof slots)[number]) => {
+    // Named diagrams expose the usable space ABOVE a shelf, not a tiny target
+    // on the thickness of its board. IDs and authored geometry stay unchanged.
+    const previousShelf = visible
+      .filter(
+        (other) =>
+          other.type === "shelf" &&
+          other.y < slot.y &&
+          other.x < slot.x + slot.width &&
+          other.x + other.width > slot.x,
+      )
+      .sort((a, b) => b.y - a.y)[0];
+    const shelfTop = Math.max(
+      focusBox.y + focusBox.height * 0.025,
+      previousShelf ? previousShelf.y + previousShelf.height : focusBox.y,
+    );
+    const top = named && slot.type === "shelf" ? Math.min(slot.y, shelfTop) : slot.y;
+    const slotHeight = named && slot.type === "shelf" ? slot.y + slot.height - top : slot.height;
+    return {
+      left: `${((slot.x - focusBox.x) / focusBox.width) * 100}%`,
+      top: `${((top - focusBox.y) / focusBox.height) * 100}%`,
+      width: `${(slot.width / focusBox.width) * 100}%`,
+      height: `${(slotHeight / focusBox.height) * 100}%`,
+    };
+  };
   const linkedCount = visible.filter((slot) => slot.location).length;
+  const selectedLocation = selectedSlot?.location ?? null;
+  const selectedItemCount = selectedLocation
+    ? room.scene.inventoryItems.filter((item) => item.storageLocationId === selectedLocation.id)
+        .length
+    : 0;
   const mapElement = useRef<HTMLElement>(null);
   const restoreMapFocus = useRef(false);
   useEffect(() => {
@@ -81,27 +117,39 @@ export function StorageMap({
     }
   };
   return (
-    <section ref={mapElement} className="storage-map" aria-label="Visual storage picker">
-      <header className="storage-map-heading">
-        <span className="organizer-asset">
-          <AssetThumbnail asset={getAssetDefinition(object.assetDefinitionId)} />
-        </span>
-        <div>
-          <span className="eyebrow">Storage map</span>
-          {root && root.id !== selectedId ? (
-            <StorageNameEditor key={root.id} roomId={room.id} locationId={root.id} />
-          ) : (
-            <b>{root?.name ?? object.name}</b>
-          )}
-          <small>
-            {(width / 1000).toFixed(2)} m wide · {(height / 1000).toFixed(2)} m high
-          </small>
-        </div>
-      </header>
+    <section
+      ref={mapElement}
+      className={`storage-map ${named ? "named-storage-map" : ""} ${dropEnabled ? "accepts-items" : ""}`}
+      aria-label="Visual storage picker"
+    >
+      {showHeading && (
+        <header className="storage-map-heading">
+          <span className="organizer-asset">
+            <AssetThumbnail asset={getAssetDefinition(object.assetDefinitionId)} />
+          </span>
+          <div>
+            <span className="eyebrow">Storage map</span>
+            {root && root.id !== selectedId ? (
+              <StorageNameEditor key={root.id} roomId={room.id} locationId={root.id} />
+            ) : (
+              <b>{root?.name ?? object.name}</b>
+            )}
+            <small>
+              {(width / 1000).toFixed(2)} m wide · {(height / 1000).toFixed(2)} m high
+            </small>
+          </div>
+        </header>
+      )}
       {slots.length ? (
         <>
           <div className="storage-map-toolbar">
-            <div role="group" aria-label="Cabinet face">
+            <span className="storage-map-view-label">
+              <b>{container ? "Interior layout" : "Storage elevation"}</b>
+              <small>
+                {face[0].toUpperCase() + face.slice(1)} face · {visible.length} mapped locations
+              </small>
+            </span>
+            <div role="group" aria-label="Cabinet face" hidden={named && faces.length === 1}>
               {faces.map((value) => (
                 <button
                   key={value}
@@ -116,9 +164,6 @@ export function StorageMap({
                 </button>
               ))}
             </div>
-            {minimumWidth > 400 && (
-              <small className="storage-map-scroll-hint">Detailed map · scroll to explore</small>
-            )}
             {container && (
               <button
                 type="button"
@@ -141,9 +186,11 @@ export function StorageMap({
             <div
               className="storage-map-elevation"
               style={{
-                width: `min(100%, calc(var(--storage-map-height, clamp(130px, 22vh, 240px)) * ${(viewWidth * focusBox.width) / (viewHeight * focusBox.height)}))`,
-                minWidth: minimumWidth,
-                aspectRatio: `${viewWidth * focusBox.width} / ${viewHeight * focusBox.height}`,
+                width: named
+                  ? "min(100%, 620px)"
+                  : `min(100%, calc(var(--storage-map-height, clamp(130px, 22vh, 240px)) * ${physicalAspect}))`,
+                minWidth: named ? 0 : minimumWidth,
+                aspectRatio: diagramAspect,
               }}
             >
               <div className="storage-map-frame" aria-hidden="true" />
@@ -155,13 +202,27 @@ export function StorageMap({
                 return (
                   <div
                     key={slot.key}
-                    className={`storage-map-slot is-${slot.type} ${selectedId === slot.location?.id ? "is-selected" : ""} ${!slot.location ? "is-unlinked" : ""}`}
+                    className={`storage-map-slot is-${slot.type} ${selectedId === slot.location?.id ? "is-selected" : ""} ${!slot.location ? "is-unlinked" : ""} ${dropEnabled && dropTarget === slot.location?.id ? "is-drop-target" : ""}`}
                     style={position(slot)}
                   >
                     <span className="storage-map-geometry" aria-hidden="true" />
                     <button
                       type="button"
                       className="storage-map-target"
+                      onDragOver={(event) => {
+                        if (!dropEnabled || !slot.location) return;
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = "move";
+                        setDropTarget(slot.location.id);
+                      }}
+                      onDragLeave={() => setDropTarget(null)}
+                      onDrop={(event) => {
+                        if (!dropEnabled || !slot.location) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setDropTarget(null);
+                        onDropItems?.(slot.location.id);
+                      }}
                       aria-label={
                         slot.location
                           ? `Select ${slot.location.name} on storage map`
@@ -176,18 +237,66 @@ export function StorageMap({
                       }
                       onClick={() => openSlot(slot)}
                     >
-                      {index + 1}
+                      {named ? (
+                        <span className="storage-map-number">
+                          {slot.location
+                            ? storageMapMarker(slot.location.name, slot.location.type, index)
+                            : `?${index + 1}`}
+                        </span>
+                      ) : (
+                        index + 1
+                      )}
                     </button>
                   </div>
                 );
               })}
             </div>
           </div>
+          {named && (
+            <div className={`storage-map-selection ${selectedLocation ? "has-selection" : ""}`}>
+              <span className="storage-map-selection-marker">
+                {selectedLocation
+                  ? storageMapMarker(
+                      selectedLocation.name,
+                      selectedLocation.type,
+                      Math.max(
+                        0,
+                        visible.findIndex((slot) => slot.location?.id === selectedLocation.id),
+                      ),
+                    )
+                  : "—"}
+              </span>
+              <span className="storage-map-selection-copy">
+                <small>{selectedLocation ? "Selected destination" : "Choose a destination"}</small>
+                <b title={selectedLocation?.name}>
+                  {selectedLocation
+                    ? compactStorageLabel(selectedLocation.name, selectedLocation.type)
+                    : "Select a marker in the elevation"}
+                </b>
+                <em>
+                  {selectedLocation
+                    ? `${selectedLocation.type} · ${selectedItemCount} ${
+                        selectedItemCount === 1 ? "item" : "items"
+                      }`
+                    : "Full names stay readable here instead of inside small drawers."}
+                </em>
+              </span>
+              {selectedLocation && (
+                <code title={selectedLocation.indexCode}>{selectedLocation.indexCode}</code>
+              )}
+            </div>
+          )}
           <p className="storage-map-caption">
             <Cube size={15} />
-            {container ? "Interior shelves" : "Object-local elevation"} · click a numbered location
+            {named
+              ? dropEnabled
+                ? "Drop onto the highlighted drawer or shelf"
+                : container
+                  ? "Inside the cabinet · click a shelf or drop an item"
+                  : "Click a compartment to see its shelves · drag items to place them"
+              : `${container ? "Interior shelves" : "Cabinet elevation"} · choose a numbered location`}
           </p>
-          <details className="storage-map-legend">
+          <details className="storage-map-legend" hidden={named}>
             <summary>Location names · {visible.length}</summary>
             <div className="storage-map-key" aria-label="Storage map locations">
               {visible.map((slot, index) => (

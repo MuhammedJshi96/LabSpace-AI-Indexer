@@ -1,5 +1,6 @@
 import { buildDigitalTwinIndex } from "../domain/digital-twin-index";
 import type { Project } from "../domain/schema";
+import { resolveStorageAccess } from "../domain/storage-access";
 import { useEditorStore, type SpatialFocusRequest } from "../store/editor-store";
 import type {
   FocusLabRecordInput,
@@ -85,7 +86,16 @@ export function focusLabRecord(
     roomId: room.id,
     objectId: object.id,
     locationId: location?.id ?? null,
-    showStorageAccess: Boolean(options.revealStorage ?? record.locationId),
+    showStorageAccess: Boolean(
+      (options.revealStorage ?? record.locationId) &&
+      location &&
+      resolveStorageAccess(
+        object.assetDefinitionId,
+        object.id,
+        location.id,
+        room.scene.storageLocations,
+      ).parts.length,
+    ),
   });
   if (!applied) {
     throw new LabSpaceActionError("LabSpace could not focus the current physical record.");

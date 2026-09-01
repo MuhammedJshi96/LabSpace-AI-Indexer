@@ -4,6 +4,8 @@ import {
   startCollection,
   controlCollection,
   useCollectionStore,
+  confirmCollectionStop,
+  processHistory,
 } from "../../src/agent/labspace-collection-actions";
 import { createSeedProject } from "../../src/domain/seed";
 import { buildDigitalTwinIndex } from "../../src/domain/digital-twin-index";
@@ -17,10 +19,53 @@ beforeEach(() => {
     pendingAgentChange: null,
     selectedIds: [],
   });
-  useCollectionStore.getState().setRoute(null);
+  useCollectionStore.setState({ route: null, history: [] });
 });
 
 describe("grounded material collection", () => {
+  it("records human-only checkpoints separately from agent navigation and preserves start-time evidence", () => {
+    const project = useEditorStore.getState().project;
+    const records = buildDigitalTwinIndex(project)
+      .filter((record) => record.kind === "inventory" && record.objectId)
+      .slice(0, 2);
+    const inventoryBefore = JSON.stringify(project.rooms.map((room) => room.scene.inventoryItems));
+    startCollection({
+      title: "Auditable locations",
+      recordIds: records.map((record) => record.id),
+    });
+    controlCollection({ action: "next" });
+    expect(useCollectionStore.getState().route?.checked).toHaveLength(0);
+    confirmCollectionStop();
+    confirmCollectionStop();
+    expect(useCollectionStore.getState().route?.checked).toHaveLength(1);
+    expect(useCollectionStore.getState().route?.trail.at(-1)?.actor).toBe("Human");
+    expect(() => controlCollection({ action: "confirm" })).toThrow("Invalid collection");
+    controlCollection({ action: "finish" });
+    expect(useCollectionStore.getState().route).toBeNull();
+    expect(processHistory().runs[0]?.records[0]).toMatchObject({
+      id: records[0].id,
+      name: records[0].name,
+      recordedAmount: records[0].primaryValue,
+    });
+    expect(controlCollection({ action: "history" })).toEqual(processHistory());
+    expect(
+      JSON.stringify(
+        useEditorStore.getState().project.rooms.map((room) => room.scene.inventoryItems),
+      ),
+    ).toBe(inventoryBefore);
+    useEditorStore.setState({ project: { ...project, id: "different-project" } });
+    expect(processHistory().runs).toHaveLength(0);
+  });
+  it("archives replaced guides with bounded history and validates before replacing", () => {
+    const record = buildDigitalTwinIndex(useEditorStore.getState().project).find(
+      (record) => record.kind === "inventory" && record.objectId,
+    )!;
+    for (let i = 0; i < 11; i++) startCollection({ title: `Guide ${i}`, recordIds: [record.id] });
+    expect(useCollectionStore.getState().history).toHaveLength(8);
+    const before = useCollectionStore.getState().route;
+    expect(() => startCollection({ title: "Invalid", recordIds: ["missing-record"] })).toThrow();
+    expect(useCollectionStore.getState().route).toBe(before);
+  });
   it("finds the eligible showcase record, reports missing stock and does not mutate", () => {
     const project = useEditorStore.getState().project;
     const before = JSON.stringify(project);

@@ -125,6 +125,7 @@ type EditorState = {
   hoveredId: string | null;
   selectedLocationId: string | null;
   tool: EditorTool;
+  wallDrawKind: "full" | "half";
   panel: InspectorPanel;
   dialog: AppDialog;
   zoom: number;
@@ -160,6 +161,7 @@ type EditorState = {
   indexFilter: "all" | "occupied" | "empty" | "unassigned";
   hydrate: () => Promise<void>;
   setTool: (tool: EditorTool) => void;
+  setWallDrawKind: (kind: "full" | "half") => void;
   setPanel: (panel: InspectorPanel) => void;
   setDialog: (dialog: AppDialog) => void;
   setSelected: (ids: string[], additive?: boolean) => void;
@@ -351,6 +353,7 @@ function roomSwitchState(project: Project) {
     versions: [],
     guides: [],
     tool: "select" as const,
+    wallDrawKind: "full" as const,
     panel: "room" as const,
     pan: { x: 0, y: 0 },
     zoom: 1,
@@ -670,6 +673,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   hoveredId: null,
   selectedLocationId: null,
   tool: "select",
+  wallDrawKind: "full",
   panel: "room",
   dialog: null,
   zoom: 1,
@@ -758,6 +762,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     return pendingHydration;
   },
   setTool: (tool) => set({ tool, guides: [] }),
+  setWallDrawKind: (wallDrawKind) => set({ wallDrawKind, tool: "wall", guides: [] }),
   setPanel: (panel) => set({ panel }),
   setDialog: (dialog) => set({ dialog }),
   setSelected: (ids, additive = false) =>
@@ -1012,7 +1017,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   addWall: (start, end) => {
     const state = get();
     const room = activeRoom(state.project);
-    const definition = getAssetDefinition("straight-wall");
+    const halfHeight = state.wallDrawKind === "half";
+    const definition = getAssetDefinition(halfHeight ? "half-height-wall" : "straight-wall");
+    const height = halfHeight ? Math.min(1200, room.wallHeight) : room.wallHeight;
     const now = new Date().toISOString();
     const length = Math.hypot(end.x - start.x, end.y - start.y);
     const thickness = definition.defaultDimensions.depth;
@@ -1033,7 +1040,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         y: (start.y + end.y) / 2,
         z: 0,
       },
-      dimensions: { width: length, depth: thickness, height: room.wallHeight },
+      dimensions: { width: length, depth: thickness, height },
       rotation: {
         x: 0,
         y: 0,
@@ -1056,18 +1063,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         start: { ...start },
         end: { ...end },
         thickness,
-        height: room.wallHeight,
-        halfHeight: false,
+        height,
+        halfHeight,
       },
     };
     let command: SceneCommand = {
       id: commandId(),
-      label: "Draw wall",
+      label: halfHeight ? "Draw half wall" : "Draw wall",
       kind: "add",
       after: object,
     };
     const provisionalScene = applyCommand(room.scene, command);
-    const normalizedRoom = normalizeClosedRoomFromWallLoop(provisionalScene.objects);
+    const normalizedRoom = halfHeight
+      ? null
+      : normalizeClosedRoomFromWallLoop(provisionalScene.objects);
     let nextProject: Project;
     if (normalizedRoom) {
       command = {

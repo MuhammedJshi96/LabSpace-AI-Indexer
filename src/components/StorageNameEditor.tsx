@@ -2,7 +2,17 @@ import { Check, PencilSimple, X } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "../store/editor-store";
 
-export function StorageNameEditor({ roomId, locationId }: { roomId: string; locationId: string }) {
+export function StorageNameEditor({
+  roomId,
+  locationId,
+  showLabel = false,
+  displayName,
+}: {
+  roomId: string;
+  locationId: string;
+  showLabel?: boolean;
+  displayName?: string;
+}) {
   const location = useEditorStore((state) =>
     state.project.rooms
       .find((room) => room.id === roomId)
@@ -27,7 +37,7 @@ export function StorageNameEditor({ roomId, locationId }: { roomId: string; loca
   if (!editing)
     return (
       <div className="storage-inline-name">
-        <b>{location.name}</b>
+        <b title={location.name}>{displayName ?? location.name}</b>
         <button
           ref={trigger}
           type="button"
@@ -41,6 +51,7 @@ export function StorageNameEditor({ roomId, locationId }: { roomId: string; loca
           }}
         >
           <PencilSimple size={17} />
+          {showLabel && <span>Rename</span>}
         </button>
       </div>
     );

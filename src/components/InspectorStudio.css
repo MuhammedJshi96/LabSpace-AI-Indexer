@@ -1,0 +1,789 @@
+/* LabSpace Inspector Studio
+   One final, scoped layer replaces the legacy Inspector rule stack without
+   changing saved room, object, storage, or inventory data. */
+.inspector:not(.is-collapsed) {
+  min-width: 0;
+  color: #1a2f29;
+  border-left: 1px solid #cbd8d4;
+  background: #edf2f0;
+}
+
+.inspector .inspector-tab-row {
+  min-height: 52px;
+  padding: 6px 7px 6px 9px;
+  border-bottom: 1px solid #d5dfdc;
+  background: #f8faf9;
+}
+
+.inspector .inspector-tabs {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.inspector .inspector-tabs button {
+  display: flex;
+  min-width: 0;
+  min-height: 39px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 7px;
+  color: #5c6d68;
+  font-size: 12px;
+  font-weight: 620;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.inspector .inspector-tabs button svg {
+  display: block !important;
+  width: 15px;
+  flex: 0 0 auto;
+}
+
+.inspector .inspector-tabs button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector .inspector-tabs button:hover {
+  color: #075e54;
+  background: #edf6f3;
+}
+
+.inspector .inspector-tabs button.active {
+  color: #075f55;
+  border-color: #c9ded8;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(18, 58, 48, 0.07);
+}
+
+.inspector .inspector-tabs button.active::after {
+  right: 12px;
+  bottom: 2px;
+  left: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: #00a995;
+}
+
+.inspector .inspector-tabs button em {
+  min-width: 17px;
+  height: 17px;
+  font-size: 11px;
+}
+
+.inspector .inspector-collapse-control {
+  width: 35px;
+  height: 39px;
+  margin-left: 5px;
+  color: #55716a;
+  border: 1px solid #d1dcd8;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.inspector-workspace-links {
+  display: grid;
+  gap: 7px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #d5dfdc;
+  background: #f1f5f3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inspector-workspace-links button {
+  display: grid;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  color: #36534b;
+  text-align: left;
+  border: 1px solid #d5e0dc;
+  border-radius: 8px;
+  background: #fff;
+  grid-template-columns: 18px minmax(0, 1fr) 13px;
+}
+
+.inspector-workspace-links button > span {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.inspector-workspace-links button b {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector-workspace-links button small {
+  overflow: hidden;
+  color: #778681;
+  font-size: 11px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector-workspace-links button[aria-selected="true"] {
+  color: #05695d;
+  border-color: #9fcfc5;
+  background: #ecf8f5;
+  box-shadow: inset 3px 0 #00a995;
+}
+
+.inspector .inspector-content {
+  min-width: 0;
+  background: #edf2f0;
+}
+
+.inspector .inspector-scroll.inspector-studio-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 11px;
+  overflow-x: hidden;
+}
+
+.inspector-studio-panel > .inspector-section {
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid #d5e0dc;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(20, 54, 46, 0.035);
+}
+
+.inspector-studio-panel > .inspector-dossier {
+  position: relative;
+  overflow: hidden;
+  color: #e9fffa;
+  border-color: #0d5148;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(102, 218, 208, 0.2), transparent 34%),
+    linear-gradient(135deg, #063c35, #0a5047);
+  box-shadow: 0 7px 16px rgba(4, 47, 41, 0.16);
+}
+
+.inspector-studio-panel > .inspector-dossier::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: linear-gradient(90deg, #00a995, #66dad0 55%, transparent);
+}
+
+.room-dossier > header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inspector-studio-panel > .room-dossier {
+  min-height: 148px;
+  height: auto;
+  max-height: none;
+}
+
+.inspector .room-dossier .room-code-mark {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  grid-template-columns: 38px minmax(0, 1fr);
+}
+
+.inspector .room-dossier .room-code-mark > svg {
+  width: 38px;
+  height: 38px;
+  padding: 7px;
+  color: #92eee5;
+  border: 1px solid rgba(166, 238, 229, 0.24);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.inspector .room-dossier .room-code-mark > span {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+  color: #c7e3de;
+}
+
+.inspector .room-dossier .room-code-mark small {
+  color: #9fc9c2;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inspector .room-dossier .room-code-mark b {
+  display: block;
+  overflow: hidden;
+  color: #fff;
+  font:
+    600 16px/1.25 Bahnschrift,
+    sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector .room-dossier .room-code-mark em {
+  color: #77dcd1;
+  font:
+    600 11px Bahnschrift,
+    sans-serif;
+  font-style: normal;
+}
+
+.dossier-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  color: #c9e9e3;
+  font-size: 11px;
+  border: 1px solid rgba(167, 225, 216, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.dossier-status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #66dad0;
+  box-shadow: 0 0 0 3px rgba(102, 218, 208, 0.13);
+}
+
+.room-dossier > p {
+  margin: 10px 0 12px;
+  color: #acd1ca;
+  font-size: 11px;
+}
+
+.inspector .room-dossier .stat-grid {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.inspector .room-dossier .info-stat {
+  min-width: 0;
+  min-height: 51px;
+  padding: 8px 7px;
+  border: 1px solid rgba(190, 233, 226, 0.13);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.inspector .room-dossier .info-stat span {
+  overflow: hidden;
+  color: #a8cec7;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector .room-dossier .info-stat b {
+  overflow: hidden;
+  color: #fff;
+  font:
+    600 13px Bahnschrift,
+    sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-identity-card > summary,
+.inspector-studio-panel .property-disclosure > summary {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.room-identity-card > summary::-webkit-details-marker,
+.inspector-studio-panel .property-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.room-identity-card > summary > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.room-identity-card > summary h3 {
+  margin: 0;
+  color: #203a33;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.room-identity-card > summary small {
+  color: #71817c;
+  font-size: 11px;
+}
+
+.room-identity-card > summary > svg,
+.property-disclosure > summary::after {
+  transition: transform 150ms ease;
+}
+
+.room-identity-card[open] > summary > svg {
+  transform: rotate(90deg);
+}
+
+.room-identity-card[open] > summary {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e4ebe8;
+}
+
+.room-update-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inspector-studio-panel .surface-library-header {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.inspector-studio-panel .surface-library-header > span {
+  display: grid;
+  gap: 2px;
+}
+
+.inspector-studio-panel .surface-library-header h3 {
+  margin: 0;
+  color: #203a33;
+  font-size: 14px;
+}
+
+.inspector-studio-panel .surface-target-tabs {
+  padding: 3px;
+  border: 1px solid #d8e2df;
+  border-radius: 7px;
+  background: #f2f6f4;
+}
+
+.inspector-studio-panel .surface-target-tabs button {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+  border-radius: 5px;
+}
+
+.inspector-studio-panel .finish-current {
+  min-width: 0;
+  min-height: 72px;
+  border-color: #ccd9d5;
+  border-radius: 9px;
+  background: #fbfdfc;
+}
+
+.inspector-studio-panel .finish-current > i {
+  width: 50px;
+  height: 50px;
+}
+
+.object-properties-panel .property-hero {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+  padding: 13px;
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.object-properties-panel > .property-hero {
+  min-height: 104px;
+  height: auto;
+  max-height: none;
+}
+
+.object-properties-panel .selected-preview {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid rgba(186, 232, 224, 0.27);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.object-properties-panel .selected-preview .asset-thumbnail {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  padding: 5px;
+}
+
+.object-properties-panel .property-hero > div:last-child {
+  min-width: 0;
+  color: #b9d9d3;
+  font-size: 11px;
+}
+
+.object-properties-panel .property-hero .eyebrow {
+  color: #84d8ce;
+}
+
+.object-properties-panel .property-hero h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 3px 0 5px;
+  color: #fff;
+  font:
+    600 16px/1.25 Bahnschrift,
+    sans-serif;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.object-properties-panel .property-hero code {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #78ddd2;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.object-properties-panel .property-hero-meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.object-properties-panel .property-hero-meta em {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 3px 6px;
+  color: #c5ded9;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid rgba(184, 226, 219, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.object-properties-panel > .inspector-section:not(.inspector-dossier) {
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid #d5e0dc;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(20, 54, 46, 0.035);
+}
+
+.inspector-studio-panel .property-section-title {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 12px;
+}
+
+.inspector-studio-panel .property-section-title h3 {
+  margin: 0;
+  color: #203a33;
+  font-size: 14px;
+}
+
+.inspector-studio-panel .property-section-title .eyebrow {
+  color: #71837d;
+  font-size: 11px;
+}
+
+.property-coordinate-group + .property-coordinate-group {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e4ebe8;
+}
+
+.property-subsection-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.property-subsection-label span {
+  color: #355048;
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.property-subsection-label small {
+  color: #82908c;
+  font-size: 11px;
+}
+
+.inspector-studio-panel .property-grid {
+  min-width: 0;
+  gap: 9px;
+}
+
+.inspector-studio-panel .property-grid.two,
+.inspector-studio-panel .property-grid.three {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inspector-studio-panel .property-field {
+  min-width: 0;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.inspector-studio-panel .property-grid .property-field {
+  margin-bottom: 0;
+}
+
+.inspector-studio-panel .property-field > span {
+  min-height: 15px;
+  overflow: hidden;
+  color: #536862;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector-studio-panel .property-field input,
+.inspector-studio-panel .property-field select,
+.inspector-studio-panel .property-field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 39px;
+  padding: 8px 10px;
+  color: #1e342e;
+  font-size: 12px;
+  border: 1px solid #c8d5d1;
+  border-radius: 7px;
+  outline: none;
+  background: #fbfdfc;
+}
+
+.inspector-studio-panel .property-field input:focus,
+.inspector-studio-panel .property-field select:focus,
+.inspector-studio-panel .property-field textarea:focus {
+  border-color: #00a995;
+  box-shadow: 0 0 0 3px rgba(0, 169, 149, 0.11);
+  background: #fff;
+}
+
+.inspector-studio-panel .input-with-suffix {
+  display: grid;
+  min-width: 0;
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.inspector-studio-panel .input-with-suffix > input:has(+ em) {
+  padding-right: 9px;
+  border-radius: 7px 0 0 7px;
+}
+
+.inspector-studio-panel .input-with-suffix > em {
+  position: static;
+  display: flex;
+  min-width: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  color: #657670;
+  font-size: 11px;
+  font-style: normal;
+  pointer-events: none;
+  transform: none;
+  border: 1px solid #c8d5d1;
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
+  background: #eef3f1;
+}
+
+.inspector-studio-panel .property-disclosure {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid #e5ebe9;
+}
+
+.inspector-studio-panel .property-disclosure > summary {
+  min-height: 32px;
+  color: #176b60;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.inspector-studio-panel .property-disclosure > summary::after {
+  content: "›";
+  font-size: 17px;
+}
+
+.inspector-studio-panel .property-disclosure[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+.inspector-studio-panel .toggle-row.property-state-bar {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 10px;
+  padding: 9px;
+  border: 1px solid #dce5e2;
+  border-radius: 8px;
+  background: #f4f8f6;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.inspector-studio-panel .toggle-row.property-state-bar > span {
+  color: #60736c;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.inspector-studio-panel .toggle-row.property-state-bar button {
+  min-width: 0;
+  min-height: 32px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 7px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+
+.object-properties-panel .action-footer {
+  position: static !important;
+  display: grid;
+  gap: 7px;
+  padding: 10px !important;
+  border-color: #becfc9 !important;
+  box-shadow: 0 2px 7px rgba(20, 54, 46, 0.035) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.object-properties-panel .action-footer button {
+  min-width: 0;
+  min-height: 36px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 8px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 7px;
+}
+
+.object-properties-panel .equipment-record-photo-row {
+  min-width: 0;
+  align-items: end;
+}
+
+.object-properties-panel .equipment-record-photo-row .property-field {
+  min-width: 0;
+  flex: 1;
+}
+
+.inspector .panel-empty {
+  min-height: 220px;
+  margin: 12px;
+  padding: 28px;
+  color: #60726c;
+  border: 1px dashed #bfcfca;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff, #f1f7f4);
+}
+
+.inspector .panel-empty > svg {
+  color: #168e7d;
+}
+
+.inspector .panel-empty b {
+  color: #1d3931;
+  font-size: 15px;
+}
+
+.inspector .panel-empty span {
+  max-width: 280px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@container room-inspector (max-width: 410px) {
+  .inspector .inspector-tabs button {
+    gap: 4px;
+    padding-inline: 4px;
+    font-size: 11px;
+  }
+  .inspector .room-dossier .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .room-dossier > header {
+    display: grid;
+  }
+  .dossier-status {
+    justify-self: start;
+  }
+  .object-properties-panel .property-hero {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+  .object-properties-panel .selected-preview {
+    width: 60px;
+    height: 60px;
+  }
+  .inspector-studio-panel .toggle-row.property-state-bar {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+@container room-inspector (max-width: 340px) {
+  .inspector-studio-panel .property-grid.two,
+  .inspector-studio-panel .property-grid.three,
+  .room-identity-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .inspector-workspace-links button small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room-identity-card > summary > svg,
+  .property-disclosure > summary::after {
+    transition: none;
+  }
+}

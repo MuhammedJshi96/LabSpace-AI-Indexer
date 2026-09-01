@@ -11,6 +11,7 @@ export type StorageMechanism = {
   translation?: [number, number, number];
   region: { x: number; y: number; z: number; width: number; height: number; depth?: number };
 };
+export type StorageAccessFace = "front" | "rear" | "left" | "right";
 export type StorageAnatomyLocation = {
   key: string;
   name: string;
@@ -23,6 +24,8 @@ type Rig = {
   parts: StorageMechanism[];
   shelfLevels: number[];
   locations?: StorageAnatomyLocation[];
+  defaultAccessFace?: StorageAccessFace;
+  accessFaceOverrides?: { keyPrefix: string; face: StorageAccessFace }[];
 };
 export const STORAGE_RIGS = rigs as unknown as Record<string, Rig>;
 export function storageOpeningParts(parts: StorageMechanism[]) {
@@ -34,13 +37,40 @@ export type StorageAccess = {
   description: string;
   reason: string | null;
   region: StorageMechanism["region"] | null;
+  accessFace: StorageAccessFace | null;
 };
 const unavailable = (reason: string): StorageAccess => ({
   parts: [],
   description: "Access preview unavailable",
   reason,
   region: null,
+  accessFace: null,
 });
+
+/** Physical access direction in authored asset-local coordinates. Region
+ * coordinates describe the highlight only and are never used as a facade
+ * proxy: a harmless modeling offset must not reverse the evidence camera. */
+function storageAccessFace(rig: Rig, anatomyKey?: string): StorageAccessFace {
+  const override = anatomyKey
+    ? [...(rig.accessFaceOverrides ?? [])]
+        .sort((a, b) => b.keyPrefix.length - a.keyPrefix.length)
+        .find((entry) => anatomyKey.startsWith(entry.keyPrefix))
+    : undefined;
+  return override?.face ?? rig.defaultAccessFace ?? "front";
+}
+
+export function storageAccessFaceDirection(face: StorageAccessFace | null | undefined) {
+  switch (face) {
+    case "rear":
+      return { x: 0, z: -1 };
+    case "left":
+      return { x: -1, z: 0 };
+    case "right":
+      return { x: 1, z: 0 };
+    default:
+      return { x: 0, z: 1 };
+  }
+}
 
 /** Compatibility with the original generated location names. Do not interpret
  * arbitrary user labels, unknown counts or multi-bank drawer orders as anatomy. */
@@ -156,6 +186,7 @@ export function resolveStorageAccess(
       description,
       reason: parts.length ? null : "This is open storage; no door needs to be opened.",
       region: nestedRegion(slot.region, bound, selected, locations),
+      accessFace: storageAccessFace(rig, slot.key),
     };
   }
   const drawer = chain.find((location) => location.type === "drawer");
@@ -205,6 +236,7 @@ export function resolveStorageAccess(
       description: "1 drawer · tray and front move together",
       reason: null,
       region: nestedRegion(part.region, drawer, selected, locations),
+      accessFace: storageAccessFace(rig, drawer.anatomyKey),
     };
   }
   const doors = rig.parts.filter((part) => part.kind === "hinge" || part.kind === "slide");
@@ -280,5 +312,6 @@ export function resolveStorageAccess(
     description: `${candidates.length} ${candidates[0]?.kind === "slide" ? "sliding panels" : "hinged doors"}${rig.shelfLevels.length ? ` · ${rig.shelfLevels.length} fixed internal shelves` : " · cabinet interior"}`,
     reason: null,
     region,
+    accessFace: storageAccessFace(rig, selected.anatomyKey),
   };
 }

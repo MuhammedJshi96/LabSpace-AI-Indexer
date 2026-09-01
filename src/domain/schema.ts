@@ -67,6 +67,24 @@ export const ZoneSchema = z.object({
   color: z.string(),
 });
 
+export const RoomSpaceKindSchema = z.enum(["primary", "annex"]);
+
+export const RoomSpaceSchema = z.object({
+  id: IdSchema,
+  roomId: IdSchema,
+  parentSpaceId: IdSchema.nullable(),
+  kind: RoomSpaceKindSchema,
+  name: z.string().min(1),
+  code: z.string().min(1),
+  /** Stable authored boundary associations. A shared wall may belong to two spaces. */
+  wallIds: z.array(IdSchema),
+  floorFinish: z.string().min(1),
+});
+
+export function primaryRoomSpaceId(roomId: string) {
+  return `space-${roomId}-primary`;
+}
+
 export const WallGeometrySchema = z.object({
   start: z.object({ x: z.number(), y: z.number() }),
   end: z.object({ x: z.number(), y: z.number() }),
@@ -83,6 +101,10 @@ export const OpeningSchema = z.object({
   height: z.number().positive(),
   handing: z.enum(["left", "right"]).default("left"),
   swing: z.enum(["inward", "outward", "sliding"]).default("inward"),
+  /** Internal openings explicitly identify both connected spaces. */
+  connectsSpaceIds: z.tuple([IdSchema, IdSchema]).nullable().optional(),
+  /** Physical destination of the opening leaf; null for sliding/exterior openings. */
+  opensIntoSpaceId: IdSchema.nullable().optional(),
 });
 
 export const SceneObjectSchema = z.object({
@@ -96,6 +118,7 @@ export const SceneObjectSchema = z.object({
   rotation: Vector3Schema,
   layerId: IdSchema,
   roomId: IdSchema,
+  spaceId: IdSchema.optional(),
   zoneId: IdSchema.nullable(),
   locked: z.boolean(),
   visible: z.boolean(),
@@ -131,6 +154,7 @@ export const NormalizedStorageBoundsSchema = z.object({
 export const StorageLocationSchema = z.object({
   id: IdSchema,
   roomId: IdSchema,
+  spaceId: IdSchema.optional(),
   objectId: IdSchema,
   parentId: IdSchema.nullable(),
   type: StorageLocationTypeSchema,
@@ -163,6 +187,7 @@ export const InventoryItemSchema = z.object({
 export const EquipmentRecordSchema = z.object({
   id: IdSchema,
   objectId: IdSchema,
+  spaceId: IdSchema.optional(),
   equipmentId: z.string().min(1),
   name: z.string().min(1),
   imageSrc: z.string().min(1).optional(),
@@ -204,7 +229,7 @@ export const SceneSchema = z.object({
   updatedAt: IsoDateSchema,
 });
 
-export const RoomSchema = z.object({
+const RoomShapeSchema = z.object({
   id: IdSchema,
   laboratoryId: IdSchema,
   name: z.string().min(1),
@@ -244,9 +269,66 @@ export const RoomSchema = z.object({
   floorFinish: z.string(),
   wallFinish: z.string().default("clean-white-panel"),
   notes: z.string(),
+  spaces: z.array(RoomSpaceSchema).optional(),
   scene: SceneSchema,
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
+});
+
+type RoomShape = z.infer<typeof RoomShapeSchema>;
+type ParsedRoom = Omit<RoomShape, "spaces"> & { spaces: z.infer<typeof RoomSpaceSchema>[] };
+
+/** Backward-compatible room migration. Older projects acquire one stable
+ * primary space without changing geometry or any canonical object/record ID. */
+export const RoomSchema = RoomShapeSchema.transform((room): ParsedRoom => {
+  const existingPrimary = room.spaces?.find((space) => space.kind === "primary");
+  const primaryId = existingPrimary?.id ?? primaryRoomSpaceId(room.id);
+  const spaces = room.spaces?.length
+    ? room.spaces
+    : [
+        {
+          id: primaryId,
+          roomId: room.id,
+          parentSpaceId: null,
+          kind: "primary" as const,
+          name: room.name,
+          code: room.code,
+          wallIds: room.scene.objects
+            .filter((object) => object.wall && !object.wall.halfHeight)
+            .map((object) => object.id),
+          floorFinish: room.floorFinish,
+        },
+      ];
+  const validSpaceIds = new Set(spaces.map((space) => space.id));
+  const normalizedPrimaryId = validSpaceIds.has(primaryId) ? primaryId : spaces[0].id;
+  const objects: z.infer<typeof SceneSchema>["objects"] = room.scene.objects.map((object) => ({
+    ...object,
+    spaceId:
+      object.spaceId && validSpaceIds.has(object.spaceId) ? object.spaceId : normalizedPrimaryId,
+  }));
+  const objectSpaces = new Map(objects.map((object) => [object.id, object.spaceId]));
+  return {
+    ...room,
+    spaces,
+    scene: {
+      ...room.scene,
+      objects,
+      storageLocations: room.scene.storageLocations.map((location) => ({
+        ...location,
+        spaceId:
+          location.spaceId && validSpaceIds.has(location.spaceId)
+            ? location.spaceId
+            : (objectSpaces.get(location.objectId) ?? normalizedPrimaryId),
+      })),
+      equipmentRecords: room.scene.equipmentRecords.map((record) => ({
+        ...record,
+        spaceId:
+          record.spaceId && validSpaceIds.has(record.spaceId)
+            ? record.spaceId
+            : (objectSpaces.get(record.objectId) ?? normalizedPrimaryId),
+      })),
+    },
+  };
 });
 
 export const LaboratorySchema = z.object({
@@ -358,6 +440,8 @@ export type ObjectType = z.infer<typeof ObjectTypeSchema>;
 export type LayerRole = z.infer<typeof LayerRoleSchema>;
 export type Layer = z.infer<typeof LayerSchema>;
 export type Zone = z.infer<typeof ZoneSchema>;
+export type RoomSpaceKind = z.infer<typeof RoomSpaceKindSchema>;
+export type RoomSpace = z.infer<typeof RoomSpaceSchema>;
 export type SceneObject = z.infer<typeof SceneObjectSchema>;
 export type StorageLocation = z.infer<typeof StorageLocationSchema>;
 export type NormalizedStorageBounds = z.infer<typeof NormalizedStorageBoundsSchema>;

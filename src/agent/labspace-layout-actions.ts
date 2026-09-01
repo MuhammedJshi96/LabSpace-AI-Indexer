@@ -1107,7 +1107,7 @@ export function planRoomLayout(
       "Doors and windows retain a canonical hosted-wall ID, offset, sill height, handing, and swing.",
       "Rejects boundary, overlap, elevation, and room-height conflicts with LabSpace's deterministic validator.",
       "Aisle spacing is a planning preference, not a regulatory or manufacturer-certified clearance.",
-      "The proposal is read-only. Only the first complete plan for a new WebMCP-created blank room may auto-commit; later changes require review.",
+      "The proposal is read-only. Reviewed mode pauses before commit; human-authorized Fast Draft may apply only the complete first plan for a pristine WebMCP-created room.",
     ],
     requiresHumanApproval: true,
   };

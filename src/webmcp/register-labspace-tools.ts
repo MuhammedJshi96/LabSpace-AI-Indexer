@@ -11,6 +11,8 @@ import { labSpaceLayoutActions } from "../agent/labspace-layout-actions";
 import { labSpaceInventoryActions } from "../agent/labspace-inventory-actions";
 import { labSpaceWorkspaceActions } from "../agent/labspace-workspace-actions";
 import { labSpaceCollectionActions } from "../agent/labspace-collection-actions";
+import { executionDecisionForTool } from "../agent/webmcp-execution-policy";
+import { labSpaceAnnexActions } from "../agent/labspace-annex-actions";
 import type {
   LabSpaceLayoutActions,
   LabSpaceInventoryActions,
@@ -19,6 +21,7 @@ import type {
   LabSpaceSpatialActions,
   LabSpaceStagingActions,
   LabSpaceWorkspaceActions,
+  LabSpaceAnnexActions,
 } from "../agent/labspace-action-types";
 import {
   auditRoomSchema,
@@ -32,10 +35,12 @@ import {
   listInventoryLocationsSchema,
   planInventorySchema,
   planRoomLayoutSchema,
+  planAnnexSchema,
   recommendObjectPlacementsSchema,
   searchRecordsSchema,
   searchAssetsSchema,
   stageRoomLayoutSchema,
+  stageAnnexPlanSchema,
   stageInventoryPlanSchema,
   stageObjectMoveSchema,
   stageObjectResizeSchema,
@@ -54,11 +59,13 @@ export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_get_context",
   "labspace_inspect_record",
   "labspace_inventory_locations",
+  "labspace_plan_annex",
   "labspace_plan_inventory",
   "labspace_plan_room",
   "labspace_resolve_materials",
   "labspace_search_assets",
   "labspace_search_records",
+  "labspace_stage_annex_plan",
   "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
   "labspace_stage_resize",
@@ -76,39 +83,57 @@ function completeControlledExecution(
   result: unknown,
 ) {
   signal?.throwIfAborted();
-  const resultRecord =
+  const rawResultRecord =
     result && typeof result === "object" ? (result as Record<string, unknown>) : {};
+  const policyDecision = executionDecisionForTool(toolName);
+  const decoratedResult =
+    policyDecision && rawResultRecord.requiresHumanApproval === true
+      ? {
+          ...rawResultRecord,
+          executionMode: policyDecision.mode,
+          executionDisposition: policyDecision.disposition,
+          executionReason: policyDecision.reason,
+        }
+      : result;
+  const resultRecord =
+    decoratedResult && typeof decoratedResult === "object"
+      ? (decoratedResult as Record<string, unknown>)
+      : {};
   const status: AgentActivityStatus =
-    toolName === "labspace_create_room" || resultRecord.autoCommitted === true
+    (toolName === "labspace_create_room" && resultRecord.created === true) ||
+    resultRecord.autoCommitted === true
       ? "committed"
-      : toolName === "labspace_audit_room"
-        ? resultRecord.status === "blocked"
-          ? "blocked"
-          : "valid"
-        : toolName === "labspace_stage_object_move" ||
-            toolName === "labspace_stage_resize" ||
-            toolName === "labspace_stage_room_plan" ||
-            toolName === "labspace_stage_inventory_plan" ||
-            toolName === "labspace_add_inventory"
-          ? "pending"
-          : toolName === "labspace_find_valid_placements"
-            ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
-              ? "found"
-              : "blocked"
-            : toolName === "labspace_plan_room"
-              ? Number(resultRecord.plannedObjects) > 0
+      : resultRecord.requiresHumanApproval === true
+        ? "pending"
+        : toolName === "labspace_audit_room"
+          ? resultRecord.status === "blocked"
+            ? "blocked"
+            : "valid"
+          : toolName === "labspace_stage_object_move" ||
+              toolName === "labspace_stage_resize" ||
+              toolName === "labspace_stage_room_plan" ||
+              toolName === "labspace_stage_inventory_plan" ||
+              toolName === "labspace_stage_annex_plan" ||
+              toolName === "labspace_add_inventory"
+            ? "pending"
+            : toolName === "labspace_find_valid_placements"
+              ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
                 ? "found"
                 : "blocked"
-              : toolName === "labspace_validate_object_move" ||
-                  toolName === "labspace_validate_resize"
-                ? resultRecord.valid === false
-                  ? "blocked"
-                  : "valid"
-                : toolName === "labspace_focus_record"
-                  ? "focused"
-                  : toolName === "labspace_search_records"
-                    ? "found"
-                    : "read";
+              : toolName === "labspace_plan_room" || toolName === "labspace_plan_annex"
+                ? Number(resultRecord.plannedObjects) > 0
+                  ? "found"
+                  : "blocked"
+                : toolName === "labspace_validate_object_move" ||
+                    toolName === "labspace_validate_resize"
+                  ? resultRecord.valid === false
+                    ? "blocked"
+                    : "valid"
+                  : toolName === "labspace_focus_record"
+                    ? "focused"
+                    : toolName === "labspace_search_records"
+                      ? "found"
+                      : "read";
   const subject =
     typeof resultRecord.objectName === "string"
       ? resultRecord.objectName
@@ -119,8 +144,8 @@ function completeControlledExecution(
           : typeof (input as Record<string, unknown> | null)?.query === "string"
             ? `“${String((input as Record<string, unknown>).query)}”`
             : action;
-  recordWebMCPToolSuccess(toolName, action, subject, status, input, result);
-  return result;
+  recordWebMCPToolSuccess(toolName, action, subject, status, input, decoratedResult);
+  return decoratedResult;
 }
 
 function controlledExecution(
@@ -167,6 +192,7 @@ export function createLabSpaceToolDefinitions(
   inventoryActions: LabSpaceInventoryActions = labSpaceInventoryActions,
   workspaceActions: LabSpaceWorkspaceActions = labSpaceWorkspaceActions,
   collectionActions = labSpaceCollectionActions,
+  annexActions: LabSpaceAnnexActions = labSpaceAnnexActions,
 ): WebMCP.ModelContextTool[] {
   return [
     {
@@ -256,7 +282,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_create_room",
       title: "Create a blank LabSpace room",
       description:
-        "Create, activate, and save one genuinely blank room in the current or selected laboratory. Its first complete validated WebMCP blueprint may auto-commit; later changes still require review.",
+        "Propose one genuinely blank room in the current or selected laboratory. Reviewed mode pauses before creation; human-authorized Fast Draft may apply this validated additive change. The agent cannot select the mode.",
       inputSchema: createRoomSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -349,6 +375,22 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_plan_annex",
+      title: "Plan a connected LabSpace annex",
+      description:
+        "Calculate a separate annex floor by splitting one stable primary-space wall, remapping hosted openings, and optionally adding a connected door, exterior windows, and floor assets. Read-only; validates both closed floors and never changes the primary area.",
+      inputSchema: planAnnexSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_plan_annex",
+          "Annex planning",
+          input,
+          () => annexActions.planAnnex(input),
+        ),
+    },
+    {
       name: "labspace_plan_room",
       title: "Plan a LabSpace room",
       description:
@@ -413,10 +455,26 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_stage_annex_plan",
+      title: "Stage a connected LabSpace annex",
+      description:
+        "Preview a calculated annex as one atomic change. Existing-room annexes always require explicit human approval, regardless of Fast Draft mode; approval creates one Undo entry and cancellation restores the room exactly.",
+      inputSchema: stageAnnexPlanSchema,
+      annotations: { readOnlyHint: false, untrustedContentHint: true },
+      execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          executionContext?.signal,
+          "labspace_stage_annex_plan",
+          "Annex staging",
+          input,
+          () => annexActions.stageAnnexPlan(input),
+        ),
+    },
+    {
       name: "labspace_stage_room_plan",
       title: "Stage LabSpace room plan",
       description:
-        "Apply a calculated blueprint. The first complete plan for a blank room created by WebMCP auto-commits with Undo; existing-room or later changes remain a researcher-reviewed preview.",
+        "Stage a calculated blueprint. Reviewed mode always pauses for approval. Fast Draft may apply only a complete validated first blueprint in a pristine WebMCP-created room, with Undo; all other layouts escalate to review.",
       inputSchema: stageRoomLayoutSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -520,6 +578,7 @@ export function registerLabSpaceTools({
   spatialActions = labSpaceSpatialActions,
   stagingActions = labSpaceStagingActions,
   workspaceActions = labSpaceWorkspaceActions,
+  annexActions = labSpaceAnnexActions,
 }: RegisterLabSpaceToolsOptions = {}): LabSpaceToolRegistration {
   const controller = new AbortController();
   const tools = modelContext
@@ -531,6 +590,8 @@ export function registerLabSpaceTools({
         layoutActions,
         inventoryActions,
         workspaceActions,
+        labSpaceCollectionActions,
+        annexActions,
       )
     : [];
   const ready = modelContext

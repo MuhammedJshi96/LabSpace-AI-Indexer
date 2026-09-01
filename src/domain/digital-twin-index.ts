@@ -23,6 +23,10 @@ export type DigitalTwinRecord = {
   roomId: string;
   roomName: string;
   roomCode: string;
+  spaceId: string | null;
+  spaceName: string | null;
+  spaceCode: string | null;
+  spaceKind: "primary" | "annex" | null;
   objectId: string | null;
   assetDefinitionId: string | null;
   locationId: string | null;
@@ -97,12 +101,30 @@ function objectPath(
   location: StorageLocation | undefined,
 ) {
   const zone = room.scene.zones.find((entry) => entry.id === object?.zoneId);
+  const spaceId = location?.spaceId ?? object?.spaceId;
+  const space = room.spaces.find((entry) => entry.id === spaceId);
   return [
     laboratory?.name ?? "Laboratory",
     room.name,
+    space && (space.kind === "annex" || space.name !== room.name) ? space.name : undefined,
     zone?.name,
     ...locationPath(location, room.scene.storageLocations).map((entry) => entry.name),
   ].filter((entry): entry is string => Boolean(entry));
+}
+
+function recordSpace(
+  room: Room,
+  object: SceneObject | undefined,
+  location: StorageLocation | undefined,
+) {
+  const spaceId = location?.spaceId ?? object?.spaceId;
+  const space = room.spaces.find((entry) => entry.id === spaceId);
+  return {
+    spaceId: space?.id ?? null,
+    spaceName: space?.name ?? null,
+    spaceCode: space?.code ?? null,
+    spaceKind: space?.kind ?? null,
+  };
 }
 
 function inventoryRecord(
@@ -126,6 +148,7 @@ function inventoryRecord(
   const path = objectPath(laboratory, room, object, location);
   const indexCode = location?.indexCode ?? "Location required";
   const context = recordContext(laboratory, room);
+  const spaceContext = recordSpace(room, object, location);
   const imageSrc = item.imageSrc ?? inferInventoryRecordImage(item);
   return {
     id: `${room.id}:inventory:${item.id}`,
@@ -133,6 +156,7 @@ function inventoryRecord(
     name: item.name,
     kicker: "Inventory",
     ...context,
+    ...spaceContext,
     objectId: object?.id ?? null,
     assetDefinitionId: object?.assetDefinitionId ?? null,
     locationId: location?.id ?? null,
@@ -185,12 +209,14 @@ function equipmentRecord(
   const path = objectPath(laboratory, room, object, undefined);
   const indexCode = object?.indexCode ?? record.equipmentId;
   const context = recordContext(laboratory, room);
+  const spaceContext = recordSpace(room, object, undefined);
   return {
     id: `${room.id}:equipment:${record.id}`,
     kind: "equipment",
     name: record.name,
     kicker: "Equipment",
     ...context,
+    ...spaceContext,
     objectId: object?.id ?? null,
     assetDefinitionId: object?.assetDefinitionId ?? null,
     locationId: null,
@@ -238,12 +264,14 @@ function storageRecord(
     .find((image): image is string => Boolean(image));
   const path = objectPath(laboratory, room, object, location);
   const context = recordContext(laboratory, room);
+  const spaceContext = recordSpace(room, object, location);
   return {
     id: `${room.id}:location:${location.id}`,
     kind: "location",
     name: location.name,
     kicker: location.type,
     ...context,
+    ...spaceContext,
     objectId: object?.id ?? null,
     assetDefinitionId: object?.assetDefinitionId ?? null,
     locationId: location.id,

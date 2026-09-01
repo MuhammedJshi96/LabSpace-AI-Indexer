@@ -367,6 +367,205 @@
   gap: 8px;
 }
 
+.annex-builder > summary {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.annex-builder > summary::-webkit-details-marker {
+  display: none;
+}
+
+.annex-builder > summary > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.annex-builder > summary h3 {
+  margin: 0;
+  color: #203a33;
+  font-size: 13px;
+}
+
+.annex-builder > summary small,
+.annex-builder-note {
+  color: #71817c;
+  font-size: 11px;
+}
+
+.annex-builder > summary > svg {
+  transition: transform 150ms ease;
+}
+
+.annex-builder[open] > summary > svg {
+  transform: rotate(90deg);
+}
+
+.annex-builder[open] > summary {
+  margin-bottom: 13px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e4ebe8;
+}
+
+.annex-space-ledger {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.annex-space-ledger > span {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 8px 9px;
+  border: 1px solid #dce7e3;
+  border-radius: 8px;
+  background: #f7faf9;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.annex-space-ledger i {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  color: #08796c;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 750;
+  border-radius: 7px;
+  background: #dff4f0;
+  grid-row: span 2;
+  place-items: center;
+}
+
+.annex-space-ledger b,
+.annex-space-ledger small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.annex-space-ledger select {
+  min-width: 0;
+  min-height: 28px;
+  padding: 3px 6px;
+  color: #405750;
+  font-size: 10px;
+  border: 1px solid #cfdbd7;
+  border-radius: 5px;
+  background: #fff;
+  grid-column: 2;
+}
+
+.annex-space-ledger b {
+  color: #233d35;
+  font-size: 12px;
+}
+
+.annex-space-ledger small {
+  color: #6a7c76;
+  font-size: 11px;
+}
+
+.annex-builder-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+
+.annex-builder-heading > span {
+  display: grid;
+  gap: 2px;
+}
+
+.annex-builder-heading b {
+  color: #213c34;
+  font-size: 13px;
+}
+
+.annex-builder-heading em {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  color: #08796c;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  border: 1px solid #b7ded7;
+  border-radius: 999px;
+  background: #ecf9f6;
+}
+
+.annex-builder .annex-identity-fields {
+  margin-bottom: 11px;
+}
+
+.annex-options {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.annex-options > label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  color: #28443c;
+  border: 1px solid #dce6e3;
+  border-radius: 8px;
+  background: #fbfdfc;
+}
+
+.annex-options > label > span {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 1px;
+}
+
+.annex-options b {
+  font-size: 12px;
+}
+
+.annex-options small {
+  overflow: hidden;
+  color: #71827d;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.annex-options select {
+  max-width: 95px;
+  min-height: 32px;
+  padding: 4px 7px;
+  color: #25453d;
+  font-size: 11px;
+  border: 1px solid #c8d5d1;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.annex-preview-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.annex-builder-note {
+  margin: 9px 0 0;
+  line-height: 1.45;
+}
+
 .inspector-studio-panel .surface-library-header {
   align-items: center;
   margin-bottom: 12px;
@@ -783,6 +982,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .room-identity-card > summary > svg,
+  .annex-builder > summary > svg,
   .property-disclosure > summary::after {
     transition: none;
   }

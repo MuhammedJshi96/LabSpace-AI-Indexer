@@ -29,6 +29,7 @@ import {
   getRoomFloorPlan,
   synchronizeClosedRoomAfterWallEdit,
 } from "../domain/room-geometry";
+import { projectPointToPrimaryBoundary } from "../domain/room-building";
 import { wallFinishForObject } from "../domain/laboratory-wall-materials";
 import type { Room, SceneObject } from "../domain/schema";
 import { translateSelection } from "../domain/selection-drag";
@@ -54,6 +55,16 @@ const objectColors: Record<string, { fill: string; stroke: string; accent: strin
   red: { fill: "#cf6962", stroke: "#7c3532", accent: "#9e423d" },
   blue: { fill: "#6d98ae", stroke: "#345464", accent: "#49768c" },
 };
+
+function hasConstraintModifier(event: Event) {
+  return "ctrlKey" in event && (event.ctrlKey || ("metaKey" in event && event.metaKey));
+}
+
+function constrainPointToAxis(origin: { x: number; y: number }, point: { x: number; y: number }) {
+  return Math.abs(point.x - origin.x) >= Math.abs(point.y - origin.y)
+    ? { x: point.x, y: origin.y }
+    : { x: origin.x, y: point.y };
+}
 
 function useElementSize<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -589,6 +600,9 @@ function PlanObject({
             next = { x: snapped.x, y: snapped.y };
             setGuides(snapped.guides);
           }
+          if (beforeRef.current && hasConstraintModifier(event.evt)) {
+            next = constrainPointToAxis(beforeRef.current.position, next);
+          }
           event.target.position(next);
           if (
             beforeRef.current &&
@@ -1002,7 +1016,7 @@ function WallPlan({
         points={[object.wall.start.x, object.wall.start.y, object.wall.end.x, object.wall.end.y]}
         stroke={selected ? "#079987" : wallFinish.planEdgeColor}
         strokeWidth={object.wall.thickness}
-        lineCap="square"
+        lineCap="butt"
         lineJoin="miter"
         hitStrokeWidth={Math.max(object.wall.thickness, 20 / scale)}
         draggable={tool === "select" && !locked}
@@ -1022,15 +1036,19 @@ function WallPlan({
           const point = pointer
             ? event.target.getParent()!.getAbsoluteTransform().copy().invert().point(pointer)
             : null;
-          const delta =
+          let delta =
             point && dragOrigin.current
               ? { x: point.x - dragOrigin.current.x, y: point.y - dragOrigin.current.y }
               : { x: event.target.x(), y: event.target.y() };
+          if (hasConstraintModifier(event.evt)) {
+            delta = constrainPointToAxis({ x: 0, y: 0 }, delta);
+          }
           if (snapEnabled) {
             delta.x = snapValue(delta.x, gridSize, snapTolerance);
             delta.y = snapValue(delta.y, gridSize, snapTolerance);
           }
           if (groupDrag.move(delta)) event.target.position({ x: 0, y: 0 });
+          else event.target.position(delta);
         }}
         onDragEnd={(event) => {
           dragOrigin.current = null;
@@ -1079,7 +1097,7 @@ function WallPlan({
         points={[object.wall.start.x, object.wall.start.y, object.wall.end.x, object.wall.end.y]}
         stroke={selected ? "#c5f0ea" : wallFinish.planColor}
         strokeWidth={Math.max(object.wall.thickness - 4 / scale, object.wall.thickness * 0.7)}
-        lineCap="square"
+        lineCap="butt"
         lineJoin="miter"
         listening={false}
       />
@@ -1102,14 +1120,26 @@ function WallPlan({
                 beginWallEdit();
               }}
               onDragMove={(event) => {
-                if (!snapEnabled || !beforeObjectsRef.current) return;
-                const snapped = snapPoint(
-                  { x: event.target.x(), y: event.target.y() },
-                  { ...room.scene, objects: beforeObjectsRef.current },
-                  { gridSize, tolerance: snapTolerance, excludeId: object.id },
-                );
-                event.target.position({ x: snapped.x, y: snapped.y });
-                setGuides(snapped.guides);
+                if (!beforeObjectsRef.current) return;
+                const beforeWall = beforeObjectsRef.current.find(
+                  (entry) => entry.id === object.id,
+                )?.wall;
+                if (!beforeWall) return;
+                let next = { x: event.target.x(), y: event.target.y() };
+                if (hasConstraintModifier(event.evt)) {
+                  const fixed = endpoint === "start" ? beforeWall.end : beforeWall.start;
+                  next = constrainPointToAxis(fixed, next);
+                }
+                if (snapEnabled) {
+                  const snapped = snapPoint(
+                    next,
+                    { ...room.scene, objects: beforeObjectsRef.current },
+                    { gridSize, tolerance: snapTolerance, excludeId: object.id },
+                  );
+                  next = { x: snapped.x, y: snapped.y };
+                  setGuides(snapped.guides);
+                }
+                event.target.position(next);
               }}
               onDragEnd={(event) => finishEndpointEdit(endpoint, event)}
             />
@@ -1117,6 +1147,63 @@ function WallPlan({
         </>
       )}
     </>
+  );
+}
+
+function WallJointsPlan({
+  walls,
+  selectedIds,
+  room,
+  scale,
+}: {
+  walls: SceneObject[];
+  selectedIds: string[];
+  room: Room;
+  scale: number;
+}) {
+  const joints: Array<{ point: WallPoint; walls: SceneObject[] }> = [];
+  for (const wall of walls) {
+    if (!wall.wall) continue;
+    for (const point of [wall.wall.start, wall.wall.end]) {
+      let joint = joints.find(
+        (candidate) => Math.hypot(candidate.point.x - point.x, candidate.point.y - point.y) <= 80,
+      );
+      if (!joint) {
+        joint = { point: { ...point }, walls: [] };
+        joints.push(joint);
+      }
+      if (!joint.walls.some((candidate) => candidate.id === wall.id)) joint.walls.push(wall);
+    }
+  }
+  return (
+    <Group name="clean-wall-joints" listening={false}>
+      {joints
+        .filter((joint) => joint.walls.length > 1)
+        .map((joint, index) => {
+          const thickness = Math.max(...joint.walls.map((wall) => wall.wall!.thickness));
+          const selected = joint.walls.some((wall) => selectedIds.includes(wall.id));
+          const finish = wallFinishForObject(joint.walls[0].metadata, room.wallFinish);
+          const faceInset = Math.max(2 / scale, thickness * 0.15);
+          return (
+            <Group key={`${joint.point.x}-${joint.point.y}-${index}`}>
+              <Rect
+                x={joint.point.x - thickness / 2}
+                y={joint.point.y - thickness / 2}
+                width={thickness}
+                height={thickness}
+                fill={selected ? "#079987" : finish.planEdgeColor}
+              />
+              <Rect
+                x={joint.point.x - thickness / 2 + faceInset / 2}
+                y={joint.point.y - thickness / 2 + faceInset / 2}
+                width={Math.max(1, thickness - faceInset)}
+                height={Math.max(1, thickness - faceInset)}
+                fill={selected ? "#c5f0ea" : finish.planColor}
+              />
+            </Group>
+          );
+        })}
+    </Group>
   );
 }
 
@@ -1356,8 +1443,11 @@ export function TwoDEditor() {
   const setPan = useEditorStore((state) => state.setPan);
   const addAsset = useEditorStore((state) => state.addAsset);
   const addWall = useEditorStore((state) => state.addWall);
+  const addRoomRectangle = useEditorStore((state) => state.addRoomRectangle);
+  const addAnnexPath = useEditorStore((state) => state.addAnnexPath);
   const setTool = useEditorStore((state) => state.setTool);
   const setGuides = useEditorStore((state) => state.setGuides);
+  const pushToast = useEditorStore((state) => state.pushToast);
   const [spacePan, setSpacePan] = useState(false);
   const middlePanRef = useRef<{
     pointer: { x: number; y: number };
@@ -1367,6 +1457,12 @@ export function TwoDEditor() {
   const drawStartRef = useRef<WallPoint | null>(null);
   const lastWallClickRef = useRef<WallPoint | null>(null);
   const wallDoubleClickEligibleRef = useRef(false);
+  const [rectangleDraft, setRectangleDraft] = useState<{
+    start: WallPoint;
+    end: WallPoint;
+  } | null>(null);
+  const [annexPoints, setAnnexPoints] = useState<WallPoint[]>([]);
+  const annexHostWallIdRef = useRef<string | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const [measure, setMeasure] = useState<{
     start: { x: number; y: number };
@@ -1381,15 +1477,29 @@ export function TwoDEditor() {
     () => getClosedWallFloorPolygon(room.scene.objects),
     [room.scene.objects],
   );
+  const constructionMargin =
+    closedFloor && (tool === "rectangle" || tool === "annex")
+      ? Math.max(2200, Math.min(4000, Math.max(room.width, room.depth) * 0.32))
+      : 0;
+  const viewportBounds = constructionMargin
+    ? {
+        minX: floorPlan.bounds.minX - constructionMargin,
+        minY: floorPlan.bounds.minY - constructionMargin,
+        maxX: floorPlan.bounds.maxX + constructionMargin,
+        maxY: floorPlan.bounds.maxY + constructionMargin,
+        width: floorPlan.bounds.width + constructionMargin * 2,
+        depth: floorPlan.bounds.depth + constructionMargin * 2,
+      }
+    : floorPlan.bounds;
   const padding = 54;
   const baseScale = Math.min(
-    (size.width - padding * 2) / floorPlan.bounds.width,
-    (size.height - padding * 2) / floorPlan.bounds.depth,
+    (size.width - padding * 2) / viewportBounds.width,
+    (size.height - padding * 2) / viewportBounds.depth,
   );
   const scale = Math.max(0.015, baseScale * zoom);
   const origin = {
-    x: (size.width - floorPlan.bounds.width * scale) / 2 - floorPlan.bounds.minX * scale + pan.x,
-    y: (size.height - floorPlan.bounds.depth * scale) / 2 - floorPlan.bounds.minY * scale + pan.y,
+    x: (size.width - viewportBounds.width * scale) / 2 - viewportBounds.minX * scale + pan.x,
+    y: (size.height - viewportBounds.depth * scale) / 2 - viewportBounds.minY * scale + pan.y,
   };
 
   const layerVisibility = useMemo(
@@ -1518,12 +1628,19 @@ export function TwoDEditor() {
         setGuides([]);
         return;
       }
+      if (event.key === "Enter" && tool === "annex" && annexPoints.length > 0) {
+        event.preventDefault();
+        pushToast("Finish the annex by clicking its highlighted starting wall.", "info");
+      }
       if (event.key === "Escape") {
         if (!isEditableTarget(event.target) && !useEditorStore.getState().dialog) setSelected([]);
         drawStartRef.current = null;
         lastWallClickRef.current = null;
         wallDoubleClickEligibleRef.current = false;
         setDrawStart(null);
+        setRectangleDraft(null);
+        setAnnexPoints([]);
+        annexHostWallIdRef.current = null;
         setMeasure(null);
         setMarquee(null);
         setGuides([]);
@@ -1537,7 +1654,7 @@ export function TwoDEditor() {
       window.removeEventListener("keydown", keyDown);
       window.removeEventListener("keyup", keyUp);
     };
-  }, [setGuides, setPan, setSelected, setTool, tool]);
+  }, [annexPoints.length, pushToast, setGuides, setPan, setSelected, setTool, tool]);
 
   useEffect(() => {
     const stopMiddlePan = () => {
@@ -1555,6 +1672,9 @@ export function TwoDEditor() {
         lastWallClickRef.current = null;
         wallDoubleClickEligibleRef.current = false;
         setDrawStart(null);
+        setRectangleDraft(null);
+        setAnnexPoints([]);
+        annexHostWallIdRef.current = null;
       }),
     [],
   );
@@ -1616,11 +1736,15 @@ export function TwoDEditor() {
     if (
       event.target !== event.target.getStage() &&
       tool !== "wall" &&
+      tool !== "rectangle" &&
+      tool !== "annex" &&
       tool !== "door" &&
       tool !== "window"
     )
       return;
-    const point = tool === "wall" ? pointerToWallPoint() : pointerToScene();
+    const point = ["wall", "rectangle", "annex"].includes(tool)
+      ? pointerToWallPoint()
+      : pointerToScene();
     if (tool === "wall") {
       const previousClick = lastWallClickRef.current;
       wallDoubleClickEligibleRef.current = Boolean(
@@ -1633,6 +1757,41 @@ export function TwoDEditor() {
       if (segment) addWall(segment.start, segment.end);
       drawStartRef.current = nextStart;
       setDrawStart(nextStart);
+      return;
+    }
+    if (tool === "rectangle") {
+      setRectangleDraft({ start: point, end: point });
+      return;
+    }
+    if (tool === "annex") {
+      const projection = projectPointToPrimaryBoundary(room, point, Math.max(160, snapTolerance));
+      if (!annexPoints.length) {
+        if (!projection) {
+          pushToast("Start the annex on an exterior wall of the main room.", "info");
+          return;
+        }
+        annexHostWallIdRef.current = projection.wall.id;
+        setAnnexPoints([projection.point]);
+        setPointer(projection.point);
+        return;
+      }
+      if (projection) {
+        if (projection.wall.id !== annexHostWallIdRef.current) {
+          pushToast("Finish on the same main-room wall where the annex began.", "info");
+          return;
+        }
+        if (annexPoints.length < 2) {
+          pushToast("Add at least one exterior corner before closing the annex.", "info");
+          return;
+        }
+        if (addAnnexPath([...annexPoints, projection.point])) {
+          setAnnexPoints([]);
+          annexHostWallIdRef.current = null;
+          setTool("select");
+        }
+        return;
+      }
+      setAnnexPoints((points) => [...points, point]);
       return;
     }
     if (tool === "door" || tool === "window") {
@@ -1662,9 +1821,19 @@ export function TwoDEditor() {
       }
       return;
     }
-    const point = tool === "wall" && !spacePan ? pointerToWallPoint() : pointerToScene();
+    let point =
+      ["wall", "rectangle", "annex"].includes(tool) && !spacePan
+        ? pointerToWallPoint()
+        : pointerToScene();
+    if (tool === "annex" && annexPoints.length) {
+      const projection = projectPointToPrimaryBoundary(room, point, Math.max(160, snapTolerance));
+      if (projection?.wall.id === annexHostWallIdRef.current) point = projection.point;
+    }
     setPointer(point);
     setCursor({ x: Math.round(point.x), y: Math.round(point.y) });
+    if (rectangleDraft && tool === "rectangle") {
+      setRectangleDraft({ ...rectangleDraft, end: point });
+    }
     if (measure && tool === "measure") setMeasure({ ...measure, end: point });
     if (marquee) setMarquee({ ...marquee, end: point });
   };
@@ -1672,6 +1841,12 @@ export function TwoDEditor() {
   const handleStageUp = () => {
     if (middlePanRef.current) {
       middlePanRef.current = null;
+      return;
+    }
+    if (rectangleDraft && tool === "rectangle") {
+      const completed = addRoomRectangle(rectangleDraft.start, rectangleDraft.end);
+      setRectangleDraft(null);
+      if (completed) setTool("select");
       return;
     }
     if (!marquee) return;
@@ -1712,36 +1887,34 @@ export function TwoDEditor() {
     setPan({
       x:
         pointerPosition.x -
-        ((size.width - floorPlan.bounds.width * nextScale) / 2 -
-          floorPlan.bounds.minX * nextScale) -
+        ((size.width - viewportBounds.width * nextScale) / 2 - viewportBounds.minX * nextScale) -
         scenePoint.x * nextScale,
       y:
         pointerPosition.y -
-        ((size.height - floorPlan.bounds.depth * nextScale) / 2 -
-          floorPlan.bounds.minY * nextScale) -
+        ((size.height - viewportBounds.depth * nextScale) / 2 - viewportBounds.minY * nextScale) -
         scenePoint.y * nextScale,
     });
   };
 
   const gridLines = [];
   if (gridEnabled) {
-    const gridStartX = Math.ceil(floorPlan.bounds.minX / gridSize) * gridSize;
-    const gridStartY = Math.ceil(floorPlan.bounds.minY / gridSize) * gridSize;
-    for (let x = gridStartX; x <= floorPlan.bounds.maxX; x += gridSize)
+    const gridStartX = Math.ceil(viewportBounds.minX / gridSize) * gridSize;
+    const gridStartY = Math.ceil(viewportBounds.minY / gridSize) * gridSize;
+    for (let x = gridStartX; x <= viewportBounds.maxX; x += gridSize)
       gridLines.push(
         <Line
           key={`gx-${x}`}
-          points={[x, floorPlan.bounds.minY, x, floorPlan.bounds.maxY]}
+          points={[x, viewportBounds.minY, x, viewportBounds.maxY]}
           stroke={x % 1000 === 0 ? "#d4dcda" : "#e8edec"}
           strokeWidth={(x % 1000 === 0 ? 1.2 : 0.6) / scale}
           listening={false}
         />,
       );
-    for (let y = gridStartY; y <= floorPlan.bounds.maxY; y += gridSize)
+    for (let y = gridStartY; y <= viewportBounds.maxY; y += gridSize)
       gridLines.push(
         <Line
           key={`gy-${y}`}
-          points={[floorPlan.bounds.minX, y, floorPlan.bounds.maxX, y]}
+          points={[viewportBounds.minX, y, viewportBounds.maxX, y]}
           stroke={y % 1000 === 0 ? "#d4dcda" : "#e8edec"}
           strokeWidth={(y % 1000 === 0 ? 1.2 : 0.6) / scale}
           listening={false}
@@ -1816,6 +1989,12 @@ export function TwoDEditor() {
                   scale={scale}
                 />
               ))}
+            <WallJointsPlan
+              walls={visibleObjects.filter((object) => object.objectType === "wall")}
+              selectedIds={selectedIds}
+              room={room}
+              scale={scale}
+            />
             {openingPreview && (
               <Group
                 x={openingPreview.point.x}
@@ -1926,8 +2105,8 @@ export function TwoDEditor() {
                 key={`${guide.axis}-${guide.value}-${index}`}
                 points={
                   guide.axis === "x"
-                    ? [guide.value, floorPlan.bounds.minY, guide.value, floorPlan.bounds.maxY]
-                    : [floorPlan.bounds.minX, guide.value, floorPlan.bounds.maxX, guide.value]
+                    ? [guide.value, viewportBounds.minY, guide.value, viewportBounds.maxY]
+                    : [viewportBounds.minX, guide.value, viewportBounds.maxX, guide.value]
                 }
                 stroke="#079987"
                 dash={[6 / scale, 4 / scale]}
@@ -1943,6 +2122,45 @@ export function TwoDEditor() {
                 dash={[8 / scale, 5 / scale]}
                 listening={false}
               />
+            )}
+            {rectangleDraft && (
+              <Rect
+                x={Math.min(rectangleDraft.start.x, rectangleDraft.end.x)}
+                y={Math.min(rectangleDraft.start.y, rectangleDraft.end.y)}
+                width={Math.abs(rectangleDraft.end.x - rectangleDraft.start.x)}
+                height={Math.abs(rectangleDraft.end.y - rectangleDraft.start.y)}
+                fill="rgba(0, 169, 149, 0.07)"
+                stroke="#008f7f"
+                strokeWidth={2 / scale}
+                dash={[10 / scale, 6 / scale]}
+                listening={false}
+              />
+            )}
+            {annexPoints.length > 0 && pointer && (
+              <Group listening={false}>
+                <Line
+                  points={[
+                    ...annexPoints.flatMap((point) => [point.x, point.y]),
+                    pointer.x,
+                    pointer.y,
+                  ]}
+                  stroke="#008f7f"
+                  strokeWidth={2 / scale}
+                  dash={[9 / scale, 5 / scale]}
+                  lineJoin="round"
+                />
+                {annexPoints.map((point, index) => (
+                  <Circle
+                    key={`${point.x}-${point.y}-${index}`}
+                    x={point.x}
+                    y={point.y}
+                    radius={index === 0 ? 7 / scale : 5 / scale}
+                    fill={index === 0 ? "#ffffff" : "#008f7f"}
+                    stroke="#008f7f"
+                    strokeWidth={2 / scale}
+                  />
+                ))}
+              </Group>
             )}
             {measure && (
               <Group listening={false}>

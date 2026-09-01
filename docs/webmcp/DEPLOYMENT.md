@@ -65,7 +65,7 @@ Expected health response:
 { "ok": true, "database": "session-memory", "publicDemo": true, "schemaVersion": 2 }
 ```
 
-Then use a WebMCP-capable top-level browser context to verify the twenty-one registered tools on `/`, `/digital-twin`, and `/inventory`, and no tools on internal `/asset-preview`, `/facility`, or capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
+Then use a WebMCP-capable top-level browser context to verify the twenty-three registered tools on `/`, `/digital-twin`, and `/inventory`, and no tools on internal `/asset-preview`, `/facility`, or capture routes. Do not set `Origin-Agent-Cluster: ?0`, expose tools cross-origin, or weaken the `tools` Permissions Policy.
 
 Official hosting references:
 

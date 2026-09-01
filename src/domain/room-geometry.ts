@@ -1,4 +1,4 @@
-import type { Room, SceneObject } from "./schema";
+import type { Room, RoomSpace, SceneObject } from "./schema";
 
 export type PlanPoint = { x: number; y: number };
 export type RoomPlanSize = { width: number; depth: number };
@@ -20,6 +20,14 @@ export type ClosedWallFloorPolygon = {
 
 export type RoomFloorPlan = ClosedWallFloorPolygon & {
   source: "closed-walls" | "rectangular-fallback";
+};
+
+export type RoomSpaceFloorPlan = ClosedWallFloorPolygon & {
+  spaceId: string;
+  kind: RoomSpace["kind"];
+  name: string;
+  code: string;
+  floorFinish: string;
 };
 
 export type RectangularPerimeterBounds = RoomPlanBounds & {
@@ -310,6 +318,48 @@ export function getClosedWallFloorPolygon(
     perimeterMm,
     wallIds: boundary.wallIds.sort(),
   };
+}
+
+/** Resolve every first-class room space to its own independently closed slab.
+ * A single migrated primary space continues to follow all room walls so legacy
+ * editing remains unchanged. Multi-space rooms use stable authored wall IDs;
+ * shared boundary walls may intentionally appear in more than one space. */
+export function getRoomSpaceFloorPlans(
+  room: Pick<Room, "scene" | "spaces">,
+  tolerance = DEFAULT_TOLERANCE_MM,
+): RoomSpaceFloorPlan[] {
+  const allWalls = room.scene.objects.filter((object) => object.wall && !object.wall.halfHeight);
+  return room.spaces.flatMap((space) => {
+    const wallIds = new Set(space.wallIds);
+    const scopedWalls =
+      room.spaces.length === 1
+        ? allWalls
+        : allWalls.filter((object) => wallIds.has(object.id));
+    const polygon = getClosedWallFloorPolygon(scopedWalls, tolerance);
+    return polygon
+      ? [
+          {
+            ...polygon,
+            spaceId: space.id,
+            kind: space.kind,
+            name: space.name,
+            code: space.code,
+            floorFinish: space.floorFinish,
+          },
+        ]
+      : [];
+  });
+}
+
+export function roomSpaceAtPoint(
+  room: Pick<Room, "scene" | "spaces">,
+  point: PlanPoint,
+): RoomSpaceFloorPlan | null {
+  return (
+    getRoomSpaceFloorPlans(room)
+      .filter((space) => pointIsInsideFloorPolygon(point, space))
+      .sort((first, second) => first.areaMm2 - second.areaMm2)[0] ?? null
+  );
 }
 
 /** A closed wall loop is authoritative; other layouts retain the room rectangle. */

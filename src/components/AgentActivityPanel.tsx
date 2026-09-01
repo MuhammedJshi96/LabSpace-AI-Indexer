@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Browser,
   ChatCircleText,
@@ -6,12 +6,22 @@ import {
   ClockCounterClockwise,
   Code,
   Copy,
+  DownloadSimple,
+  Lightning,
   Path,
   Robot,
+  ShieldCheck,
   Trash,
   X,
 } from "@phosphor-icons/react";
-import { useAgentActivityStore } from "../agent/agent-activity-store";
+import {
+  downloadAgentActivityHistory,
+  useAgentActivityStore,
+} from "../agent/agent-activity-store";
+import {
+  useWebMcpExecutionPolicyStore,
+  type WebMcpExecutionMode,
+} from "../agent/webmcp-execution-policy";
 import {
   executeReadOnlyToolCompat,
   type ExecutableModelContext,
@@ -35,6 +45,14 @@ const WEBMCP_WORKFLOWS = [
     outcome: "Proposed checklist · real stock · Next/Previous evidence",
     prompt:
       "Help prepare a collection checklist for my planned work. Ask for my approved protocol or material list if needed; label your suggestions clearly. Match the materials against LabSpace, report missing or ambiguous stock, then start a collection guide for the records I choose. Do not treat this as an experiment protocol or a safety-approved walking route.",
+  },
+  {
+    id: "annex",
+    mode: "Review",
+    title: "Add a connected annex",
+    outcome: "Stable wall split · separate floor · one reviewed commit",
+    prompt:
+      "Audit the current room, choose a suitable full-height exterior wall, and calculate a 16 square metre preparation annex with an internal narrow-lite door and one outer observation window. Show me the primary and annex areas, then stage the connected annex for my approval. Do not approve it for me.",
   },
   {
     id: "build",
@@ -109,9 +127,9 @@ const WEBMCP_TOOL_CATALOG = [
   {
     name: "labspace_create_room",
     label: "Create a blank room",
-    mode: "Create",
+    mode: "Controlled",
     description:
-      "Creates, activates, and saves a blank room whose first complete blueprint may auto-commit.",
+      "Reviewed pauses before creation. Fast Draft may apply the validated additive room proposal.",
   },
   {
     name: "labspace_get_context",
@@ -164,6 +182,13 @@ const WEBMCP_TOOL_CATALOG = [
       "Openings, furniture, storage, equipment, and safety assets with exact dimensions.",
   },
   {
+    name: "labspace_plan_annex",
+    label: "Calculate a connected annex",
+    mode: "Simulate",
+    description:
+      "Splits one stable primary wall, remaps hosted openings, and validates separate closed floors without mutation.",
+  },
+  {
     name: "labspace_plan_room",
     label: "Calculate a room plan",
     mode: "Simulate",
@@ -190,11 +215,18 @@ const WEBMCP_TOOL_CATALOG = [
     description: "Shows proposed records and locations. Only a human can approve their creation.",
   },
   {
+    name: "labspace_stage_annex_plan",
+    label: "Stage an annex for review",
+    mode: "Review",
+    description:
+      "Previews the shared boundary, connector, independent floor, openings, and assets as one undoable approval.",
+  },
+  {
     name: "labspace_stage_room_plan",
     label: "Stage a room blueprint",
-    mode: "Apply",
+    mode: "Controlled",
     description:
-      "Auto-commits a new room's first complete blueprint; later plans remain human-reviewed.",
+      "Reviewed pauses every plan. Fast Draft applies only a complete first blueprint in a pristine created room.",
   },
   {
     name: "labspace_stage_object_move",
@@ -231,13 +263,41 @@ export function AgentActivityPanel() {
   const bridgeStatus = useAgentActivityStore((state) => state.bridgeStatus);
   const registeredTools = useAgentActivityStore((state) => state.registeredTools);
   const bridgeMessage = useAgentActivityStore((state) => state.bridgeMessage);
+  const visibleCount = useAgentActivityStore((state) => state.visibleCount);
+  const unreadCount = useAgentActivityStore((state) => state.unreadCount);
   const setOpen = useAgentActivityStore((state) => state.setOpen);
   const clear = useAgentActivityStore((state) => state.clear);
+  const loadEarlier = useAgentActivityStore((state) => state.loadEarlier);
+  const executionMode = useWebMcpExecutionPolicyStore((state) => state.mode);
+  const setExecutionMode = useWebMcpExecutionPolicyStore((state) => state.setModeFromHumanUi);
   const [tab, setTab] = useState<InspectorTab>("activity");
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [copiedWorkflow, setCopiedWorkflow] = useState<string | null>(null);
+  const [activityQuery, setActivityQuery] = useState("");
+  const [activityActor, setActivityActor] = useState("all");
+  const [activityStatus, setActivityStatus] = useState("all");
   const registeredCount = registeredTools.length;
+  const filteredEvents = useMemo(
+    () =>
+      events.filter((event) => {
+        if (activityActor !== "all" && event.actor !== activityActor) return false;
+        if (activityStatus !== "all" && event.status !== activityStatus) return false;
+        const query = activityQuery.trim().toLowerCase();
+        return (
+          !query ||
+          [event.action, event.subject, event.toolName, event.correlationId]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(query))
+        );
+      }),
+    [activityActor, activityQuery, activityStatus, events],
+  );
+  const visibleEvents = filteredEvents.slice(0, visibleCount);
+
+  const chooseExecutionMode = (mode: WebMcpExecutionMode) => {
+    setExecutionMode(mode);
+  };
 
   const runReadOnlyCheck = async () => {
     const modelContext = document.modelContext as ExecutableModelContext | undefined;
@@ -336,9 +396,74 @@ export function AgentActivityPanel() {
         )}
       </div>
 
+      <section
+        className={`webmcp-execution-gate is-${executionMode}`}
+        aria-labelledby="webmcp-execution-title"
+      >
+        <div className="webmcp-execution-heading">
+          <span aria-hidden="true">
+            {executionMode === "reviewed" ? (
+              <ShieldCheck size={19} weight="duotone" />
+            ) : (
+              <Lightning size={19} weight="fill" />
+            )}
+          </span>
+          <span>
+            <small>Execution boundary</small>
+            <strong id="webmcp-execution-title">Human-controlled agent mode</strong>
+          </span>
+          <em>Session only</em>
+        </div>
+        <div className="webmcp-mode-switch" role="radiogroup" aria-label="WebMCP execution mode">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={executionMode === "reviewed"}
+            onClick={() => chooseExecutionMode("reviewed")}
+          >
+            <ShieldCheck size={16} weight="duotone" />
+            <span>
+              <b>Reviewed</b>
+              <small>Approve before change</small>
+            </span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={executionMode === "fast-draft"}
+            onClick={() => chooseExecutionMode("fast-draft")}
+          >
+            <Lightning size={16} weight="fill" />
+            <span>
+              <b>Fast Draft</b>
+              <small>Validated additive drafts</small>
+            </span>
+          </button>
+        </div>
+        <div className="webmcp-execution-rail" role="status" aria-live="polite">
+          <span aria-hidden="true" />
+          <div>
+            <b>
+              {executionMode === "reviewed"
+                ? "Every project mutation stops for you"
+                : "Validated additive room drafts can proceed"}
+            </b>
+            <small>
+              {executionMode === "reviewed"
+                ? "The agent may calculate and preview, but only you can commit."
+                : "The complete first blueprint keeps Undo. Existing placements, dimensions, inventory, stock, deletes, and validation failures escalate to review."}
+            </small>
+          </div>
+        </div>
+        <p>
+          The browser agent cannot select or override this mode. Reloading LabSpace returns to
+          Reviewed.
+        </p>
+      </section>
+
       <div className="webmcp-tabs" role="tablist" aria-label="WebMCP inspector sections">
         <button role="tab" aria-selected={tab === "activity"} onClick={() => setTab("activity")}>
-          Live activity <b>{events.length}</b>
+          Activity history <b>{events.length}</b>
         </button>
         <button role="tab" aria-selected={tab === "workflows"} onClick={() => setTab("workflows")}>
           Agent workflows <b>{WEBMCP_WORKFLOWS.length}</b>
@@ -353,6 +478,62 @@ export function AgentActivityPanel() {
 
       {tab === "activity" ? (
         <div className="agent-activity-list" aria-live="polite" role="tabpanel">
+          {events.length > 0 && (
+            <div className="agent-activity-toolbar">
+              <label className="agent-activity-search">
+                <span>Find evidence</span>
+                <input
+                  value={activityQuery}
+                  onChange={(event) => setActivityQuery(event.target.value)}
+                  placeholder="Tool, room, action, plan…"
+                />
+              </label>
+              <div className="agent-activity-filters">
+                <select
+                  value={activityActor}
+                  onChange={(event) => setActivityActor(event.target.value)}
+                  aria-label="Filter activity actor"
+                >
+                  <option value="all">All actors</option>
+                  <option value="WebMCP">WebMCP</option>
+                  <option value="Human">Human</option>
+                  <option value="LabSpace">LabSpace</option>
+                  <option value="Agent">Agent</option>
+                </select>
+                <select
+                  value={activityStatus}
+                  onChange={(event) => setActivityStatus(event.target.value)}
+                  aria-label="Filter activity status"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="committed">Committed</option>
+                  <option value="blocked">Blocked</option>
+                  <option value="error">Error</option>
+                </select>
+                <button
+                  onClick={() => downloadAgentActivityHistory(filteredEvents, "json")}
+                  aria-label="Export filtered activity as JSON"
+                  title="Export JSON"
+                >
+                  <DownloadSimple size={14} /> JSON
+                </button>
+                <button
+                  onClick={() => downloadAgentActivityHistory(filteredEvents, "csv")}
+                  aria-label="Export filtered activity as CSV"
+                  title="Export CSV"
+                >
+                  <DownloadSimple size={14} /> CSV
+                </button>
+              </div>
+              <small>
+                Showing {visibleEvents.length} of {filteredEvents.length} matching events · {events.length}
+                total persisted
+                {unreadCount > 0 ? ` · ${unreadCount} unread` : ""}
+              </small>
+            </div>
+          )}
           {events.length === 0 ? (
             <div className="agent-activity-empty">
               <Robot size={24} weight="duotone" />
@@ -364,13 +545,18 @@ export function AgentActivityPanel() {
               </span>
             </div>
           ) : (
-            events.map((event) => (
+            visibleEvents.map((event) => (
               <article key={event.id} className={`activity-status-${event.status}`}>
                 <div className="agent-activity-meta">
                   <b>{event.actor}</b>
                   <time dateTime={event.createdAt}>{eventTime(event.createdAt)}</time>
                   <span>{event.status}</span>
                 </div>
+                {event.correlationId && (
+                  <code className="agent-activity-correlation" title={event.correlationId}>
+                    Run · {event.correlationId.slice(0, 12)}
+                  </code>
+                )}
                 <strong>{event.action}</strong>
                 <p>{event.subject}</p>
                 {(event.request || event.response) && (
@@ -396,6 +582,17 @@ export function AgentActivityPanel() {
                 )}
               </article>
             ))
+          )}
+          {visibleEvents.length < filteredEvents.length && (
+            <button className="agent-activity-load" onClick={loadEarlier}>
+              <ClockCounterClockwise size={15} /> Load 30 earlier events
+            </button>
+          )}
+          {events.length > 0 && filteredEvents.length === 0 && (
+            <div className="agent-activity-empty compact">
+              <b>No matching evidence</b>
+              <span>Change the actor, status, or search filter.</span>
+            </div>
           )}
         </div>
       ) : tab === "workflows" ? (
@@ -442,8 +639,8 @@ export function AgentActivityPanel() {
           <footer>
             <b>Human control remains visible</b>
             <span>
-              Only a pristine room's first complete blueprint can auto-commit. Later layouts,
-              movement, resizing, and inventory remain previews until a researcher approves them.
+              Reviewed is the default. Fast Draft is a visible human authorization for validated
+              additive room creation only; sensitive or existing-state changes still pause here.
             </span>
           </footer>
         </div>
@@ -559,9 +756,8 @@ export function AgentActivityPanel() {
           <footer>
             <b>Safety boundary</b>
             <span>
-              A new WebMCP-created room may auto-commit its first complete validated blueprint.
-              Existing-room changes, later placements, moves, resizes, and inventory still require
-              the researcher to approve or cancel them.
+              Execution mode has no WebMCP tool argument. The human-controlled switch above is the
+              only authority, and Reviewed is restored on each application session.
             </span>
           </footer>
         </div>
@@ -572,6 +768,7 @@ export function AgentActivityPanel() {
 
 export function WebMCPHeaderButton() {
   const events = useAgentActivityStore((state) => state.events);
+  const unreadCount = useAgentActivityStore((state) => state.unreadCount);
   const bridgeStatus = useAgentActivityStore((state) => state.bridgeStatus);
   const registeredCount = useAgentActivityStore((state) => state.registeredTools.length);
   const setOpen = useAgentActivityStore((state) => state.setOpen);
@@ -589,7 +786,7 @@ export function WebMCPHeaderButton() {
       <Robot size={17} weight="duotone" />
       <span>WebMCP</span>
       {bridgeStatus === "ready" && <small>{registeredCount}</small>}
-      {events.length > 0 && <b>{events.length}</b>}
+      {unreadCount > 0 && <b>{unreadCount}</b>}
     </button>
   );
 }

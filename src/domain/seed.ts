@@ -6,6 +6,7 @@ import {
   ProjectSchema,
   RoomSchema,
   SCENE_SCHEMA_VERSION,
+  primaryRoomSpaceId,
   type Project,
   type Room,
   type Scene,
@@ -539,6 +540,18 @@ function createAnalyticalCoreRoom(): Room {
     wallFinish: "clean-white-panel",
     notes:
       "Reusable analytical-instrument demonstration room showing authored equipment, service context, searchable records, and multi-laboratory navigation.",
+    spaces: [
+      {
+        id: primaryRoomSpaceId(ANALYTICAL_ROOM_ID),
+        roomId: ANALYTICAL_ROOM_ID,
+        parentSpaceId: null,
+        kind: "primary",
+        name: "Chromatography Suite A",
+        code: "CHR-A",
+        wallIds: objects.filter((object) => object.wall && !object.wall.halfHeight).map((object) => object.id),
+        floorFinish: "light-gray-epoxy",
+      },
+    ],
     scene: {
       schemaVersion: SCENE_SCHEMA_VERSION,
       id: ANALYTICAL_SCENE_ID,
@@ -1550,6 +1563,18 @@ export function createSeedProject(): Project {
     wallFinish: "clean-white-panel",
     notes:
       "Clean professional starting canvas. Use Demo room to open the curated DEMO-01 competition showcase.",
+    spaces: [
+      {
+        id: primaryRoomSpaceId(STARTER_ROOM_ID),
+        roomId: STARTER_ROOM_ID,
+        parentSpaceId: null,
+        kind: "primary",
+        name: "Empty lab plan",
+        code: "PLAN-01",
+        wallIds: [],
+        floorFinish: "light-gray-epoxy",
+      },
+    ],
     scene: {
       schemaVersion: SCENE_SCHEMA_VERSION,
       id: STARTER_SCENE_ID,

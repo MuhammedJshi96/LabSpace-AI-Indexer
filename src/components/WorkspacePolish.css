@@ -755,3 +755,245 @@
   border-color: var(--stainless);
   justify-content: center;
 }
+
+/* Editor instrument rail — mirrors the Inspector's quiet dossier hierarchy.
+   The tiny module labels describe real control groups instead of decorating
+   the ribbon, while the construction selector carries the distinctive teal. */
+.tool-ribbon {
+  min-height: 68px;
+  gap: 9px;
+  padding: 7px 12px 8px;
+  overflow: visible;
+  background: linear-gradient(180deg, #fbfcfc 0%, #f3f7f6 100%);
+  border-bottom: 1px solid #ccd9d6;
+  box-shadow: 0 5px 16px rgba(17, 49, 43, 0.055);
+}
+.ribbon-module {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-rows: 12px 44px;
+  gap: 3px;
+  min-width: 0;
+}
+.ribbon-module-label {
+  padding-left: 3px;
+  color: #6c7d78;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 12px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.ribbon-module .tool-group,
+.ribbon-view-controls {
+  display: flex;
+  height: 44px;
+  align-items: stretch;
+  gap: 0;
+  overflow: visible;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #d4dfdc;
+  border-radius: 8px;
+  box-shadow:
+    0 1px 1px rgba(16, 48, 42, 0.04),
+    inset 0 1px 0 #fff;
+}
+.ribbon-module .tool-button,
+.ribbon-module .toggle-tool {
+  position: relative;
+  min-width: 66px;
+  height: 100%;
+  padding: 0 11px;
+  gap: 7px;
+  color: #2d403c;
+  font-size: 12px;
+  font-weight: 620;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid #e1e8e6;
+  border-radius: 0;
+  box-shadow: none;
+}
+.ribbon-module .tool-button:first-child,
+.ribbon-module .toggle-tool:first-child {
+  border-radius: 7px 0 0 7px;
+}
+.ribbon-module .tool-button:last-child,
+.ribbon-module .toggle-tool:last-child {
+  border-right: 0;
+  border-radius: 0 7px 7px 0;
+}
+.ribbon-module .tool-button:hover:not(:disabled),
+.ribbon-module .toggle-tool:hover {
+  color: #075f55;
+  background: #f0f7f5;
+}
+.ribbon-module .tool-button.active,
+.ribbon-module .toggle-tool.active {
+  color: #064f47;
+  background: linear-gradient(180deg, #e7f6f2 0%, #dff1ed 100%);
+  box-shadow: inset 0 -2px 0 #00a995;
+}
+.ribbon-module .tool-button.active::after {
+  display: none;
+}
+.ribbon-module .tool-button:disabled {
+  color: #a8b3b0;
+  background: #f8faf9;
+}
+.ribbon-module .tool-button kbd {
+  display: none;
+}
+.ribbon-module .compact-tools .tool-button {
+  min-width: 66px;
+}
+.ribbon-module .wall-drawing-control {
+  height: 100%;
+}
+.ribbon-module .construction-tool {
+  min-width: 112px;
+  border-right: 0;
+}
+.ribbon-module .wall-kind-trigger {
+  width: 28px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid #e1e8e6;
+  border-left: 1px solid #d2dedb;
+  background: transparent;
+}
+.ribbon-module .wall-kind-trigger:hover,
+.ribbon-module .wall-kind-trigger[aria-expanded="true"] {
+  color: #064f47;
+  background: #e7f6f2;
+}
+.wall-kind-menu {
+  top: calc(100% + 9px);
+  width: 340px;
+  padding: 8px;
+  border-color: #c6d6d2;
+  border-radius: 12px;
+  box-shadow: 0 22px 54px rgba(10, 38, 32, 0.2);
+}
+.wall-kind-menu header {
+  display: grid;
+  gap: 3px;
+  padding: 8px 9px 10px;
+  border-bottom: 1px solid #e2e9e7;
+}
+.wall-kind-menu header b {
+  font-size: 14px;
+}
+.wall-kind-menu header span {
+  color: #6d7d79;
+  font-size: 11px;
+}
+.wall-kind-menu > b {
+  display: none;
+}
+.wall-kind-menu button {
+  position: relative;
+  grid-template-columns: 21px minmax(0, 1fr) auto;
+  min-height: 57px;
+  margin-top: 3px;
+  padding: 8px 9px;
+  border-radius: 8px;
+}
+.wall-kind-menu button:hover {
+  background: #f1f7f5;
+}
+.wall-kind-menu button[aria-pressed="true"] {
+  border-color: #96d2c8;
+  background: #e8f6f3;
+  box-shadow: inset 3px 0 0 #00a995;
+}
+.wall-kind-menu button kbd {
+  min-width: 22px;
+  padding: 2px 5px;
+  color: #526762;
+  font-size: 10px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #cddbd7;
+  border-radius: 4px;
+}
+.wall-kind-menu p {
+  margin: 6px 9px 2px;
+}
+.ribbon-module .measurement-menu {
+  height: 100%;
+}
+.ribbon-module .measurement-trigger {
+  min-width: 112px;
+}
+.ribbon-module-view {
+  margin-left: auto;
+}
+.ribbon-view-controls {
+  gap: 7px;
+  padding-left: 7px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.ribbon-view-controls .zoom-control,
+.ribbon-view-controls .presentation-control,
+.ribbon-view-controls .fullscreen-control {
+  height: 44px;
+  background: rgba(255, 255, 255, 0.94);
+  border-color: #d4dfdc;
+  border-radius: 8px;
+  box-shadow: 0 1px 1px rgba(16, 48, 42, 0.04);
+}
+.ribbon-view-controls .zoom-control button,
+.ribbon-view-controls .presentation-control button {
+  min-width: 39px;
+  padding: 0 9px;
+}
+.ribbon-view-controls .zoom-control .zoom-value {
+  min-width: 54px;
+}
+.ribbon-view-controls .fullscreen-control {
+  width: 44px;
+}
+.two-d-editor.tool-wall,
+.two-d-editor.tool-rectangle,
+.two-d-editor.tool-annex {
+  cursor: crosshair;
+}
+@media (max-width: 1420px) {
+  .ribbon-module-history .tool-button span,
+  .ribbon-module-draw .blueprint-tool span {
+    display: none;
+  }
+  .ribbon-module-history .tool-button,
+  .ribbon-module-draw .blueprint-tool {
+    min-width: 42px;
+    padding-inline: 10px;
+  }
+  .ribbon-module .construction-tool {
+    min-width: 105px;
+  }
+  .ribbon-module .measurement-trigger {
+    min-width: 104px;
+  }
+}
+@media (max-width: 1180px) {
+  .ribbon-module-label {
+    overflow: hidden;
+    color: transparent;
+  }
+  .ribbon-module .tool-button span,
+  .ribbon-module .toggle-tool > span {
+    display: none;
+  }
+  .ribbon-module .tool-button,
+  .ribbon-module .toggle-tool,
+  .ribbon-module .construction-tool,
+  .ribbon-module .measurement-trigger {
+    min-width: 42px;
+    padding-inline: 9px;
+  }
+}

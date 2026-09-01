@@ -6,7 +6,7 @@ import {
   validatePlacement,
   type ValidationWarning,
 } from "../domain/geometry";
-import { getClosedWallFloorPolygon } from "../domain/room-geometry";
+import { getClosedWallFloorPolygon, getRoomSpaceFloorPlans } from "../domain/room-geometry";
 import { openingOverlapsSibling } from "../domain/wall-openings";
 import type { Project, Room, SceneObject } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
@@ -94,6 +94,34 @@ export function auditRoom(
       object.visible &&
       !["wall", "door", "window", "label", "measurement"].includes(object.objectType),
   );
+  const spaceFloors = getRoomSpaceFloorPlans(room);
+  const floorBySpaceId = new Map(spaceFloors.map((floor) => [floor.spaceId, floor]));
+  const validSpaceIds = new Set(room.spaces.map((space) => space.id));
+  const unassignedObjectIds = placedAssets
+    .filter((object) => !object.spaceId || !validSpaceIds.has(object.spaceId))
+    .map((object) => object.id);
+  const spaceAudits = room.spaces.map((space) => {
+    const floor = floorBySpaceId.get(space.id);
+    return {
+      id: space.id,
+      kind: space.kind,
+      name: space.name,
+      code: space.code,
+      areaM2: Number(((floor?.areaMm2 ?? 0) / 1_000_000).toFixed(2)),
+      closedFloorShell: Boolean(floor),
+      wallIds: [...space.wallIds],
+      connectingOpeningIds: openings
+        .filter((opening) => opening.opening?.connectsSpaceIds?.includes(space.id))
+        .map((opening) => opening.id),
+      unassignedObjectIds,
+    };
+  });
+  const primaryAreaM2 = spaceAudits
+    .filter((space) => space.kind === "primary")
+    .reduce((total, space) => total + space.areaM2, 0);
+  const annexAreaM2 = spaceAudits
+    .filter((space) => space.kind === "annex")
+    .reduce((total, space) => total + space.areaM2, 0);
   const hasIssue = (prefix: string) => warnings.some((warning) => warning.id.startsWith(prefix));
 
   return {
@@ -106,7 +134,11 @@ export function auditRoom(
     },
     status: errors > 0 ? "blocked" : warningCount > 0 ? "attention" : "ready",
     summary: {
-      floorAreaM2: Number(roomArea(room).toFixed(2)),
+      floorAreaM2: Number(
+        (spaceFloors.length ? primaryAreaM2 + annexAreaM2 : roomArea(room)).toFixed(2),
+      ),
+      primaryAreaM2: Number(primaryAreaM2.toFixed(2)),
+      annexAreaM2: Number(annexAreaM2.toFixed(2)),
       walls: room.scene.objects.filter((object) => object.objectType === "wall").length,
       openings: openings.length,
       placedAssets: placedAssets.length,
@@ -124,6 +156,7 @@ export function auditRoom(
       objectsInsideBoundary: !hasIssue("outside-"),
       uniqueIndexCodes: !hasIssue("duplicate-code-"),
     },
+    spaces: spaceAudits,
     issues: warnings.slice(0, 12).map((warning) => ({
       severity: warning.severity,
       title: warning.title,

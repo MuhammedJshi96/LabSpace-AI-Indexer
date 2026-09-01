@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Buildings,
   CheckCircle,
   Robot,
   Ruler,
@@ -12,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useRef } from "react";
 import { labSpaceStagingActions } from "../agent/labspace-staging-actions";
+import { getRoomSpaceFloorPlans } from "../domain/room-geometry";
 import { useEditorStore } from "../store/editor-store";
 
 function metres(value: number) {
@@ -21,6 +23,11 @@ function metres(value: number) {
 export function AgentReviewPanel() {
   const pending = useEditorStore((state) => state.pendingAgentChange);
   const pushToast = useEditorStore((state) => state.pushToast);
+  const reviewRoom = useEditorStore((state) =>
+    pending?.tool === "layout"
+      ? state.project.rooms.find((room) => room.id === pending.roomId) ?? null
+      : null,
+  );
   const cancelButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -44,6 +51,12 @@ export function AgentReviewPanel() {
     pending.tool === "layout"
       ? pending.proposedObjects.filter((object) => object.kind === "asset")
       : [];
+  const annexFloors =
+    pending.tool === "layout" && pending.changeKind === "annex" && reviewRoom
+      ? getRoomSpaceFloorPlans(reviewRoom)
+      : [];
+  const annexFloor = annexFloors.find((floor) => floor.kind === "annex");
+  const primaryFloor = annexFloors.find((floor) => floor.kind === "primary");
 
   const approve = () => {
     try {
@@ -84,19 +97,97 @@ export function AgentReviewPanel() {
             <span className="agent-review-state">Preview · not saved</span>
             <span className="agent-review-valid">
               <CheckCircle size={15} weight="fill" />
-              {pending.tool === "inventory" ? "Canonical targets" : "Geometry clear"}
+              {pending.tool === "workspace"
+                ? "Identity available"
+                : pending.tool === "inventory"
+                  ? "Canonical targets"
+                  : pending.tool === "layout" && pending.changeKind === "annex"
+                    ? "Two floors closed"
+                  : "Geometry clear"}
             </span>
           </div>
           <h2 id="agent-review-title">
-            {pending.tool === "layout"
-              ? "Review room shell and layout"
-              : pending.tool === "inventory"
-                ? "Review inventory creation"
-                : pending.tool === "resize"
-                  ? "Review agent resize"
-                  : "Review agent move"}
+            {pending.tool === "workspace"
+              ? "Review room creation"
+              : pending.tool === "layout"
+                ? pending.changeKind === "annex"
+                  ? "Review annex addition"
+                  : "Review room shell and layout"
+                : pending.tool === "inventory"
+                  ? "Review inventory creation"
+                  : pending.tool === "resize"
+                    ? "Review agent resize"
+                    : "Review agent move"}
           </h2>
-          {pending.tool === "layout" ? (
+          {pending.tool === "workspace" ? (
+            <>
+              <p id="agent-review-summary">
+                Create <b>{pending.roomName}</b> <code>{pending.roomCode}</code> in{" "}
+                {pending.laboratoryName} on Floor {pending.floor}.
+              </p>
+              <div className="agent-review-manifest" aria-label="Proposed room identity">
+                <span className="agent-review-shell-item">
+                  <Buildings size={16} weight="duotone" />
+                  <b>{pending.roomName}</b>
+                  <small>
+                    {pending.laboratoryCode} · {pending.roomCode} · Floor {pending.floor}
+                  </small>
+                </span>
+              </div>
+              <div className="agent-review-route" aria-label="Room creation boundary">
+                <span>
+                  <small>Current project</small>
+                  No room has been created
+                </span>
+                <ArrowRight size={18} aria-hidden="true" />
+                <span>
+                  <small>After approval</small>
+                  Empty editable room + local save
+                </span>
+              </div>
+            </>
+          ) : pending.tool === "layout" ? (
+            pending.changeKind === "annex" ? (
+              <>
+                <p id="agent-review-summary">
+                  Add <b>{annexFloor?.name ?? pending.brief}</b>
+                  {annexFloor?.code ? <code>{annexFloor.code}</code> : null} to {pending.roomName}.
+                  The primary floor remains {((primaryFloor?.areaMm2 ?? 0) / 1_000_000).toFixed(2)}
+                  m²; the separate annex adds {((annexFloor?.areaMm2 ?? 0) / 1_000_000).toFixed(2)}
+                  m².
+                </p>
+                <div className="agent-review-manifest" aria-label="Proposed annex structure">
+                  {annexFloors.map((floor) => (
+                    <span className="agent-review-shell-item" key={floor.spaceId}>
+                      <Square size={14} weight="duotone" />
+                      <b>{floor.name}</b>
+                      <small>
+                        {floor.kind === "primary" ? "Primary" : "Annex"} · {floor.code} ·{" "}
+                        {(floor.areaMm2 / 1_000_000).toFixed(2)} m²
+                      </small>
+                    </span>
+                  ))}
+                  {proposedAssets.slice(0, 4).map((object) => (
+                    <span key={object.objectId}>
+                      <Stack size={14} weight="duotone" />
+                      <b>{object.name}</b>
+                      <small>{object.indexCode}</small>
+                    </span>
+                  ))}
+                </div>
+                <div className="agent-review-route" aria-label="Annex connection evidence">
+                  <span>
+                    <small>Primary boundary</small>
+                    Stable wall split + hosted openings remapped
+                  </span>
+                  <ArrowRight size={18} aria-hidden="true" />
+                  <span>
+                    <small>One approval</small>
+                    Connected annex + independent floor + one Undo
+                  </span>
+                </div>
+              </>
+            ) : (
             <>
               <p id="agent-review-summary">
                 {proposedWalls.length > 0 && (
@@ -148,30 +239,44 @@ export function AgentReviewPanel() {
                 </span>
               </div>
             </>
+            )
           ) : pending.tool === "inventory" ? (
             <>
               <p id="agent-review-summary">
-                <b>{pending.entries.length} inventory record{pending.entries.length === 1 ? "" : "s"}</b>
+                <b>
+                  {pending.entries.length} inventory record{pending.entries.length === 1 ? "" : "s"}
+                </b>
                 {" · "}
-                {pending.entries.filter((entry) => entry.storageLocationId).length} assigned to exact locations
+                {pending.entries.filter((entry) => entry.storageLocationId).length} assigned to
+                exact locations
               </p>
               <div className="agent-review-manifest" aria-label="Proposed inventory records">
                 {pending.entries.slice(0, 6).map((entry) => (
                   <span key={entry.itemId}>
                     <Package size={14} weight="duotone" />
                     <b>{entry.name}</b>
-                    <small>{entry.quantity} {entry.unit} · {entry.roomCode}</small>
-                    <small><MapPin size={12} /> {entry.locationPath.join(" → ") || "Unassigned"}</small>
+                    <small>
+                      {entry.quantity} {entry.unit} · {entry.roomCode}
+                    </small>
+                    <small>
+                      <MapPin size={12} /> {entry.locationPath.join(" → ") || "Unassigned"}
+                    </small>
                   </span>
                 ))}
                 {pending.entries.length > 6 && (
-                  <span className="agent-review-manifest-more">+{pending.entries.length - 6} more</span>
+                  <span className="agent-review-manifest-more">
+                    +{pending.entries.length - 6} more
+                  </span>
                 )}
               </div>
               <div className="agent-review-route" aria-label="Inventory plan evidence">
-                <span><small>Source</small>WebMCP structured proposal</span>
+                <span>
+                  <small>Source</small>WebMCP structured proposal
+                </span>
                 <ArrowRight size={18} aria-hidden="true" />
-                <span><small>Commit</small>Canonical room inventory after approval</span>
+                <span>
+                  <small>Commit</small>Canonical room inventory after approval
+                </span>
               </div>
             </>
           ) : pending.tool === "resize" ? (
@@ -221,13 +326,17 @@ export function AgentReviewPanel() {
           </button>
           <button className="button-primary" onClick={approve}>
             <CheckCircle size={16} weight="bold" />
-            {pending.tool === "layout"
-              ? "Approve room plan"
-              : pending.tool === "inventory"
-                ? "Approve inventory"
-                : pending.tool === "resize"
-                  ? "Approve resize"
-                  : "Approve move"}
+            {pending.tool === "workspace"
+              ? "Create room"
+              : pending.tool === "layout"
+                ? pending.changeKind === "annex"
+                  ? "Approve annex"
+                  : "Approve room plan"
+                : pending.tool === "inventory"
+                  ? "Approve inventory"
+                  : pending.tool === "resize"
+                    ? "Approve resize"
+                    : "Approve move"}
           </button>
         </div>
       </section>

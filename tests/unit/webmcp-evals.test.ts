@@ -47,7 +47,8 @@ describe("LabSpace WebMCP evaluation fixture", () => {
         entry.expectedTools.includes("labspace_stage_object_move") ||
         entry.expectedTools.includes("labspace_stage_resize") ||
         (entry.expectedTools.includes("labspace_stage_room_plan") &&
-          !entry.expectedTools.includes("labspace_create_room"))
+          !entry.expectedTools.includes("labspace_create_room")) ||
+        entry.expectedTools.includes("labspace_stage_annex_plan")
       ) {
         expect(entry.requiresHumanApproval).toBe(true);
       }

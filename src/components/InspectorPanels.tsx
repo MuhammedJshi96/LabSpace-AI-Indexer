@@ -37,9 +37,10 @@ import {
   wallFinishForObject,
 } from "../domain/laboratory-wall-materials";
 import { normalizeRaisedFromFloorMm } from "../domain/object-transforms";
-import { getClosedWallFloorPolygon } from "../domain/room-geometry";
-import type { EquipmentRecord, SceneObject } from "../domain/schema";
+import { getClosedWallFloorPolygon, getRoomSpaceFloorPlans } from "../domain/room-geometry";
+import type { EquipmentRecord, Room, SceneObject } from "../domain/schema";
 import { selectActiveRoom, useEditorStore, type InspectorPanel } from "../store/editor-store";
+import { planAnnex, stageAnnexPlan } from "../agent/labspace-annex-actions";
 import { InventoryOrganizer, type InventoryOrganizerOptions } from "./InventoryOrganizer";
 import { AssetThumbnail } from "./AssetThumbnail";
 import { StorageInspector } from "./StorageInspector";
@@ -202,11 +203,201 @@ function SurfaceMaterialPicker({
   );
 }
 
+function AnnexBuilder({ room }: { room: Room }) {
+  const selectedIds = useEditorStore((state) => state.selectedIds);
+  const saveStatus = useEditorStore((state) => state.saveStatus);
+  const pushToast = useEditorStore((state) => state.pushToast);
+  const updateRoom = useEditorStore((state) => state.updateRoom);
+  const walls = room.scene.objects.filter(
+    (object) => object.wall && !object.wall.halfHeight && object.visible,
+  );
+  const selectedWall = walls.find((wall) => selectedIds.includes(wall.id));
+  const [hostWallId, setHostWallId] = useState(walls[0]?.id ?? "");
+  const [name, setName] = useState("Preparation annex");
+  const [code, setCode] = useState(`${room.code}-A${room.spaces.length}`);
+  const [widthM, setWidthM] = useState(4.5);
+  const [depthM, setDepthM] = useState(3.6);
+  const [connector, setConnector] = useState(true);
+  const [windowCount, setWindowCount] = useState(1);
+  const effectiveWallId = selectedWall?.id ?? hostWallId ?? walls[0]?.id ?? "";
+  const selectedHost = walls.find((wall) => wall.id === effectiveWallId);
+  const spaces = getRoomSpaceFloorPlans(room);
+
+  const preview = () => {
+    if (!selectedHost?.wall) {
+      pushToast("Select a full-height room wall before adding an annex.", "error");
+      return;
+    }
+    if (saveStatus !== "saved") {
+      pushToast("Finish saving current edits before previewing an annex.", "info");
+      return;
+    }
+    try {
+      const widthAlongWallMm = Math.round(widthM * 1000);
+      const outwardDepthMm = Math.round(depthM * 1000);
+      const windowOffsets =
+        windowCount === 2
+          ? [widthAlongWallMm / 3, (widthAlongWallMm * 2) / 3]
+          : windowCount === 1
+            ? [widthAlongWallMm / 2]
+            : [];
+      const plan = planAnnex({
+        parentRoomCode: room.code,
+        name,
+        code,
+        hostWallId: selectedHost.id,
+        widthAlongWallMm,
+        outwardDepthMm,
+        floorFinish: room.floorFinish,
+        connector: connector
+          ? {
+              assetId: "narrow-lite-door",
+              offsetMm: widthAlongWallMm / 2,
+              handing: "left",
+              opensInto: "annex",
+            }
+          : undefined,
+        windows: windowOffsets.map((offsetMm) => ({
+          assetId: "standard-window",
+          wall: "outer",
+          offsetMm,
+          sillHeightMm: 900,
+        })),
+        assets: [],
+      });
+      stageAnnexPlan({ planId: plan.planId });
+    } catch (error) {
+      pushToast(error instanceof Error ? error.message : "The annex could not be planned.", "error");
+    }
+  };
+
+  return (
+    <details className="inspector-section inspector-card inspector-disclosure annex-builder">
+      <summary>
+        <span>
+          <h3>Spaces &amp; annexes</h3>
+          <small>{spaces.length} independent floor{spaces.length === 1 ? "" : "s"}</small>
+        </span>
+        <CaretRight size={16} />
+      </summary>
+      <div className="annex-space-ledger" aria-label="Room spaces">
+        {spaces.map((space) => (
+          <span key={space.spaceId}>
+            <i>{space.kind === "primary" ? "P" : "A"}</i>
+            <b>{space.name}</b>
+            <small>
+              {space.code} · {(space.areaMm2 / 1_000_000).toFixed(2)} m²
+            </small>
+            <select
+              value={space.floorFinish}
+              onChange={(event) => {
+                const floorFinish = event.target.value;
+                updateRoom({
+                  ...(space.kind === "primary" ? { floorFinish } : {}),
+                  spaces: room.spaces.map((entry) =>
+                    entry.id === space.spaceId ? { ...entry, floorFinish } : entry,
+                  ),
+                });
+              }}
+              aria-label={`${space.name} floor finish`}
+            >
+              {LABORATORY_FLOOR_FINISHES.map((finish) => (
+                <option value={finish.id} key={finish.id}>
+                  {finish.label}
+                </option>
+              ))}
+            </select>
+          </span>
+        ))}
+      </div>
+      <div className="annex-builder-heading">
+        <span>
+          <small className="eyebrow">Add connected space</small>
+          <b>Build from one existing wall</b>
+        </span>
+        <em>Always reviewed</em>
+      </div>
+      <label className="property-field annex-wall-field">
+        <span>Host wall</span>
+        <div className="input-with-suffix">
+          <select
+            value={effectiveWallId}
+            onChange={(event) => setHostWallId(event.target.value)}
+            aria-label="Annex host wall"
+          >
+            {walls.map((wall, index) => (
+              <option value={wall.id} key={wall.id}>
+                Wall {index + 1} · {(wall.dimensions.width / 1000).toFixed(2)} m
+                {selectedWall?.id === wall.id ? " · selected" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      </label>
+      <div className="property-grid two annex-identity-fields">
+        <TextField label="Annex name" value={name} onChange={setName} />
+        <TextField label="Space code" value={code} onChange={(value) => setCode(value.toUpperCase())} />
+        <TextField
+          label="Width on wall"
+          type="number"
+          suffix="m"
+          value={widthM}
+          onChange={(value) => setWidthM(Number(value))}
+        />
+        <TextField
+          label="Outward depth"
+          type="number"
+          suffix="m"
+          value={depthM}
+          onChange={(value) => setDepthM(Number(value))}
+        />
+      </div>
+      <div className="annex-options" aria-label="Annex openings">
+        <label>
+          <input
+            type="checkbox"
+            checked={connector}
+            onChange={(event) => setConnector(event.target.checked)}
+          />
+          <span>
+            <b>Internal door</b>
+            <small>Narrow-lite door opening into annex</small>
+          </span>
+        </label>
+        <label>
+          <span>
+            <b>Outer windows</b>
+            <small>Evenly distributed observation glazing</small>
+          </span>
+          <select
+            value={windowCount}
+            onChange={(event) => setWindowCount(Number(event.target.value))}
+            aria-label="Annex outer windows"
+          >
+            <option value={0}>None</option>
+            <option value={1}>1 window</option>
+            <option value={2}>2 windows</option>
+          </select>
+        </label>
+      </div>
+      <button className="button-primary annex-preview-button" onClick={preview} disabled={!walls.length}>
+        <Plus size={16} weight="bold" /> Preview connected annex
+      </button>
+      <p className="annex-builder-note">
+        LabSpace preserves the primary floor, remaps hosted openings, and commits the annex as one
+        undoable review.
+      </p>
+    </details>
+  );
+}
+
 function RoomPanel() {
   const room = useEditorStore(selectActiveRoom);
   const updateRoom = useEditorStore((state) => state.updateRoom);
   const stats = indexingStats(room.scene);
   const closedFloor = getClosedWallFloorPolygon(room.scene.objects);
+  const spaceFloors = getRoomSpaceFloorPlans(room);
+  const totalFloorAreaMm2 = spaceFloors.reduce((total, floor) => total + floor.areaMm2, 0);
   const registeredFloorFinish = findLaboratoryFloorFinish(room.floorFinish);
   const registeredWallFinish = findLaboratoryWallFinish(room.wallFinish);
   const [surfaceTarget, setSurfaceTarget] = useState<"floor" | "walls">("floor");
@@ -246,17 +437,18 @@ function RoomPanel() {
         <p>{laboratoryFloorFinishLabel(room.floorFinish)} floor · editable spatial workspace</p>
         <div className="stat-grid">
           <Stat
-            label="Floor area"
-            value={`${((closedFloor?.areaMm2 ?? 0) / 1_000_000).toFixed(2)} m²`}
+            label="Total floor"
+            value={`${(totalFloorAreaMm2 / 1_000_000).toFixed(2)} m²`}
           />
           <Stat
             label="Perimeter"
             value={`${((closedFloor?.perimeterMm ?? 0) / 1000).toFixed(2)} m`}
           />
           <Stat label="Wall height" value={`${(room.wallHeight / 1000).toFixed(2)} m`} />
-          <Stat label="Equipment" value={stats.equipment} />
+          <Stat label="Spaces" value={spaceFloors.length} />
         </div>
       </section>
+      <AnnexBuilder key={room.id} room={room} />
       <details className="inspector-section inspector-card inspector-disclosure room-identity-card">
         <summary>
           <span>

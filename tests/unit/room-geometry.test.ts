@@ -4,6 +4,7 @@ import {
   getClosedWallFloorPolygon,
   getRectangularPerimeterBounds,
   getRoomFloorPlan,
+  getRoomSpaceFloorPlans,
   normalizeRoomFloorEnvelope,
   synchronizeClosedRoomAfterWallEdit,
   synchronizeRectangularRoomAfterWallEdit,
@@ -265,6 +266,65 @@ describe("closed wall floor geometry", () => {
       bounds: { minX: 0, minY: 0, maxX: 4000, maxY: 3000 },
     });
     expect(polygon?.wallIds).not.toContain(divider.id);
+  });
+
+  it("keeps primary and annex floors independent through one shared wall", () => {
+    const template = createSeedProject().rooms[0];
+    const primaryWalls = loopWalls([
+      [0, 0],
+      [8000, 0],
+      [8000, 1200],
+      [8000, 5700],
+      [8000, 6000],
+      [0, 6000],
+    ]);
+    const shared = primaryWalls[2];
+    const annexExterior = loopWalls([
+      [8000, 1200],
+      [11600, 1200],
+      [11600, 5700],
+      [8000, 5700],
+    ])
+      .slice(0, 3)
+      .map((wall, index) => ({ ...wall, id: `annex-wall-${index.toString().padStart(4, "0")}` }));
+    const room: Room = {
+      ...template,
+      width: 11_600,
+      depth: 6000,
+      spaces: [
+        {
+          id: "space-primary-fixture",
+          roomId: template.id,
+          parentSpaceId: null,
+          kind: "primary",
+          name: "Primary room",
+          code: "PRI",
+          wallIds: primaryWalls.map((wall) => wall.id),
+          floorFinish: template.floorFinish,
+        },
+        {
+          id: "space-annex-fixture",
+          roomId: template.id,
+          parentSpaceId: "space-primary-fixture",
+          kind: "annex",
+          name: "Bioassay Annex",
+          code: "ANN",
+          wallIds: [...annexExterior.map((wall) => wall.id), shared.id],
+          floorFinish: "warm-welded-vinyl",
+        },
+      ],
+      scene: { ...template.scene, objects: [...primaryWalls, ...annexExterior] },
+    };
+
+    const floors = getRoomSpaceFloorPlans(room);
+    expect(floors).toHaveLength(2);
+    expect(floors.find((floor) => floor.kind === "primary")?.areaMm2).toBe(48_000_000);
+    expect(floors.find((floor) => floor.kind === "annex")?.areaMm2).toBe(16_200_000);
+    expect(floors.reduce((total, floor) => total + floor.areaMm2, 0)).toBe(64_200_000);
+    expect(floors.every((floor) => floor.wallIds.includes(shared.id))).toBe(true);
+    expect(new Set(floors.map((floor) => floor.spaceId))).toEqual(
+      new Set(["space-primary-fixture", "space-annex-fixture"]),
+    );
   });
 
   it("rejects a self-intersecting loop even when its signed area is non-zero", () => {

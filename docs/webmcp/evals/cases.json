@@ -9,6 +9,7 @@
     "labspace_create_room",
     "labspace_find_valid_placements",
     "labspace_get_context",
+    "labspace_plan_annex",
     "labspace_plan_room",
     "labspace_search_assets",
     "labspace_search_records",
@@ -17,6 +18,7 @@
     "labspace_plan_inventory",
     "labspace_focus_record",
     "labspace_stage_inventory_plan",
+    "labspace_stage_annex_plan",
     "labspace_stage_room_plan",
     "labspace_validate_object_move",
     "labspace_stage_object_move",
@@ -24,6 +26,14 @@
     "labspace_stage_resize"
   ],
   "cases": [
+    {
+      "id": "review-connected-annex",
+      "prompt": "Add a sixteen square metre preparation annex to a suitable exterior wall and show me both floor areas before I approve it.",
+      "expectedTools": ["labspace_audit_room", "labspace_plan_annex", "labspace_stage_annex_plan"],
+      "forbiddenTools": ["labspace_stage_room_plan"],
+      "requiresHumanApproval": true,
+      "expectedOutcome": "A stable wall split and two independently closed floors appear as one unsaved preview awaiting human approval."
+    },
     {
       "id": "review-new-inventory",
       "prompt": "Add twelve boxes of tips in a verified storage location after I review the details.",

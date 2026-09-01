@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { mmToMetres } from "../domain/geometry";
 import { resolveLaboratoryFloorFinish } from "../domain/laboratory-materials";
-import { getClosedWallFloorPolygon } from "../domain/room-geometry";
+import { getRoomSpaceFloorPlans } from "../domain/room-geometry";
 import type { Room } from "../domain/schema";
 import { getRoomFloorMaterial } from "../lib/room-surface-materials";
 
@@ -16,40 +16,51 @@ type RoomFloor3DProps = {
  * branched, or invalid wall sets intentionally render no slab.
  */
 export function RoomFloor3D({ room, onClearSelection }: RoomFloor3DProps) {
-  const floor = useMemo(() => getClosedWallFloorPolygon(room.scene.objects), [room.scene.objects]);
-  const shape = useMemo(() => {
-    if (!floor) return null;
-    const nextShape = new THREE.Shape();
+  const floors = useMemo(() => getRoomSpaceFloorPlans(room), [room]);
+  const geometries = useMemo(() => {
     const toShapePoint = (point: { x: number; y: number }) => ({
       x: mmToMetres(point.x - room.width / 2),
       // ShapeGeometry is rotated onto XZ; invert plan Y so it matches the
       // existing positive-Z room coordinate convention.
       y: mmToMetres(room.depth / 2 - point.y),
     });
-    const first = toShapePoint(floor.points[0]);
-    nextShape.moveTo(first.x, first.y);
-    floor.points.slice(1).forEach((point) => {
-      const converted = toShapePoint(point);
-      nextShape.lineTo(converted.x, converted.y);
+    return floors.map((floor) => {
+      const shape = new THREE.Shape();
+      const first = toShapePoint(floor.points[0]);
+      shape.moveTo(first.x, first.y);
+      floor.points.slice(1).forEach((point) => {
+        const converted = toShapePoint(point);
+        shape.lineTo(converted.x, converted.y);
+      });
+      shape.closePath();
+      return { floor, geometry: new THREE.ShapeGeometry(shape) };
     });
-    nextShape.closePath();
-    return nextShape;
-  }, [floor, room.depth, room.width]);
-  const geometry = useMemo(() => (shape ? new THREE.ShapeGeometry(shape) : null), [shape]);
-  useEffect(() => () => geometry?.dispose(), [geometry]);
-  const finish = resolveLaboratoryFloorFinish(room.floorFinish);
+  }, [floors, room.depth, room.width]);
+  useEffect(() => () => geometries.forEach(({ geometry }) => geometry.dispose()), [geometries]);
 
-  if (!floor || !geometry) return null;
+  if (!geometries.length) return null;
 
   return (
-    <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
-      receiveShadow
-      onClick={onClearSelection}
-      userData={{ floorSource: "closed-walls", floorFinishId: finish.id }}
-      material={getRoomFloorMaterial(finish)}
-      dispose={null}
-      geometry={geometry}
-    />
+    <group>
+      {geometries.map(({ floor, geometry }) => {
+        const finish = resolveLaboratoryFloorFinish(floor.floorFinish);
+        return (
+          <mesh
+            key={floor.spaceId}
+            rotation={[-Math.PI / 2, 0, 0]}
+            receiveShadow
+            onClick={onClearSelection}
+            userData={{
+              floorSource: "closed-walls",
+              floorFinishId: finish.id,
+              spaceId: floor.spaceId,
+            }}
+            material={getRoomFloorMaterial(finish)}
+            dispose={null}
+            geometry={geometry}
+          />
+        );
+      })}
+    </group>
   );
 }

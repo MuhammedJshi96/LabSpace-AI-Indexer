@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { clearStoredRoomPlans, planRoomLayout } from "../../src/agent/labspace-layout-actions";
-import { stageRoomLayout } from "../../src/agent/labspace-staging-actions";
+import {
+  approveStagedChange,
+  cancelStagedChange,
+  stageRoomLayout,
+} from "../../src/agent/labspace-staging-actions";
 import {
   clearInitialRoomPlanCapabilities,
   createLabRoom,
@@ -8,6 +12,10 @@ import {
 import { createBlankProject } from "../../src/domain/room-factory";
 import type { Project } from "../../src/domain/schema";
 import { useEditorStore } from "../../src/store/editor-store";
+import {
+  resetWebMcpExecutionPolicyForTests,
+  useWebMcpExecutionPolicyStore,
+} from "../../src/agent/webmcp-execution-policy";
 
 function workspaceFixture() {
   const project = createBlankProject({
@@ -45,12 +53,68 @@ afterEach(() => {
   vi.unstubAllGlobals();
   clearStoredRoomPlans();
   clearInitialRoomPlanCapabilities();
+  resetWebMcpExecutionPolicyForTests();
   useEditorStore.setState({ pendingAgentChange: null });
 });
 
 describe("WebMCP blank-room creation boundary", () => {
-  it("creates and saves a room, then auto-commits exactly one complete initial blueprint", async () => {
+  it("defaults to a human-reviewed room proposal without mutating the workspace", async () => {
     const project = workspaceFixture();
+    const beforeRoomIds = project.rooms.map((room) => room.id);
+    const proposed = await createLabRoom({
+      name: "Reviewed office",
+      code: "814",
+      laboratoryCode: project.laboratories[0].code,
+    });
+
+    expect(proposed).toMatchObject({
+      created: false,
+      staged: true,
+      requiresHumanApproval: true,
+      executionMode: "reviewed",
+      executionDisposition: "review-required",
+    });
+    expect(useEditorStore.getState().project.rooms.map((room) => room.id)).toEqual(beforeRoomIds);
+    expect(useEditorStore.getState().pendingAgentChange).toMatchObject({
+      tool: "workspace",
+      roomName: "Reviewed office",
+      roomCode: "814",
+    });
+
+    if (proposed.created) throw new Error("Expected a reviewed proposal.");
+    await expect(
+      createLabRoom({
+        name: "Reviewed office",
+        code: "814",
+        laboratoryCode: project.laboratories[0].code,
+      }),
+    ).resolves.toMatchObject({ stageId: proposed.stageId, staged: true });
+    approveStagedChange(proposed.stageId);
+    await vi.waitFor(() => expect(useEditorStore.getState().saveStatus).toBe("saved"));
+    expect(useEditorStore.getState().project.rooms.at(-1)).toMatchObject({
+      name: "Reviewed office",
+      code: "814",
+      facilityPlacement: { floor: 7 },
+    });
+
+    const plan = planRoomLayout({
+      roomShell: { widthMm: 6000, depthMm: 5000 },
+      assets: [{ assetId: "office-desk", quantity: 1 }],
+    });
+    const staged = stageRoomLayout({ planId: plan.planId });
+    expect(staged).toMatchObject({
+      autoCommitted: false,
+      requiresHumanApproval: true,
+      executionMode: "reviewed",
+      executionDisposition: "review-required",
+    });
+    expect(useEditorStore.getState().pendingAgentChange?.tool).toBe("layout");
+    cancelStagedChange(staged.stageId);
+  });
+
+  it("uses human-authorized Fast Draft for one complete initial blueprint only", async () => {
+    const project = workspaceFixture();
+    useWebMcpExecutionPolicyStore.getState().setModeFromHumanUi("fast-draft");
     const laboratory = project.laboratories[0];
     const created = await createLabRoom({
       name: "Office for Students",
@@ -60,6 +124,7 @@ describe("WebMCP blank-room creation boundary", () => {
 
     expect(created).toMatchObject({
       created: true,
+      staged: false,
       roomName: "Office for Students",
       roomCode: "812",
       floor: 8,
@@ -68,7 +133,10 @@ describe("WebMCP blank-room creation boundary", () => {
       persisted: true,
       initialLayoutAutoCommitEligible: true,
       requiresHumanApproval: false,
+      executionMode: "fast-draft",
+      executionDisposition: "fast-applied",
     });
+    if (!created.created) throw new Error("Fast Draft should create the validated room.");
     const blankRoom = useEditorStore
       .getState()
       .project.rooms.find((room) => room.id === created.roomId)!;

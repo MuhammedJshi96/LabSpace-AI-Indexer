@@ -35,10 +35,10 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - One coherent cyan room-blueprint preview in 2D/3D, with a manifest and deterministic evidence before a researcher decides.
 - Reversible move staging with a strict one-pending-change rule.
 - Reversible multi-object staging that creates scene objects and applicable equipment/storage index records as one undoable approval.
-- A one-use, fail-closed capability that auto-commits only the first complete blueprint of a newly WebMCP-created pristine room as one undoable update.
+- A visible, session-only Reviewed/Fast Draft execution boundary. Reviewed stages every project mutation; Fast Draft may apply only a validated additive blank room and its one complete pristine first blueprint, with the blueprint committed as one undoable history update.
 - Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP mission-control inspector that lists the twenty-one browser registrations, their Read/View/Simulate/Create/Review modes, four copy-ready compositional workflows, and bounded live evidence.
+- A visible in-product WebMCP mission-control inspector that lists the twenty-three browser registrations, their Read/View/Simulate/Create/Review modes, seven copy-ready compositional workflows, and persistent exportable activity evidence.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Sanitized activity evidence with no chain-of-thought, secret fields, or local-path disclosure; ordinary human clicks are not mislabeled as agent calls.
@@ -86,7 +86,7 @@ The challenge did not replace or relabel pre-existing product features as new ag
 ## Verification evidence
 
 - `npm run release:check`: lint, TypeScript, 96-asset validation, unit/integration tests, and production build.
-- `tests/e2e/webmcp-actions.spec.ts`: eight independent browser workflow tests, including route registration, read-only room audit, visible inspector evidence, first-room auto-commit, later-change review, room-blueprint approval, and reversal.
+- `tests/e2e/webmcp-actions.spec.ts`: independent browser workflow tests including route registration, read-only room audit, visible Inspector evidence, Reviewed room creation, bounded Fast Draft, reload reset, later-change review, room-blueprint approval, and reversal.
 - `docs/webmcp/evals/cases.json`: 24 direct, compositional, room-planning, audit, invalid, recommendation, and safety-oriented tool-selection cases.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 

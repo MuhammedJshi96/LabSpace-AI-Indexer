@@ -213,6 +213,7 @@ export function App() {
         v: "select",
         h: "pan",
         w: "wall",
+        r: "rectangle",
         d: "door",
         o: "window",
         m: "measure",

@@ -25,6 +25,7 @@ import type {
   PendingAgentLayoutChange,
   PendingAgentMoveChange,
   PendingAgentResizeChange,
+  PendingAgentWorkspaceChange,
   PlannedWallSegment,
   StageRoomLayoutResult,
   StageInventoryPlanResult,
@@ -44,7 +45,9 @@ import {
 import {
   consumeInitialRoomPlanAutoCommit,
   isInitialRoomPlanAutoCommitEligible,
+  registerInitialRoomPlanCapability,
 } from "./labspace-workspace-actions";
+import { decideWebMcpMutation } from "./webmcp-execution-policy";
 
 function resolveObject(project: Project, objectId: string): { room: Room; object: SceneObject } {
   for (const room of project.rooms) {
@@ -92,7 +95,10 @@ function activeLaboratoryCode(project: Project, room: Room) {
   );
 }
 
-function createEquipmentRecord(object: SceneObject, existing: EquipmentRecord[]): EquipmentRecord {
+export function createEquipmentRecord(
+  object: SceneObject,
+  existing: EquipmentRecord[],
+): EquipmentRecord {
   return {
     id: crypto.randomUUID(),
     objectId: object.id,
@@ -114,7 +120,7 @@ function createEquipmentRecord(object: SceneObject, existing: EquipmentRecord[])
   };
 }
 
-function createStorageLocations(
+export function createStorageLocations(
   definition: AssetDefinition,
   object: SceneObject,
   roomId: string,
@@ -568,7 +574,7 @@ function normalizeStageRoomLayoutInput(input: unknown) {
 
 function layoutStageResult(
   change: PendingAgentLayoutChange,
-  autoCommitted = false,
+  execution = decideWebMcpMutation("existing-room-layout", { valid: true }),
 ): StageRoomLayoutResult {
   const wallCount = change.proposedObjects.filter((object) => object.kind === "wall").length;
   return {
@@ -583,8 +589,11 @@ function layoutStageResult(
     floorGenerated: wallCount > 0,
     objects: change.proposedObjects,
     persisted: false,
-    requiresHumanApproval: !autoCommitted,
-    autoCommitted,
+    requiresHumanApproval: execution.disposition === "review-required",
+    autoCommitted: execution.disposition === "fast-applied",
+    executionMode: execution.mode,
+    executionDisposition: execution.disposition,
+    executionReason: execution.reason,
   };
 }
 
@@ -598,7 +607,10 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
   const existing = state.pendingAgentChange;
   if (existing) {
     if (existing.tool === "layout" && existing.planId === planId)
-      return layoutStageResult(existing);
+      return layoutStageResult(
+        existing,
+        decideWebMcpMutation("existing-room-layout", { valid: true }),
+      );
     throw new LabSpaceActionError(
       "Another agent change is awaiting human review. Approve or cancel it before staging a room plan.",
     );
@@ -624,24 +636,25 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     );
   }
 
-  const autoCommitInitialLayout = isInitialRoomPlanAutoCommitEligible(
+  const initialLayoutEligible = isInitialRoomPlanAutoCommitEligible(
     room.id,
     state.dirtyRevision,
     room,
   );
-  if (
-    autoCommitInitialLayout &&
-    (stored.result.unplaced.length > 0 ||
-      stored.result.plannedObjects !== stored.result.requestedObjects)
-  ) {
-    throw new LabSpaceActionError(
-      "The initial room blueprint is incomplete. Revise the plan before automatic creation.",
-    );
-  }
+  const completeBlueprint =
+    stored.result.unplaced.length === 0 &&
+    stored.result.plannedObjects === stored.result.requestedObjects;
+  const execution = decideWebMcpMutation(
+    initialLayoutEligible ? "initial-room-blueprint" : "existing-room-layout",
+    { valid: true, pristine: initialLayoutEligible, complete: completeBlueprint },
+  );
 
   const stageId = crypto.randomUUID();
   const beforeScene = structuredClone(room.scene);
   const proposedScene = structuredClone(room.scene);
+  const beforeSpaces = structuredClone(room.spaces);
+  const primarySpaceId =
+    room.spaces.find((space) => space.kind === "primary")?.id ?? room.spaces[0]?.id;
   const proposedObjects: PendingAgentLayoutChange["proposedObjects"] = [];
   const proposedObjectIds: string[] = [];
   const hostWallIds = new Map<string, string>();
@@ -651,6 +664,7 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
   if (stored.result.shell.mode === "proposed") {
     for (const segment of stored.result.shell.segments) {
       const wall = instantiatePlanWall(state.project, room, proposedScene, planId, segment);
+      wall.spaceId = primarySpaceId;
       proposedScene.objects.push(wall);
       hostWallIds.set(segment.proposalId, wall.id);
       proposedObjectIds.push(wall.id);
@@ -677,15 +691,22 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
       proposal,
       hostWallIds,
     );
+    object.spaceId = primarySpaceId;
     proposedScene.objects.push(object);
     if (definition.indexingBehavior === "storage") {
       proposedScene.storageLocations.push(
-        ...createStorageLocations(definition, object, room.id, now),
+        ...createStorageLocations(definition, object, room.id, now).map((location) => ({
+          ...location,
+          spaceId: primarySpaceId,
+        })),
       );
     }
     if (definition.objectType === "equipment") {
       proposedScene.equipmentRecords.push(
-        createEquipmentRecord(object, proposedScene.equipmentRecords),
+        {
+          ...createEquipmentRecord(object, proposedScene.equipmentRecords),
+          spaceId: primarySpaceId,
+        },
       );
     }
     proposedObjectIds.push(object.id);
@@ -703,6 +724,12 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     });
   }
   proposedScene.updatedAt = new Date().toISOString();
+  const proposedSpaces = structuredClone(room.spaces);
+  if (stored.result.shell.mode === "proposed") {
+    const wallIds = proposedScene.objects.filter((object) => object.wall).map((object) => object.id);
+    const primary = proposedSpaces.find((space) => space.id === primarySpaceId);
+    if (primary) primary.wallIds = wallIds;
+  }
   const change: PendingAgentLayoutChange = {
     stageId,
     tool: "layout",
@@ -710,8 +737,11 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     roomId: room.id,
     roomName: room.name,
     brief: stored.result.brief,
+    changeKind: "room-plan",
     beforeScene,
     proposedScene: structuredClone(proposedScene),
+    beforeSpaces,
+    proposedSpaces: structuredClone(proposedSpaces),
     proposedObjectIds,
     proposedObjects,
     beforeRoomSize: { width: room.width, depth: room.depth, wallHeight: room.wallHeight },
@@ -741,6 +771,7 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
               width: stored.result.shell.widthMm,
               depth: stored.result.shell.depthMm,
               wallHeight: stored.result.shell.wallHeightMm,
+              spaces: proposedSpaces,
               updatedAt: now,
               scene: proposedScene,
             }
@@ -750,12 +781,11 @@ export function stageRoomLayout(input: unknown): StageRoomLayoutResult {
     selectedIds: proposedObjectIds,
     pendingAgentChange: change,
   });
-  if (autoCommitInitialLayout) {
+  if (execution.disposition === "fast-applied") {
     commitLayout(change, "automatic");
-    consumeInitialRoomPlanAutoCommit(room.id);
-    return layoutStageResult(change, true);
+    return layoutStageResult(change, execution);
   }
-  return layoutStageResult(change);
+  return layoutStageResult(change, execution);
 }
 
 export function stageInventoryPlan(input: unknown): StageInventoryPlanResult {
@@ -1010,6 +1040,7 @@ function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult 
   if (
     room &&
     JSON.stringify(room.scene) === JSON.stringify(pending.proposedScene) &&
+    JSON.stringify(room.spaces) === JSON.stringify(pending.proposedSpaces) &&
     room.width === pending.proposedRoomSize.width &&
     room.depth === pending.proposedRoomSize.depth &&
     room.wallHeight === pending.proposedRoomSize.wallHeight
@@ -1023,6 +1054,7 @@ function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult 
             ? {
                 ...entry,
                 ...pending.beforeRoomSize,
+                spaces: pending.beforeSpaces,
                 updatedAt: pending.timestamps.roomUpdatedAt,
                 scene: pending.beforeScene,
               }
@@ -1037,13 +1069,20 @@ function cancelLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult 
   }
   useEditorStore
     .getState()
-    .pushToast("Agent room plan cancelled. The room was not changed.", "info");
+    .pushToast(
+      pending.changeKind === "annex"
+        ? "Annex preview cancelled. The room was not changed."
+        : "Agent room plan cancelled. The room was not changed.",
+      "info",
+    );
   agentActivityActions.record({
     actor: "Human",
-    action: "Room plan rejected",
+    action: pending.changeKind === "annex" ? "Annex rejected" : "Room plan rejected",
     subject: `${pending.proposedObjects.length} proposed room elements`,
     status: "rejected",
     evidence: "Blueprint preview removed · project data unchanged",
+    correlationId: pending.planId,
+    roomId: pending.roomId,
   });
   return {
     stageId: pending.stageId,
@@ -1081,6 +1120,7 @@ function commitLayout(
     !room ||
     state.dirtyRevision !== pending.baselineDirtyRevision ||
     JSON.stringify(room.scene) !== JSON.stringify(pending.proposedScene) ||
+    JSON.stringify(room.spaces) !== JSON.stringify(pending.proposedSpaces) ||
     room.width !== pending.proposedRoomSize.width ||
     room.depth !== pending.proposedRoomSize.depth ||
     room.wallHeight !== pending.proposedRoomSize.wallHeight
@@ -1094,15 +1134,18 @@ function commitLayout(
   const after = committedLayoutScene(pending, room.scene);
   const command: SceneCommand = {
     id: crypto.randomUUID(),
+    roomId: pending.roomId,
     label:
       mode === "automatic"
         ? `Create initial WebMCP room plan (${pending.proposedObjects.length} elements)`
-        : `Approve agent room plan (${pending.proposedObjects.length} elements)`,
+        : pending.changeKind === "annex"
+          ? `Approve annex (${pending.proposedObjects.length} elements)`
+          : `Approve agent room plan (${pending.proposedObjects.length} elements)`,
     kind: "scene",
     before: pending.beforeScene,
     after,
-    roomBefore: pending.beforeRoomSize,
-    roomAfter: pending.proposedRoomSize,
+    roomBefore: { ...pending.beforeRoomSize, spaces: pending.beforeSpaces },
+    roomAfter: { ...pending.proposedRoomSize, spaces: pending.proposedSpaces },
   };
   const now = new Date().toISOString();
   useEditorStore.setState({
@@ -1111,7 +1154,13 @@ function commitLayout(
       updatedAt: now,
       rooms: state.project.rooms.map((entry) =>
         entry.id === pending.roomId
-          ? { ...entry, ...pending.proposedRoomSize, updatedAt: now, scene: after }
+          ? {
+              ...entry,
+              ...pending.proposedRoomSize,
+              spaces: pending.proposedSpaces,
+              updatedAt: now,
+              scene: after,
+            }
           : entry,
       ),
     },
@@ -1122,38 +1171,49 @@ function commitLayout(
     saveStatus: "unsaved",
     dirtyRevision: state.dirtyRevision + 1,
   });
+  if (pending.changeKind === "room-plan") {
+    consumeInitialRoomPlanAutoCommit(pending.roomId);
+  }
   const assetCount = pending.proposedObjects.filter((object) => object.kind === "asset").length;
   useEditorStore
     .getState()
     .pushToast(
       mode === "automatic"
-        ? `Initial WebMCP room created with ${assetCount} assets. Later changes still require review.`
-        : `Room plan approved. LabSpace is saving the room shell and ${assetCount} assets.`,
+        ? `Fast Draft created the initial room plan with ${assetCount} assets. Undo is available.`
+        : pending.changeKind === "annex"
+          ? `Annex approved. LabSpace is saving the connected space and ${assetCount} assets.`
+          : `Room plan approved. LabSpace is saving the room shell and ${assetCount} assets.`,
       "success",
     );
   if (mode === "human") {
     agentActivityActions.record({
       actor: "Human",
-      action: "Room plan approved",
+      action: pending.changeKind === "annex" ? "Annex approved" : "Room plan approved",
       subject: `${pending.proposedObjects.length} planned elements in ${pending.roomName}`,
       status: "approved",
       evidence: "Explicit researcher approval",
+      correlationId: pending.planId,
+      roomId: pending.roomId,
     });
   } else {
     agentActivityActions.record({
       actor: "LabSpace",
-      action: "Initial room plan auto-committed",
+      action: "Fast Draft room plan committed",
       subject: pending.roomName,
       status: "committed",
-      evidence: "Brand-new blank room · deterministic validation passed · Undo available",
+      evidence: "Pristine room blueprint · deterministic validation passed · Undo available",
+      correlationId: pending.planId,
+      roomId: pending.roomId,
     });
   }
   agentActivityActions.record({
     actor: "LabSpace",
-    action: "Layout committed",
+    action: pending.changeKind === "annex" ? "Annex committed" : "Layout committed",
     subject: pending.roomName,
     status: "committed",
     evidence: "Objects and index records committed as one history entry · Undo available",
+    correlationId: pending.planId,
+    roomId: pending.roomId,
   });
   return {
     stageId: pending.stageId,
@@ -1166,6 +1226,82 @@ function commitLayout(
 
 function approveLayout(pending: PendingAgentLayoutChange): AgentMoveReviewResult {
   return commitLayout(pending, "human");
+}
+
+function cancelWorkspace(pending: PendingAgentWorkspaceChange): AgentMoveReviewResult {
+  useEditorStore.setState({ pendingAgentChange: null });
+  useEditorStore.getState().pushToast("Room creation cancelled. No room was created.", "info");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Room creation rejected",
+    subject: `${pending.roomName} · ${pending.roomCode}`,
+    status: "rejected",
+    evidence: "Proposal dismissed · project data unchanged",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: pending.roomCode,
+    status: "cancelled",
+    persisted: false,
+  };
+}
+
+function approveWorkspace(pending: PendingAgentWorkspaceChange): AgentMoveReviewResult {
+  const state = useEditorStore.getState();
+  const laboratory = state.project.laboratories.find((entry) => entry.id === pending.laboratoryId);
+  const duplicate = state.project.rooms.some(
+    (room) =>
+      room.laboratoryId === pending.laboratoryId &&
+      room.code.toLowerCase() === pending.roomCode.toLowerCase(),
+  );
+  if (
+    state.project.id !== pending.projectId ||
+    state.dirtyRevision !== pending.baselineDirtyRevision ||
+    state.project.updatedAt !== pending.projectUpdatedAt ||
+    !laboratory ||
+    duplicate
+  ) {
+    cancelWorkspace(pending);
+    throw new LabSpaceActionError(
+      "The room proposal became stale because the workspace changed. It was not created.",
+    );
+  }
+
+  useEditorStore.setState({ pendingAgentChange: null });
+  const roomId = useEditorStore.getState().createRoom({
+    laboratoryId: pending.laboratoryId,
+    name: pending.roomName,
+    code: pending.roomCode,
+  });
+  if (!roomId) {
+    throw new LabSpaceActionError("LabSpace could not create the approved room.");
+  }
+  useEditorStore.getState().updateRoomFacilityPlacement(roomId, { floor: pending.floor - 1 });
+  registerInitialRoomPlanCapability(roomId);
+  void useEditorStore.getState().saveNow();
+  useEditorStore
+    .getState()
+    .pushToast(`Created ${pending.roomName}. The empty room is being saved.`, "success");
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Room creation approved",
+    subject: `${pending.roomName} · ${pending.roomCode}`,
+    status: "approved",
+    evidence: "Explicit researcher approval",
+  });
+  agentActivityActions.record({
+    actor: "LabSpace",
+    action: "Empty room created",
+    subject: `${pending.laboratoryCode} · Floor ${pending.floor}`,
+    status: "committed",
+    evidence: "Additive workspace change · local save requested",
+  });
+  return {
+    stageId: pending.stageId,
+    objectId: roomId,
+    status: "approved",
+    persisted: false,
+  };
 }
 
 function cancelInventory(pending: PendingAgentInventoryChange): AgentMoveReviewResult {
@@ -1269,24 +1405,28 @@ function approveInventory(pending: PendingAgentInventoryChange): AgentMoveReview
 
 export function cancelStagedChange(stageId: string): AgentMoveReviewResult {
   const pending = requirePending(stageId);
-  return pending.tool === "layout"
-    ? cancelLayout(pending)
-    : pending.tool === "inventory"
-      ? cancelInventory(pending)
-      : pending.tool === "resize"
-        ? cancelResize(pending)
-        : cancelMove(pending);
+  return pending.tool === "workspace"
+    ? cancelWorkspace(pending)
+    : pending.tool === "layout"
+      ? cancelLayout(pending)
+      : pending.tool === "inventory"
+        ? cancelInventory(pending)
+        : pending.tool === "resize"
+          ? cancelResize(pending)
+          : cancelMove(pending);
 }
 
 export function approveStagedChange(stageId: string): AgentMoveReviewResult {
   const pending = requirePending(stageId);
-  return pending.tool === "layout"
-    ? approveLayout(pending)
-    : pending.tool === "inventory"
-      ? approveInventory(pending)
-      : pending.tool === "resize"
-        ? approveResize(pending)
-        : approveMove(pending);
+  return pending.tool === "workspace"
+    ? approveWorkspace(pending)
+    : pending.tool === "layout"
+      ? approveLayout(pending)
+      : pending.tool === "inventory"
+        ? approveInventory(pending)
+        : pending.tool === "resize"
+          ? approveResize(pending)
+          : approveMove(pending);
 }
 
 export function cancelStagedObjectMove(stageId: string): AgentMoveReviewResult {

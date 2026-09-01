@@ -1,5 +1,7 @@
 import type { RoomPlanSize } from "./room-geometry";
-import type { Scene, SceneObject } from "./schema";
+import type { RoomSpace, Scene, SceneObject } from "./schema";
+
+type RoomHistoryState = RoomPlanSize & { wallHeight?: number; spaces?: RoomSpace[] };
 
 export type SceneCommand =
   | { id: string; label: string; kind: "add"; after: SceneObject }
@@ -18,8 +20,8 @@ export type SceneCommand =
       kind: "batch";
       before: SceneObject[];
       after: SceneObject[];
-      roomBefore?: RoomPlanSize;
-      roomAfter?: RoomPlanSize;
+      roomBefore?: RoomHistoryState;
+      roomAfter?: RoomHistoryState;
     }
   | {
       id: string;
@@ -29,8 +31,8 @@ export type SceneCommand =
       scope?: "storage";
       before: Scene;
       after: Scene;
-      roomBefore?: RoomPlanSize & { wallHeight?: number };
-      roomAfter?: RoomPlanSize & { wallHeight?: number };
+      roomBefore?: RoomHistoryState;
+      roomAfter?: RoomHistoryState;
     };
 
 function replaceObject(scene: Scene, object: SceneObject): Scene {

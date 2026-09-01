@@ -51,7 +51,7 @@ import { getClosedWallFloorPolygon } from "../domain/room-geometry";
 import { waitForLaboratoryMaterialTextures } from "../lib/laboratory-material-textures";
 import type { Room, SceneObject } from "../domain/schema";
 import { storageLocationHighlight } from "../domain/storage-highlight";
-import { resolveStorageAccess } from "../domain/storage-access";
+import { resolveStorageAccess, storageAccessFaceDirection } from "../domain/storage-access";
 import { resolveHostedOpening } from "../domain/wall-openings";
 import { selectActiveRoom, useEditorStore, type CameraPreset } from "../store/editor-store";
 import { ModelBox as Box, ProceduralAssetModel, SelectionBounds } from "./ProceduralAssetModel";
@@ -66,18 +66,45 @@ import { roomLightingLayout } from "../domain/room-lighting";
 // initial position and destroys a user's manual orbit while they edit in 2D.
 const DEFAULT_CAMERA_POSITION: [number, number, number] = [8, 8, 8];
 
+type WallJointCluster = {
+  point: { x: number; y: number };
+  walls: SceneObject[];
+};
+
+function collectWallJointClusters(walls: SceneObject[]) {
+  const clusters: WallJointCluster[] = [];
+  for (const wall of walls) {
+    if (!wall.wall) continue;
+    for (const point of [wall.wall.start, wall.wall.end]) {
+      let cluster = clusters.find(
+        (candidate) => Math.hypot(candidate.point.x - point.x, candidate.point.y - point.y) <= 80,
+      );
+      if (!cluster) {
+        cluster = { point: { ...point }, walls: [] };
+        clusters.push(cluster);
+      }
+      if (!cluster.walls.some((candidate) => candidate.id === wall.id)) cluster.walls.push(wall);
+    }
+  }
+  return clusters.filter((cluster) => cluster.walls.length > 1);
+}
+
 function Wall3D({
   wall,
   room,
   transparentOverride,
   presentation,
   focusTarget,
+  joinInsetStartMm = 0,
+  joinInsetEndMm = 0,
 }: {
   wall: SceneObject;
   room: Room;
   transparentOverride?: boolean;
   presentation: "editor" | "digital-twin";
   focusTarget?: { x: number; y: number; z: number } | null;
+  joinInsetStartMm?: number;
+  joinInsetEndMm?: number;
 }) {
   const editorWallTransparent = useEditorStore((state) => state.wallTransparent);
   const wallTransparent = transparentOverride ?? editorWallTransparent;
@@ -125,8 +152,10 @@ function Wall3D({
   return (
     <group ref={wallGroupRef} position={[startX, 0, startZ]} rotation={[0, -angle, 0]}>
       {spans.map((span, index) => {
-        const renderStart = span.start;
-        const renderEnd = span.end;
+        const renderStart =
+          span.start <= 0.0001 ? span.start + mmToMetres(joinInsetStartMm) : span.start;
+        const renderEnd =
+          Math.abs(span.end - length) <= 0.0001 ? span.end - mmToMetres(joinInsetEndMm) : span.end;
         const renderLength = Math.max(0.01, renderEnd - renderStart);
         return (
           <group key={`span-${index}`}>
@@ -202,26 +231,14 @@ function WallJoints3D({
   const camera = useThree((state) => state.camera);
   const editorWallTransparent = useEditorStore((state) => state.wallTransparent);
   const wallTransparent = transparentOverride ?? editorWallTransparent;
-  const joints = useMemo(() => {
-    const clusters: Array<{
-      point: { x: number; y: number };
-      walls: SceneObject[];
-    }> = [];
-    for (const wall of walls) {
-      if (!wall.wall) continue;
-      for (const point of [wall.wall.start, wall.wall.end]) {
-        let cluster = clusters.find(
-          (candidate) => Math.hypot(candidate.point.x - point.x, candidate.point.y - point.y) <= 80,
-        );
-        if (!cluster) {
-          cluster = { point: { ...point }, walls: [] };
-          clusters.push(cluster);
-        }
-        if (!cluster.walls.some((candidate) => candidate.id === wall.id)) cluster.walls.push(wall);
-      }
-    }
-    return clusters.filter((cluster) => cluster.walls.length > 1);
-  }, [walls]);
+  const joints = useMemo(
+    () =>
+      collectWallJointClusters(walls).filter((joint) => {
+        const heights = joint.walls.map((wall) => wall.wall!.height);
+        return Math.max(...heights) - Math.min(...heights) <= 1;
+      }),
+    [walls],
+  );
   useFrame(() => {
     if (!groupRef.current) return;
     groupRef.current.children.forEach((child, index) => {
@@ -242,9 +259,7 @@ function WallJoints3D({
     <group ref={groupRef}>
       {joints.map((joint, index) => {
         const thickness = Math.max(...joint.walls.map((wall) => wall.wall!.thickness));
-        // Only close the shared portion: a half-height partition must not grow
-        // a full-height post where it meets a taller wall.
-        const height = Math.min(...joint.walls.map((wall) => wall.wall!.height));
+        const height = joint.walls[0].wall!.height;
         const finish = wallFinishForObject(joint.walls[0].metadata, room.wallFinish);
         return (
           <RoomWallBlock
@@ -254,7 +269,7 @@ function WallJoints3D({
               mmToMetres(height) / 2,
               mmToMetres(joint.point.y - room.depth / 2),
             ]}
-            size={[mmToMetres(thickness) * 1.01, mmToMetres(height), mmToMetres(thickness) * 1.01]}
+            size={[mmToMetres(thickness), mmToMetres(height), mmToMetres(thickness)]}
             finish={finish}
             opacity={wallTransparent && presentation === "editor" ? 0.28 : 1}
           />
@@ -685,10 +700,7 @@ function CameraRig({
           objectRotationDeg: focusObject.rotation.z,
           flipHorizontal: focusObject.flipHorizontal,
           flipVertical: focusObject.flipVertical,
-          face:
-            region && (region.depth ?? 0) > region.width * 3
-              ? { x: Math.sign(region.x) || 1, z: 0 }
-              : { x: 0, z: region && region.z < 0 ? -1 : 1 },
+          face: storageAccessFaceDirection(focusAccess?.accessFace),
         })
       : null;
     const visibleLayers = new Map(
@@ -890,6 +902,28 @@ const RoomScene = memo(function RoomScene({
     if (!object.visible || layers.get(object.layerId) === false) return false;
     return true;
   });
+  const walls = useMemo(
+    () => objects.filter((object) => object.objectType === "wall" && object.wall),
+    [objects],
+  );
+  const wallJoinInsets = useMemo(() => {
+    const result = new Map<string, { start: number; end: number }>();
+    for (const joint of collectWallJointClusters(walls)) {
+      const heights = joint.walls.map((wall) => wall.wall!.height);
+      if (Math.max(...heights) - Math.min(...heights) > 1) continue;
+      const inset = Math.max(...joint.walls.map((wall) => wall.wall!.thickness)) / 2;
+      for (const wall of joint.walls) {
+        const current = result.get(wall.id) ?? { start: 0, end: 0 };
+        const atStart =
+          Math.hypot(wall.wall!.start.x - joint.point.x, wall.wall!.start.y - joint.point.y) <= 80;
+        result.set(wall.id, {
+          ...current,
+          [atStart ? "start" : "end"]: inset,
+        });
+      }
+    }
+    return result;
+  }, [walls]);
   const focusObject = focusObjectId
     ? objects.find((object) => object.id === focusObjectId)
     : undefined;
@@ -952,9 +986,9 @@ const RoomScene = memo(function RoomScene({
       {floorVisible && hasClosedFloor && (
         <RoomFloor3D room={room} onClearSelection={() => setSelected([])} />
       )}
-      {objects
-        .filter((object) => object.objectType === "wall")
-        .map((wall) => (
+      {walls.map((wall) => {
+        const insets = wallJoinInsets.get(wall.id);
+        return (
           <Wall3D
             key={wall.id}
             wall={wall}
@@ -962,10 +996,13 @@ const RoomScene = memo(function RoomScene({
             transparentOverride={wallTransparentOverride}
             presentation={presentation}
             focusTarget={focusTarget}
+            joinInsetStartMm={insets?.start}
+            joinInsetEndMm={insets?.end}
           />
-        ))}
+        );
+      })}
       <WallJoints3D
-        walls={objects.filter((object) => object.objectType === "wall")}
+        walls={walls}
         room={room}
         presentation={presentation}
         transparentOverride={wallTransparentOverride}

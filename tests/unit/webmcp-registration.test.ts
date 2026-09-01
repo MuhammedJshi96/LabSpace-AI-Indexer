@@ -155,7 +155,7 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(21);
+    expect(tools).toHaveLength(23);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
@@ -166,6 +166,7 @@ describe("LabSpace WebMCP registration", () => {
           "labspace_collection_step",
           "labspace_create_room",
           "labspace_stage_inventory_plan",
+          "labspace_stage_annex_plan",
           "labspace_stage_object_move",
           "labspace_stage_resize",
           "labspace_stage_room_plan",
@@ -208,6 +209,23 @@ describe("LabSpace WebMCP registration", () => {
               host: { properties: { wallIndex: { minimum: 1, maximum: 16 } } },
             },
           },
+        },
+      },
+    });
+    const planAnnex = tools.find((tool) => tool.name === "labspace_plan_annex")!;
+    expect(planAnnex.inputSchema).toMatchObject({
+      required: expect.arrayContaining([
+        "parentRoomCode",
+        "name",
+        "code",
+        "hostWallId",
+        "widthAlongWallMm",
+        "outwardDepthMm",
+      ]),
+      properties: {
+        connector: {
+          required: ["assetId", "opensInto"],
+          properties: { opensInto: { enum: ["primary", "annex"] } },
         },
       },
     });
@@ -479,15 +497,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(21);
+    expect(modelContext.activeTools.size).toBe(23);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(21);
-    expect([...modelContext.activeTools]).toHaveLength(21);
+    expect(modelContext.activeTools.size).toBe(23);
+    expect([...modelContext.activeTools]).toHaveLength(23);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

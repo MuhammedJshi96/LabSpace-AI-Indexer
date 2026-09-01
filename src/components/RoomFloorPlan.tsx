@@ -4,7 +4,7 @@ import {
   resolveLaboratoryFloorFinish,
   type LaboratoryFloorFinish,
 } from "../domain/laboratory-materials";
-import { getClosedWallFloorPolygon } from "../domain/room-geometry";
+import { getRoomSpaceFloorPlans } from "../domain/room-geometry";
 import type { Room } from "../domain/schema";
 
 type RoomFloorPlanProps = {
@@ -85,8 +85,7 @@ function FloorFinishPattern({
  * their planning grid remains available through children.
  */
 export function RoomFloorPlanShape({ room, scale, children }: RoomFloorPlanProps) {
-  const floor = getClosedWallFloorPolygon(room.scene.objects);
-  const finish = resolveLaboratoryFloorFinish(room.floorFinish);
+  const floors = getRoomSpaceFloorPlans(room);
   const shadowProps = {
     shadowColor: "#1d2b2c",
     shadowOpacity: 0.14,
@@ -94,30 +93,36 @@ export function RoomFloorPlanShape({ room, scale, children }: RoomFloorPlanProps
     shadowOffset: { x: 0, y: 7 / scale },
   };
 
-  if (!floor) return <>{children}</>;
+  if (!floors.length) return <>{children}</>;
 
-  const flatPoints = floor.points.flatMap((point) => [point.x, point.y]);
   return (
     <>
-      <Line
-        points={flatPoints}
-        closed
-        fill={finish.planColor}
-        lineJoin="round"
-        listening={false}
-        {...shadowProps}
-      />
-      <Group
-        clipFunc={(context) => {
-          context.beginPath();
-          context.moveTo(floor.points[0].x, floor.points[0].y);
-          floor.points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
-          context.closePath();
-        }}
-      >
-        <FloorFinishPattern room={room} scale={scale} finish={finish} />
-        {children}
-      </Group>
+      {floors.map((floor) => {
+        const finish = resolveLaboratoryFloorFinish(floor.floorFinish);
+        return (
+          <Group key={floor.spaceId} name={`room-space-${floor.spaceId}`}>
+            <Line
+              points={floor.points.flatMap((point) => [point.x, point.y])}
+              closed
+              fill={finish.planColor}
+              lineJoin="round"
+              listening={false}
+              {...shadowProps}
+            />
+            <Group
+              clipFunc={(context) => {
+                context.beginPath();
+                context.moveTo(floor.points[0].x, floor.points[0].y);
+                floor.points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+                context.closePath();
+              }}
+            >
+              <FloorFinishPattern room={room} scale={scale} finish={finish} />
+              {children}
+            </Group>
+          </Group>
+        );
+      })}
     </>
   );
 }

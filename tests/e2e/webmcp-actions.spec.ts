@@ -12,11 +12,13 @@ const WEBMCP_TOOL_NAMES = [
   "labspace_get_context",
   "labspace_inspect_record",
   "labspace_inventory_locations",
+  "labspace_plan_annex",
   "labspace_plan_inventory",
   "labspace_plan_room",
   "labspace_resolve_materials",
   "labspace_search_assets",
   "labspace_search_records",
+  "labspace_stage_annex_plan",
   "labspace_stage_inventory_plan",
   "labspace_stage_object_move",
   "labspace_stage_resize",
@@ -214,7 +216,9 @@ test("adds reviewed inventory through one tool and guides exact collection stops
   await expect(tracker).toContainText("1/2 checked");
   await expect(tracker).toContainText("Checked by you");
   await tracker.screenshot({ path: "test-results/process-tracker.png" });
-  const evidence = await executeTool<{ runs: Array<{ checked: unknown[]; trail: Array<{ actor: string }> }> }>(page, "labspace_collection_step", { action: "history" });
+  const evidence = await executeTool<{
+    runs: Array<{ checked: unknown[]; trail: Array<{ actor: string }> }>;
+  }>(page, "labspace_collection_step", { action: "history" });
   expect(evidence.runs[0].checked).toHaveLength(1);
   expect(evidence.runs[0].trail.at(-1)?.actor).toBe("Human");
   await page.getByRole("button", { name: "Close process tracker", exact: true }).click();
@@ -274,7 +278,7 @@ test("Ctrl+D duplicates a focused item and undo restores the room", async ({ pag
     .toBe(demo.scene.objects.length);
 });
 
-test("registers exactly twenty-one tools on product routes and excludes internal asset routes", async ({
+test("registers exactly twenty-three tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin", "/inventory"]) {
@@ -527,29 +531,62 @@ test("searches, plans, previews, approves, persists, and reverses a reviewed roo
     .toBe(6);
 });
 
-test("creates a blank room and auto-commits only its first complete WebMCP blueprint", async ({
+test("keeps Reviewed as the default and bounds Fast Draft to additive room creation", async ({
   page,
 }) => {
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
 
+  await page.getByRole("button", { name: /Open WebMCP Inspector/i }).click();
+  const reviewedMode = page.getByRole("radio", { name: /Reviewed/i });
+  const fastMode = page.getByRole("radio", { name: /Fast Draft/i });
+  await expect(reviewedMode).toHaveAttribute("aria-checked", "true");
+
+  const reviewedProposal = await executeTool<{
+    created: boolean;
+    staged: boolean;
+    stageId: string;
+    requiresHumanApproval: boolean;
+  }>(page, "labspace_create_room", {
+    name: "Reviewed WebMCP Office",
+    code: "813",
+  });
+  expect(reviewedProposal).toMatchObject({
+    created: false,
+    staged: true,
+    requiresHumanApproval: true,
+  });
+  const creationReview = page.getByTestId("agent-change-review");
+  await expect(creationReview).toContainText("Review room creation");
+  await expect(creationReview).toContainText("Reviewed WebMCP Office");
+  await creationReview.getByRole("button", { name: "Cancel preview" }).click();
+  expect((await readProject(page)).rooms.some((room) => room.code === "813")).toBe(false);
+
+  await fastMode.click();
+  await expect(fastMode).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("button", { name: "Close WebMCP Inspector" }).click();
+
   const created = await executeTool<{
+    created: true;
     roomId: string;
     roomName: string;
     roomCode: string;
     floor: number;
     persisted: boolean;
     initialLayoutAutoCommitEligible: boolean;
+    executionMode: string;
   }>(page, "labspace_create_room", {
     name: "WebMCP Student Office",
     code: "812",
   });
   expect(created).toMatchObject({
+    created: true,
     roomName: "WebMCP Student Office",
     roomCode: "812",
     floor: 8,
     persisted: true,
     initialLayoutAutoCommitEligible: true,
+    executionMode: "fast-draft",
   });
   await expect(
     page.locator(".room-navigator > .room-identity").getByText("WebMCP Student Office", {
@@ -693,6 +730,13 @@ test("creates a blank room and auto-commits only its first complete WebMCP bluep
   const review = page.getByTestId("agent-change-review");
   await expect(review).toBeVisible();
   await review.getByRole("button", { name: "Cancel preview" }).click();
+
+  await page.reload();
+  await page.getByRole("button", { name: /Open WebMCP Inspector/i }).click();
+  await expect(page.getByRole("radio", { name: /Reviewed/i })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
 });
 
 test("searches and focuses canonical indexed evidence across rooms", async ({ page }) => {

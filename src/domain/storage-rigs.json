@@ -554,6 +554,17 @@
     ]
   },
   "center-island-bench": {
+    "defaultAccessFace": "front",
+    "accessFaceOverrides": [
+      {
+        "keyPrefix": "drawer:Island north",
+        "face": "rear"
+      },
+      {
+        "keyPrefix": "bay:Island north",
+        "face": "rear"
+      }
+    ],
     "parts": [
       {
         "id": "Island north module 1 drawer 1",
@@ -1893,6 +1904,21 @@
     ]
   },
   "corner-lab-bench": {
+    "defaultAccessFace": "front",
+    "accessFaceOverrides": [
+      {
+        "keyPrefix": "drawer:return utility drawer",
+        "face": "rear"
+      },
+      {
+        "keyPrefix": "bay:Return cabinet",
+        "face": "rear"
+      },
+      {
+        "keyPrefix": "drawer:corner run drawer",
+        "face": "left"
+      }
+    ],
     "parts": [
       {
         "id": "corner run drawer 1",
@@ -2866,6 +2892,17 @@
     ]
   },
   "island-bench-service-bridge": {
+    "defaultAccessFace": "front",
+    "accessFaceOverrides": [
+      {
+        "keyPrefix": "drawer:Island north",
+        "face": "rear"
+      },
+      {
+        "keyPrefix": "bay:Island north",
+        "face": "rear"
+      }
+    ],
     "parts": [
       {
         "id": "Island north module 1 drawer 1",
@@ -4387,6 +4424,7 @@
     ]
   },
   "lab-bench-overhead": {
+    "defaultAccessFace": "front",
     "parts": [
       {
         "id": "Base cabinet 2 door 1",
@@ -7114,6 +7152,7 @@
     ]
   },
   "tall-cabinet": {
+    "defaultAccessFace": "front",
     "parts": [
       {
         "id": "Tall cabinet full-height door +1",

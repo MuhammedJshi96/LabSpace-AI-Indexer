@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { resolveStorageAccess } from "../../src/domain/storage-access";
+import {
+  resolveStorageAccess,
+  storageAccessFaceDirection,
+} from "../../src/domain/storage-access";
 import rigs from "../../src/domain/storage-rigs.json";
 import type { StorageLocation } from "../../src/domain/schema";
 import { applyStoragePose, cloneStorageScene } from "../../src/lib/storage-articulation";
@@ -30,6 +33,92 @@ function location(
 const root = location("root", "cabinet", 0, null);
 
 describe("authored storage access", () => {
+  it("uses the authored front face for every overhead module and shelf despite negative Z offsets", () => {
+    const slots = rigs["lab-bench-overhead"].locations.filter((slot) =>
+      slot.key.startsWith("bay:Overhead module"),
+    );
+    expect(slots).toHaveLength(12);
+    expect(new Set(slots.map((slot) => slot.key.match(/module (\d)/)?.[1]))).toEqual(
+      new Set(["1", "2", "3", "4"]),
+    );
+    expect(slots.every((slot) => slot.region.z < 0)).toBe(true);
+
+    for (const [index, slot] of slots.entries()) {
+      const selected = {
+        ...location(`overhead-${index}`, slot.type as StorageLocation["type"], index),
+        name: slot.name,
+        anatomyKey: slot.key,
+      };
+      const access = resolveStorageAccess("lab-bench-overhead", "object", selected.id, [
+        root,
+        selected,
+      ]);
+      expect(access.accessFace, slot.key).toBe("front");
+      expect(storageAccessFaceDirection(access.accessFace)).toEqual({ x: 0, z: 1 });
+    }
+  });
+
+  it("keeps tall-cabinet shelves on the door face and opposing island storage on its authored face", () => {
+    const tallShelves = rigs["tall-cabinet"].locations.filter(
+      (slot) => slot.type === "shelf",
+    );
+    expect(tallShelves).toHaveLength(5);
+    for (const [index, slot] of tallShelves.entries()) {
+      const selected = {
+        ...location(`tall-${index}`, "shelf", index),
+        name: slot.name,
+        anatomyKey: slot.key,
+      };
+      expect(
+        resolveStorageAccess("tall-cabinet", "object", selected.id, [root, selected]).accessFace,
+      ).toBe("front");
+    }
+
+    for (const assetId of ["center-island-bench", "island-bench-service-bridge"] as const) {
+      const rig = rigs[assetId];
+      const north = rig.locations.find((slot) => slot.key.startsWith("drawer:Island north"))!;
+      const south = rig.locations.find((slot) => slot.key.startsWith("drawer:Island south"))!;
+      const northLocation = {
+        ...location(`${assetId}-north`, north.type as StorageLocation["type"]),
+        name: north.name,
+        anatomyKey: north.key,
+      };
+      const southLocation = {
+        ...location(`${assetId}-south`, south.type as StorageLocation["type"]),
+        name: south.name,
+        anatomyKey: south.key,
+      };
+      expect(
+        resolveStorageAccess(assetId, "object", northLocation.id, [root, northLocation])
+          .accessFace,
+      ).toBe("rear");
+      expect(
+        resolveStorageAccess(assetId, "object", southLocation.id, [root, southLocation])
+          .accessFace,
+      ).toBe("front");
+    }
+  });
+
+  it("preserves explicitly authored side and rear access on the L-shaped corner bench", () => {
+    const rig = rigs["corner-lab-bench"];
+    const side = rig.locations.find((slot) => slot.key.startsWith("drawer:corner run"))!;
+    const rear = rig.locations.find((slot) => slot.key === "drawer:return utility drawer")!;
+    for (const [slot, expected] of [
+      [side, "left"],
+      [rear, "rear"],
+    ] as const) {
+      const selected = {
+        ...location(slot.key, slot.type as StorageLocation["type"]),
+        name: slot.name,
+        anatomyKey: slot.key,
+      };
+      expect(
+        resolveStorageAccess("corner-lab-bench", "object", selected.id, [root, selected])
+          .accessFace,
+      ).toBe(expected);
+    }
+  });
+
   it("maps original generated drawer labels despite additive anatomy rows, without touching identities", () => {
     const locations = [
       root,

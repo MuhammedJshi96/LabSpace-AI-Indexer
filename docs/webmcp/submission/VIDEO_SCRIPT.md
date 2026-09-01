@@ -12,11 +12,11 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 ## Take 2 — prove WebMCP discovery (0:16–0:29)
 
-**Screen:** Open the WebMCP Inspector, show twenty-one registered tools and the copy-ready agent workflows, then return to the room.
+**Screen:** Open the WebMCP Inspector, show twenty-three registered tools and the copy-ready agent workflows, then return to the room.
 
 **Voice-over:**
 
-“The agent discovers twenty-one structured tools: blank-room creation, catalog and location search, polygon planning, exact focus, deterministic room-readiness audit, move and resize validation, and reversible later-change staging. The activity inspector makes every bounded call visible.”
+“The agent discovers twenty-three structured tools: blank-room creation, connected annex planning, catalog and location search, polygon planning, exact focus, deterministic room-readiness audit, move and resize validation, and reversible staging. The activity inspector preserves and exports every bounded call.”
 
 ## Take 3 — build from the empty room (0:29–1:12)
 
@@ -24,7 +24,7 @@ Target length: **2:35–2:45**. Record the real website and browser-agent intera
 
 **Voice-over:**
 
-“I ask for student office 812 with a six-wall plan. WebMCP creates a blank room, infers Floor 8, resolves real assets, derives the floor, pairs each chair with a desk, faces the cabinet inward, and hosts the door and window on exact walls. Its first complete blueprint commits once with Undo—no pointless interruption. My next change returns to human review.”
+“I ask for student office 812 with a six-wall plan. In Reviewed mode, LabSpace shows the room proposal before anything changes. I can approve it—or visibly authorize Fast Draft for this session. WebMCP infers Floor 8, resolves real assets, derives the floor, pairs each chair with a desk, faces the cabinet inward, and hosts the door and window on exact walls. Fast Draft can commit only this complete additive first build with Undo; my next change still returns to human review.”
 
 ## Take 4 — search exact evidence (1:12–1:40)
 

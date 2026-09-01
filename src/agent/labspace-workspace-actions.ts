@@ -1,8 +1,14 @@
 import { inferFacilityFloorFromRoomCode } from "../domain/facility";
 import type { Project, Room } from "../domain/schema";
 import { useEditorStore } from "../store/editor-store";
-import type { CreateLabRoomResult, LabSpaceWorkspaceActions } from "./labspace-action-types";
+import type {
+  CreateLabRoomResult,
+  LabSpaceWorkspaceActions,
+  PendingAgentWorkspaceChange,
+} from "./labspace-action-types";
+import { agentActivityActions } from "./agent-activity-store";
 import { LabSpaceActionError } from "./labspace-read-actions";
+import { decideWebMcpMutation } from "./webmcp-execution-policy";
 
 type InitialLayoutCapability = {
   dirtyRevision: number;
@@ -91,6 +97,32 @@ function isPristineRoom(room: Room) {
   );
 }
 
+function stagedRoomCreationResult(
+  change: PendingAgentWorkspaceChange,
+  executionReason = "Reviewed mode requires explicit human approval before project mutation.",
+): CreateLabRoomResult {
+  return {
+    created: false,
+    staged: true,
+    stageId: change.stageId,
+    projectId: change.projectId,
+    laboratoryId: change.laboratoryId,
+    laboratoryName: change.laboratoryName,
+    laboratoryCode: change.laboratoryCode,
+    roomName: change.roomName,
+    roomCode: change.roomCode,
+    floor: change.floor,
+    blank: true,
+    active: false,
+    persisted: false,
+    initialLayoutAutoCommitEligible: false,
+    requiresHumanApproval: true,
+    executionMode: "reviewed",
+    executionDisposition: "review-required",
+    executionReason,
+  };
+}
+
 async function waitForWorkspaceHydration(timeoutMs = 10_000) {
   if (useEditorStore.getState().hydrated) return;
   await new Promise<void>((resolve, reject) => {
@@ -127,6 +159,17 @@ export function consumeInitialRoomPlanAutoCommit(roomId: string) {
   initialLayoutCapabilities.delete(roomId);
 }
 
+export function registerInitialRoomPlanCapability(roomId: string) {
+  const state = useEditorStore.getState();
+  const room = state.project.rooms.find((entry) => entry.id === roomId);
+  if (!room || !isPristineRoom(room)) return false;
+  initialLayoutCapabilities.set(roomId, {
+    dirtyRevision: state.dirtyRevision,
+    sceneUpdatedAt: room.scene.updatedAt,
+  });
+  return true;
+}
+
 export function clearInitialRoomPlanCapabilities() {
   initialLayoutCapabilities.clear();
 }
@@ -136,6 +179,17 @@ export async function createLabRoom(input: unknown): Promise<CreateLabRoomResult
   await waitForWorkspaceHydration();
   let before = useEditorStore.getState();
   if (before.pendingAgentChange) {
+    const pending = before.pendingAgentChange;
+    if (
+      pending.tool === "workspace" &&
+      pending.roomName === normalized.name &&
+      pending.roomCode.toLowerCase() === normalized.code.toLowerCase() &&
+      (!normalized.laboratoryId || pending.laboratoryId === normalized.laboratoryId) &&
+      (!normalized.laboratoryCode ||
+        pending.laboratoryCode.toLowerCase() === normalized.laboratoryCode.toLowerCase())
+    ) {
+      return stagedRoomCreationResult(pending);
+    }
     throw new LabSpaceActionError(
       "Approve or cancel the current agent preview before creating a room.",
     );
@@ -166,6 +220,35 @@ export async function createLabRoom(input: unknown): Promise<CreateLabRoomResult
     );
   }
 
+  const floor = normalized.floor ?? inferFacilityFloorFromRoomCode(normalized.code) ?? 1;
+  const execution = decideWebMcpMutation("create-room", { valid: true });
+  if (execution.disposition === "review-required") {
+    const change: PendingAgentWorkspaceChange = {
+      stageId: crypto.randomUUID(),
+      tool: "workspace",
+      projectId: before.project.id,
+      laboratoryId: laboratory.id,
+      laboratoryName: laboratory.name,
+      laboratoryCode: laboratory.code,
+      roomName: normalized.name,
+      roomCode: normalized.code,
+      floor,
+      baselineDirtyRevision: before.dirtyRevision,
+      projectUpdatedAt: before.project.updatedAt,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    };
+    useEditorStore.setState({ pendingAgentChange: change });
+    agentActivityActions.record({
+      actor: "Agent",
+      action: "Room creation proposed",
+      subject: `${normalized.name} · ${normalized.code}`,
+      status: "pending",
+      evidence: "Reviewed mode · no room created yet",
+    });
+    return stagedRoomCreationResult(change, execution.reason);
+  }
+
   const roomId = useEditorStore.getState().createRoom({
     laboratoryId: laboratory.id,
     name: normalized.name,
@@ -173,7 +256,6 @@ export async function createLabRoom(input: unknown): Promise<CreateLabRoomResult
   });
   if (!roomId) throw new LabSpaceActionError("LabSpace could not create the requested room.");
 
-  const floor = normalized.floor ?? inferFacilityFloorFromRoomCode(normalized.code) ?? 1;
   useEditorStore.getState().updateRoomFacilityPlacement(roomId, { floor: floor - 1 });
   await useEditorStore.getState().saveNow();
 
@@ -184,13 +266,18 @@ export async function createLabRoom(input: unknown): Promise<CreateLabRoomResult
       "The blank room was created locally, but LabSpace could not verify its saved initial state.",
     );
   }
-  initialLayoutCapabilities.set(roomId, {
-    dirtyRevision: state.dirtyRevision,
-    sceneUpdatedAt: room.scene.updatedAt,
+  registerInitialRoomPlanCapability(roomId);
+  agentActivityActions.record({
+    actor: "LabSpace",
+    action: "Fast Draft room created",
+    subject: `${room.name} · ${room.code}`,
+    status: "committed",
+    evidence: "Validated additive room · human-authorized session mode · saved",
   });
 
   return {
     created: true,
+    staged: false,
     projectId: state.project.id,
     laboratoryId: laboratory.id,
     laboratoryName: laboratory.name,
@@ -204,6 +291,9 @@ export async function createLabRoom(input: unknown): Promise<CreateLabRoomResult
     persisted: true,
     initialLayoutAutoCommitEligible: true,
     requiresHumanApproval: false,
+    executionMode: "fast-draft",
+    executionDisposition: execution.disposition,
+    executionReason: execution.reason,
   };
 }
 

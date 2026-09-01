@@ -406,6 +406,103 @@ export const stageRoomLayoutSchema = {
   additionalProperties: false,
 } as const;
 
+export const planAnnexSchema = {
+  type: "object",
+  properties: {
+    parentRoomCode: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      description: "Exact editable parent-room code, such as DEMO-01.",
+    },
+    name: { type: "string", minLength: 1, maxLength: 120 },
+    code: { type: "string", minLength: 1, maxLength: 40 },
+    hostWallId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description: "Stable full-height primary-space wall ID returned by the room audit.",
+    },
+    widthAlongWallMm: { type: "number", minimum: 1200, maximum: 20000 },
+    outwardDepthMm: { type: "number", minimum: 1200, maximum: 20000 },
+    offsetAlongWallMm: { type: "number", minimum: 0, maximum: 20000 },
+    wallHeightMm: { type: "number", minimum: 2200, maximum: 6000 },
+    wallThicknessMm: { type: "number", minimum: 80, maximum: 400 },
+    floorFinish: { type: "string", minLength: 1, maxLength: 120 },
+    connector: {
+      type: "object",
+      properties: {
+        assetId: {
+          type: "string",
+          minLength: 1,
+          maxLength: 120,
+          description: "Exact catalog door asset ID.",
+        },
+        offsetMm: { type: "number", minimum: 0, maximum: 20000 },
+        handing: { type: "string", enum: ["left", "right"] },
+        opensInto: {
+          type: "string",
+          enum: ["primary", "annex"],
+          description: "Space into which the hinged connector opens.",
+        },
+      },
+      required: ["assetId", "opensInto"],
+      additionalProperties: false,
+    },
+    windows: {
+      type: "array",
+      maxItems: 6,
+      items: {
+        type: "object",
+        properties: {
+          assetId: { type: "string", minLength: 1, maxLength: 120 },
+          wall: { type: "string", enum: ["outer", "start", "end"] },
+          offsetMm: { type: "number", minimum: 0, maximum: 20000 },
+          sillHeightMm: { type: "number", minimum: 0, maximum: 5000 },
+        },
+        required: ["assetId", "wall"],
+        additionalProperties: false,
+      },
+    },
+    assets: {
+      type: "array",
+      maxItems: 12,
+      items: {
+        type: "object",
+        properties: {
+          assetId: { type: "string", minLength: 1, maxLength: 120 },
+          quantity: { type: "integer", minimum: 1, maximum: 4 },
+        },
+        required: ["assetId", "quantity"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: [
+    "parentRoomCode",
+    "name",
+    "code",
+    "hostWallId",
+    "widthAlongWallMm",
+    "outwardDepthMm",
+  ],
+  additionalProperties: false,
+} as const;
+
+export const stageAnnexPlanSchema = {
+  type: "object",
+  properties: {
+    planId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description: "Exact plan ID returned by labspace_plan_annex.",
+    },
+  },
+  required: ["planId"],
+  additionalProperties: false,
+} as const;
+
 export const listInventoryLocationsSchema = {
   type: "object",
   properties: {

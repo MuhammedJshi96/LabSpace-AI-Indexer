@@ -12,11 +12,12 @@
 ## Make WebMCP visible first
 
 1. Open the **WebMCP** status control in the LabSpace header.
-2. Select **Registered tools** to see all twenty-one live tools and their safety modes.
-3. Select **Use WebMCP** if you need to see exactly where ChatGPT prompts or Chrome JSON arguments belong.
-4. Select **Agent workflows** to copy a complete build, exact-evidence, audit, or resize request.
-5. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
-6. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
+2. Observe the **Execution boundary**. It starts in **Reviewed**; optionally choose **Fast Draft** for the bounded additive-room demonstration.
+3. Select **Registered tools** to see all twenty-three live tools and their safety modes.
+4. Select **Use WebMCP** if you need to see exactly where ChatGPT prompts or Chrome JSON arguments belong.
+5. Select **Agent workflows** to copy a complete build, exact-evidence, audit, or resize request.
+6. Select **Run read-only check**. LabSpace invokes `labspace_get_context` through the browser's `document.modelContext.executeTool` interface.
+7. Return to **Live activity** and expand the resulting entry to show the actual tool name, `{}` input, and compact project/room/count result.
 
 This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
 
@@ -32,9 +33,11 @@ From any editable room, ask:
 
 > Create an empty room in the current laboratory named Office for Students, room number 812. Give it a six-wall enclosure of about 32 square metres with four desks, four chairs, one cabinet, one door, and one observation window.
 
-Expected: the agent creates and activates a saved blank room, infers Floor 8 from `812`, discovers exact catalog IDs, calculates a non-crossing six-wall shell, hosts the door/window on real wall segments, pairs each chair with one desk, and faces perimeter furniture into the room. The first complete blueprint for this newly created pristine room auto-commits as one undoable update without an approval interruption.
+Expected in **Reviewed**: LabSpace first shows a room-creation proposal; the human selects **Create room**. The agent then discovers exact catalog IDs, calculates a non-crossing six-wall shell, hosts the door/window on real wall segments, pairs each chair with one desk, and faces perimeter furniture into the room. The complete blueprint appears as a second review before commit.
 
-This is a deliberately narrow capability, not silent general editing. An incomplete initial blueprint fails closed. A second furnishing request, any existing-room plan, object movement, or inventory change still opens **Preview · not saved** and requires the researcher to approve or cancel it. Bench-connected instruments such as the rotary evaporator also snap to the supporting worktop elevation rather than the floor.
+Expected in **Fast Draft**: the validated blank room and its complete first blueprint may apply through the bounded additive path; the blueprint is one undoable history update. The mode remains visible in the Inspector and every automatic decision is recorded. A reload returns to Reviewed.
+
+This is a deliberately narrow capability, not silent general editing. The agent has no mode argument. An incomplete initial blueprint, a second furnishing request, any existing-room plan, object movement or resize, inventory/stock, and destructive changes still open **Preview · not saved** and require the researcher to approve or cancel them. Bench-connected instruments such as the rotary evaporator also snap to the supporting worktop elevation rather than the floor.
 
 ## Human-reviewed inventory prompt
 
@@ -50,7 +53,7 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 
 ## Expected visible workflow
 
-1. The agent discovers twenty-one structured LabSpace tools.
+1. The agent discovers twenty-three structured LabSpace tools.
 2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
 3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
 4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
@@ -66,11 +69,14 @@ Expected: WebMCP returns the exact canonical location ID/path, validates the new
 labspace_get_context
 labspace_audit_room
 labspace_create_room
+human: Create room or Cancel (Reviewed default)
 labspace_search_assets
 labspace_plan_room
+labspace_plan_annex
 labspace_stage_room_plan
-automatic: first complete pristine-room build only
-human: Approve room plan or Cancel preview for every later/existing-room plan
+labspace_stage_annex_plan
+human: Approve room plan or Cancel preview (Reviewed default)
+Fast Draft only: validated additive room + complete pristine first build with Undo
 
 labspace_inventory_locations
 labspace_plan_inventory
@@ -91,7 +97,7 @@ labspace_stage_resize
 human: Approve resize or Cancel preview
 ```
 
-The agent cannot approve its own later proposal. No WebMCP tool can reset, delete, import, or perform an unrestricted project save. `labspace_create_room` is restricted to one blank room, and its initial-build capability cannot move or overwrite existing content.
+The agent cannot select Fast Draft or approve its own proposal. No WebMCP tool can reset, delete, import, or perform an unrestricted project save. `labspace_create_room` is restricted to one blank room, and its initial-build capability cannot move or overwrite existing content.
 
 ## Verify registration
 
@@ -100,7 +106,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-Expected: exactly twenty-one unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+Expected: exactly twenty-three unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## What changed during the challenge
 

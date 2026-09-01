@@ -8,6 +8,7 @@ import {
   isCameraFocusClear,
 } from "../../src/domain/camera-command";
 import { shouldCutawayWallForFocus } from "../../src/domain/digital-twin-cutaway";
+import { storageAccessFaceDirection } from "../../src/domain/storage-access";
 import type { SceneObject } from "../../src/domain/schema";
 
 describe("3D camera command identity", () => {
@@ -91,14 +92,25 @@ describe("Spatial Index exact-location camera approach", () => {
       objectYmm: 4000,
       objectRotationDeg: 0,
     };
-    expect(digitalTwinCameraApproach({ ...input, face: { x: 0, z: -1 } }).forwardZ).toBe(-1);
-    expect(digitalTwinCameraApproach({ ...input, flipVertical: true }).forwardZ).toBe(-1);
+    expect(
+      digitalTwinCameraApproach({ ...input, face: storageAccessFaceDirection("rear") }).forwardZ,
+    ).toBe(-1);
+    expect(
+      digitalTwinCameraApproach({
+        ...input,
+        face: storageAccessFaceDirection("front"),
+        flipVertical: true,
+      }).forwardZ,
+    ).toBe(-1);
     expect(
       digitalTwinCameraApproach({ ...input, face: { x: 1, z: 0 }, flipHorizontal: true }).forwardX,
     ).toBe(-1);
     expect(
-      digitalTwinCameraApproach({ ...input, face: { x: 0, z: -1 }, objectRotationDeg: 90 })
-        .forwardX,
+      digitalTwinCameraApproach({
+        ...input,
+        face: storageAccessFaceDirection("rear"),
+        objectRotationDeg: 90,
+      }).forwardX,
     ).toBeCloseTo(1);
   });
 

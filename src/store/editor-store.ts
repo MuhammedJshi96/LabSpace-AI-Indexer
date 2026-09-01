@@ -21,8 +21,15 @@ import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/laye
 import { normalizeRaisedFromFloorMm } from "../domain/object-transforms";
 import { createBlankLaboratory, createBlankRoom } from "../domain/room-factory";
 import {
+  buildConnectedAnnex,
+  buildRoomRectangle,
+  type WallFactoryOptions,
+} from "../domain/room-building";
+import {
+  getClosedWallFloorPolygon,
   normalizeClosedRoomFromWallLoop,
   normalizeRoomFloorEnvelope,
+  type PlanPoint,
   type RoomPlanSize,
 } from "../domain/room-geometry";
 import {
@@ -62,7 +69,8 @@ import {
   saveRoomVersion,
 } from "../lib/api";
 
-export type EditorTool = "select" | "pan" | "wall" | "door" | "window" | "measure";
+export type EditorTool =
+  "select" | "pan" | "wall" | "rectangle" | "annex" | "door" | "window" | "measure";
 export type InspectorPanel =
   "room" | "layers" | "index" | "inventory" | "properties" | "validation";
 export type CameraPreset =
@@ -192,6 +200,8 @@ type EditorState = {
     transform?: AssetTransformOverrides,
   ) => string | null;
   addWall: (start: { x: number; y: number }, end: { x: number; y: number }) => string;
+  addRoomRectangle: (start: PlanPoint, end: PlanPoint) => boolean;
+  addAnnexPath: (points: PlanPoint[]) => boolean;
   previewObject: (id: string, patch: Partial<SceneObject>) => void;
   previewObjects: (objects: SceneObject[], roomSize?: RoomPlanSize) => void;
   commitPreview: (before: SceneObject, label: string) => void;
@@ -522,6 +532,78 @@ function retargetClonedRoom(clone: Room, target: Room): Room {
 
 function commandId() {
   return crypto.randomUUID();
+}
+
+function createWallObject(
+  project: Project,
+  room: Room,
+  start: PlanPoint,
+  end: PlanPoint,
+  kind: "full" | "half",
+  options: WallFactoryOptions = {},
+): SceneObject {
+  const halfHeight = kind === "half";
+  const definition = getAssetDefinition(halfHeight ? "half-height-wall" : "straight-wall");
+  const template = options.template;
+  const now = new Date().toISOString();
+  const length = Math.hypot(end.x - start.x, end.y - start.y);
+  const thickness = template?.wall?.thickness ?? definition.defaultDimensions.depth;
+  const height =
+    template?.wall?.height ?? (halfHeight ? Math.min(1200, room.wallHeight) : room.wallHeight);
+  const laboratoryCode = activeLaboratoryCode(project, room);
+  return {
+    id: crypto.randomUUID(),
+    indexCode: generateObjectIndexCode(
+      room,
+      room.scene,
+      definition.objectType,
+      room.scene.zones[0]?.id ?? null,
+      laboratoryCode,
+    ),
+    name: options.name ?? definition.name,
+    assetDefinitionId: halfHeight ? definition.id : (template?.assetDefinitionId ?? definition.id),
+    objectType: definition.objectType,
+    position: { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, z: 0 },
+    dimensions: { width: length, depth: thickness, height },
+    rotation: {
+      x: 0,
+      y: 0,
+      z: (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
+    },
+    flipHorizontal: false,
+    flipVertical: false,
+    layerId:
+      template?.layerId ?? resolveLayerIdForObjectType(room.scene.layers, definition.objectType),
+    roomId: room.id,
+    spaceId: options.spaceId ?? template?.spaceId,
+    zoneId: template?.zoneId ?? room.scene.zones[0]?.id ?? null,
+    locked: false,
+    visible: true,
+    metadata: structuredClone(template?.metadata ?? {}),
+    createdAt: now,
+    updatedAt: now,
+    parentObjectId: null,
+    childLocationIds: [],
+    zIndex: Math.max(0, ...room.scene.objects.map((entry) => entry.zIndex)) + 1,
+    wall: { start: { ...start }, end: { ...end }, thickness, height, halfHeight },
+  };
+}
+
+function createRoomWallFactory(project: Project, room: Room, kind: "full" | "half") {
+  let stagedObjects = [...room.scene.objects];
+
+  return (start: PlanPoint, end: PlanPoint, options: WallFactoryOptions = {}) => {
+    const stagedRoom: Room = {
+      ...room,
+      scene: {
+        ...room.scene,
+        objects: stagedObjects,
+      },
+    };
+    const wall = createWallObject(project, stagedRoom, start, end, kind, options);
+    stagedObjects = [...stagedObjects, wall];
+    return wall;
+  };
 }
 
 function defaultEquipment(
@@ -1018,55 +1100,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const state = get();
     const room = activeRoom(state.project);
     const halfHeight = state.wallDrawKind === "half";
-    const definition = getAssetDefinition(halfHeight ? "half-height-wall" : "straight-wall");
-    const height = halfHeight ? Math.min(1200, room.wallHeight) : room.wallHeight;
-    const now = new Date().toISOString();
-    const length = Math.hypot(end.x - start.x, end.y - start.y);
-    const thickness = definition.defaultDimensions.depth;
-    const object: SceneObject = {
-      id: crypto.randomUUID(),
-      indexCode: generateObjectIndexCode(
-        room,
-        room.scene,
-        definition.objectType,
-        room.scene.zones[0]?.id ?? null,
-        activeLaboratoryCode(state.project, room),
-      ),
-      name: definition.name,
-      assetDefinitionId: definition.id,
-      objectType: definition.objectType,
-      position: {
-        x: (start.x + end.x) / 2,
-        y: (start.y + end.y) / 2,
-        z: 0,
-      },
-      dimensions: { width: length, depth: thickness, height },
-      rotation: {
-        x: 0,
-        y: 0,
-        z: (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
-      },
-      flipHorizontal: false,
-      flipVertical: false,
-      layerId: resolveLayerIdForObjectType(room.scene.layers, definition.objectType),
-      roomId: room.id,
-      zoneId: room.scene.zones[0]?.id ?? null,
-      locked: false,
-      visible: true,
-      metadata: {},
-      createdAt: now,
-      updatedAt: now,
-      parentObjectId: null,
-      childLocationIds: [],
-      zIndex: Math.max(0, ...room.scene.objects.map((entry) => entry.zIndex)) + 1,
-      wall: {
-        start: { ...start },
-        end: { ...end },
-        thickness,
-        height,
-        halfHeight,
-      },
-    };
+    const object = createWallObject(state.project, room, start, end, halfHeight ? "half" : "full");
     let command: SceneCommand = {
       id: commandId(),
       label: halfHeight ? "Draw half wall" : "Draw wall",
@@ -1074,24 +1108,36 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       after: object,
     };
     const provisionalScene = applyCommand(room.scene, command);
-    const normalizedRoom = halfHeight
-      ? null
-      : normalizeClosedRoomFromWallLoop(provisionalScene.objects);
+    const hadClosedFloor = Boolean(
+      getClosedWallFloorPolygon(
+        room.scene.objects.filter((entry) => entry.wall && !entry.wall.halfHeight),
+      ),
+    );
+    const normalizedRoom =
+      halfHeight || hadClosedFloor
+        ? null
+        : normalizeClosedRoomFromWallLoop(provisionalScene.objects);
     let nextProject: Project;
     if (normalizedRoom) {
+      const primary = room.spaces.find((space) => space.kind === "primary") ?? room.spaces[0];
+      const spaces = room.spaces.map((space) =>
+        space.id === primary?.id
+          ? { ...space, wallIds: normalizedRoom.floorPolygon.wallIds }
+          : space,
+      );
       command = {
         id: command.id,
         label: "Close room outline",
         kind: "batch",
         before: room.scene.objects,
         after: normalizedRoom.objects,
-        roomBefore: { width: room.width, depth: room.depth },
-        roomAfter: { width: normalizedRoom.width, depth: normalizedRoom.depth },
+        roomBefore: { width: room.width, depth: room.depth, spaces: room.spaces },
+        roomAfter: { width: normalizedRoom.width, depth: normalizedRoom.depth, spaces },
       };
       nextProject = replaceRoom(
         state.project,
         roomWithScene(
-          { ...room, width: normalizedRoom.width, depth: normalizedRoom.depth },
+          { ...room, width: normalizedRoom.width, depth: normalizedRoom.depth, spaces },
           { ...provisionalScene, objects: normalizedRoom.objects },
         ),
       );
@@ -1107,6 +1153,109 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       dirtyRevision: state.dirtyRevision + 1,
     });
     return object.id;
+  },
+
+  addRoomRectangle: (start, end) => {
+    const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before editing the layout.", "info");
+      return false;
+    }
+    const room = activeRoom(state.project);
+    try {
+      const createWall = createRoomWallFactory(state.project, room, "full");
+      const change = buildRoomRectangle(room, start, end, createWall);
+      const command: SceneCommand = {
+        id: commandId(),
+        kind: "scene",
+        roomId: room.id,
+        label: change.annexSpaceId ? "Draw connected annex" : "Draw rectangular room",
+        before: room.scene,
+        after: change.room.scene,
+        roomBefore: {
+          width: room.width,
+          depth: room.depth,
+          wallHeight: room.wallHeight,
+          spaces: room.spaces,
+        },
+        roomAfter: {
+          width: change.room.width,
+          depth: change.room.depth,
+          wallHeight: change.room.wallHeight,
+          spaces: change.room.spaces,
+        },
+      };
+      set({
+        project: replaceRoom(state.project, change.room),
+        selectedIds: change.createdWallIds,
+        history: [...state.history, command],
+        future: [],
+        saveStatus: "unsaved",
+        dirtyRevision: state.dirtyRevision + 1,
+      });
+      state.pushToast(
+        change.annexSpaceId
+          ? "Connected annex created as an independent room space."
+          : "Rectangular room created. Drag from one corner to the opposite corner.",
+        "success",
+      );
+      return true;
+    } catch (error) {
+      state.pushToast(
+        error instanceof Error ? error.message : "The room could not be created.",
+        "error",
+      );
+      return false;
+    }
+  },
+
+  addAnnexPath: (points) => {
+    const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before editing the layout.", "info");
+      return false;
+    }
+    const room = activeRoom(state.project);
+    try {
+      const createWall = createRoomWallFactory(state.project, room, "full");
+      const change = buildConnectedAnnex(room, points, createWall);
+      const command: SceneCommand = {
+        id: commandId(),
+        kind: "scene",
+        roomId: room.id,
+        label: "Draw connected annex",
+        before: room.scene,
+        after: change.room.scene,
+        roomBefore: {
+          width: room.width,
+          depth: room.depth,
+          wallHeight: room.wallHeight,
+          spaces: room.spaces,
+        },
+        roomAfter: {
+          width: change.room.width,
+          depth: change.room.depth,
+          wallHeight: change.room.wallHeight,
+          spaces: change.room.spaces,
+        },
+      };
+      set({
+        project: replaceRoom(state.project, change.room),
+        selectedIds: change.createdWallIds,
+        history: [...state.history, command],
+        future: [],
+        saveStatus: "unsaved",
+        dirtyRevision: state.dirtyRevision + 1,
+      });
+      state.pushToast("Connected annex created as an independent room space.", "success");
+      return true;
+    } catch (error) {
+      state.pushToast(
+        error instanceof Error ? error.message : "The annex could not be created.",
+        "error",
+      );
+      return false;
+    }
   },
 
   previewObject: (id, patch) =>
@@ -1496,10 +1645,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   updateRoom: (patch) =>
     set((state) => {
       const room = activeRoom(state.project);
+      const spaces =
+        patch.spaces ??
+        (patch.floorFinish
+          ? room.spaces.map((space) =>
+              space.kind === "primary" ? { ...space, floorFinish: patch.floorFinish! } : space,
+            )
+          : room.spaces);
       return {
         project: replaceRoom(state.project, {
           ...room,
           ...patch,
+          spaces,
           updatedAt: new Date().toISOString(),
         }),
         saveStatus: "unsaved",

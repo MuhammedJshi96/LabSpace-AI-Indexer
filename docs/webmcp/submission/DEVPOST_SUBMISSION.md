@@ -22,7 +22,7 @@ This makes the application meaningfully better when a researcher and agent work 
 
 ## What it does
 
-LabSpace registers twenty-one focused browser-native tools:
+LabSpace registers twenty-three focused browser-native tools:
 
 1. audit an active or selected room with deterministic floor, boundary, support, hosted-opening, overlap, height, and identity checks;
 2. create, activate, and save one genuinely blank room in a selected laboratory;
@@ -32,7 +32,7 @@ LabSpace registers twenty-one focused browser-native tools:
 6. focus the real room, selection, evidence inspector, and 3D camera;
 7. discover canonical openings, furniture, storage, equipment, and safety assets with real dimensions;
 8. build a rectangular or 3–16 corner polygon shell, derive its floor, host doors/windows, pair seats with workstations, and calculate transform-aware placement;
-9. apply that complete room blueprint through the bounded initial-build capability or a reversible later-change review;
+9. apply that complete room blueprint through the visible Reviewed/Fast Draft execution boundary or a reversible later-change review;
 10. discover canonical inventory destinations across editable rooms;
 11. validate project-wide inventory proposals against exact rooms and storage IDs;
 12. stage an inventory proposal for human approval;
@@ -46,11 +46,11 @@ LabSpace registers twenty-one focused browser-native tools:
 20. start a room-grouped collection guide from reviewed canonical records;
 21. follow exact locations with Next/Previous without consuming inventory.
 
-An agent can create room 812, infer Floor 8, calculate a six-wall office of roughly 32 square metres, host a door and window, pair four chairs with four desks, and orient the cabinet correctly. The first complete blueprint for that newly created pristine room commits as one undoable update without an unnecessary confirmation pause. It can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target for researcher review.
+An agent can propose room 812, infer Floor 8, calculate a six-wall office of roughly 32 square metres, host a door and window, pair four chairs with four desks, and orient the cabinet correctly. Reviewed mode visibly pauses before creation and before the blueprint commit. A researcher may instead authorize Fast Draft for the session, allowing only the validated additive blank room and its complete pristine first blueprint to apply; the blueprint is one Undo-capable history update. The agent can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target for researcher review.
 
 ## Human + agent collaboration
 
-LabSpace uses a narrow capability instead of one blanket confirmation policy. `labspace_create_room` may save only a blank room. That exact pristine room receives a one-use in-memory capability for its first complete, fully placed, deterministic blueprint; the stage response reports `autoCommitted: true`, creates one normal undoable history entry, and uses ordinary autosave. The capability fails closed for incomplete plans, disappears after use/reload/manual editing, and cannot rewrite an existing room.
+LabSpace uses a human-controlled, risk-based policy instead of one blanket confirmation rule. Every session starts in Reviewed mode. `labspace_create_room` therefore returns a visual proposal without mutation, and the complete blueprint is reviewed separately. Only a researcher can select Fast Draft in the Inspector; there is no tool argument. In that mode, `labspace_create_room` may save only a validated additive blank room, and that exact pristine room receives a one-use in-memory capability for its complete, fully placed, deterministic first blueprint. The stage response reports `autoCommitted: true`, creates a normal undoable history entry, and uses ordinary autosave. The capability fails closed for incomplete plans, disappears after use/reload/manual editing, and cannot rewrite an existing room, placement, dimension, inventory record, or stock fact.
 
 Every later room change, object move, object resize, and inventory proposal remains **Preview · not saved**. LabSpace shows current and proposed evidence, blocks competing edits, and exposes only human-facing Approve/Cancel controls. Approval creates one ordinary undoable history entry; Cancel restores the exact prior state.
 
@@ -78,7 +78,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the twenty-one-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, bounded blank-room creation, deterministic polygon room and inventory planning, room-readiness auditing, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement and resize validation, ranked alternatives, capability-scoped initial auto-commit, reversible human-reviewed later staging, safe history/autosave handoff, visible Agent Activity and copy-ready workflows, strict contracts and error containment, 24 eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the twenty-three-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, human-controlled Reviewed/Fast Draft execution, bounded blank-room creation, deterministic polygon room, connected-annex and inventory planning, room-readiness auditing, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement and resize validation, ranked alternatives, capability-scoped additive Fast Draft, reversible human-reviewed staging, safe history/autosave handoff, persistent exportable activity history and copy-ready workflows, strict contracts and error containment, eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 

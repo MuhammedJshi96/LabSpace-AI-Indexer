@@ -28,7 +28,7 @@ Do not enable the flag automatically in application code. ChatGPT's in-app brows
 - **Model Context Tool Inspector extension:** provides a natural-language agent-style testing surface inside Chrome. Installing it is optional and remains a user-controlled browser change.
 - **Chrome DevTools → Application → WebMCP:** a manual debugger. Select one available tool, enter JSON arguments, and choose **Run tool**. It does not turn the DevTools Console into a natural-language chat.
 
-## Discover the twenty-one tools
+## Discover the twenty-three tools
 
 In Chrome DevTools Console:
 
@@ -52,6 +52,7 @@ labspace_inspect_record
 labspace_inventory_locations
 labspace_plan_inventory
 labspace_plan_room
+labspace_plan_annex
 labspace_resolve_materials
 labspace_search_assets
 labspace_search_records
@@ -59,12 +60,13 @@ labspace_stage_object_move
 labspace_stage_inventory_plan
 labspace_stage_resize
 labspace_stage_room_plan
+labspace_stage_annex_plan
 labspace_start_collection
 labspace_validate_object_move
 labspace_validate_resize
 ```
 
-There should be twenty-one unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
+There should be twenty-three unique registrations on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
 
 ## Manual tool calls
 
@@ -152,7 +154,7 @@ await document.modelContext.executeTool(
 );
 ```
 
-The create call saves and activates a genuinely blank room and infers Floor 8 from room code `812`. The plan remains read-only. The final stage call verifies that every requested object was placed, then uses the room's one-use initial-layout capability to commit the six-wall shell, derived floor, paired desk/chair workstations, inward-facing cabinet, and wall-hosted openings as one undoable update. It returns `autoCommitted: true` and does not open a confirmation modal.
+In Reviewed mode, the create call opens a room-creation proposal and makes no project change until **Create room** is selected. The plan remains read-only, and the final stage call opens a second review for the six-wall shell, derived floor, paired desk/chair workstations, inward-facing cabinet, and wall-hosted openings. If the human first selects Fast Draft in the Inspector, only the validated additive blank room and its complete pristine first blueprint can return `autoCommitted: true`; every existing-state mutation still escalates to review.
 
 That capability is consumed immediately. A second room plan, a plan for any existing room, an object move, or an inventory proposal still opens a reversible **Preview · not saved** review with researcher-only Approve/Cancel controls. Existing walls are never replaced automatically.
 

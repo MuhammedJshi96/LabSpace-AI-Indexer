@@ -7,7 +7,7 @@
 - [ ] Confirm no pending staged change is present.
 - [ ] Confirm Agent Activity is clear/collapsed at the start.
 - [ ] Confirm the 2D/3D room and evidence images are fully loaded.
-- [ ] Confirm `document.modelContext.getTools()` returns twenty-one unique LabSpace tools.
+- [ ] Confirm `document.modelContext.getTools()` returns twenty-three unique LabSpace tools.
 - [ ] Confirm `/asset-preview` and `/procedural-asset-capture` expose no LabSpace tools.
 - [ ] Close private tabs, local paths, notifications, and unrelated consoles.
 
@@ -16,7 +16,7 @@
 - [ ] Ask the agent to create Office for Students, room 812, with a six-wall shell of roughly 32 m², four desks/chairs, one cabinet, one door, and one observation window.
 - [ ] Confirm Floor 8 is inferred from room code 812 and the room begins genuinely blank.
 - [ ] Confirm planning alone does not change the room.
-- [ ] Confirm the first complete blueprint auto-commits once with a derived floor, four workstation pairs, an inward-facing cabinet, and two canonical hosted openings.
+- [ ] Confirm Reviewed stages room creation and the first blueprint; then authorize Fast Draft and confirm only the validated additive room plus complete pristine blueprint auto-apply, with the blueprint available to Undo.
 - [ ] Show one-step Undo/Redo of the complete initial blueprint.
 - [ ] Request one additional asset and confirm the later plan opens **Preview · not saved** with human Approve/Cancel.
 - [ ] Search BÜCHI rotary evaporator and its flask set.

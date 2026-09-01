@@ -1,5 +1,5 @@
 import type { DigitalTwinRecordKind, DigitalTwinScope } from "../domain/digital-twin-index";
-import type { Project, Scene, SceneObject } from "../domain/schema";
+import type { Project, RoomSpace, Scene, SceneObject } from "../domain/schema";
 
 export type LabSpaceReadState = {
   project: Project;
@@ -225,6 +225,8 @@ export type RoomAuditResult = {
   status: "ready" | "attention" | "blocked";
   summary: {
     floorAreaM2: number;
+    primaryAreaM2: number;
+    annexAreaM2: number;
     walls: number;
     openings: number;
     placedAssets: number;
@@ -241,6 +243,17 @@ export type RoomAuditResult = {
     objectsInsideBoundary: boolean;
     uniqueIndexCodes: boolean;
   };
+  spaces: Array<{
+    id: string;
+    kind: "primary" | "annex";
+    name: string;
+    code: string;
+    areaM2: number;
+    closedFloorShell: boolean;
+    wallIds: string[];
+    connectingOpeningIds: string[];
+    unassignedObjectIds: string[];
+  }>;
   issues: RoomAuditIssue[];
   basis: string[];
 };
@@ -367,6 +380,58 @@ export type PlanRoomLayoutResult = {
 
 export type StageRoomLayoutInput = { planId: string };
 
+export type PlanAnnexInput = {
+  parentRoomCode: string;
+  name: string;
+  code: string;
+  hostWallId: string;
+  widthAlongWallMm: number;
+  outwardDepthMm: number;
+  offsetAlongWallMm?: number;
+  wallHeightMm?: number;
+  wallThicknessMm?: number;
+  floorFinish?: string;
+  connector?: {
+    assetId: string;
+    offsetMm?: number;
+    handing?: "left" | "right";
+    opensInto: "primary" | "annex";
+  };
+  windows?: Array<{
+    assetId: string;
+    wall: "outer" | "start" | "end";
+    offsetMm?: number;
+    sillHeightMm?: number;
+  }>;
+  assets?: Array<{ assetId: string; quantity: number }>;
+};
+
+export type PlanAnnexResult = {
+  planId: string;
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  primarySpaceId: string;
+  annexSpaceId: string;
+  annexName: string;
+  annexCode: string;
+  hostWallId: string;
+  sharedWallId: string;
+  createdWallIds: string[];
+  remappedOpeningIds: string[];
+  connectorId: string | null;
+  windowIds: string[];
+  assetIds: string[];
+  areas: { primaryM2: number; annexM2: number; totalM2: number };
+  diagnostics: string[];
+  requiresHumanApproval: true;
+};
+
+export type LabSpaceAnnexActions = {
+  planAnnex: (input: unknown) => PlanAnnexResult;
+  stageAnnexPlan: (input: unknown) => StageRoomLayoutResult;
+};
+
 export type PendingAgentLayoutChange = {
   stageId: string;
   tool: "layout";
@@ -374,8 +439,11 @@ export type PendingAgentLayoutChange = {
   roomId: string;
   roomName: string;
   brief: string | null;
+  changeKind: "room-plan" | "annex";
   beforeScene: Scene;
   proposedScene: Scene;
+  beforeSpaces: RoomSpace[];
+  proposedSpaces: RoomSpace[];
   proposedObjectIds: string[];
   proposedObjects: Array<{
     objectId: string;
@@ -410,10 +478,14 @@ export type StageRoomLayoutResult = {
   persisted: boolean;
   requiresHumanApproval: boolean;
   autoCommitted: boolean;
+  executionMode: "reviewed" | "fast-draft";
+  executionDisposition: "review-required" | "fast-applied";
+  executionReason: string;
 };
 
-export type CreateLabRoomResult = {
+export type CreatedLabRoomResult = {
   created: true;
+  staged: false;
   projectId: string;
   laboratoryId: string;
   laboratoryName: string;
@@ -427,7 +499,33 @@ export type CreateLabRoomResult = {
   persisted: true;
   initialLayoutAutoCommitEligible: true;
   requiresHumanApproval: false;
+  executionMode: "fast-draft";
+  executionDisposition: "fast-applied";
+  executionReason: string;
 };
+
+export type StagedLabRoomCreationResult = {
+  created: false;
+  staged: true;
+  stageId: string;
+  projectId: string;
+  laboratoryId: string;
+  laboratoryName: string;
+  laboratoryCode: string;
+  roomName: string;
+  roomCode: string;
+  floor: number;
+  blank: true;
+  active: false;
+  persisted: false;
+  initialLayoutAutoCommitEligible: false;
+  requiresHumanApproval: true;
+  executionMode: "reviewed";
+  executionDisposition: "review-required";
+  executionReason: string;
+};
+
+export type CreateLabRoomResult = CreatedLabRoomResult | StagedLabRoomCreationResult;
 
 export type LabSpaceWorkspaceActions = {
   createRoom: (input: unknown) => Promise<CreateLabRoomResult>;
@@ -506,6 +604,22 @@ export type PendingAgentInventoryChange = {
   projectUpdatedAt: string;
 };
 
+export type PendingAgentWorkspaceChange = {
+  stageId: string;
+  tool: "workspace";
+  projectId: string;
+  laboratoryId: string;
+  laboratoryName: string;
+  laboratoryCode: string;
+  roomName: string;
+  roomCode: string;
+  floor: number;
+  baselineDirtyRevision: number;
+  projectUpdatedAt: string;
+  createdAt: string;
+  status: "pending";
+};
+
 export type StageInventoryPlanResult = {
   staged: true;
   stageId: string;
@@ -566,7 +680,8 @@ export type PendingAgentChange =
   | PendingAgentMoveChange
   | PendingAgentResizeChange
   | PendingAgentLayoutChange
-  | PendingAgentInventoryChange;
+  | PendingAgentInventoryChange
+  | PendingAgentWorkspaceChange;
 
 export type StageObjectMoveResult = {
   staged: boolean;

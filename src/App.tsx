@@ -182,6 +182,11 @@ export function App() {
       if (event.defaultPrevented || isEditableTarget(event.target)) return;
       const state = useEditorStore.getState();
       const mod = event.ctrlKey || event.metaKey;
+      if (!mod && !event.altKey && event.shiftKey && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        state.duplicateSelected();
+        return;
+      }
       if (mod && event.key.toLowerCase() === "z") {
         event.preventDefault();
         if (event.shiftKey) state.redo();

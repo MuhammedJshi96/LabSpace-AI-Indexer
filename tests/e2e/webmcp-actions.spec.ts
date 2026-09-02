@@ -171,6 +171,17 @@ test.beforeEach(async ({ page, request }) => {
   await installModelContext(page);
 });
 
+test.afterEach(async ({ page }) => {
+  if (page.isClosed()) return;
+  const saveControl = page.locator(".header-save-control");
+  if ((await saveControl.count()) === 0) return;
+  await expect(saveControl).toHaveAttribute(
+    "title",
+    /^(All changes saved|Saved in this browser)$/,
+    { timeout: 20_000 },
+  );
+});
+
 test("adds reviewed inventory through one tool and guides exact collection stops", async ({
   page,
 }) => {
@@ -309,38 +320,48 @@ test("grounds a workflow and ends its evidence itinerary at an authored work sur
   await executeTool(page, "labspace_collection_step", { action: "finish" });
 });
 
-test("Ctrl+Alt+D duplicates a focused item and undo restores the room", async ({ page }) => {
-  await page.goto("/");
-  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+test("Shift+D duplicates a focused item and undo restores the room", async ({ page }) => {
   const project = await readProject(page);
   const demo = eligibleDemoRoom(project);
   const equipment = demo.scene.equipmentRecords[0];
-  await executeTool(page, "labspace_focus_record", {
-    recordId: `${demo.id}:equipment:${equipment.id}`,
-  });
-  await expect(page).toHaveURL(/\/digital-twin$/);
-  await page.getByRole("link", { name: "Layout Editor", exact: true }).click();
+  await page.goto(
+    `/?room=${encodeURIComponent(demo.id)}&object=${encodeURIComponent(equipment.objectId)}&panel=properties`,
+  );
   await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  await expect(page.getByRole("button", { name: "Duplicate", exact: true })).toBeVisible();
+  const baselineAudit = await executeTool<RoomAuditResult>(page, "labspace_audit_room", {});
   const workspace = page.getByTestId("layout-editor-workspace");
   await expect(workspace).toBeVisible();
   await workspace.focus();
   await expect(workspace).toBeFocused();
-  await page.keyboard.press("Control+Alt+d");
+  await workspace.dispatchEvent("keydown", {
+    key: "D",
+    code: "KeyD",
+    shiftKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
   await expect
     .poll(
       async () =>
-        (await readProject(page)).rooms.find((room) => room.id === demo.id)?.scene.objects.length,
+        (await executeTool<RoomAuditResult>(page, "labspace_audit_room", {})).summary.placedAssets,
     )
-    .toBe(demo.scene.objects.length + 1);
-  await workspace.focus();
-  await expect(workspace).toBeFocused();
-  await page.keyboard.press("Control+z");
+    .toBe(baselineAudit.summary.placedAssets + 1);
+  const duplicatedContext = await executeTool<{
+    selection: { objectIds: string[] };
+  }>(page, "labspace_get_context", {});
+  expect(duplicatedContext.selection.objectIds).toHaveLength(1);
+  expect(duplicatedContext.selection.objectIds[0]).not.toBe(equipment.objectId);
+  const undo = page.getByRole("button", { name: "Undo", exact: true });
+  await expect(undo).toBeEnabled();
+  await undo.click();
   await expect
     .poll(
       async () =>
-        (await readProject(page)).rooms.find((room) => room.id === demo.id)?.scene.objects.length,
+        (await executeTool<RoomAuditResult>(page, "labspace_audit_room", {})).summary.placedAssets,
     )
-    .toBe(demo.scene.objects.length);
+    .toBe(baselineAudit.summary.placedAssets);
 });
 
 test("registers exactly twenty-four tools on product routes and excludes internal asset routes", async ({

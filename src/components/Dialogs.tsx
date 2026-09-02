@@ -1076,7 +1076,7 @@ function HelpDialog() {
     ["Ctrl/Cmd + Z", "Undo"],
     ["Ctrl/Cmd + Y", "Redo"],
     ["Ctrl/Cmd + C / V", "Copy and paste"],
-    ["Ctrl/Cmd + Alt + D", "Duplicate (Ctrl/Cmd + D also supported)"],
+    ["Shift + D", "Duplicate (Ctrl/Cmd + D also supported)"],
     ["Delete", "Remove selection"],
     ["Escape", "Cancel current tool"],
   ];

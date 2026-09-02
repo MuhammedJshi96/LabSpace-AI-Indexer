@@ -1508,8 +1508,8 @@ function ObjectProperties({ object }: { object: SceneObject }) {
         </button>
         <button
           onClick={duplicate}
-          title="Duplicate selected item (Ctrl+Alt+D / ⌘⌥D; Ctrl+D / ⌘D also supported)"
-          aria-keyshortcuts="Control+Alt+d Meta+Alt+d Control+d Meta+d"
+          title="Duplicate selected item (Shift+D; Ctrl+D / ⌘D also supported)"
+          aria-keyshortcuts="Shift+d Control+d Meta+d"
         >
           <Selection size={16} />
           Duplicate

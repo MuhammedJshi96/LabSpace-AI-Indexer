@@ -111,7 +111,7 @@ Final targeted results: TypeScript passed; 9 WebMCP-focused unit/integration fil
 4. Dedicated browser journey:
 
    - `npm run test:e2e:webmcp -- --workers=1`
-   - Result stream: all 14 cases individually reported `ok`, including inventory/collection, Ctrl+D/Undo, exact 23-tool route registration, audit, judge header, responsive dialogs, reviewed blueprint, Reviewed/Fast Draft boundary, cross-room evidence, dismissible focus, cabinet access, asset preview, valid placements, and reviewed move persistence/reversal.
+   - Result stream: all 14 cases individually reported `ok`, including inventory/collection, duplicate/Undo, exact 23-tool route registration, audit, judge header, responsive dialogs, reviewed blueprint, Reviewed/Fast Draft boundary, cross-room evidence, dismissible focus, cabinet access, asset preview, valid placements, and reviewed move persistence/reversal.
    - Teardown: after test 14 reported `ok`, the process produced no further output and did not terminate for more than 70 seconds. It was stopped with Ctrl+C, producing shell exit code 1. The assertion results are 14/14 pass; the invocation exit status is not clean because of the manual termination. Investigate Playwright/web-server teardown on Windows.
 
 5. In-app browser availability check:

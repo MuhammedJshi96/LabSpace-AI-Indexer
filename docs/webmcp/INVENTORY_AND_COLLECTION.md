@@ -73,7 +73,7 @@ safety-approved walking route, reservation, stock transaction, or permission to 
 
 ## Office and presentation polish
 
-- Ctrl+D / ⌘D duplicates a selected item; Ctrl+Z undoes it. Text fields keep normal typing behavior. The Duplicate inspector button shows the shortcut.
+- Ctrl+Alt+D / ⌘⌥D reliably duplicates a selected item without conflicting with browser bookmark shortcuts; Ctrl+D / ⌘D remains supported when the browser delivers it. Ctrl+Z undoes the change. Text fields keep normal typing behavior, and the Duplicate inspector button shows the shortcut.
 - With Snap on, office/laboratory chairs near an open office desk, table, or computer workstation align to its working edge and tuck partly under it at floor elevation. Deep, sideways, back-facing and closed-casework intersections are not exempted from collision checks.
 - Ten floor and ten wall finishes now include ivory porcelain/stone, pearl terrazzo/gloss, pale oak office finishes, graphite porcelain and sage panels. These are visual planning finishes, not certified wet-lab/fire/slip specifications.
 - Updated office desk, table and workstation GLBs have open knee-space framing; the workstation adds a widescreen monitor, input devices and cable/service detail. Both catalog and plan renders are regenerated from the same models.

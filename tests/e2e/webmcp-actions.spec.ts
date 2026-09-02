@@ -309,7 +309,7 @@ test("grounds a workflow and ends its evidence itinerary at an authored work sur
   await executeTool(page, "labspace_collection_step", { action: "finish" });
 });
 
-test("Ctrl+D duplicates a focused item and undo restores the room", async ({ page }) => {
+test("Ctrl+Alt+D duplicates a focused item and undo restores the room", async ({ page }) => {
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
   const project = await readProject(page);
@@ -325,7 +325,7 @@ test("Ctrl+D duplicates a focused item and undo restores the room", async ({ pag
   await expect(workspace).toBeVisible();
   await workspace.focus();
   await expect(workspace).toBeFocused();
-  await page.keyboard.press("Control+d");
+  await page.keyboard.press("Control+Alt+d");
   await expect
     .poll(
       async () =>

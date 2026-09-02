@@ -246,6 +246,7 @@ export function supportSurfaceElevation(object: SceneObject): number | null {
 
   const profile = ASSET_BY_ID.get(object.assetDefinitionId)?.profile;
   if (profile === "bench") return object.position.z + Math.min(900, object.dimensions.height);
+  if (profile === "corner") return object.position.z + Math.min(900, object.dimensions.height);
   if (profile === "table") return object.position.z + Math.min(760, object.dimensions.height);
   if (profile === "workstation") return object.position.z + Math.min(740, object.dimensions.height);
   return null;

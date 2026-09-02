@@ -45,4 +45,31 @@ describe("manual benchtop-equipment placement", () => {
 
     expect(moved?.position).toEqual({ x: 500, y: 500, z: 0 });
   });
+
+  it("recognizes the corner bench without treating a floor-standing freezer as a worktop", () => {
+    useEditorStore.getState().addAsset("corner-lab-bench", { x: 3000, y: 3000 });
+    const supportedId = useEditorStore
+      .getState()
+      .addAsset("analytical-balance", { x: 3000, y: 3000 });
+    const supported = selectActiveRoom(useEditorStore.getState()).scene.objects.find(
+      (object) => object.id === supportedId,
+    );
+    expect(supported?.position).toEqual({ x: 3000, y: 3000, z: 900 });
+
+    const project = createSeedProject();
+    useEditorStore.setState({ project, history: [], future: [], selectedIds: [] });
+    useEditorStore.getState().addAsset("ultra-low-freezer", { x: 3000, y: 3000 });
+    const floorStandingId = useEditorStore
+      .getState()
+      .addAsset("analytical-balance", { x: 3000, y: 3000 });
+    const floorStanding = selectActiveRoom(useEditorStore.getState()).scene.objects.find(
+      (object) => object.id === floorStandingId,
+    );
+    const freezer = selectActiveRoom(useEditorStore.getState()).scene.objects.find(
+      (object) => object.assetDefinitionId === "ultra-low-freezer",
+    );
+
+    expect(freezer?.position.z).toBe(0);
+    expect(floorStanding?.position).toEqual({ x: 3000, y: 3000, z: 0 });
+  });
 });

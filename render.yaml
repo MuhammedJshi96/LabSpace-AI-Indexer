@@ -3,7 +3,7 @@ services:
     name: labspace-agent-twin
     runtime: node
     plan: free
-    branch: webmcp-challenge-2026
+    branch: main
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health

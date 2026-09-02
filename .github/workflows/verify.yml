@@ -2,7 +2,7 @@ name: Verify challenge build
 
 on:
   push:
-    branches: [main, webmcp-challenge-2026]
+    branches: [main]
   pull_request:
 
 jobs:

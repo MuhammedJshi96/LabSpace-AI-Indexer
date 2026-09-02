@@ -104,6 +104,8 @@ When implementing from a selected generated mock, treat that image as the source
 
 ## Durable editor reliability decisions
 
+- `main` is the single release and Render deployment branch. Do not mirror routine release commits to `webmcp-challenge-2026` or run duplicate push verification there; retain the branch only as historical rollback unless the user explicitly reactivates it.
+
 - Spatial Index inventory/result rows must be deliberately scrollable: mouse-wheel and trackpad motion over the strip should move it horizontally, touch drag remains native, and visible previous/next controls provide a keyboard-accessible fallback. Exact-location cameras should lower toward low drawers, keep upper shelves close to level, test wider aisle-side candidates, and preserve a readable product-view distance rather than squeezing into a wall or intervening furniture silhouette; a transient sightline cutaway may expose a facade with no aisle. Preserve saved room geometry. On the L-shaped corner bench, the three-drawer run faces asset-local right (+X) after the authored scene rotation, while the return utility drawer faces rear (-Z); region position must never be mistaken for the access normal.
 
 - Manual equipment placement is literal: dragging, clicking, duplicating or editing a benchtop asset must never teleport it to the nearest bench. If its footprint already overlaps a valid work surface, align only its elevation to that surface; otherwise preserve the requested x/y at floor level and report the unsupported condition through placement review. Searching for another support surface is reserved for explicit WebMCP instructions such as “place on a bench/work surface.”

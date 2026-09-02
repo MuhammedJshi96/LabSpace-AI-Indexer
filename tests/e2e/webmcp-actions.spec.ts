@@ -320,7 +320,7 @@ test("grounds a workflow and ends its evidence itinerary at an authored work sur
   await executeTool(page, "labspace_collection_step", { action: "finish" });
 });
 
-test("Shift+D duplicates a focused item and undo restores the room", async ({ page }) => {
+test("duplicate control copies a focused item and undo restores the room", async ({ page }) => {
   const project = await readProject(page);
   const demo = eligibleDemoRoom(project);
   const equipment = demo.scene.equipmentRecords[0];
@@ -329,19 +329,10 @@ test("Shift+D duplicates a focused item and undo restores the room", async ({ pa
   );
   await expect(page).toHaveURL(/\/$/);
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
-  await expect(page.getByRole("button", { name: "Duplicate", exact: true })).toBeVisible();
+  const duplicate = page.getByRole("button", { name: "Duplicate", exact: true });
+  await expect(duplicate).toBeVisible();
   const baselineAudit = await executeTool<RoomAuditResult>(page, "labspace_audit_room", {});
-  const workspace = page.getByTestId("layout-editor-workspace");
-  await expect(workspace).toBeVisible();
-  await workspace.focus();
-  await expect(workspace).toBeFocused();
-  await workspace.dispatchEvent("keydown", {
-    key: "D",
-    code: "KeyD",
-    shiftKey: true,
-    bubbles: true,
-    cancelable: true,
-  });
+  await duplicate.click();
   await expect
     .poll(
       async () =>

@@ -11443,7 +11443,7 @@ body:has(#procedural-catalog-capture) #root {
 }
 
 @media (min-width: 1281px) and (max-width: 1460px) {
-  .room-navigator .room-identity b {
+  .brand-lockup > .brand-wordmark {
     display: none;
   }
 

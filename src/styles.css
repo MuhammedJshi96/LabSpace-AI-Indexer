@@ -9648,6 +9648,10 @@ body:has(#procedural-catalog-capture) #root {
     font-size: 17px;
   }
 
+  .room-identity b {
+    max-width: 112px;
+  }
+
   .primary-navigation a {
     padding-inline: 12px;
   }

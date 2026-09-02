@@ -1,6 +1,7 @@
 import {
   Component,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -176,7 +177,7 @@ export function App() {
     return () => window.clearTimeout(timer);
   }, [dirtyRevision, hydrated, saveNow, saveStatus]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
       if (event.defaultPrevented || isEditableTarget(event.target)) return;
       const state = useEditorStore.getState();

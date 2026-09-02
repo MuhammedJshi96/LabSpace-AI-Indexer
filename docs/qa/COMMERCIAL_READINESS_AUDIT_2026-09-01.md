@@ -1,4 +1,4 @@
-# LabSpace AI Agent Twin — commercial and judge-readiness audit
+# LabSpace Atlas — commercial and judge-readiness audit
 
 **Audit date:** 2026-09-01  
 **Method:** independent static/source audit followed by one narrow, memory-bounded evidence-retention hardening pass. No server, browser, build, or Playwright process was started. One focused unit file, targeted ESLint, and TypeScript were run sequentially.  
@@ -79,7 +79,7 @@
 
 ## Recommended submission narrative
 
-> **LabSpace AI Agent Twin turns a browser agent into a controlled operator for a laboratory spatial twin.** The agent discovers 23 structured tools, plans against canonical room geometry, grounds material requests in recorded inventory, navigates to an exact cabinet/shelf/drawer, and stages consequential changes for a researcher. LabSpace—not generated text—remains the source of truth. Reviewed mode is the default; Fast Draft is a visible session-only authorization limited to a validated blank room and its complete pristine first blueprint. Collection guidance never deducts stock or claims to be a protocol, safety approval, or certified route.
+> **LabSpace Atlas turns a browser agent into a controlled operator for a laboratory spatial twin.** The agent discovers 23 structured tools, plans against canonical room geometry, grounds material requests in recorded inventory, navigates to an exact cabinet/shelf/drawer, and stages consequential changes for a researcher. LabSpace—not generated text—remains the source of truth. Reviewed mode is the default; Fast Draft is a visible session-only authorization limited to a validated blank room and its complete pristine first blueprint. Collection guidance never deducts stock or claims to be a protocol, safety approval, or certified route.
 
 Recommended three-part judge flow:
 

@@ -8757,6 +8757,22 @@ body:has(#procedural-catalog-capture) #root {
   display: none;
 }
 
+.brand-wordmark {
+  color: #f4f8f7;
+  text-shadow: 0 1px 10px rgba(0, 19, 17, 0.18);
+}
+
+.brand-name-accent {
+  margin-inline-start: 0.24em;
+  color: #66dad0;
+  font-weight: 780;
+  background: linear-gradient(135deg, #66dad0 10%, #00a995 92%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 18px rgba(102, 218, 208, 0.2);
+}
+
 .top-divider {
   height: 30px;
   margin: 0 4px;

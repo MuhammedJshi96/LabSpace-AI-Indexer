@@ -62,7 +62,7 @@ Environmental context is assigned with nullable `Room.environmentProfileId`. It 
 
 The 3D renderer only reframes for an explicit room, preset, presentation, or exact-record focus command. Ordinary 2D object movement updates scene geometry without resetting the orbit. Per-room saved camera poses remain authoritative; rooms without one open with the user-approved relaxed split-view isometric scale, expressed relative to the room envelope rather than DEMO-01 coordinates.
 
-### Future LabSpace AI API boundary
+### Future LabSpace Atlas API boundary
 
 An optional future provider may translate natural-language intent into calls to the canonical Spatial Index and validator. Its output must remain an explanation of returned evidence, never a source of inventory, ownership, maintenance, or safety facts. The current application is complete and testable without that adapter, an API key, or usage billing.
 

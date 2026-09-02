@@ -1,13 +1,13 @@
-# OpenAI Build Week Master Goal — LabSpace AI
+# OpenAI Build Week Master Goal — LabSpace Atlas
 
 Last updated: 2026-07-18 JST
 
 ## Submission identity
 
-- **Project:** LabSpace AI
+- **Project:** LabSpace Atlas
 - **Track:** Work and Productivity
 - **Pitch:** “Design the lab. Index every asset. Find anything instantly—in one intelligent spatial digital twin.”
-- **Positioning:** A spatial operating system connecting laboratory design, physical inventory, and exact-location navigation, engineered with GPT-5.6/Codex and ready for a future optional LabSpace AI API.
+- **Positioning:** A spatial operating system connecting laboratory design, physical inventory, and exact-location navigation, engineered with GPT-5.6/Codex and ready for a future optional LabSpace Atlas API.
 - **Primary Codex build-session ID:** `019f6a4d-25a9-7812-804c-88b695589b2a`
 
 This master goal supersedes broad asset expansion as the active product priority while preserving every durable LabSpace requirement. DEMO-01 is the authentic competition showcase; selected spatial and equipment references came from the author's Room 809 laboratory, which is provenance rather than the demo identity or product boundary.
@@ -47,12 +47,12 @@ The Spatial Index Finder is a deterministic local record-navigation workspace. I
 
 Results never infer or invent missing inventory. Placement checks remain a separate direct Warnings workflow in the Layout Editor and never imply safety certification.
 
-### Future LabSpace AI API boundary
+### Future LabSpace Atlas API boundary
 
 - The judge demo runs without an OpenAI Platform API key or per-call billing because no runtime model provider is installed.
 - Do not restore chat-style sample prompts, generated-answer panels, provider badges, or claims that GPT-5.6 answers inside the application.
 - GPT-5.6/Codex participation remains genuine and central through the primary build session used for architecture, implementation, UI, assets, regression fixes, testing, and submission evidence.
-- A future optional LabSpace AI API may add model-driven intent resolution and explanation. Canonical records and deterministic validation remain authoritative, and the Layout Builder plus Spatial Index Finder must remain fully functional without that provider.
+- A future optional LabSpace Atlas API may add model-driven intent resolution and explanation. Canonical records and deterministic validation remain authoritative, and the Layout Builder plus Spatial Index Finder must remain fully functional without that provider.
 
 ## Curated demo contract
 

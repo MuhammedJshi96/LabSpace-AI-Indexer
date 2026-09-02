@@ -1,4 +1,4 @@
-# LabSpace AI Agent Twin — release-candidate system audit
+# LabSpace Atlas — release-candidate system audit
 
 **Audit date:** 2026-09-01  
 **Audit target:** local release candidate on `http://localhost:3004`  

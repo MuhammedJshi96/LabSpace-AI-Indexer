@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions
 
-title LabSpace AI Launcher
+title LabSpace Atlas Launcher
 cd /d "%~dp0"
 
 set "LABSPACE_URL=http://127.0.0.1:3004/"
@@ -24,8 +24,8 @@ if not exist "node_modules\.bin\tsx.cmd" (
 )
 
 echo.
-echo Starting LabSpace AI on %LABSPACE_URL%
-start "LabSpace AI Server" /min cmd.exe /d /k "cd /d ""%~dp0"" && set ""PORT=3004"" && npm.cmd run dev"
+echo Starting LabSpace Atlas on %LABSPACE_URL%
+start "LabSpace Atlas Server" /min cmd.exe /d /k "cd /d ""%~dp0"" && set ""PORT=3004"" && npm.cmd run dev"
 
 set /a "WAIT_COUNT=0"
 
@@ -43,7 +43,7 @@ if /i "%~1"=="--no-browser" goto success
 start "" "%LABSPACE_URL%"
 
 :success
-echo LabSpace AI is ready at %LABSPACE_URL%
+echo LabSpace Atlas is ready at %LABSPACE_URL%
 exit /b 0
 
 :is_running
@@ -67,7 +67,7 @@ goto failed
 :server_timeout
 echo.
 echo LabSpace did not become ready within 60 seconds.
-echo Review the minimized "LabSpace AI Server" window for the startup error.
+echo Review the minimized "LabSpace Atlas Server" window for the startup error.
 
 :failed
 echo.

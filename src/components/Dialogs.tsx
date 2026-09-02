@@ -1219,7 +1219,7 @@ function LabelCard({
     <article className={`location-label ${compact ? "compact" : ""}`}>
       <div className="label-brand">
         <img src="/labspace-mark.svg" alt="" />
-        <span>LabSpace Indexer</span>
+        <span>LabSpace Atlas</span>
       </div>
       <div className="label-body">
         <div>

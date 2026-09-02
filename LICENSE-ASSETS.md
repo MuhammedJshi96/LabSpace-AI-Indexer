@@ -1,6 +1,6 @@
-# LabSpace AI Agent Twin asset and media licence
+# LabSpace Atlas asset and media licence
 
-Copyright 2026 LabSpace AI Agent Twin contributors. All rights reserved.
+Copyright 2026 LabSpace Atlas contributors. All rights reserved.
 
 ## Scope
 
@@ -54,7 +54,7 @@ competition artwork unless a specific file states otherwise.
 
 The current screenshots document deterministic local software. They do not
 contain or license model-generated runtime answers, an OpenAI Platform service,
-or a deployed LabSpace AI API. Any future API integration will require its own
+or a deployed LabSpace Atlas API. Any future API integration will require its own
 service terms, privacy disclosure, and provider configuration.
 
 ## Permission requests

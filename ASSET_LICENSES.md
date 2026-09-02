@@ -101,5 +101,5 @@ packages and versions.
 
 No downloaded third-party 3D models, catalog textures, online fonts, paid APIs,
 live model output, or proprietary asset catalogs are included. The possible
-future LabSpace AI API described in product documentation is not part of the
+future LabSpace Atlas API described in product documentation is not part of the
 current runtime or asset bundle.

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">LabSpace Indexer</title>
+  <title id="title">LabSpace Atlas</title>
   <desc id="desc">An isometric laboratory room with an indexed location marker.</desc>
   <path fill="#11191d" d="M8 16.5 31.5 3 56 16.5v29L32 60 8 46z"/>
   <path fill="#f5f8f7" d="m15 20 16.5-9.5L49 20v20.8L32 51 15 41z"/>

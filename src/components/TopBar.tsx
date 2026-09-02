@@ -54,12 +54,16 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
         <button
           className="brand-lockup"
           onClick={() => setDialog("project")}
-          title="Open laboratories and rooms"
-          aria-label="Open project workspace"
+          title="Open LabSpace Atlas laboratories and rooms"
+          aria-label="Open LabSpace Atlas project workspace"
         >
           <img src="/labspace-mark.svg" alt="" />
-          <span className="brand-name-full">LabSpace AI Agent Twin</span>
-          <span className="brand-name-compact">LabSpace AI</span>
+          <span className="brand-name-full brand-wordmark" aria-hidden="true">
+            LabSpace <span className="brand-name-accent">Atlas</span>
+          </span>
+          <span className="brand-name-compact brand-wordmark" aria-hidden="true">
+            LabSpace <span className="brand-name-accent">Atlas</span>
+          </span>
         </button>
         <span className="top-divider" />
         <RoomNavigator />

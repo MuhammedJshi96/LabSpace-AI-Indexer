@@ -55,7 +55,7 @@ export function buildJudgeEvidenceBundle(
   return {
     schema: JUDGE_EVIDENCE_SCHEMA,
     exportedAt,
-    product: "LabSpace AI Agent Twin",
+    product: "LabSpace Atlas",
     purpose:
       "Bounded WebMCP session evidence for product evaluation; not hidden model reasoning, a certified audit log, or an approved laboratory protocol.",
     workspace: {

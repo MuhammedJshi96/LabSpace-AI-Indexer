@@ -1,14 +1,14 @@
-# LabSpace AI Agent Twin
+# LabSpace Atlas
 
 <p align="center">
-  <img src="docs/submission/labspace-ai-indexer-thumbnail-3x2-source-v1.png" alt="LabSpace AI — Design, Index, Find" width="100%" />
+  <img src="docs/submission/labspace-atlas-thumbnail-3x2-v1.png" alt="LabSpace Atlas — The living map of your laboratory" width="100%" />
 </p>
 
 <p align="center"><strong>Design the lab. Index every location. Find anything instantly.</strong></p>
 
-**LabSpace AI Agent Twin** is a local-first, multi-laboratory spatial operating system where researchers and browser agents can design rooms, index physical storage, audit deterministic placement evidence, and navigate exact equipment or inventory locations. Its synchronized 2D/3D editor uses millimetre-accurate scene data, local SQLite persistence, versioning, labels, reports, and validation. The compact in-product brand remains **LabSpace AI**, while the competition name identifies the browser-agent-enabled edition. The included competition showcase is **DEMO-01**; its laboratory character and selected spatial references were informed by the author's Room 809 laboratory, but Room 809 is not the demo's identity or a feature boundary.
+**LabSpace Atlas** is a local-first, multi-laboratory spatial operating system where researchers and browser agents can design rooms, index physical storage, audit deterministic placement evidence, and navigate exact equipment or inventory locations. Its synchronized 2D/3D editor uses millimetre-accurate scene data, local SQLite persistence, versioning, labels, reports, and validation.
 
-## WebMCP Challenge — LabSpace AI Agent Twin
+## WebMCP Challenge — LabSpace Atlas
 
 **WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can create and activate a genuinely blank room, infer its building floor, calculate a rectangular or multi-wall polygon shell, host doors and windows on exact wall segments, pair chairs with workstations, orient perimeter furniture inward, and place bench equipment on real support surfaces. It can also search exact physical records, focus the real 2D/3D workspace, validate equipment moves, and propose project inventory at canonical locations.
 
@@ -174,7 +174,7 @@ Requirements: Node.js 22.5 or newer (Node.js 24 LTS is recommended). The built-i
 
 ### One-click Windows launcher
 
-After installing Node.js, Windows users can double-click **[`Start LabSpace.cmd`](Start%20LabSpace.cmd)** in the repository root. The launcher installs missing npm dependencies, keeps the required port `3004`, avoids starting a duplicate server, waits until LabSpace is reachable, and opens the application in the default browser. Keep the minimized **LabSpace AI Server** terminal open while using the application.
+After installing Node.js, Windows users can double-click **[`Start LabSpace.cmd`](Start%20LabSpace.cmd)** in the repository root. The launcher installs missing npm dependencies, keeps the required port `3004`, avoids starting a duplicate server, waits until LabSpace is reachable, and opens the application in the default browser. Keep the minimized **LabSpace Atlas Server** terminal open while using the application.
 
 ### Terminal launch
 
@@ -279,7 +279,7 @@ Before Build Week, the project had a local laboratory layout/indexing prototype,
 - the user's full DEMO-01 video-showcase room as a sanitized source-controlled fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
 - authored GLB asset delivery, offline Draco decoding, regression tests, release checks, and submission documentation.
 
-The Build Week work followed the responsibility split documented in **How I used GPT-5.6 and Codex**: I supplied the laboratory expertise and made the product decisions; GPT-5.6 helped structure requirements and workflows; and Codex implemented, debugged, tested, and documented the working system. A possible LabSpace AI API remains a clearly labeled future extension rather than a claimed runtime feature.
+The Build Week work followed the responsibility split documented in **How I used GPT-5.6 and Codex**: I supplied the laboratory expertise and made the product decisions; GPT-5.6 helped structure requirements and workflows; and Codex implemented, debugged, tested, and documented the working system. A possible LabSpace Atlas API remains a clearly labeled future extension rather than a claimed runtime feature.
 
 See [docs/submission/BUILD_WEEK_IMPLEMENTATION.md](docs/submission/BUILD_WEEK_IMPLEMENTATION.md) for the architecture, originality boundary, human/AI collaboration record, and measured demo facts.
 

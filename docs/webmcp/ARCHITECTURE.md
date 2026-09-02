@@ -1,4 +1,4 @@
-# LabSpace AI Agent Twin architecture
+# LabSpace Atlas architecture
 
 LabSpace exposes a semantic laboratory digital twin through the browser-native WebMCP Imperative API. WebMCP is an adapter over the same canonical actions used by the interface; it does not contain a second copy of search, camera, validation, history, or persistence logic.
 

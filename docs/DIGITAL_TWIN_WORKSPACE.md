@@ -46,4 +46,4 @@ The workspace implements the supplied references' interaction contract, but it r
 
 ## Future AI API boundary
 
-No conversational assistant or live model provider ships in the current application. GPT-5.6/Codex is documented as the Build Week engineering and design collaborator. A future optional LabSpace AI API may translate natural-language requests into calls to the canonical index and validator, but it must preserve the same evidence boundary and must never replace stored records or deterministic geometry with generated facts.
+No conversational assistant or live model provider ships in the current application. GPT-5.6/Codex is documented as the Build Week engineering and design collaborator. A future optional LabSpace Atlas API may translate natural-language requests into calls to the canonical index and validator, but it must preserve the same evidence boundary and must never replace stored records or deterministic geometry with generated facts.

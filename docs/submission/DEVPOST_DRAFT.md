@@ -1,4 +1,4 @@
-# Devpost draft — LabSpace AI Indexer
+# Devpost draft — LabSpace Atlas
 
 ## Elevator pitch
 
@@ -6,7 +6,7 @@ Design the lab. Index every asset. Find anything instantly—in one intelligent 
 
 ## Inspiration
 
-Laboratory teams still depend on memory, spreadsheets, photographs, labels, and disconnected floor plans to answer simple operational questions: Where is the equipment? Which drawer contains its accessories? Is this new placement physically valid? LabSpace AI Indexer turns those disconnected records into one spatially coherent system.
+Laboratory teams still depend on memory, spreadsheets, photographs, labels, and disconnected floor plans to answer simple operational questions: Where is the equipment? Which drawer contains its accessories? Is this new placement physically valid? LabSpace Atlas turns those disconnected records into one spatially coherent system.
 
 ## What it does
 
@@ -18,7 +18,7 @@ The signature workflow searches for the BÜCHI rotary evaporator, focuses its eq
 
 The product uses React 19 and TypeScript, React Konva for 2D, Three.js/React Three Fiber for 3D, Zustand for editor state, Zod for versioned data validation, Express for the local API, and Node SQLite for persistence. Both renderers, the Spatial Index, and the placement validator consume one canonical millimetre-based project model. Selecting an index result updates exact 2D/3D focus and evidence without duplicating scene state.
 
-The demo requires no API key or billing because no live model provider is included. Codex/GPT-5.6 was central to the Build Week implementation process: architecture, feature delivery, asset-pipeline scripting, debugging, browser testing, regression coverage, and release documentation. A future optional LabSpace AI API may add model-driven intent resolution over the same trusted index and validator tools.
+The demo requires no API key or billing because no live model provider is included. Codex/GPT-5.6 was central to the Build Week implementation process: architecture, feature delivery, asset-pipeline scripting, debugging, browser testing, regression coverage, and release documentation. A future optional LabSpace Atlas API may add model-driven intent resolution over the same trusted index and validator tools.
 
 ## Challenges
 
@@ -41,4 +41,4 @@ A spatial product becomes trustworthy when canonical records and deterministic s
 
 ## What's next
 
-Add an optional LabSpace AI API for model-driven intent selection and evidence explanation, organization accounts and permissions, scan/BIM alignment, collaborative editing, richer equipment-maintenance integrations, and measured laboratory usability studies while retaining the same canonical-data and validation boundaries.
+Add an optional LabSpace Atlas API for model-driven intent selection and evidence explanation, organization accounts and permissions, scan/BIM alignment, collaborative editing, richer equipment-maintenance integrations, and measured laboratory usability studies while retaining the same canonical-data and validation boundaries.

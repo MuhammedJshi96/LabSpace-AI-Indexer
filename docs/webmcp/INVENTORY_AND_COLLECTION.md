@@ -1,6 +1,6 @@
 # Inventory and collection workflows
 
-LabSpace AI Agent Twin exposes **24 WebMCP tools**. Write natural-language requests in your browser agent's chat—not inside the LabSpace inspector. The inspector shows tools, examples, execution evidence and human review.
+LabSpace Atlas exposes **24 WebMCP tools**. Write natural-language requests in your browser agent's chat—not inside the LabSpace inspector. The inspector shows tools, examples, execution evidence and human review.
 
 ## Add inventory
 

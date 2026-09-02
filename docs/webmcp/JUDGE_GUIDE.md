@@ -1,4 +1,4 @@
-# LabSpace AI Agent Twin — judge guide
+# LabSpace Atlas — judge guide
 
 **WebMCP for the physical laboratory.** Start with the signature proof in about 60 seconds, then
 continue into the complete three-minute challenge flow.

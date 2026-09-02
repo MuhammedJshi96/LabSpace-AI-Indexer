@@ -6,7 +6,7 @@ This guide assumes no development experience.
 
 On Windows, double-click **`Start LabSpace.cmd`** in the project folder. The launcher uses port `3004`, installs missing npm dependencies, avoids starting a duplicate server, waits for LabSpace to become reachable, and opens it in the default browser.
 
-Keep the minimized **LabSpace AI Server** terminal open while using the application.
+Keep the minimized **LabSpace Atlas Server** terminal open while using the application.
 
 ## First-time installation
 
@@ -21,7 +21,7 @@ Keep the minimized **LabSpace AI Server** terminal open while using the applicat
    npm run dev
    ```
 
-4. Wait until the terminal reports that LabSpace Indexer is available.
+4. Wait until the terminal reports that LabSpace Atlas is available.
 5. Open [http://127.0.0.1:3004/](http://127.0.0.1:3004/) in a modern browser.
 
 Leave the terminal window open while using the application. Press `Ctrl+C` in that terminal to stop it.

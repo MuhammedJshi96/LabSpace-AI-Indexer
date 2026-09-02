@@ -2,7 +2,7 @@
 
 ## Project
 
-**LabSpace AI Indexer**
+**LabSpace Atlas**
 **Design the lab. Index every asset. Find anything instantly—in one intelligent spatial digital twin.**
 
 Recommended track: Work and Productivity.
@@ -36,7 +36,7 @@ flowchart LR
     C --> E["Spatial Index filtering and exact record selection"]
     E --> F["2D/3D focus and evidence inspector"]
     D --> G["Layout status and Warnings tab"]
-    H["Future optional LabSpace AI API"] -. intent and explanation .-> E
+    H["Future optional LabSpace Atlas API"] -. intent and explanation .-> E
     H -. tool call .-> D
 ```
 
@@ -46,7 +46,7 @@ React and Zustand coordinate the editor. React Konva renders the 2D plan, React 
 
 The shipped Spatial Index Finder performs deterministic local filtering over stored rooms, equipment, inventory, storage locations, notes, service dates, and identifiers. Exact record selection—not generated text—drives camera focus and the evidence inspector. Placement findings come directly from the canonical validator in the Layout Editor. The runtime contains no live model provider and requires no OpenAI Platform billing.
 
-A future optional LabSpace AI API may select these index and validator tools and explain their returned evidence. It is not implemented in the current runtime and must never invent records, owners, locations, maintenance facts, utilities, or safety certification.
+A future optional LabSpace Atlas API may select these index and validator tools and explain their returned evidence. It is not implemented in the current runtime and must never invent records, owners, locations, maintenance facts, utilities, or safety certification.
 
 ## Human and Codex/GPT-5.6 collaboration
 

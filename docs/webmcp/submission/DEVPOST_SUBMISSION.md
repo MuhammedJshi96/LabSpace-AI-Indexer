@@ -1,8 +1,8 @@
-# Devpost submission — LabSpace AI Agent Twin
+# Devpost submission — LabSpace Atlas
 
 ## Project name
 
-**LabSpace AI Agent Twin**
+**LabSpace Atlas**
 
 ## Short tagline
 

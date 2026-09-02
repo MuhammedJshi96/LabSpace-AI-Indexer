@@ -66,6 +66,7 @@ describe("judge evidence bundle", () => {
     );
 
     expect(bundle.schema).toBe(JUDGE_EVIDENCE_SCHEMA);
+    expect(bundle.product).toBe("LabSpace Atlas");
     expect(bundle.browserBridge.registeredTools).toEqual(["a_tool", "z_tool"]);
     expect(bundle.browserBridge.registeredToolCount).toBe(2);
     expect(bundle.humanControl).toMatchObject({

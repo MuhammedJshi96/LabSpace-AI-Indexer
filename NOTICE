@@ -1,5 +1,5 @@
-LabSpace AI Agent Twin
-Copyright 2026 LabSpace AI Agent Twin contributors
+LabSpace Atlas
+Copyright 2026 LabSpace Atlas contributors
 
 The application source code is licensed under the Apache License, Version 2.0.
 See LICENSE.
@@ -9,7 +9,7 @@ artwork are not licensed under Apache 2.0 unless explicitly stated otherwise.
 See LICENSE-ASSETS.md and ASSET_LICENSES.md.
 
 Application screenshots and competition media show the deterministic local
-Layout Editor and Spatial Index Finder. A future LabSpace AI API is not included
+Layout Editor and Spatial Index Finder. A future LabSpace Atlas API is not included
 in the current software distribution.
 
 LabSpace assets are original, logo-free planning representations and are not

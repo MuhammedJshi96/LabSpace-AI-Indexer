@@ -153,7 +153,7 @@ if (production) {
 }
 
 const server = app.listen(port, "0.0.0.0", () => {
-  console.log(`LabSpace Indexer running at http://localhost:${port}`);
+  console.log(`LabSpace Atlas running at http://localhost:${port}`);
   console.log(
     publicDemo ? "Judge data: isolated in-memory browser sessions" : `Local data: ${databasePath}`,
   );

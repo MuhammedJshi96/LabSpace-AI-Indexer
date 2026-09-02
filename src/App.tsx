@@ -312,7 +312,7 @@ export function App() {
         <div className="app-loading">
           <img src="/labspace-mark.svg" alt="" />
           <span>
-            <b>Opening LabSpace Indexer</b>Loading your laboratory project from local storage…
+            <b>Opening LabSpace Atlas</b>Loading your laboratory project from local storage…
           </span>
         </div>
       )}

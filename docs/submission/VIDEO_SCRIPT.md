@@ -1,4 +1,4 @@
-# LabSpace AI — 2:50 user–AI collaboration video
+# LabSpace Atlas — 2:50 user–AI collaboration video
 
 Target duration: **2 minutes 50 seconds**. The product demonstration is structured as evidence of how the user's laboratory expertise, GPT-5.6 in ChatGPT, and Codex worked together throughout the project.
 
@@ -81,7 +81,7 @@ Target duration: **2 minutes 50 seconds**. The product demonstration is structur
 
 **Screen:** Hold the access preview with the room still readable. Add a minimal closing title only if editing is available:
 
-**LabSpace AI — Design · Index · Find**
+**LabSpace Atlas — Design · Index · Find**
 
 Keep the final frame still for the last two seconds.
 
@@ -89,7 +89,7 @@ Keep the final frame still for the last two seconds.
 
 ### 0:00–0:15
 
-“Laboratories are designed in one place and indexed in another. LabSpace AI connects the physical layout, every asset, and every storage location in one spatial digital twin.”
+“Laboratories are designed in one place and indexed in another. LabSpace Atlas connects the physical layout, every asset, and every storage location in one spatial digital twin.”
 
 ### 0:15–0:38
 
@@ -113,7 +113,7 @@ Keep the final frame still for the last two seconds.
 
 ### 2:36–2:50
 
-“Together, human laboratory knowledge, GPT-5.6 reasoning, and Codex implementation transformed an idea into LabSpace AI: design the lab, index every asset, and find anything instantly.”
+“Together, human laboratory knowledge, GPT-5.6 reasoning, and Codex implementation transformed an idea into LabSpace Atlas: design the lab, index every asset, and find anything instantly.”
 
 ## Delivery suggestions
 

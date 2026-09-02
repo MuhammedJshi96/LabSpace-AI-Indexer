@@ -1,4 +1,4 @@
-# LabSpace Indexer — Floorplanner-reconciled demonstration and Spatial Index milestone
+# LabSpace Atlas — Floorplanner-reconciled demonstration and Spatial Index milestone
 
 Date: 2026-07-18 (Asia/Tokyo)
 
@@ -10,7 +10,7 @@ A project can contain multiple laboratories and multiple blank rooms. The projec
 
 This milestone establishes the generalized product foundation and expands the reference-driven hero library. It does not claim the scan-like realism shown in `references/ref1.png` and `references/ref2.png`: 45 of 96 catalog assets have all-sided authored GLBs, while 51 use recognizable procedural planning geometry, including intentionally parametric hosted openings.
 
-The Spatial Index Finder now implements the reference's core interaction contract—project-wide deterministic search, cross-laboratory room switching, selected spatial trace, exact location hierarchy, record detail, camera navigation, and room-aware editor handoff—using canonical LabSpace data. Its current room image remains a real-time planning renderer, not a photogrammetric or scan-derived facility twin. No live model provider ships in the runtime; an optional LabSpace AI API remains future architecture.
+The Spatial Index Finder now implements the reference's core interaction contract—project-wide deterministic search, cross-laboratory room switching, selected spatial trace, exact location hierarchy, record detail, camera navigation, and room-aware editor handoff—using canonical LabSpace data. Its current room image remains a real-time planning renderer, not a photogrammetric or scan-derived facility twin. No live model provider ships in the runtime; an optional LabSpace Atlas API remains future architecture.
 
 DEMO-01 uses selected spatial cues informed by the five supplied Room 809 Floorplanner views. The former generic rectangle was replaced by an eight-wall concave footprint with an entrance projection, hosted openings, two long islands, perimeter functions, and clear circulation. This remains reusable showcase content, not a dependency of blank rooms or the general editor.
 

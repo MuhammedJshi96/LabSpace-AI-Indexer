@@ -1,10 +1,10 @@
-# LabSpace AI Indexer
+# LabSpace Atlas
 
 > **Design the lab. Index every location. Find anything instantly.**
 
 ## Inspiration
 
-I am a biologist, not a programmer. LabSpace AI started with a problem I knew from everyday laboratory work, not with an idea for a software competition.
+I am a biologist, not a programmer. LabSpace Atlas started with a problem I knew from everyday laboratory work, not with an idea for a software competition.
 
 Our laboratory is spread across several rooms and contains years of accumulated equipment, consumables, glassware, and chemicals. We often knew that something existed, but not exactly where it was. Finding it could mean opening drawers, walking between rooms, or asking the person who had used it last. That may sound like a small inconvenience, but those interruptions add up. More importantly, knowledge disappears when students graduate or responsibilities change.
 
@@ -16,11 +16,11 @@ At first, I imagined a searchable index. Then I asked a question that changed th
 
 An item should not only have a name and an ID. It should belong to a laboratory, a room, a work zone, a cabinet, and finally a particular shelf, drawer, compartment, or bin. The room layout and the inventory should be two views of the same reality.
 
-That became LabSpace AI: a tool for designing a laboratory, indexing what is inside it, and preserving the practical knowledge that usually lives only in people's memories.
+That became LabSpace Atlas: a tool for designing a laboratory, indexing what is inside it, and preserving the practical knowledge that usually lives only in people's memories.
 
 ## What it does
 
-LabSpace AI is a local-first laboratory layout editor and spatial index. It connects three questions that are usually handled by different tools:
+LabSpace Atlas is a local-first laboratory layout editor and spatial index. It connects three questions that are usually handled by different tools:
 
 1. How should this laboratory be arranged?
 2. What equipment and materials do we have?
@@ -101,7 +101,7 @@ LabSpace changed my understanding of what I could build. It showed me that domai
 
 My first long-term goal is to connect LabSpace with the laboratory management system that inspired it. That would bring schedules, equipment records, inventory, safety workflows, and spatial evidence into one environment.
 
-Future work could include an optional LabSpace AI API for grounded intent resolution, multi-user permissions, maintenance and utilization history, BIM or measured-facility alignment, richer QR navigation, utility and energy analysis, and timed usability studies measuring search-to-location performance.
+Future work could include an optional LabSpace Atlas API for grounded intent resolution, multi-user permissions, maintenance and utilization history, BIM or measured-facility alignment, richer QR navigation, utility and energy analysis, and timed usability studies measuring search-to-location performance.
 
 The current version remains a single-user planning and indexing prototype. It is not certified safety software, a BIM authoring kernel, or a source of certified manufacturer models. I want the next phase to grow from an honest foundation rather than hide those boundaries.
 

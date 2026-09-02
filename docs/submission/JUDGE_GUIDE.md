@@ -1,6 +1,6 @@
-# LabSpace AI Indexer — judge guide
+# LabSpace Atlas — judge guide
 
-LabSpace AI Indexer runs locally with no account, API key, paid service, or external asset download. The repository includes the authored GLBs, catalog renders, material textures, evidence photographs, and offline Draco decoder required by the demo.
+LabSpace Atlas runs locally with no account, API key, paid service, or external asset download. The repository includes the authored GLBs, catalog renders, material textures, evidence photographs, and offline Draco decoder required by the demo.
 
 ## Start
 
@@ -62,4 +62,4 @@ The primary automated competition flow is in `tests/e2e/build-week-demo.spec.ts`
 
 ## Data and privacy
 
-Runtime edits are stored only in `data/labspace-indexer.sqlite`, which is created locally and excluded from Git. The sanitized DEMO-01 fixture is intentionally source-controlled so a clean clone includes the video room; unrelated local project state is not published. Spatial Index search is deterministic local software, and no live model provider is included. A possible LabSpace AI API is documented only as future architecture. JSON export is the portable backup format.
+Runtime edits are stored only in `data/labspace-indexer.sqlite`, which is created locally and excluded from Git. The sanitized DEMO-01 fixture is intentionally source-controlled so a clean clone includes the video room; unrelated local project state is not published. Spatial Index search is deterministic local software, and no live model provider is included. A possible LabSpace Atlas API is documented only as future architecture. JSON export is the portable backup format.

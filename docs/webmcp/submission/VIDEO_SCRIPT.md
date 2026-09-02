@@ -1,4 +1,4 @@
-# LabSpace AI Agent Twin — 2:40 demo script
+# LabSpace Atlas — 2:40 demo script
 
 Target length: **2:35–2:45**. Record the real website and browser-agent interaction; do not fake tool calls. Keep the pointer still during camera transitions.
 

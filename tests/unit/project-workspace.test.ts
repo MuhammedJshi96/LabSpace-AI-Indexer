@@ -90,7 +90,14 @@ describe("multi-laboratory project workspace", () => {
       },
     ];
     useEditorStore.getState().replaceProject(customProject);
-    expect(useEditorStore.getState().addAsset("benchtop-centrifuge")).toBeNull();
+    const manualEquipmentId = useEditorStore.getState().addAsset("benchtop-centrifuge");
+    expect(manualEquipmentId).not.toBeNull();
+    expect(
+      useEditorStore
+        .getState()
+        .project.rooms[0].scene.objects.find((object) => object.id === manualEquipmentId)?.position
+        .z,
+    ).toBe(0);
     useEditorStore.getState().addAsset("lab-bench", { x: 3000, y: 3000 });
     const objectId = useEditorStore
       .getState()

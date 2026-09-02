@@ -13,8 +13,8 @@ import {
 } from "../domain/inventory-organization";
 type EditorCommand = SceneCommand | OrganizationCommand;
 import {
+  alignBenchObjectToCurrentSupport,
   requiresBenchSupport,
-  snapBenchObjectToAvailableSupport,
   snapChairToDesk,
 } from "../domain/geometry";
 import { ensureProjectLayers, resolveLayerIdForObjectType } from "../domain/layers";
@@ -985,14 +985,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const state = get();
     const room = activeRoom(state.project);
     const now = new Date().toISOString();
-    const defaultElevation =
-      definition.connection === "bench"
-        ? 900
-        : ["wall-cabinet", "glass-wall-cabinet"].includes(definition.id)
-          ? 1400
-          : definition.id === "pegboard"
-            ? 1200
-            : 0;
+    const defaultElevation = ["wall-cabinet", "glass-wall-cabinet"].includes(definition.id)
+      ? 1400
+      : definition.id === "pegboard"
+        ? 1200
+        : 0;
     let object: SceneObject = {
       id: crypto.randomUUID(),
       indexCode: generateObjectIndexCode(
@@ -1027,17 +1024,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       zIndex: Math.max(0, ...room.scene.objects.map((entry) => entry.zIndex)) + 1,
     };
     if (state.snapEnabled) object = snapChairToDesk(room, object);
-    if (requiresBenchSupport(object)) {
-      const supported = snapBenchObjectToAvailableSupport(room, object);
-      if (!supported) {
-        state.pushToast(
-          `Add or clear space on a laboratory bench before placing ${definition.shortName.toLowerCase()}.`,
-          "error",
-        );
-        return null;
-      }
-      object = supported;
-    }
+    if (requiresBenchSupport(object)) object = alignBenchObjectToCurrentSupport(room, object);
     if (definition.objectType === "door" || definition.objectType === "window") {
       object.opening = transform.opening;
       const projection = findNearestWallProjection(
@@ -1377,14 +1364,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       (patch.position.x !== before.position.x || patch.position.y !== before.position.y)
     )
       after = snapChairToDesk(room, after);
-    if (requiresBenchSupport(after) && (patch.position || patch.rotation || patch.dimensions)) {
-      const supported = snapBenchObjectToAvailableSupport(room, after);
-      if (!supported) {
-        state.pushToast(`${after.name} needs a clear laboratory bench or table surface.`, "error");
-        return;
-      }
-      after = supported;
-    }
+    if (
+      requiresBenchSupport(after) &&
+      patch.position &&
+      (patch.position.x !== before.position.x || patch.position.y !== before.position.y)
+    )
+      after = alignBenchObjectToCurrentSupport(room, after);
     if (after.opening) {
       const resolved = resolveHostedOpening(after, room.scene.objects);
       if (resolved) after = { ...after, ...hostOpeningAtPoint(after, resolved) };

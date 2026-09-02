@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyCommand, revertCommand, type SceneCommand } from "../../src/domain/history";
 import {
+  alignBenchObjectToCurrentSupport,
   metresToMm,
   mmToMetres,
   objectBounds,
@@ -69,6 +70,29 @@ describe("millimetre geometry", () => {
         metadata: { overlapExemptObjectIds: [island.id] },
       }),
     ).toBe(false);
+  });
+
+  it("aligns equipment only to a worktop already beneath its footprint", () => {
+    const room = structuredClone(createSeedProject().rooms[0]);
+    const equipment = room.scene.objects.find(
+      (object) => object.assetDefinitionId === "analytical-balance",
+    )!;
+    const originalX = equipment.position.x;
+    const originalY = equipment.position.y;
+
+    const supported = alignBenchObjectToCurrentSupport(room, {
+      ...equipment,
+      position: { ...equipment.position, z: 0 },
+    });
+    expect(supported.position.x).toBe(originalX);
+    expect(supported.position.y).toBe(originalY);
+    expect(supported.position.z).toBeGreaterThan(0);
+
+    const manualFloorDrop = alignBenchObjectToCurrentSupport(room, {
+      ...equipment,
+      position: { x: 500, y: 500, z: supported.position.z },
+    });
+    expect(manualFloorDrop.position).toEqual({ x: 500, y: 500, z: 0 });
   });
 
   it("uses the rotated footprint for service islands and room-boundary checks", () => {

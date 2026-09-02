@@ -103,6 +103,8 @@ When implementing from a selected generated mock, treat that image as the source
 
 ## Durable editor reliability decisions
 
+- Manual equipment placement is literal: dragging, clicking, duplicating or editing a benchtop asset must never teleport it to the nearest bench. If its footprint already overlaps a valid work surface, align only its elevation to that surface; otherwise preserve the requested x/y at floor level and report the unsupported condition through placement review. Searching for another support surface is reserved for explicit WebMCP instructions such as “place on a bench/work surface.”
+
 - Judge workflows copied from the WebMCP inspector must explicitly require the page's `labspace_*` tools, forbid click/drag/form or browser-control fallbacks, begin with `labspace_get_context`, and stop with a clear connection message when the bridge is unavailable. Front-serviced equipment needs deterministic authored-front working-zone checks. Object-relative requests must be resolved from authored object fronts with both position and facing rotation; when the requested side is infeasible, return no candidate instead of silently placing the object on another side.
 
 - The shared placement validator checks conservative hinged-door opening envelopes (including double leaves, outward swing, wall rotation, and vertical clearance). Planning should avoid these areas; an audit reports obstructions without moving saved furniture. This is geometric planning evidence, never an egress certification. Agent-facing floor values use the user's 1–15 floor numbering, not stored zero-based indices.

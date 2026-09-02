@@ -288,6 +288,27 @@ export function findBenchSupport(
   return candidates[0] ?? null;
 }
 
+/**
+ * Align benchtop equipment only when its current footprint already overlaps a
+ * work surface. Unlike the agent-only placement resolver below, this helper
+ * never changes x/y or searches for a different bench.
+ */
+export function alignBenchObjectToCurrentSupport(
+  room: Room,
+  placed: SceneObject,
+  unsupportedElevationMm = 0,
+): SceneObject {
+  if (!requiresBenchSupport(placed)) return placed;
+  const support = findBenchSupport(room, placed);
+  return {
+    ...placed,
+    position: {
+      ...placed.position,
+      z: support?.elevationMm ?? unsupportedElevationMm,
+    },
+  };
+}
+
 export function snapBenchObjectToAvailableSupport(
   room: Room,
   placed: SceneObject,

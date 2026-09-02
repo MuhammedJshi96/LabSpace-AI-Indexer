@@ -51,7 +51,14 @@ async function executeTool<T>(page: Page, name: string, input: Record<string, un
   ) as Promise<T>;
 }
 
-test("presents one judge mission and exports bounded session proof", async ({ page }) => {
+test.beforeEach(async ({ request }) => {
+  const reset = await request.post("/api/testing/reset");
+  expect(reset.ok()).toBeTruthy();
+});
+
+test("presents the three-part judge demonstration and exports bounded session proof", async ({
+  page,
+}) => {
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await installModelContext(page);
   await page.goto("/");
@@ -74,13 +81,20 @@ test("presents one judge mission and exports bounded session proof", async ({ pa
     "aria-selected",
     "true",
   );
-  await expect(inspector.getByRole("heading", { name: "Ask. Prove. Decide." })).toBeVisible();
-  await expect(inspector.getByText("Exact shelf", { exact: true })).toBeVisible();
+  await expect(
+    inspector.getByRole("heading", { name: "Build. Stock. Find the work." }),
+  ).toBeVisible();
+  await expect(inspector.getByText("Ground evidence", { exact: true })).toBeVisible();
+  await expect(inspector.getByText("Create R-003 from one request", { exact: true })).toBeVisible();
+  await expect(inspector.getByText("Stage two enzyme records", { exact: true })).toBeVisible();
+  await expect(inspector.getByText("Ground a DPPH collection", { exact: true })).toBeVisible();
   await expect(inspector.getByRole("radio", { name: /Reviewed/i })).toHaveAttribute(
     "aria-checked",
     "true",
   );
-  await expect(inspector.getByRole("button", { name: "Copy + show workspace" })).toBeVisible();
+  await expect(
+    inspector.getByRole("button", { name: "Copy + show workspace" }).first(),
+  ).toBeVisible();
   if (process.env.LABSPACE_CAPTURE_UI === "1") {
     await page.screenshot({
       path: "test-results/webmcp-mission-control.png",
@@ -110,11 +124,11 @@ test("presents one judge mission and exports bounded session proof", async ({ pa
   expect(proof.summary).toMatchObject({ toolCalls: 3, uniqueToolsUsed: 3, errors: 0 });
   expect(proof.timeline).toHaveLength(3);
 
-  await inspector.getByRole("button", { name: "Copy + show workspace" }).click();
+  await inspector.getByRole("button", { name: "Copy + show workspace" }).first().click();
   await expect(inspector).toBeHidden();
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-    .toContain("Find Reference standards in DEMO-01");
+    .toContain("create a new room named Researcher Office, code R-003");
   const copiedPrompt = await page.evaluate(() => navigator.clipboard.readText());
   expect(copiedPrompt).toContain("Use only the LabSpace WebMCP tools");
   expect(copiedPrompt).toContain("Do not click, drag, type into forms");

@@ -1,5 +1,10 @@
 # LabSpace Atlas — 2:50 user–AI collaboration video
 
+> Superseded for the WebMCP final submission by
+> [FINAL_DEMO_SCRIPT_2026-09-03.md](FINAL_DEMO_SCRIPT_2026-09-03.md), which uses only `LAB-D-00`,
+> R-001 and R-002 as the prepared fixture and creates R-003 live. The material below is retained as
+> historical Build Week recording provenance and is not the current judge path.
+
 Target duration: **2 minutes 50 seconds**. The product demonstration is structured as evidence of how the user's laboratory expertise, GPT-5.6 in ChatGPT, and Codex worked together throughout the project.
 
 ## Central story

@@ -98,6 +98,7 @@ function ProjectDialog() {
   const switchRoom = useEditorStore((state) => state.switchRoom);
   const createLaboratory = useEditorStore((state) => state.createLaboratory);
   const createRoom = useEditorStore((state) => state.createRoom);
+  const deleteLaboratory = useEditorStore((state) => state.deleteLaboratory);
   const deleteRoom = useEditorStore((state) => state.deleteRoom);
   const duplicateRoom = useEditorStore((state) => state.duplicateRoom);
   const createDemoFromTemplate = useEditorStore((state) => state.createDemoFromTemplate);
@@ -115,6 +116,7 @@ function ProjectDialog() {
     | "create-laboratory"
     | "create-room"
     | "rename-laboratory"
+    | "delete-laboratory"
     | "rename-room"
   >(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -123,10 +125,22 @@ function ProjectDialog() {
   const [roomCode, setRoomCode] = useState("");
   const [laboratoryName, setLaboratoryName] = useState("");
   const [laboratoryCode, setLaboratoryCode] = useState("");
+  const [laboratoryDeleteCode, setLaboratoryDeleteCode] = useState("");
   const selectedLaboratory =
     project.laboratories.find((laboratory) => laboratory.id === selectedLaboratoryId) ??
     project.laboratories[0];
   const visibleRooms = project.rooms.filter((entry) => entry.roomKind !== "demo-template");
+  const selectedLaboratoryRooms = visibleRooms.filter(
+    (entry) => entry.laboratoryId === selectedLaboratory?.id,
+  );
+  const selectedLaboratoryInventoryCount = selectedLaboratoryRooms.reduce(
+    (total, entry) => total + entry.scene.inventoryItems.length,
+    0,
+  );
+  const selectedLaboratoryEquipmentCount = selectedLaboratoryRooms.reduce(
+    (total, entry) => total + entry.scene.equipmentRecords.length,
+    0,
+  );
 
   const closeWorkspaceForm = () => {
     setWorkspaceForm(null);
@@ -171,6 +185,16 @@ function ProjectDialog() {
     setWorkspaceForm("rename-room");
   };
 
+  const openDeleteLaboratory = (laboratoryId: string) => {
+    const laboratory = project.laboratories.find((entry) => entry.id === laboratoryId);
+    if (!laboratory) return;
+    setCreateMenuOpen(false);
+    setSelectedLaboratoryId(laboratory.id);
+    setEditingId(laboratory.id);
+    setLaboratoryDeleteCode("");
+    setWorkspaceForm("delete-laboratory");
+  };
+
   const persistWorkspaceUpdate = () => {
     window.setTimeout(() => void useEditorStore.getState().saveNow(), 0);
   };
@@ -209,7 +233,9 @@ function ProjectDialog() {
           ? "Create room"
           : workspaceForm === "rename-laboratory"
             ? "Rename laboratory"
-            : "Rename room";
+            : workspaceForm === "delete-laboratory"
+              ? "Delete laboratory"
+              : "Rename room";
 
   const submitWorkspaceForm = () => {
     if (workspaceForm === "rename-project") {
@@ -250,6 +276,26 @@ function ProjectDialog() {
     }
     if (workspaceForm === "rename-laboratory" && editingId) {
       if (!renameLaboratory(editingId, laboratoryName, laboratoryCode)) return;
+      persistWorkspaceUpdate();
+      closeWorkspaceForm();
+      return;
+    }
+    if (workspaceForm === "delete-laboratory" && editingId) {
+      const laboratory = project.laboratories.find((entry) => entry.id === editingId);
+      if (!laboratory) {
+        pushToast("That laboratory is no longer available.", "error");
+        closeWorkspaceForm();
+        return;
+      }
+      if (laboratoryDeleteCode.trim().toLocaleUpperCase() !== laboratory.code.toLocaleUpperCase()) {
+        pushToast(`Enter ${laboratory.code} to confirm deletion.`, "error");
+        return;
+      }
+      if (!deleteLaboratory(editingId)) return;
+      const fallbackLaboratory = useEditorStore
+        .getState()
+        .project.laboratories.find((entry) => entry.id !== editingId);
+      if (fallbackLaboratory) setSelectedLaboratoryId(fallbackLaboratory.id);
       persistWorkspaceUpdate();
       closeWorkspaceForm();
       return;
@@ -446,12 +492,26 @@ function ProjectDialog() {
             spatial indexes.
           </p>
           {selectedLaboratory && (
-            <button
-              className="workspace-quiet-action"
-              onClick={() => openRenameLaboratory(selectedLaboratory.id)}
-            >
-              <PencilSimple size={16} /> Rename laboratory
-            </button>
+            <div className="workspace-laboratory-actions">
+              <button
+                className="workspace-quiet-action"
+                onClick={() => openRenameLaboratory(selectedLaboratory.id)}
+              >
+                <PencilSimple size={16} /> Rename laboratory
+              </button>
+              <button
+                className="workspace-danger-action"
+                disabled={project.laboratories.length <= 1}
+                onClick={() => openDeleteLaboratory(selectedLaboratory.id)}
+                title={
+                  project.laboratories.length <= 1
+                    ? "Create another laboratory before deleting the final laboratory"
+                    : `Delete ${selectedLaboratory.name} and every room it contains`
+                }
+              >
+                <Trash size={16} /> Delete laboratory
+              </button>
+            </div>
           )}
           <a href="/facility">
             <GridFour size={17} /> Open facility map
@@ -584,12 +644,80 @@ function ProjectDialog() {
                   </div>
                 </>
               )}
+              {workspaceForm === "delete-laboratory" && selectedLaboratory && (
+                <div className="workspace-delete-laboratory">
+                  <section className="workspace-delete-summary">
+                    <span aria-hidden="true">
+                      <Trash size={23} weight="duotone" />
+                    </span>
+                    <div>
+                      <strong>Delete {selectedLaboratory.name} completely?</strong>
+                      <p>
+                        This removes every room, layout, spatial record, inventory entry, and
+                        equipment record contained in <code>{selectedLaboratory.code}</code>.
+                      </p>
+                    </div>
+                  </section>
+                  <dl className="workspace-delete-counts">
+                    <div>
+                      <dt>Rooms</dt>
+                      <dd>{selectedLaboratoryRooms.length}</dd>
+                    </div>
+                    <div>
+                      <dt>Inventory</dt>
+                      <dd>{selectedLaboratoryInventoryCount}</dd>
+                    </div>
+                    <div>
+                      <dt>Equipment</dt>
+                      <dd>{selectedLaboratoryEquipmentCount}</dd>
+                    </div>
+                  </dl>
+                  <p className="workspace-delete-warning">
+                    This action cannot be undone. Export the project first if you need a portable
+                    rollback copy.
+                  </p>
+                  <label className="dialog-field">
+                    <span>
+                      Enter <code>{selectedLaboratory.code}</code> to confirm
+                    </span>
+                    <input
+                      autoFocus
+                      value={laboratoryDeleteCode}
+                      onChange={(event) => setLaboratoryDeleteCode(event.target.value)}
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
             <footer>
               <button onClick={closeWorkspaceForm}>Cancel</button>
-              <button className="primary-action" onClick={submitWorkspaceForm}>
-                {workspaceForm.startsWith("create") ? <Plus size={17} /> : <Check size={17} />}
-                {workspaceForm.startsWith("create") ? "Create" : "Save changes"}
+              <button
+                className={
+                  workspaceForm === "delete-laboratory"
+                    ? "workspace-danger-primary"
+                    : "primary-action"
+                }
+                onClick={submitWorkspaceForm}
+                disabled={
+                  workspaceForm === "delete-laboratory" &&
+                  laboratoryDeleteCode.trim().toLocaleUpperCase() !==
+                    selectedLaboratory?.code.toLocaleUpperCase()
+                }
+              >
+                {workspaceForm === "delete-laboratory" ? (
+                  <Trash size={17} />
+                ) : workspaceForm.startsWith("create") ? (
+                  <Plus size={17} />
+                ) : (
+                  <Check size={17} />
+                )}
+                {workspaceForm === "delete-laboratory"
+                  ? "Delete laboratory"
+                  : workspaceForm.startsWith("create")
+                    ? "Create"
+                    : "Save changes"}
               </button>
             </footer>
           </section>

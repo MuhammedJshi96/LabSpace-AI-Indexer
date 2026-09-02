@@ -11183,6 +11183,44 @@ body:has(#procedural-catalog-capture) #root {
   line-height: 1.55;
 }
 
+.workspace-laboratory-actions {
+  display: grid;
+  width: 100%;
+  gap: 7px;
+}
+
+.workspace-laboratory-actions > button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.workspace-danger-action {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  color: #9b3841;
+  font-size: 12px;
+  font-weight: 740;
+  background: #fffafa;
+  border: 1px solid #e6bdc1;
+  border-radius: 6px;
+}
+
+.workspace-danger-action:hover:not(:disabled) {
+  color: #812b33;
+  background: #fff1f2;
+  border-color: #d99ca2;
+}
+
+.workspace-danger-action:disabled {
+  color: #84928f;
+  background: #f5f7f6;
+  border-color: #dce3e1;
+  cursor: not-allowed;
+}
+
 .project-selection-card > a {
   width: 100%;
   margin-top: auto;
@@ -11271,6 +11309,85 @@ body:has(#procedural-catalog-capture) #root {
   border-radius: 6px;
 }
 
+.workspace-delete-laboratory {
+  display: grid;
+  gap: 13px;
+}
+
+.workspace-delete-summary {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  padding: 13px;
+  color: #65272d;
+  background: #fff7f7;
+  border: 1px solid #ecc8cb;
+  border-radius: 8px;
+}
+
+.workspace-delete-summary > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: #aa3c45;
+  background: #fff;
+  border: 1px solid #e9c3c7;
+  border-radius: 50%;
+}
+
+.workspace-delete-summary strong {
+  font-size: 14px;
+}
+
+.workspace-delete-summary p,
+.workspace-delete-warning {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.workspace-delete-summary code,
+.workspace-delete-laboratory .dialog-field code {
+  color: inherit;
+  font-family: Bahnschrift, Consolas, monospace;
+  font-size: inherit;
+}
+
+.workspace-delete-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+}
+
+.workspace-delete-counts > div {
+  padding: 9px 10px;
+  background: #f7f9f8;
+  border: 1px solid #dce5e2;
+  border-radius: 6px;
+}
+
+.workspace-delete-counts dt {
+  color: #71817d;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.workspace-delete-counts dd {
+  margin: 3px 0 0;
+  color: #243e39;
+  font-size: 16px;
+  font-weight: 760;
+}
+
+.workspace-delete-warning {
+  color: #7d5559;
+}
+
 .workspace-first-room-fields {
   margin: 5px 0 0;
   padding: 12px 12px 3px;
@@ -11315,6 +11432,22 @@ body:has(#procedural-catalog-capture) #root {
   color: #fff;
   background: #087d70;
   border-color: #06685e;
+}
+
+.workspace-subdialog > footer .workspace-danger-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
+  background: #a83842;
+  border-color: #8e2d36;
+}
+
+.workspace-subdialog > footer .workspace-danger-primary:disabled {
+  color: #8b9996;
+  background: #e9eeec;
+  border-color: #d5ddda;
+  cursor: not-allowed;
 }
 
 /* Keep the Favorites count subordinate to the label and safely inside its tab. */

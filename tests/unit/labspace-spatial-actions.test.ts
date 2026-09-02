@@ -201,10 +201,10 @@ describe("LabSpace room readiness audit", () => {
     expect(project).toEqual(before);
   });
 
-  it("keeps the published DEMO-01 starter ready for a fresh judge session", () => {
+  it("keeps the published R-001 analytical room ready for a fresh judge session", () => {
     const project = createPublicShowcaseProject();
 
-    const result = auditRoom({ roomCode: "DEMO-01" }, () => project);
+    const result = auditRoom({ roomCode: "R-001" }, () => project);
 
     expect(result.status).toBe("ready");
     expect(result.issues).toEqual([]);
@@ -218,26 +218,24 @@ describe("LabSpace room readiness audit", () => {
     });
   });
 
-  it("detects the awkward DEMO-01 service-face arrangement that the old audit missed", () => {
+  it("detects the authored R-002 biosafety service-face obstruction", () => {
     const project = createPublicShowcaseProject();
-    const room = project.rooms.find((entry) => entry.code === "DEMO-01")!;
+    const room = project.rooms.find((entry) => entry.code === "R-002")!;
     const biosafety = room.scene.objects.find(
       (entry) => entry.assetDefinitionId === "biosafety-cabinet",
     )!;
-    const chair = room.scene.objects.find(
-      (entry) => entry.assetDefinitionId === "laboratory-chair",
+    const cornerBench = room.scene.objects.find(
+      (entry) => entry.assetDefinitionId === "corner-lab-bench",
     )!;
-    biosafety.rotation.z = 270;
-    chair.rotation.z = 90;
 
-    const result = auditRoom({ roomCode: "DEMO-01" }, () => project);
+    const result = auditRoom({ roomCode: "R-002" }, () => project);
 
     expect(result.status).toBe("attention");
     expect(result.checks.frontWorkingZonesClear).toBe(false);
     expect(result.issues).toContainEqual(
       expect.objectContaining({
         title: "Front working zone obstructed",
-        objectIds: expect.arrayContaining([biosafety.id]),
+        objectIds: expect.arrayContaining([biosafety.id, cornerBench.id]),
       }),
     );
   });

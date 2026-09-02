@@ -80,6 +80,6 @@ safety-approved walking route, reservation, stock transaction, or permission to 
 
 ## Published room set
 
-The public session seed is the explicitly exported local project in `server/public-showcase-project.json`: Laboratory 1 with DEMO-01, DEMO-02, R809, R808 and 812. It preserves local room geometry, records, IDs and finishes. The developer SQLite database is not published or changed.
+The public session seed is the explicitly filtered local export in `server/public-showcase-project.json`: `LAB-D-00` with R-001 Analytical Chemistry Lab and R-002 Biological Assay room. It preserves those rooms' geometry, records, IDs and finishes while deliberately excluding R-003 so the room can be created live during judging. The developer SQLite database is not published or changed.
 
 New public sessions start from this snapshot and stay isolated. The local default seed and test resets remain separate. Public edits are still temporary; export JSON to keep them across service restarts. The snapshot export script makes an ignored local backup and refuses obvious private path/credential/email patterns for review.

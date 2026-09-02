@@ -28,7 +28,7 @@ No credential belongs in this repository.
 
 ## Public judge-session behavior
 
-With `LABSPACE_PUBLIC_DEMO=1`, first-time visitors adopt their current server-session project and named room versions into IndexedDB. If no prior server session exists, the approved `server/public-showcase-project.json` provides the initial project. This release corrects only the three owner-approved DEMO-01 readiness transforms in that starter snapshot; it does not replace existing browser workspaces, local SQLite, or test seeds.
+With `LABSPACE_PUBLIC_DEMO=1`, first-time visitors adopt their current server-session project and named room versions into IndexedDB. If no prior server session exists, the approved `server/public-showcase-project.json` provides the initial project. The final submission fixture is a privacy-checked, laboratory-filtered export containing only `LAB-D-00`, R-001 and R-002; R-003 is created live. It does not replace existing browser workspaces, local SQLite, or test seeds.
 
 Once a browser workspace exists, it is the authoritative save. Loads do not depend on project APIs and never merge with or replace it from the server snapshot. Project saves resolve only after an atomic IndexedDB transaction completes. Named versions use the same database. Render restarts, deployments, four-hour server-session expiry and cookie removal do not reset browser saves. Database names are stable across build revisions. Revision checks prevent stale tabs from overwriting newer saves. Invalid saved data is not overwritten with defaults; quota/permission failures show an actionable error and leave current unsaved work exportable.
 

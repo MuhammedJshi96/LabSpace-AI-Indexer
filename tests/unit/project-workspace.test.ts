@@ -64,18 +64,28 @@ describe("multi-laboratory project workspace", () => {
       code: "R211",
     });
 
-    state.switchRoom(microscopy.roomIds[0]);
-    expect(useEditorStore.getState().project.activeRoomId).toBe(microscopy.roomIds[0]);
+    const microscopySecondRoomId = state.createRoom({
+      laboratoryId: laboratoryId!,
+      name: "Microscope preparation",
+      code: "MIC-R02",
+    });
+    expect(microscopySecondRoomId).toBeTruthy();
+    useEditorStore.getState().addInventoryItem(null, "Objective oil");
+    const microscopyRoomIds = useEditorStore
+      .getState()
+      .project.rooms.filter((room) => room.laboratoryId === laboratoryId)
+      .map((room) => room.id);
+    expect(microscopyRoomIds).toHaveLength(2);
 
-    expect(useEditorStore.getState().deleteRoom(microscopy.roomIds[0])).toBe(true);
+    useEditorStore.getState().switchRoom(secondRoomId!);
+    expect(useEditorStore.getState().deleteLaboratory(laboratoryId!)).toBe(true);
     state = useEditorStore.getState();
-    expect(state.project.rooms.some((room) => room.id === microscopy.roomIds[0])).toBe(false);
-    expect(
-      state.project.laboratories
-        .find((laboratory) => laboratory.id === laboratoryId)
-        ?.roomIds.includes(microscopy.roomIds[0]),
-    ).toBe(false);
-    expect(state.project.activeRoomId).not.toBe(microscopy.roomIds[0]);
+    expect(state.project.laboratories.some((laboratory) => laboratory.id === laboratoryId)).toBe(
+      false,
+    );
+    expect(state.project.rooms.some((room) => microscopyRoomIds.includes(room.id))).toBe(false);
+    expect(state.project.activeRoomId).toBe(secondRoomId);
+    expect(state.deleteLaboratory(initial.laboratories[0].id)).toBe(false);
 
     const customProject = createBlankProject();
     customProject.rooms[0].scene.layers = [

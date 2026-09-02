@@ -1,159 +1,101 @@
-# LabSpace Atlas — judge guide
+# LabSpace Atlas — final WebMCP judge guide
 
-**WebMCP for the physical laboratory.** Start with the signature proof in about 60 seconds, then
-continue into the complete three-minute challenge flow.
+**WebMCP for the physical laboratory.** The final demonstration is one connected story across the
+public `LAB-D-00` workspace. R-001 and R-002 are authored evidence; R-003 is created live.
 
 ## Open
 
-- Live URL: [https://labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com). The free instance can take up to about a minute to wake after inactivity.
+- Live: [https://labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com).
 - Local fallback: `npm ci`, `npm run dev`, then open `http://127.0.0.1:3004/`.
-- Browser: ChatGPT's WebMCP-capable in-app browser, or Chrome with `chrome://flags/#enable-webmcp-testing` enabled and relaunched.
-- Select **Demo room** if DEMO-01 is not already active.
+- Use a WebMCP-capable browser-agent conversation. LabSpace does not contain a second chatbot.
+- Confirm the workspace shows `LAB-D-00`, R-001 Analytical Chemistry Lab and R-002 Biological
+  Assay room. A fresh judge session should not contain R-003 yet.
 
-## 60-second signature proof
+The public service stores an independent browser workspace. Wait for **Saved in this browser**
+before navigating away. Existing judge workspaces are not overwritten by deployments; JSON export
+remains the portable backup.
 
-1. Open the **WebMCP** status control in the LabSpace header.
-2. Confirm **24 tools ready**. The execution boundary starts in **Reviewed**.
-3. In **Judge mission**, choose **Copy + show workspace** or its shorter voice version. The Inspector
-   closes so the exact 2D/3D evidence remains unobstructed; paste or speak the request in the
-   browser-agent conversation controlling this page. The copied request explicitly says to use
-   only the page's `labspace_*` WebMCP tools. It forbids click/drag/computer-control fallback and
-   asks the agent to report a missing connection instead.
-4. Watch LabSpace ground the request in canonical tools, focus the exact room/storage evidence, and
-   retain the human decision boundary.
-5. Open **Evidence** to expand the actual tool inputs/results. Select **Export proof** to download a
-   bounded JSON record containing the workspace context, tool registrations, execution mode,
-   outcome counts, and chronological event trail.
+## Inspector and human boundary
 
-The export is intentionally session evidence—not hidden reasoning, a certified audit log, or an
-approved laboratory protocol. Ordinary interface clicks are not mislabeled as agent activity.
+Open **WebMCP** in the product header.
 
-## Inspect the complete integration
+1. Confirm **24 tools ready**.
+2. Confirm **Reviewed** is selected. Every mutation stops for human approval.
+3. Use **Fast Draft** only for the first room-building segment if the presenter wants the complete,
+   validated additive R-003 blueprint to apply without a second approval. The mode is session-only,
+   visible, and cannot be selected by a tool argument.
+4. Choose a prompt's **Copy + show workspace** or **Voice-ready** action. The Inspector closes so
+   the normal 2D/3D result remains visible.
+5. Reopen **Evidence** after each segment to show exact tool names and bounded input/result records.
 
-1. Open **Tools** to see all twenty-four live registrations and their safety modes.
-2. Open **Setup**, then select **Run read-only check**. LabSpace invokes `labspace_get_context`
-   through the browser's `document.modelContext.executeTool` interface.
-3. Return to **Evidence** and expand the resulting entry to show the actual tool name, `{}` input,
-   and compact project/room/count result.
-4. Expand **More judge workflows** in **Judge mission** to copy a complete build, inventory,
-   collection, annex, exact-evidence, audit, or resize request.
+The copied prompts require `labspace_*` WebMCP tools and explicitly prohibit silent fallback to
+clicks, drags or computer control. If the tools are unavailable, the browser agent must stop.
 
-This is the quickest judge-visible proof that WebMCP is active. The panel reports bounded tool evidence only; it does not expose chain-of-thought or label ordinary researcher clicks as agent activity.
+## Final three-part demonstration
 
-Enter the prompts below in the ChatGPT/browser-agent conversation controlling this page—not in a separate LabSpace chat box. The open page exposes its tools to that conversation through WebMCP; the header inspector makes the resulting calls visible in LabSpace.
+### 1. Build R-003
 
-Chrome DevTools is intentionally different: it is a manual debugger that executes one selected tool with JSON arguments. For natural-language workflows in Chrome, use Google's Model Context Tool Inspector extension; for the simplest judge flow, use ChatGPT's in-app browser.
+Use the Inspector's **Create R-003 from one request** prompt. It asks the agent to:
 
-The public service saves an independent workspace in each browser. Wait for **Saved in this browser** before closing the tab: refreshes and site deployments retain your rooms. Other judges' browsers cannot alter your project. Export JSON before clearing site data or moving to another browser/device; this is not cloud sync.
+- create Researcher Office `R-003` in the currently opened `LAB-D-00` laboratory;
+- construct a 7,600 × 5,000 mm rectangular shell: exactly 38 m² and four connected walls;
+- host one centered inward single door on wall 1;
+- host one wide three-panel window on wall 3 and another on wall 4;
+- place three office desks, pair one chair to each desk, and add one locker, fire extinguisher and
+  waste bin;
+- stage or Fast-Draft the blueprint, then run `labspace_audit_room`.
 
-## Signature room-creation prompt
+Observed acceptance result: 4 walls, 3 hosted openings and 9 movable/furnishing assets. All twelve
+requested catalog assets place successfully; every chair reports workstation pairing.
 
-From any editable room, ask:
+### 2. Stage exact inventory
 
-> Create an empty room in the current laboratory named Office for Students, room number 812. Give it a six-wall enclosure of about 32 square metres with four desks, four chairs, one cabinet, one door, and one observation window.
+Use **Stage two enzyme records**. The proposed R-002 records are:
 
-Expected in **Reviewed**: LabSpace first shows a room-creation proposal; the human selects **Create room**. The agent then discovers exact catalog IDs, calculates a non-crossing six-wall shell, hosts the door/window on real wall segments, pairs each chair with one desk, and faces perimeter furniture into the room. The complete blueprint appears as a second review before commit.
+- Alpha-glucosidase enzyme — 2 bottles — expiry `2026-10-06`;
+- Lipase enzyme — 1 bottle — expiry `2026-10-16`.
 
-Expected in **Fast Draft**: the validated blank room and its complete first blueprint may apply through the bounded additive path; the blueprint is one undoable history update. The mode remains visible in the Inspector and every automatic decision is recorded. A reload returns to Reviewed.
+The records stay unassigned because the request contains no canonical cabinet/shelf ID. The visible
+review card is the proof: nothing is created until the researcher selects **Approve inventory**.
+Wait for **Saved in this browser** before starting the next segment.
 
-This is a deliberately narrow capability, not silent general editing. The agent has no mode argument. An incomplete initial blueprint, a second furnishing request, any existing-room plan, object movement or resize, inventory/stock, and destructive changes still open **Preview · not saved** and require the researcher to approve or cancel them. Bench-connected instruments such as the rotary evaporator also snap to the supporting worktop elevation rather than the floor.
+### 3. Find the stock and the work surface
 
-## Voice-ready complex build proof
+Use **Ground a DPPH collection**. The agent searches and inspects:
 
-Use the **Build a complete room** workflow in the Inspector, or speak its Bio-001 request in the
-browser-agent conversation. The host conversation supplies the voice transcript; LabSpace receives
-the same text intent and exposes the same structured tools as a typed request.
+- DPPH Reagent;
+- Methanol Solvent 99.9%;
+- 100 uL and 200 uL Pipette tips;
+- the R-002 Laboratory pipette holder;
+- the R-002 Automated microplate reader;
+- Chloroform, which must remain explicitly missing.
 
-Expected accepted geometry: a 44 m² four-wall main room on Floor 5, centered inward double door,
-back/left three-pane windows, workstation-aware chair pairing, and all requested main-room assets;
-then a separately reviewed 20 m² connected annex with an inward single door, three lockers, and one
-freezer. The final deterministic audit reports the two closed floor areas independently. The full
-observed result is recorded in
-[WEBMCP_SIGNATURE_WORKFLOWS_2026-09-02.md](../qa/WEBMCP_SIGNATURE_WORKFLOWS_2026-09-02.md).
+`labspace_assess_workflow` scopes equipment and workspace ranking to R-002 while inventory evidence
+can remain cross-room. After record review, `labspace_start_collection` creates Next/Previous stops
+and ends by highlighting the recommended authored work surface. It does not consume stock or claim
+an approved protocol, substitution, suitability determination or safety-approved route.
 
-## Human-reviewed inventory prompt
+## Optional LLE stock proof
 
-Open **Inventory**, then ask:
+Expand **More judge workflows** and choose **Check an LLE solvent set**. The fixture contains exact
+records for methanol, ethyl acetate, n-hexane and n-butanol. Chloroform remains absent. This is a
+strong short proof that LabSpace reports negative evidence instead of hallucinating a substitute.
 
-> Find Shelf 01 in DEMO-01 and propose two boxes of pipette tips there, owned by Shared. Stage the inventory plan for my review, but do not approve it.
+## Evidence export
 
-Expected: WebMCP returns the exact canonical location ID/path, validates the new record, and opens the researcher review. Inventory does not change until **Approve inventory** is selected in LabSpace.
+The Inspector's **Export proof** downloads bounded session evidence: workspace, registered tool
+surface, human execution policy, compact tool inputs/results and the chronological activity trail.
+It is not chain-of-thought, a certified audit, or an approved laboratory procedure.
 
-## Exact-evidence and move prompt
+## Automated acceptance
 
-> Use only the LabSpace `labspace_*` WebMCP tools; do not use UI automation. Find the BÜCHI rotary evaporator and the exact storage location of its flask set, then focus the room on that evidence. Next, check whether moving the wire-basket laboratory trolley to X 4.318 m, Y 0.008 m at −180° is valid. If it is blocked, explain the recorded conflicts, find three valid alternatives near that target, choose the best grounded candidate, and stage it for my review. Do not approve anything for me.
-
-For object-relative language such as “in front of the laboratory chair,” pass `relativeTo` to
-`labspace_find_valid_placements`. LabSpace interprets the relation from the reference object's
-authored front, checks the moving asset's front working zone, and returns the position and facing
-rotation together. Screen axes and the current camera are never treated as semantic directions.
-
-## Expected visible workflow
-
-1. The agent discovers twenty-four structured LabSpace tools.
-2. Search/inspect returns canonical BÜCHI and flask-set records, including room, index code, and human storage trail.
-3. Focus switches the normal LabSpace scene and evidence inspector to the exact record and camera context.
-4. The first trolley target is rejected by deterministic room-boundary/collision evidence. Nothing moves and no history entry is created.
-5. LabSpace searches the actual room geometry and returns three diverse ranked alternatives, each already passing the supported deterministic rules.
-6. The chosen candidate appears as a **Preview · not saved** move.
-7. LabSpace shows the researcher the current and proposed position with **Cancel** and **Approve move**.
-8. Choose **Cancel** to prove exact reversal, or stage again and choose **Approve move** to create one normal undoable history entry and autosave.
-9. Open the **WebMCP** inspector to see the exact tool names, bounded inputs, and structured results without hidden reasoning.
-
-## Tool sequence
-
-```text
-labspace_get_context
-labspace_audit_room
-labspace_create_room
-human: Create room or Cancel (Reviewed default)
-labspace_search_assets
-labspace_plan_room
-labspace_plan_annex
-labspace_stage_room_plan
-labspace_stage_annex_plan
-human: Approve room plan or Cancel preview (Reviewed default)
-Fast Draft only: validated additive room + complete pristine first build with Undo
-
-labspace_inventory_locations
-labspace_plan_inventory
-labspace_stage_inventory_plan
-human: Approve inventory or Cancel preview
-
-labspace_assess_workflow
-labspace_start_collection
-labspace_collection_step  (Next / Previous / final workspace)
-human: Confirm individual checkpoints; no stock transaction
-
-labspace_get_context
-labspace_search_records
-labspace_inspect_record
-labspace_focus_record
-labspace_validate_object_move  (blocked target)
-labspace_find_valid_placements (three ranked alternatives)
-labspace_stage_object_move
-human: Approve move or Cancel
-
-labspace_validate_resize
-labspace_stage_resize
-human: Approve resize or Cancel preview
+```powershell
+npm run typecheck
+npx vitest run tests/unit/project-workspace.test.ts
+npx playwright test tests/e2e/submission-rehearsal.spec.ts
+npx playwright test tests/e2e/workspace-polish.spec.ts tests/e2e/webmcp-mission-control.spec.ts
 ```
 
-The agent cannot select Fast Draft or approve its own proposal. No WebMCP tool can reset, delete, import, or perform an unrestricted project save. `labspace_create_room` is restricted to one blank room, and its initial-build capability cannot move or overwrite existing content.
-
-## Verify registration
-
-```js
-const tools = await document.modelContext.getTools();
-tools.map((tool) => tool.name);
-```
-
-Expected: exactly twenty-four unique `labspace_*` tools on `/`, `/digital-twin`, and `/inventory`, and none on `/asset-preview`, `/facility`, or `/procedural-asset-capture`.
-
-## What changed during the challenge
-
-The annotated `pre-webmcp-2026-08-27` tag marks the verified pre-existing LabSpace boundary. All browser-agent tools, shared action adapters, bounded initial-room creation, later-change review, Agent Activity, tool contracts, evals, and independent WebMCP E2E coverage appear after that tag. The final audited evidence tag is `webmcp-submission-v1.3`; the earlier submission tags preserve historical release candidates.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md), [CHALLENGE_EVIDENCE.md](CHALLENGE_EVIDENCE.md),
-[LOCAL_TESTING.md](LOCAL_TESTING.md), and the
-[September 2 signature-workflow acceptance](../qa/WEBMCP_SIGNATURE_WORKFLOWS_2026-09-02.md).
+`submission-rehearsal.spec.ts` imports the public fixture into a disposable e2e SQLite database,
+runs all three segments, verifies the LLE missing-stock case and never writes the user's local or
+online laboratory.

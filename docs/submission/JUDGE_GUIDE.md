@@ -15,35 +15,33 @@ npm run dev
 
 Open <http://127.0.0.1:3004/>. A clean clone opens on **Empty lab plan**. No login is required.
 
-## Open the included video-showcase room
+## Open the final submission workspace
 
-1. Select **Demo room** in the application header.
-2. Wait for the status bar to report that changes are saved.
+The public judge fixture opens on **Lab Space AI Laboratory – DEMO Build** (`LAB-D-00`) with two
+authored rooms: R-001 Analytical Chemistry Lab and R-002 Biological Assay room. It contains 55
+scene objects, 27 inventory records, 15 equipment records and 169 exact storage locations. R-003 is
+deliberately absent because it is created live in the final demonstration.
 
-The repository includes the user's complete, sanitized **DEMO-01** presentation room: 50 total scene objects, including 30 placed furniture/storage/equipment/safety objects, 10 inventory records, 10 equipment records, and 15 exact storage locations. Room context is disabled by default. Reloading preserves the room rather than reseeding or rearranging it.
-
-The room identity workspace also exposes **Create demo from template** as an optional copy/reset utility. That immutable factory source produces a separate editable room and never overwrites DEMO-01. It does not represent a reduced website build; all application modules and assets remain available in the same repository.
+Wait for the status bar to report **Saved in this browser** before moving between segments.
 
 ## Recommended evaluation flow
 
-1. Inspect the synchronized 2D/3D room in **Layout Editor**.
-2. Open **Spatial Index** from the centered product navigation.
-3. In **Spatial Index Finder**, search:
-
-   > rotary evaporator
-
-4. Select **BÜCHI rotary evaporator R-300** and confirm that the live room focuses the exact equipment record.
-5. Select **Rotary evaporator flask set** from the same results. The right inspector should show **North reagent cabinet / Drawer 02**, its canonical location code, evidence photograph, and a controllable access preview.
-6. Return to **Layout Editor**, move the rotary evaporator in 2D, and confirm the synchronized 3D camera keeps the user's orbit while the object updates.
-7. In a temporary room copy, move it into a visibly conflicting position or use the automated competition test fixture.
-8. Confirm that the 2D selection status and **Warnings** tab report the deterministic spatial conflict and identify the affected object. Placement warnings are planning guidance, not safety certification.
-9. Return to **Spatial Index**, search `BÜCHI rotary evaporator`, select the result, and confirm that its exact record and scene focus remain coherent with the moved room object.
+1. Open **WebMCP** and confirm **24 tools ready** plus the visible Reviewed/Fast Draft boundary.
+2. Run **Create R-003 from one request** to build and audit the 38 m² Researcher Office with its
+   door, two three-panel windows, three paired desk/chair stations, locker, extinguisher and bin.
+3. Run **Stage two enzyme records**. Approve the exact alpha-glucosidase and lipase entries in the
+   visible human review card; neither record invents a storage assignment.
+4. Run **Ground a DPPH collection**. LabSpace grounds DPPH reagent, methanol, both tip sizes,
+   pipettes and the plate reader, keeps chloroform explicitly missing, then ends the reviewed
+   collection guide at a real R-002 work surface.
+5. Reopen **Evidence** and export the bounded WebMCP session proof.
 
 ## Additional evidence scenarios
 
-- Choose **Alerts** to inspect the service-due vacuum cold-trap station.
-- Search `unassigned` or use the Inventory view to inspect the deliberately unassigned buffer stock without fabricating a cabinet.
-- Inventory, Equipment, Locations, and Alerts in the left rail expose the same canonical project index used by the Finder.
+- Expand **More judge workflows** and run the LLE solvent check: methanol, ethyl acetate,
+  n-hexane and n-butanol resolve; chloroform remains absent.
+- Use Spatial Index result selection to focus exact cabinets, drawers, shelves and equipment.
+- Inventory, Equipment, Locations and Alerts expose the same canonical project index.
 
 ## Verification
 
@@ -58,8 +56,12 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The primary automated competition flow is in `tests/e2e/build-week-demo.spec.ts`.
+The final automated competition flow is in `tests/e2e/submission-rehearsal.spec.ts`.
 
 ## Data and privacy
 
-Runtime edits are stored only in `data/labspace-indexer.sqlite`, which is created locally and excluded from Git. The sanitized DEMO-01 fixture is intentionally source-controlled so a clean clone includes the video room; unrelated local project state is not published. Spatial Index search is deterministic local software, and no live model provider is included. A possible LabSpace Atlas API is documented only as future architecture. JSON export is the portable backup format.
+Runtime edits are stored only in `data/labspace-indexer.sqlite`, which is created locally and excluded
+from Git. The source-controlled public fixture is a privacy-checked export filtered to `LAB-D-00`;
+unrelated local project state is not published. Spatial Index search is deterministic local software,
+and no live model provider is included. JSON export is the portable backup format. The detailed final
+WebMCP flow is in [the judge guide](../webmcp/JUDGE_GUIDE.md).

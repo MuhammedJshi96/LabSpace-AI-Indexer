@@ -785,6 +785,20 @@
   border-radius: 8px;
   box-shadow: 0 8px 22px rgba(6, 60, 53, 0.055);
 }
+.webmcp-demo-missions {
+  display: grid;
+  gap: 9px;
+  margin: 12px 14px 0;
+}
+.webmcp-demo-missions .webmcp-signature-card {
+  margin: 0;
+}
+.webmcp-demo-missions .webmcp-signature-card:nth-child(2) {
+  border-left-color: #459f91;
+}
+.webmcp-demo-missions .webmcp-signature-card:nth-child(3) {
+  border-left-color: var(--lab-enamel);
+}
 .webmcp-signature-card {
   display: grid;
   gap: 9px;
@@ -828,6 +842,8 @@
   font-weight: 750;
 }
 .webmcp-signature-card > p {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
   padding: 10px 11px;
   color: var(--ink-secondary);
@@ -835,6 +851,8 @@
   border-left: 2px solid var(--stainless);
   font-size: 12px;
   line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 .webmcp-signature-card > small {
   color: var(--muted);

@@ -12,7 +12,7 @@
 
 **WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can create and activate a genuinely blank room, infer its building floor, calculate a rectangular or multi-wall polygon shell, host doors and windows on exact wall segments, pair chairs with workstations, orient perimeter furniture inward, and place bench equipment on real support surfaces. It can also search exact physical records, focus the real 2D/3D workspace, validate equipment moves, and propose project inventory at canonical locations.
 
-**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — open **Demo room** for the preserved DEMO-01 showcase. The free instance can take up to about a minute to wake after inactivity.
+**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — the clean public workspace opens in **Lab Space AI Laboratory – DEMO Build (`LAB-D-00`)** with authored rooms **R-001** and **R-002**. The judged build creates **R-003** live. The free instance can take up to about a minute to wake after inactivity.
 
 **Measured proof, not a speed fantasy:** a repeated same-outcome browser benchmark passed 140/140
 checks and reduced direct operations from 54 to 12 across exact-location, reviewed inventory, and
@@ -23,19 +23,24 @@ The trust boundary is human-controlled and risk-based. Every application session
 
 ### See WebMCP working
 
-Open the **WebMCP** status control in the LabSpace header. The Inspector opens on one
-**60-second judge mission** rather than a tool wall:
+Open the **WebMCP** status control in the LabSpace header. The Inspector opens on a connected
+three-part judge demonstration rather than a tool wall:
 
 1. Confirm **24 tools ready** and the visible **Reviewed** execution boundary.
-2. Choose **Copy + show workspace** (or the shorter voice-input version); the Inspector closes so
-   the exact 2D/3D evidence remains unobstructed while the browser agent works.
-   The copied request explicitly requires the page's `labspace_*` WebMCP tools and forbids a silent
-   fallback to clicks, drags, or computer control; a missing bridge is reported instead.
-3. Watch the evidence path progress from intent to canonical tool grounding, exact 3D storage proof, and human control.
-4. Open **Evidence** to inspect the bounded tool inputs/results, then choose **Export proof** for a portable session-evidence JSON file.
+2. Run **Build** to create and audit the 38 m² Researcher Office **R-003** from natural language.
+3. Run **Stock** to stage two enzyme records with exact quantities/expiry dates for human approval.
+4. Run **Find the work** to ground the cross-room DPPH checklist, keep chloroform visibly missing,
+   and end a reviewed collection guide at a real R-002 work surface.
 
-The expandable **More judge workflows** section keeps seven compositional inventory, collection,
-building, annex, exact-location, audit, and resize prompts available without making them compete
+Choose **Copy + show workspace** (or the shorter voice-input version); the Inspector closes so
+the exact 2D/3D evidence remains unobstructed while the browser agent works. The copied request
+explicitly requires the page's `labspace_*` WebMCP tools and forbids a silent fallback to clicks,
+drags, or computer control; a missing bridge is reported instead.
+Open **Evidence** to inspect bounded tool inputs/results, then choose **Export proof** for a portable
+session-evidence JSON file.
+
+The expandable **More judge workflows** section keeps six compositional LLE, collection, annex,
+exact-location, audit, and resize prompts available without making them compete
 with the primary story. **Setup** provides a read-only connection check and separates natural-language
 agent use from Chrome DevTools' one-tool-at-a-time JSON runner. **Tools** shows the twenty-four live
 registrations and their Read, View, Simulate, Create, or Review boundary.
@@ -203,7 +208,7 @@ Asset Studio, dismissible spatial selection, and dialogs above the header.
 
 The live release now includes a one-call reviewed inventory tool, material-list grounding, and a visible Next/Previous collection guide; richer floor/wall finishes; chair-to-desk knee-space snapping; and upgraded authored workstation/desk models. See [Inventory and collection workflows](docs/webmcp/INVENTORY_AND_COLLECTION.md) for exact tool arguments and examples. The guide is a grounded collection itinerary, not an experiment protocol or certified walking route.
 
-The public service uses the explicitly published local five-room project snapshot. Local fresh installations continue to use the blank starter plus separate DEMO-01 seed described below. Neither path overwrites the developer's existing SQLite workspace.
+The public service uses an explicitly exported, privacy-checked snapshot containing only `LAB-D-00`, R-001 and R-002. It has 55 authored scene objects, 27 inventory records, 15 equipment records and 169 exact storage locations. R-003 is deliberately absent so judges can watch it being created. Local fresh installations continue to use the development seed; neither path overwrites the developer's existing SQLite workspace.
 
 The repository is self-contained: authored GLBs, plan/library renders, inventory evidence images, material textures, and offline Draco decoder files live under `public/` and are copied into the production bundle by Vite. Judges do **not** need Blender, the private reference photographs, an OpenAI API key, or an asset-rebuild step.
 

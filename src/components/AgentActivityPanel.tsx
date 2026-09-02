@@ -40,25 +40,56 @@ type InspectorTab = "mission" | "activity" | "workflows" | "guide" | "tools";
 const webMcpOnlyPrompt = (task: string) =>
   `Use only the LabSpace WebMCP tools exposed by this page (the labspace_* tools). Do not click, drag, type into forms, or use browser/computer-control actions for this task. Start with labspace_get_context. If the labspace_* tools are unavailable, stop and tell me WebMCP is not connected; do not fall back to UI automation. ${task}`;
 
-const SIGNATURE_MISSION = {
-  title: "Reveal exact physical evidence",
-  outcome: "Natural language → canonical record → focused storage proof",
-  prompt: webMcpOnlyPrompt(
-    "Find Reference standards in DEMO-01 with labspace_search_records, inspect the returned canonical record with labspace_inspect_record, then use labspace_focus_record to reveal its physical shelf and access preview. Explain the laboratory, room, cabinet, and shelf path using only those returned tool results, then wait for me.",
-  ),
-  voicePrompt: webMcpOnlyPrompt(
-    "Find Reference standards in DEMO-01 and use the canonical record tools to show its exact shelf in 3D. Tell me the verified storage path, then wait.",
-  ),
-} as const;
+const DEMO_MISSIONS = [
+  {
+    id: "build-r003",
+    step: "01 · Build",
+    mode: "Create + review",
+    title: "Create R-003 from one request",
+    outcome: "38 m² shell · hosted openings · three paired workstations",
+    prompt: webMcpOnlyPrompt(
+      "In the currently opened laboratory, create a new room named Researcher Office, code R-003. Build a 7,600 by 5,000 millimetre four-wall shell (38 square metres), with one inward single laboratory door centered on wall 1 (the bottom wall), one wide three-panel window centered on wall 3 (the upper wall), and one wide three-panel window centered on wall 4 (the left wall). Add three office desks, pair one office chair with each desk, one locker, one fire extinguisher, and one waste bin. Use labspace_search_assets, labspace_create_room, labspace_plan_room, labspace_stage_room_plan, then labspace_audit_room. Pause at every human review boundary; never approve a change for me.",
+    ),
+    voicePrompt: webMcpOnlyPrompt(
+      "In this laboratory, create Researcher Office R-003 as a 38 square metre room. Put a centered inward door on the bottom wall, three-panel windows on the upper and left walls, three desks with matching chairs, one locker, one fire extinguisher, and one waste bin. Plan and audit it with LabSpace tools, and stop for my approval.",
+    ),
+  },
+  {
+    id: "stock-enzymes",
+    step: "02 · Stock",
+    mode: "Stage + approve",
+    title: "Stage two enzyme records",
+    outcome: "Exact quantities · ISO expiry dates · no invented location",
+    prompt: webMcpOnlyPrompt(
+      "Add two inventory records to R-002: Alpha-glucosidase enzyme, 2 bottles, expiry 2026-10-06; and Lipase enzyme, 1 bottle, expiry 2026-10-16. Use labspace_get_context and labspace_add_inventory. Keep both records unassigned unless I provide an exact canonical storage location; do not invent an owner, storage position, or suitability. Stop at the visible review panel for my approval.",
+    ),
+    voicePrompt: webMcpOnlyPrompt(
+      "Add two inventory records to R-002: alpha-glucosidase enzyme, two bottles, expiring October sixth 2026; and lipase enzyme, one bottle, expiring October sixteenth 2026. Leave storage unassigned and stop for my approval.",
+    ),
+  },
+  {
+    id: "find-dpph-work",
+    step: "03 · Find the work",
+    mode: "Search + assess",
+    title: "Ground a DPPH collection",
+    outcome: "Cross-room evidence · missing stock · route to a real work surface",
+    prompt: webMcpOnlyPrompt(
+      "Using my researcher-approved DPPH checklist, find DPPH reagent, methanol, 100 microlitre and 200 microlitre pipette tips, a laboratory pipette holder, and an automated microplate reader. Also check chloroform and keep it explicitly missing if it is absent. Use labspace_search_records and labspace_inspect_record to ground exact matches, then use labspace_assess_workflow with roomCode R-002 to rank a real work surface while still grounding stock across the laboratory. Report exact, ambiguous, and missing requirements. After I confirm the records, use labspace_start_collection so Next and Previous visit the reviewed items and end at the recommended workspace. Do not invent a protocol, substitution, safety approval, or stock consumption.",
+    ),
+    voicePrompt: webMcpOnlyPrompt(
+      "For my approved DPPH checklist, find DPPH reagent, methanol, 100 and 200 microlitre tips, pipettes, and the plate reader. Check chloroform too. Assess the R-002 equipment and work surfaces, show missing stock, and wait for me before starting the collection guide.",
+    ),
+  },
+] as const;
 
 const WEBMCP_WORKFLOWS = [
   {
-    id: "inventory",
-    mode: "Review",
-    title: "Create an inventory record",
-    outcome: "Verified destination · detailed entry · researcher approval",
+    id: "lle-stock-check",
+    mode: "Ground",
+    title: "Check an LLE solvent set",
+    outcome: "Four recorded solvents · chloroform remains visibly missing",
     prompt: webMcpOnlyPrompt(
-      "Add 12 boxes of pipette tips to the current room. Find suitable recorded storage locations first, ask me to choose if ambiguous, then use labspace_add_inventory to stage the exact entry for my review. Do not invent an owner or expiry date.",
+      "For my researcher-approved LLE stock list, check Methanol Solvent 99.9%, Ethyl acetate Solvent, n-Hexane Solvent, n-Butanol Solvent, and Chloroform across the project. Use labspace_resolve_materials, inspect the exact records you find, and report Chloroform as missing if it is not recorded. Do not suggest a substitution, generate a procedure, or claim the laboratory is suitable or safe for the work.",
     ),
   },
   {
@@ -71,30 +102,12 @@ const WEBMCP_WORKFLOWS = [
     ),
   },
   {
-    id: "workflow-assessment",
-    mode: "Assess",
-    title: "Prove an assay workflow",
-    outcome: "Recorded stock · ordered collection · highlighted work surface",
-    prompt: webMcpOnlyPrompt(
-      "Assess a planned DPPH assay using my researcher-approved checklist: DPPH reagent, methanol, sample tubes and pipette tips; require a plate reader and vortex mixer. Use labspace_assess_workflow to ground every item and rank a real clear laboratory work surface. Report missing or ambiguous records. After I choose the exact material records, use labspace_start_collection with the recommended workspaceObjectId so Next/Previous ends by highlighting the working bench. Do not invent a protocol, substitution, safe route, or permission to use anything.",
-    ),
-  },
-  {
     id: "annex",
     mode: "Review",
     title: "Add a connected annex",
     outcome: "Stable wall split · separate floor · one reviewed commit",
     prompt: webMcpOnlyPrompt(
       "Audit the current room, choose a suitable full-height exterior wall, and calculate a 16 square metre preparation annex with an internal narrow-lite door and one outer observation window. Show me the primary and annex areas, then stage the connected annex for my approval. Do not approve it for me.",
-    ),
-  },
-  {
-    id: "build",
-    mode: "Create",
-    title: "Build a complete room",
-    outcome: "Polygon shell · hosted openings · supported equipment",
-    prompt: webMcpOnlyPrompt(
-      "Build a new room named Biological assays Laboratory, code Bio-001, on Floor 5. Use an 8,000 by 5,500 millimetre four-wall shell (44 square metres), a centered inward double door on wall 1, and one wide three-panel window on wall 3 plus one on wall 4. Add one island bench, two standard lab benches, one cabinet, one freezer, two wall cabinets, a microscope, plate reader, vortex mixer and analytical balance on real worktops, plus one office desk and one computer workstation with a chair paired to each. Stage the complete blueprint for my approval. After approval, audit the room, identify wall 2, calculate a 4,000 by 5,000 millimetre right-side annex near the wall end with a single door opening into the annex, three lockers and one freezer, then stage that annex separately for my approval. Pause at every human review boundary and continue only after I approve.",
     ),
   },
   {
@@ -572,11 +585,11 @@ export function AgentActivityPanel() {
       {tab === "mission" ? (
         <div className="webmcp-mission" role="tabpanel">
           <section className="webmcp-mission-hero">
-            <span className="webmcp-mission-kicker">60-second signature mission</span>
-            <h2>Ask. Prove. Decide.</h2>
+            <span className="webmcp-mission-kicker">Three-part judge demonstration</span>
+            <h2>Build. Stock. Find the work.</h2>
             <p>
-              Turn one natural-language request into canonical laboratory evidence, a focused 3D
-              location, and a visible human decision boundary.
+              One live laboratory story: create R-003, stage two stock records, then ground a
+              cross-room DPPH collection and finish at a real work surface.
             </p>
             <div className="webmcp-mission-context" aria-label="Active mission context">
               <span>
@@ -595,73 +608,77 @@ export function AgentActivityPanel() {
             <li>
               <span>1</span>
               <div>
-                <small>Intent</small>
-                <b>Ask naturally</b>
+                <small>Build</small>
+                <b>Create R-003</b>
               </div>
               <ArrowRight size={14} aria-hidden="true" />
             </li>
             <li>
               <span>2</span>
               <div>
-                <small>Grounding</small>
-                <b>Canonical tools</b>
+                <small>Stock</small>
+                <b>Stage records</b>
               </div>
               <ArrowRight size={14} aria-hidden="true" />
             </li>
             <li>
               <span>3</span>
               <div>
-                <small>Spatial proof</small>
-                <b>Exact shelf</b>
+                <small>Find</small>
+                <b>Ground evidence</b>
               </div>
               <ArrowRight size={14} aria-hidden="true" />
             </li>
             <li>
               <span>4</span>
               <div>
-                <small>Control</small>
-                <b>Human decides</b>
+                <small>Handoff</small>
+                <b>Real workspace</b>
               </div>
             </li>
           </ol>
 
-          <section className="webmcp-signature-card">
-            <header>
-              <span>
-                <small>Recommended first run</small>
-                <strong>{SIGNATURE_MISSION.title}</strong>
-              </span>
-              <em>Read + focus</em>
-            </header>
-            <p>{SIGNATURE_MISSION.prompt}</p>
-            <small>{SIGNATURE_MISSION.outcome}</small>
-            <div>
-              <button
-                className="webmcp-primary-action"
-                onClick={() => void copyWorkflow("signature", SIGNATURE_MISSION.prompt, true)}
-                title="Copy the prompt and close this panel so the focused room stays visible"
-              >
-                {copiedWorkflow === "signature" ? (
-                  <Check size={16} weight="bold" />
-                ) : (
-                  <Copy size={16} />
-                )}
-                {copiedWorkflow === "signature" ? "Copied" : "Copy + show workspace"}
-              </button>
-              <button
-                onClick={() =>
-                  void copyWorkflow("signature-voice", SIGNATURE_MISSION.voicePrompt, true)
-                }
-                title="Copy a shorter voice prompt and close this panel so the workspace stays visible"
-              >
-                {copiedWorkflow === "signature-voice" ? (
-                  <Check size={16} weight="bold" />
-                ) : (
-                  <Waveform size={16} />
-                )}
-                {copiedWorkflow === "signature-voice" ? "Copied" : "Voice + show workspace"}
-              </button>
-            </div>
+          <section className="webmcp-demo-missions" aria-label="Judge demonstration prompts">
+            {DEMO_MISSIONS.map((mission, index) => (
+              <article className="webmcp-signature-card" key={mission.id}>
+                <header>
+                  <span>
+                    <small>{mission.step}</small>
+                    <strong>{mission.title}</strong>
+                  </span>
+                  <em>{mission.mode}</em>
+                </header>
+                <p>{mission.prompt}</p>
+                <small>{mission.outcome}</small>
+                <div>
+                  <button
+                    className={index === 0 ? "webmcp-primary-action" : undefined}
+                    onClick={() => void copyWorkflow(mission.id, mission.prompt, true)}
+                    title="Copy this WebMCP-only prompt and close the panel so the workspace remains visible"
+                  >
+                    {copiedWorkflow === mission.id ? (
+                      <Check size={16} weight="bold" />
+                    ) : (
+                      <Copy size={16} />
+                    )}
+                    {copiedWorkflow === mission.id ? "Copied" : "Copy + show workspace"}
+                  </button>
+                  <button
+                    onClick={() =>
+                      void copyWorkflow(`${mission.id}-voice`, mission.voicePrompt, true)
+                    }
+                    title="Copy the shorter voice-ready prompt and close the panel"
+                  >
+                    {copiedWorkflow === `${mission.id}-voice` ? (
+                      <Check size={16} weight="bold" />
+                    ) : (
+                      <Waveform size={16} />
+                    )}
+                    {copiedWorkflow === `${mission.id}-voice` ? "Copied" : "Voice-ready"}
+                  </button>
+                </div>
+              </article>
+            ))}
           </section>
 
           <section className="webmcp-proof-strip" aria-label="Current session evidence summary">

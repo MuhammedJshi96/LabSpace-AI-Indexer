@@ -255,6 +255,7 @@ type EditorState = {
   switchRoom: (roomId: string) => void;
   createLaboratory: (input?: NewLaboratoryInput) => string | null;
   createRoom: (input?: NewRoomInput) => string | null;
+  deleteLaboratory: (laboratoryId: string) => boolean;
   deleteRoom: (roomId: string) => boolean;
   duplicateRoom: () => void;
   duplicateRoomAsDemo: (roomId?: string) => string | null;
@@ -2563,6 +2564,64 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
     get().pushToast(`${nextRoom.name} added to ${laboratory.name}.`, "success");
     return nextRoom.id;
+  },
+  deleteLaboratory: (laboratoryId) => {
+    const state = get();
+    if (state.pendingAgentChange) {
+      state.pushToast("Approve or cancel the agent preview before deleting a laboratory.", "info");
+      return false;
+    }
+    const laboratory = state.project.laboratories.find((entry) => entry.id === laboratoryId);
+    if (!laboratory) {
+      state.pushToast("That laboratory is no longer available.", "error");
+      return false;
+    }
+    if (state.project.laboratories.length <= 1) {
+      state.pushToast("Create another laboratory before deleting the final laboratory.", "info");
+      return false;
+    }
+    const removedRoomIds = new Set(
+      state.project.rooms
+        .filter((entry) => entry.laboratoryId === laboratoryId)
+        .map((entry) => entry.id),
+    );
+    const nextRooms = state.project.rooms.filter((entry) => !removedRoomIds.has(entry.id));
+    const fallbackRoom =
+      nextRooms.find((entry) => entry.roomKind !== "demo-template") ?? nextRooms[0];
+    if (!fallbackRoom) {
+      state.pushToast(
+        "Create a room in another laboratory before deleting this laboratory.",
+        "info",
+      );
+      return false;
+    }
+    const activeRoomRemoved = removedRoomIds.has(state.project.activeRoomId);
+    const now = new Date().toISOString();
+    const project: Project = {
+      ...state.project,
+      laboratories: state.project.laboratories.filter((entry) => entry.id !== laboratoryId),
+      rooms: nextRooms,
+      activeRoomId: activeRoomRemoved ? fallbackRoom.id : state.project.activeRoomId,
+      featuredDemoRoomId:
+        state.project.featuredDemoRoomId && removedRoomIds.has(state.project.featuredDemoRoomId)
+          ? (nextRooms.find((entry) => entry.roomKind === "demo")?.id ?? null)
+          : state.project.featuredDemoRoomId,
+      updatedAt: now,
+    };
+    set({
+      ...(activeRoomRemoved ? roomSwitchState(project) : { project }),
+      selectedIds: [],
+      selectedLocationId: null,
+      history: [],
+      future: [],
+      saveStatus: "unsaved",
+      dirtyRevision: state.dirtyRevision + 1,
+    });
+    get().pushToast(
+      `${laboratory.name} and ${removedRoomIds.size} room${removedRoomIds.size === 1 ? "" : "s"} deleted.`,
+      "success",
+    );
+    return true;
   },
   deleteRoom: (roomId) => {
     const state = get();

@@ -5,6 +5,11 @@ test.beforeEach(async ({ request }) => {
   expect(reset.ok()).toBeTruthy();
 });
 
+test.beforeEach(async ({ request }) => {
+  const reset = await request.post("/api/testing/reset");
+  expect(reset.ok()).toBeTruthy();
+});
+
 test("keeps room switching and facility management discoverable", async ({ page }) => {
   await page.goto("/");
 
@@ -150,6 +155,36 @@ test("uses one ordered Create menu and focused workspace forms", async ({ page }
     .first()
     .click();
   await expect(page.getByRole("dialog", { name: "Rename room" })).toBeVisible();
+});
+
+test("deletes a complete laboratory only after its code is confirmed", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open project workspace" }).click();
+
+  const workspace = page.getByRole("dialog", { name: "Laboratories and rooms" });
+  await workspace.getByRole("button", { name: "Create", exact: true }).click();
+  await workspace.getByRole("menuitem", { name: /Laboratory/ }).click();
+
+  const createLaboratory = page.getByRole("dialog", { name: "Create laboratory" });
+  await createLaboratory.getByLabel("Laboratory name").fill("Temporary quality lab");
+  await createLaboratory.getByLabel("Laboratory code").fill("QA-DEL");
+  await createLaboratory.getByLabel("Room name").fill("Disposable room");
+  await createLaboratory.getByLabel("Room code").fill("QA-R01");
+  await createLaboratory.getByRole("button", { name: "Create", exact: true }).click();
+
+  await expect(workspace.getByRole("heading", { name: "Temporary quality lab" })).toBeVisible();
+  await workspace.getByRole("button", { name: "Delete laboratory" }).click();
+
+  const deletion = page.getByRole("dialog", { name: "Delete laboratory" });
+  await expect(deletion).toContainText("1");
+  const deleteButton = deletion.getByRole("button", { name: "Delete laboratory", exact: true });
+  await expect(deleteButton).toBeDisabled();
+  await deletion.getByLabel(/Enter QA-DEL to confirm/).fill("QA-DEL");
+  await expect(deleteButton).toBeEnabled();
+  await deleteButton.click();
+
+  await expect(workspace.getByText("Temporary quality lab", { exact: true })).toHaveCount(0);
+  await expect(workspace.getByText("Disposable room", { exact: true })).toHaveCount(0);
 });
 
 test("keeps construction primitives out of Asset Studio and contains thumbnails", async ({

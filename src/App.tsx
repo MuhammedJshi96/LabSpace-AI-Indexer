@@ -1,6 +1,7 @@
 import {
   Component,
   useEffect,
+  useRef,
   useState,
   type CSSProperties,
   type ErrorInfo,
@@ -71,6 +72,7 @@ class RendererBoundary extends Component<
 }
 
 export function App() {
+  const editorWorkspaceRef = useRef<HTMLElement>(null);
   const [splitRatio, setSplitRatio] = useState(getInitialSplitRatio);
   const [assetLibraryCollapsed, setAssetLibraryCollapsed] = useState(() =>
     getStoredCollapsedState(ASSET_LIBRARY_COLLAPSED_KEY),
@@ -136,6 +138,21 @@ export function App() {
       state.setPresentation(presentationMode as "2d" | "split" | "3d");
     }
     window.history.replaceState({}, "", "/");
+  }, [hydrated]);
+
+  useEffect(() => {
+    if (!hydrated || useEditorStore.getState().dialog) return;
+    const frame = window.requestAnimationFrame(() => {
+      const activeElement = document.activeElement;
+      if (
+        activeElement === document.body ||
+        activeElement === document.documentElement ||
+        activeElement === null
+      ) {
+        editorWorkspaceRef.current?.focus({ preventScroll: true });
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [hydrated]);
 
   useEffect(() => {
@@ -225,8 +242,8 @@ export function App() {
         document.querySelector<HTMLInputElement>(".asset-search-row input")?.focus();
       }
     };
-    window.addEventListener("keydown", shortcut);
-    return () => window.removeEventListener("keydown", shortcut);
+    document.addEventListener("keydown", shortcut, true);
+    return () => document.removeEventListener("keydown", shortcut, true);
   }, [setTool]);
 
   return (
@@ -234,6 +251,9 @@ export function App() {
       <TopBar />
       <ToolRibbon />
       <main
+        ref={editorWorkspaceRef}
+        tabIndex={-1}
+        data-testid="layout-editor-workspace"
         className={`editor-main presentation-${presentation}${
           assetLibraryCollapsed ? " asset-library-collapsed" : ""
         }${inspectorCollapsed ? " inspector-collapsed" : ""}`}

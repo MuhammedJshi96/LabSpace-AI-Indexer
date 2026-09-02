@@ -2704,6 +2704,10 @@ button:disabled {
   grid-template-columns: 318px minmax(0, 1fr);
 }
 
+.editor-main:focus {
+  outline: none;
+}
+
 .asset-library {
   z-index: 8;
   display: flex;

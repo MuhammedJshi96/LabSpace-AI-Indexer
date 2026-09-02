@@ -321,6 +321,10 @@ test("Ctrl+D duplicates a focused item and undo restores the room", async ({ pag
   await expect(page).toHaveURL(/\/digital-twin$/);
   await page.getByRole("link", { name: "Layout Editor", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
+  const workspace = page.getByTestId("layout-editor-workspace");
+  await expect(workspace).toBeVisible();
+  await workspace.focus();
+  await expect(workspace).toBeFocused();
   await page.keyboard.press("Control+d");
   await expect
     .poll(
@@ -328,6 +332,8 @@ test("Ctrl+D duplicates a focused item and undo restores the room", async ({ pag
         (await readProject(page)).rooms.find((room) => room.id === demo.id)?.scene.objects.length,
     )
     .toBe(demo.scene.objects.length + 1);
+  await workspace.focus();
+  await expect(workspace).toBeFocused();
   await page.keyboard.press("Control+z");
   await expect
     .poll(

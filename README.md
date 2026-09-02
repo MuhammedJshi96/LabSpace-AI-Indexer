@@ -14,49 +14,69 @@
 
 **Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — open **Demo room** for the preserved DEMO-01 showcase. The free instance can take up to about a minute to wake after inactivity.
 
+**Measured proof, not a speed fantasy:** a repeated same-outcome browser benchmark passed 140/140
+checks and reduced direct operations from 54 to 12 across exact-location, reviewed inventory, and
+room-building tasks. It also preserves the honest slower Reviewed-inventory machine-time result.
+See the [method, medians, IQRs, and limitations](docs/webmcp/PRODUCTIVITY_BENCHMARK_V2.md).
+
 The trust boundary is human-controlled and risk-based. Every application session starts in **Reviewed** mode: room creation, blueprints, inventory, movement, and resizing stop at **Preview · not saved** until a researcher approves them. The visible **Fast Draft** opt-in can auto-apply only a validated additive blank room and that room's complete first blueprint; the blueprint is one undoable history update. Existing-room layouts, moves, resizes, inventory/stock, destructive changes, incomplete plans, and validation failures always escalate to review. No WebMCP argument can select or bypass the mode, and there is no agent-accessible approve, reset, delete, import, or unrestricted project-write tool.
 
 ### See WebMCP working
 
-Open the **WebMCP** status control in the LabSpace header. Its inspector makes the browser integration visible without DevTools:
+Open the **WebMCP** status control in the LabSpace header. The Inspector opens on one
+**60-second judge mission** rather than a tool wall:
 
-1. **Registered tools** shows the twenty-three live browser tools and their Read, View, Simulate, Create, or Review boundary.
-2. **Run read-only check** invokes `labspace_get_context` through `document.modelContext.executeTool`.
-3. **Live activity** shows the real tool name plus bounded structured Input and Result evidence.
-4. **Agent workflows** provides seven copy-ready, compositional prompts for inventory, collection, building, annexes, locating, auditing, and resizing without adding a competing chatbot UI.
-5. **Use WebMCP** explains where to type natural-language prompts and distinguishes that flow from Chrome DevTools' one-tool-at-a-time JSON runner.
+1. Confirm **24 tools ready** and the visible **Reviewed** execution boundary.
+2. Choose **Copy + show workspace** (or the shorter voice-input version); the Inspector closes so
+   the exact 2D/3D evidence remains unobstructed while the browser agent works.
+   The copied request explicitly requires the page's `labspace_*` WebMCP tools and forbids a silent
+   fallback to clicks, drags, or computer control; a missing bridge is reported instead.
+3. Watch the evidence path progress from intent to canonical tool grounding, exact 3D storage proof, and human control.
+4. Open **Evidence** to inspect the bounded tool inputs/results, then choose **Export proof** for a portable session-evidence JSON file.
+
+The expandable **More judge workflows** section keeps seven compositional inventory, collection,
+building, annex, exact-location, audit, and resize prompts available without making them compete
+with the primary story. **Setup** provides a read-only connection check and separates natural-language
+agent use from Chrome DevTools' one-tool-at-a-time JSON runner. **Tools** shows the twenty-four live
+registrations and their Read, View, Simulate, Create, or Review boundary.
 
 Type the suggested request in the ChatGPT/browser-agent conversation that opened LabSpace. LabSpace does not add a second chatbot: the browser agent discovers the tools directly from the open page, and the inspector shows each call inside the product.
 
 The trace is intentionally evidence, not hidden model reasoning. Ordinary researcher clicks are not mislabeled as agent activity. Human mode changes, reviewed proposals, Fast Draft commits, approvals, cancellations, and Undo-capable commits are recorded as distinct evidence.
 
-### Twenty-three browser-native tools
+The mission-control presentation is independently reversible: build with
+`VITE_COMPETITION_EVIDENCE_LAYER=0` to restore the former Inspector information architecture. The
+flag changes no WebMCP registration, execution rule, room, inventory record, material, or saved
+workspace. See the [rollback checkpoint](docs/rollback/COMPETITION_EVIDENCE_LAYER_2026-09-02.md).
 
-| Tool                             | Capability                                                                           | Saved-data behavior                                             |
-| -------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `labspace_audit_room`            | Audit floor closure, boundaries, support, hosted openings, overlaps, height, and IDs | Read-only; deterministic readiness evidence                     |
-| `labspace_create_room`           | Propose one genuinely blank room in a selected laboratory                            | Reviewed by default; bounded Fast Draft additive write          |
-| `labspace_get_context`           | Read the active project, room, selection, and index counts                           | Read-only                                                       |
-| `labspace_search_records`        | Search equipment, inventory, and exact storage                                       | Read-only                                                       |
-| `labspace_inspect_record`        | Inspect current canonical evidence                                                   | Read-only                                                       |
-| `labspace_focus_record`          | Reveal a record in the normal room, evidence panel, and camera                       | Presentation state only                                         |
-| `labspace_search_assets`         | Discover openings and planning assets with dimensions and connection behavior        | Read-only                                                       |
-| `labspace_plan_room`             | Propose a polygon shell, hosted openings, paired workstations, and supported assets  | Read-only                                                       |
-| `labspace_plan_annex`            | Split one stable wall and validate a connected space with an independent floor       | Read-only                                                       |
-| `labspace_inventory_locations`   | Discover canonical inventory destinations in editable rooms                          | Read-only                                                       |
-| `labspace_plan_inventory`        | Validate proposed project-wide inventory records and assignments                     | Read-only                                                       |
-| `labspace_find_valid_placements` | Rank diverse valid alternatives near a preferred area using current geometry         | Read-only                                                       |
-| `labspace_validate_object_move`  | Test a hypothetical position with current geometry                                   | Read-only                                                       |
-| `labspace_stage_object_move`     | Show a reversible valid-move preview                                                 | Not persisted; human approval required                          |
-| `labspace_validate_resize`       | Test dimensions, hosted-wall fit, sill height, and opening overlap                   | Read-only                                                       |
-| `labspace_stage_resize`          | Show a reversible dimension-accurate preview                                         | Not persisted; human approval required                          |
-| `labspace_stage_inventory_plan`  | Show a human-reviewable inventory proposal                                           | Not persisted; human approval required                          |
-| `labspace_stage_room_plan`       | Stage a complete blueprint                                                           | Reviewed by default; Fast Draft only for a pristine first build |
-| `labspace_stage_annex_plan`      | Stage one connected annex transaction                                                | Not persisted; human approval always required                   |
-| `labspace_add_inventory`         | Validate and stage detailed inventory entries in one call                            | Human approval required before records are created              |
-| `labspace_resolve_materials`     | Match a suggested materials list to actual stock and equipment                       | Read-only; missing and ambiguous matches stay explicit          |
-| `labspace_start_collection`      | Start a room-grouped guide from reviewed canonical records                           | Presentation state only; no stock deduction                     |
-| `labspace_collection_step`       | Status, Next, Previous, or finish for the collection guide                           | Presentation state only                                         |
+### Twenty-four browser-native tools
+
+| Tool                             | Capability                                                                                         | Saved-data behavior                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `labspace_audit_room`            | Audit floor closure, boundaries, support, front working zones, openings, overlaps, height, and IDs | Read-only; deterministic readiness evidence                     |
+| `labspace_create_room`           | Propose one genuinely blank room in a selected laboratory                                          | Reviewed by default; bounded Fast Draft additive write          |
+| `labspace_get_context`           | Read the active project, room, selection, and index counts                                         | Read-only                                                       |
+| `labspace_search_records`        | Search equipment, inventory, and exact storage                                                     | Read-only                                                       |
+| `labspace_inspect_record`        | Inspect current canonical evidence                                                                 | Read-only                                                       |
+| `labspace_focus_record`          | Reveal a record in the normal room, evidence panel, and camera                                     | Presentation state only                                         |
+| `labspace_search_assets`         | Discover openings and planning assets with dimensions and connection behavior                      | Read-only                                                       |
+| `labspace_plan_room`             | Propose a polygon shell, hosted openings, paired workstations, and supported assets                | Read-only                                                       |
+| `labspace_plan_annex`            | Split one stable wall and validate a connected space with an independent floor                     | Read-only                                                       |
+| `labspace_inventory_locations`   | Discover canonical inventory destinations in editable rooms                                        | Read-only                                                       |
+| `labspace_plan_inventory`        | Validate proposed project-wide inventory records and assignments                                   | Read-only                                                       |
+| `labspace_find_valid_placements` | Rank valid alternatives near an area or relative to another object's authored front                | Read-only                                                       |
+| `labspace_validate_object_move`  | Test a hypothetical position with current geometry                                                 | Read-only                                                       |
+| `labspace_stage_object_move`     | Show a reversible valid-move preview                                                               | Not persisted; human approval required                          |
+| `labspace_validate_resize`       | Test dimensions, hosted-wall fit, sill height, and opening overlap                                 | Read-only                                                       |
+| `labspace_stage_resize`          | Show a reversible dimension-accurate preview                                                       | Not persisted; human approval required                          |
+| `labspace_stage_inventory_plan`  | Show a human-reviewable inventory proposal                                                         | Not persisted; human approval required                          |
+| `labspace_stage_room_plan`       | Stage a complete blueprint                                                                         | Reviewed by default; Fast Draft only for a pristine first build |
+| `labspace_stage_annex_plan`      | Stage one connected annex transaction                                                              | Not persisted; human approval always required                   |
+| `labspace_add_inventory`         | Validate and stage detailed inventory entries in one call                                          | Human approval required before records are created              |
+| `labspace_assess_workflow`       | Ground materials/equipment and rank authored work surfaces                                         | Read-only; protocol and suitability remain researcher decisions |
+| `labspace_resolve_materials`     | Match a suggested materials list to actual stock and equipment                                     | Read-only; missing and ambiguous matches stay explicit          |
+| `labspace_start_collection`      | Start an ordered guide ending at an optional assessed workspace                                    | Presentation state only; no stock deduction                     |
+| `labspace_collection_step`       | Status, Next, Previous, or finish for the collection guide                                         | Presentation state only                                         |
 
 ```text
 browser agent → document.modelContext → LabSpace tool adapter
@@ -74,7 +94,7 @@ The runtime remains local and no-billing: LabSpace embeds no model, sends no mod
 
 ### Layout Editor
 
-The complete planning workspace combines the searchable 104-asset library, material-aware 2D plan, synchronized 3D room, editable room data, and surface controls in one desktop composition.
+The complete planning workspace combines the searchable 115-asset library, material-aware 2D plan, synchronized 3D room, editable room data, and surface controls in one desktop composition.
 
 ![Finalized LabSpace Layout Editor with synchronized 2D and 3D views](docs/screenshots/layout-editor-final.png)
 
@@ -110,10 +130,10 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - A dedicated project-wide Spatial Index Finder searches inventory, equipment, and nested storage locations across every laboratory and room, switches the live spatial scene to a selected result, highlights the related 3D asset or drawer/shelf/bin region, and deep-links back to the same room and editor record.
 - Every room owns semantic scene-local layers for walls, openings, furniture, storage, equipment, utilities, safety, labels, and measurements, so placement never depends on seed-owned layer IDs.
 - Laboratory-aware object indexes and equipment IDs use the active laboratory, room, and optional zone codes with normalized, case-insensitive uniqueness checks.
-- 106 original planning definitions across architecture, furniture, storage, equipment, and safety (including two hidden wall primitives).
-- All 104 user-visible library assets use authored, genuinely orbitable GLB geometry with front, back, side, top construction, and dimension-matched catalog/plan renders.
+- 117 original planning definitions across architecture, furniture, storage, equipment, and safety (including two hidden wall primitives).
+- All 115 user-visible library assets use authored, genuinely orbitable GLB geometry with front, back, side, top construction, and dimension-matched catalog/plan renders.
 - The authored set now includes detailed benches and wash stations, core casework/storage, professional openings, a raised-service-bridge island, a fully rebuilt BÜCHI R-300-class touchscreen rotary evaporator, and manufacturer-class analytical, thermal, cold-storage, imaging, washing, and clean-air equipment.
-- All 106 catalog definitions supply material-aware isometric library images and top-view plan images derived from the same authored GLB or procedural geometry used by the 3D view.
+- All 117 catalog definitions supply material-aware isometric library images and top-view plan images derived from the same authored GLB or procedural geometry used by the 3D view.
 - Only `straight-wall` and `half-height-wall` remain procedural because they are hidden construction primitives controlled by the wall-drawing workflow, not draggable Asset Library products.
 - A visible Asset Studio provides an orbitable PBR preview plus front, back, left, right, top, and isometric camera presets.
 - Interactive select, marquee, pan, wall, door, window, measure, move, resize, rotate, copy, paste, duplicate, delete, lock, hide, and z-order actions.
@@ -142,9 +162,9 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
 
-There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's twenty-three structured tools, while the canonical catalog, room and annex planners, room-readiness audit, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
+There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's twenty-four structured tools, while the canonical catalog, room and annex planners, room-readiness audit, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
 
-The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 104-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
+The Spatial Index renders every visible object in the active room so evidence always matches the Layout Editor. Performance comes from local assets, shared geometry/material reuse, offline decoders, loading discipline, and detail management rather than hiding room contents. The Layout Editor exposes the complete searchable 115-asset library, while Asset Studio loads one orbitable model at a time and releases the previous preview cache.
 
 **Low / Balanced / High rendering** is shared across the editor, Spatial Index, Facility and Asset Studio. Balanced is the default with a one-click reset; High adds restrained contact shading and cached finish microtexture at extra GPU cost. Clear panes retain their transparent blue accent. Quality changes preserve camera, selection, storage openings and saved room data. See the [rendering comparison and rollback notes](docs/local-render-quality.md).
 
@@ -206,7 +226,7 @@ For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUI
 | `npm run dev`                      | Start the local API and Vite development server           |
 | `npm run build`                    | Create the production frontend bundle                     |
 | `npm run start`                    | Start the API and serve the production bundle             |
-| `npm run assets:build`             | Rebuild the 104 visible hero GLBs and 208 catalog renders |
+| `npm run assets:build`             | Rebuild the 115 visible hero GLBs and 230 catalog renders |
 | `npm run assets:render-procedural` | Rebuild four wall-primitive procedural catalog renders    |
 | `npm run lint`                     | Run ESLint                                                |
 | `npm run typecheck`                | Run strict TypeScript checks                              |
@@ -242,7 +262,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-The result should contain exactly the twenty-three tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
+The result should contain exactly the twenty-four tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
 The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build`, starts Express, and checks `/api/health`. The public app automatically saves its full project and named room versions in **IndexedDB in the current browser**. “Saved in this browser” confirms a completed disk transaction. Refresh, server-session expiry, Render restart and redeployment do not replace that saved project. First-time visitors adopt their existing isolated server session (or the approved starter snapshot); other browsers remain independent. Older tabs cannot silently overwrite newer saves. This is same-browser/device storage, not account or cloud sync: export JSON before clearing site data, leaving private browsing, or changing computers. Local SQLite and the automated-test seed remain separate. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 
@@ -303,9 +323,9 @@ media.
 
 - This is a single-user local prototype; it has no authentication, organizations, permissions, or concurrent editing.
 - Project navigation supports multiple laboratories and rooms, deliberate project/laboratory/room renaming, and guarded room deletion. Laboratory deletion and general laboratory/room reordering are not yet implemented.
-- The user-visible 104-asset library is fully authored as orbitable GLBs. Two hidden wall-drawing primitives retain deterministic procedural geometry because their dimensions are created interactively.
+- The user-visible 115-asset library is fully authored as orbitable GLBs. Two hidden wall-drawing primitives retain deterministic procedural geometry because their dimensions are created interactively.
 - The Spatial Index workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
-- All 106 definitions have same-geometry top/isometric imagery; the 104 user-visible assets use authored GLBs and the two hidden wall primitives remain procedural. These are planning representations rather than manufacturer-certified BIM objects.
+- All 117 definitions have same-geometry top/isometric imagery; the 115 user-visible assets use authored GLBs and the two hidden wall primitives remain procedural. These are planning representations rather than manufacturer-certified BIM objects.
 - Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
 - Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.
 - Only the optional DEMO-01 environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.

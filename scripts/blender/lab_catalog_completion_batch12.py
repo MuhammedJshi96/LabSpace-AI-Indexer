@@ -30,6 +30,7 @@ import lab_casework_batch3 as casework  # noqa: E402
 import lab_fidelity_batch6 as fidelity  # noqa: E402
 import lab_furniture as furniture  # noqa: E402
 import lab_instruments_batch10 as instruments  # noqa: E402
+import catalog_printer_product  # noqa: E402
 from manufactured_surfaces import formed_bowl  # noqa: E402
 
 
@@ -378,8 +379,6 @@ def build_desk(spec: AssetSpec, *, office: bool) -> None:
     box("rear modesty panel", (0, leg_y, (panel_top + panel_bottom) / 2), (2 * leg_x - 0.05, 0.018, panel_top - panel_bottom), frame, bevel=0.003, category="modesty panel")
     for x in (-leg_x + 0.055, leg_x - 0.055):
         box("modesty panel bracket", (x, leg_y - 0.012, panel_top), (0.065, 0.035, 0.065), m["steel_visible"], bevel=0.003, category="joinery")
-    cylinder("flush cable grommet rim", (w * 0.34, d * 0.24, h - 0.002), 0.033, 0.004, m["steel_visible"], vertices=48, category="cable management")
-    cylinder("cable grommet insert", (w * 0.34, d * 0.24, h - 0.0005), 0.027, 0.003, m["rubber"], vertices=48, category="cable management")
     if office:
         drawer_x, drawer_y = w * 0.30, -d * 0.08
         box("underslung pencil drawer", (drawer_x, drawer_y, underside - 0.043), (w * 0.24, d * 0.52, 0.048), m["porcelain"], bevel=0.003, category="drawer")
@@ -409,7 +408,6 @@ def build_rectangular_table(spec: AssetSpec) -> None:
     for x in (-w * 0.39, w * 0.39):
         bottom, top = h * .70, underside - .010
         box("modesty panel bracket", (x, leg_y, (bottom + top) / 2), (0.040, 0.040, top - bottom), m["steel_visible"], bevel=0.002, category="joinery")
-    cylinder("cable grommet", (w * 0.34, d * 0.24, h - 0.0015), 0.029, 0.003, m["black"], vertices=48, category="cable management")
 
 
 def build_wall_cabinet(spec: AssetSpec) -> None:
@@ -639,32 +637,7 @@ def build_workstation(spec: AssetSpec) -> None:
 
 
 def build_printer(spec: AssetSpec) -> None:
-    m = furniture.MATERIALS
-    w, d, h = spec.width, spec.depth, spec.height
-    front, rear = -d * .34, d * .46
-    box("printer lower chassis", (0, d * .06, h * .34), (w * .94, d * .80, h * .62), m["porcelain"], bevel=.014, category="printer chassis")
-    # Scanner sits on a continuous engine housing, not separated box layers.
-    box("printer scanner body", (0, d * .045, h * .78), (w * .98, d * .86, h * .27), m["powder_light"], bevel=.010, category="scanner")
-    box("scanner lid gasket", (0, d * .045, h * .919), (w * .93, d * .80, .004), m["shadow"], bevel=.002, category="seam")
-    box("printer scanner lid", (0, d * .045, h * .95), (w * .94, d * .81, h * .06), m["porcelain"], bevel=.008, category="scanner lid")
-    box("printer output bay", (-w * .10, front - .003, h * .52), (w * .59, .009, h * .15), m["shadow"], bevel=.006, category="paper output")
-    box("printer output tray", (-w * .10, -d * .365, h * .435), (w * .61, d * .25, .014), m["powder_dark"], bevel=.005, category="paper tray")
-    for side in (-1, 1):
-        box("paper guide lip", (-w * .10 + side * w * .295, -d * .37, h * .449), (.009, d * .24, .015), m["powder_dark"], bevel=.003, category="paper tray")
-    box("integrated control fascia", (w * .31, -d * .378, h * .77), (w * .28, .028, h * .22), m["powder_dark"], bevel=.008, category="control panel")
-    box("printer display", (w * .31, -d * .409, h * .79), (w * .19, .035, h * .115), m["screen"], bevel=.004, category="display")
-    cylinder("printer power key", (w * .31, -d * .412, h * .69), .008, .007, m["teal"], axis=(0,-1,0), vertices=32, category="control key")
-    box("paper cassette face", (0, front - .004, h * .20), (w * .86, .014, h * .20), m["powder_light"], bevel=.005, category="paper cassette")
-    box("cassette finger recess", (0, front - .012, h * .26), (w * .22, .006, .013), m["powder_dark"], bevel=.004, category="paper cassette")
-    for x in (-w * .31, w * .31):
-        box("scanner rear hinge", (x, rear - .008, h * .915), (.045, .035, .032), m["powder_dark"], bevel=.005, category="hinge")
-    add_vent_slots("printer rear ventilation", 0, rear + .003, h * .40, w * .55, rows=5)
-    box("printer rear connection panel", (w * .29, rear + .002, h * .19), (.060, .008, .065), m["powder_dark"], bevel=.003, category="rear service")
-    for z in (h*.16, h*.23):
-        box("printer rear data socket", (w*.29, rear+.008, z), (.030,.004,.010), m["shadow"], bevel=.001, category="rear service")
-    for x in (-w*.36,w*.36):
-        for y in (-d*.25,d*.36):
-            cylinder("printer rubber foot", (x,y,h*.016), .018,h*.032,m["rubber"],vertices=32,category="foot")
+    catalog_printer_product.build(spec)
 
 
 def build_safety_shower(spec: AssetSpec) -> None:
@@ -754,13 +727,23 @@ def build_one(spec: AssetSpec, output_dir: Path, save_blend_dir: Path | None) ->
 
     if furniture.ROOT is not None:
         furniture.ROOT["display_name"] = spec.asset_id.replace("-", " ").title()
-        furniture.ROOT["revision"] = "catalog-completion-batch12-r5" if spec.asset_id in {"mobile-bench", "office-desk", "corner-lab-bench", "computer-workstation"} else "catalog-completion-batch12-r2"
+        furniture.ROOT["revision"] = (
+            "catalog-completion-batch12-r6" if spec.asset_id == "office-desk"
+            else "catalog-completion-batch12-r3" if spec.asset_id == "rectangular-table"
+            else "catalog-completion-batch12-r5" if spec.asset_id in {"mobile-bench", "corner-lab-bench", "computer-workstation"}
+            else catalog_printer_product.REVISION if spec.asset_id == "printer"
+            else "catalog-completion-batch12-r2"
+        )
         furniture.ROOT["planning_model"] = True
         furniture.ROOT["manufacturer_certified"] = False
         furniture.ROOT["source_note"] = (
             "Original all-sided LabSpace planning geometry; designed from standard laboratory "
             "construction anatomy without logos or downloaded product geometry."
         )
+        if spec.asset_id in {"office-desk", "rectangular-table"}:
+            furniture.ROOT["clean_work_surface"] = True
+            furniture.ROOT["generic_surface_grommets"] = False
+            furniture.ROOT["decorative_service_markers"] = False
         furniture.ROOT["finish_policy"] = (
             "Porcelain white, powder-coated light gray, satin aluminum and brushed stainless; "
             "dark finishes restricted to worktops, screens, seals, vents and hardware."

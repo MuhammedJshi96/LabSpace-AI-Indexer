@@ -74,7 +74,7 @@ export function ProcessTracker({ onClose }: { onClose: () => void }) {
                   <b>{run.title}</b>
                   <small>
                     {run.endedAt ? "Ended" : "In progress"} · {run.checked.length}/
-                    {run.recordIds.length} checked
+                    {run.recordIds.length + (run.workspace ? 1 : 0)} checked
                   </small>
                 </summary>
                 <ol>
@@ -112,6 +112,53 @@ export function ProcessTracker({ onClose }: { onClose: () => void }) {
                       </li>
                     );
                   })}
+                  {run.workspace && (
+                    <li key={`workflow-workspace:${run.workspace.objectId}`}>
+                      <span
+                        className={
+                          run.checked.some(
+                            (entry) =>
+                              entry.recordId === `workflow-workspace:${run.workspace?.objectId}`,
+                          )
+                            ? "is-checked"
+                            : ""
+                        }
+                      >
+                        {run.checked.some(
+                          (entry) =>
+                            entry.recordId === `workflow-workspace:${run.workspace?.objectId}`,
+                        )
+                          ? "✓"
+                          : "◇"}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const room = project.rooms.find(
+                            (entry) => entry.id === run.workspace?.roomId,
+                          );
+                          const object = room?.scene.objects.find(
+                            (entry) => entry.id === run.workspace?.objectId,
+                          );
+                          if (!room || !object) {
+                            setError("Workflow workspace unavailable");
+                            return;
+                          }
+                          useEditorStore.getState().applySpatialFocus({
+                            requestId: crypto.randomUUID(),
+                            recordId: `workflow-workspace:${object.id}`,
+                            roomId: room.id,
+                            objectId: object.id,
+                            locationId: null,
+                            showStorageAccess: false,
+                          });
+                          setError("");
+                        }}
+                      >
+                        <b>Final workspace · {run.workspace.name}</b>
+                        <small>{run.workspace.path.join(" / ")}</small>
+                      </button>
+                    </li>
+                  )}
                 </ol>
                 <details className="process-event-details">
                   <summary>Timestamped trail · {run.trail.length} events</summary>

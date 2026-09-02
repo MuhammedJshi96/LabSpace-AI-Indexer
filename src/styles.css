@@ -7962,6 +7962,113 @@ body:has(#procedural-catalog-capture) #root {
   line-height: 1.15;
 }
 
+.twin-workflow-heading {
+  background: linear-gradient(115deg, rgba(0, 169, 149, 0.09), transparent 58%), #fbfdfc;
+}
+
+.twin-workflow-facts {
+  margin-top: 14px;
+}
+
+.twin-workflow-proof {
+  margin-top: 14px;
+  overflow: hidden;
+  color: #e9f9f6;
+  background:
+    radial-gradient(circle at 94% -16%, rgba(102, 218, 208, 0.24), transparent 42%),
+    linear-gradient(135deg, #063c35, #0b5048);
+  border: 1px solid #0d665b;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(6, 60, 53, 0.13);
+}
+
+.twin-workflow-proof > header {
+  display: grid;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.twin-workflow-proof > header span {
+  position: relative;
+  padding: 9px 4px 8px;
+  color: rgba(233, 249, 246, 0.64);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.twin-workflow-proof > header span:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  content: "";
+  border-top: 1px solid rgba(102, 218, 208, 0.55);
+  border-right: 1px solid rgba(102, 218, 208, 0.55);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.twin-workflow-proof > header .active {
+  color: #ffffff;
+  background: rgba(0, 169, 149, 0.26);
+  box-shadow: inset 0 -3px #66dad0;
+}
+
+.twin-workflow-proof > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+}
+
+.twin-workflow-proof > div > svg {
+  flex: 0 0 auto;
+  color: #66dad0;
+}
+
+.twin-workflow-proof > div > span {
+  min-width: 0;
+}
+
+.twin-workflow-proof small,
+.twin-workflow-proof b {
+  display: block;
+}
+
+.twin-workflow-proof small {
+  color: #8ee8df;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.twin-workflow-proof b {
+  margin-top: 2px;
+  color: #ffffff;
+  font-family: Bahnschrift, "Segoe UI Variable", sans-serif;
+  font-size: 15px;
+  font-weight: 620;
+}
+
+.twin-workflow-proof p {
+  margin: 5px 0 0;
+  color: rgba(233, 249, 246, 0.78);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.twin-workflow-location {
+  background: linear-gradient(110deg, #ecfbf7, #ffffff 68%);
+}
+
+.twin-workflow-boundary {
+  border-bottom: 0;
+}
+
 .twin-detail-scroll {
   min-height: 0;
   flex: 1 1 auto;
@@ -8261,6 +8368,11 @@ body:has(#procedural-catalog-capture) #root {
   background: rgba(251, 253, 252, 0.98);
   border-top: 1px solid #dbe5e2;
   box-shadow: 0 -8px 24px rgba(25, 48, 42, 0.07);
+}
+
+.twin-workflow-actions {
+  padding-top: 10px;
+  padding-bottom: 12px;
 }
 
 .twin-detail-actions .primary {

@@ -167,6 +167,31 @@ function inspectGlb(assetId: string, source: string, publicPath: string) {
   if (!Array.isArray(document.meshes) || document.meshes.length === 0) {
     errors.push(`${assetId}: ${source} contains no meshes`);
   }
+  const scenes = Array.isArray(document.scenes) ? document.scenes : [];
+  const activeSceneIndex = Number.isInteger(document.scene) ? document.scene : 0;
+  const activeScene = scenes[activeSceneIndex];
+  const activeRoots = Array.isArray(activeScene?.nodes) ? activeScene.nodes : [];
+  if (scenes.length !== 1) {
+    errors.push(`${assetId}: ${source} must contain exactly one authored scene; found ${scenes.length}`);
+  }
+  if (activeRoots.length !== 1) {
+    errors.push(
+      `${assetId}: ${source} must expose exactly one active asset root; found ${activeRoots.length}`,
+    );
+  }
+  const meshReferenceCounts = new Map<number, number>();
+  for (const node of Array.isArray(document.nodes) ? document.nodes : []) {
+    if (!Number.isInteger(node?.mesh)) continue;
+    meshReferenceCounts.set(node.mesh, (meshReferenceCounts.get(node.mesh) ?? 0) + 1);
+  }
+  const repeatedMeshReferences = [...meshReferenceCounts.entries()].filter(
+    ([, referenceCount]) => referenceCount > 1,
+  );
+  if (repeatedMeshReferences.length > 0) {
+    errors.push(
+      `${assetId}: ${source} references ${repeatedMeshReferences.length} mesh(es) from multiple nodes; export one owned runtime instance per authored mesh`,
+    );
+  }
   if (buffer.length > 12 * 1024 * 1024) {
     errors.push(`${assetId}: ${source} exceeds the 12 MB authored-model budget`);
   }

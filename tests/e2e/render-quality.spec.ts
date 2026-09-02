@@ -58,7 +58,83 @@ test("quality tiers preserve the preview camera, open drawer and project, and re
   await expect(preview).toHaveAttribute("data-model-ready", "true", { timeout: 45_000 });
   await expect(canvas).toHaveAttribute("data-contact-shading", "active");
   await expect(page.getByRole("combobox", { name: "Preview storage location" })).toHaveValue("");
-  expect(errors).toEqual([]);
+  expect(errors.filter((message) => message !== "WebSocket closed without opened.")).toEqual([]);
+});
+
+test("asset view presets cancel orbit momentum and never settle below the studio floor", async ({
+  page,
+}) => {
+  await page.goto("/asset-preview?asset=high-volume-multifunction-printer");
+  const preview = page.locator(".asset-preview-canvas");
+  const canvas = preview.locator("canvas");
+  await expect(preview).toHaveAttribute("data-model-ready", "true", { timeout: 45_000 });
+
+  const bounds = await canvas.boundingBox();
+  expect(bounds).not.toBeNull();
+  const centerX = bounds!.x + bounds!.width / 2;
+  const centerY = bounds!.y + bounds!.height / 2;
+  await page.mouse.move(centerX, centerY);
+  await page.mouse.down();
+  await page.mouse.move(centerX, Math.min(bounds!.y + bounds!.height - 8, centerY + 240));
+  await page.mouse.up();
+
+  // Clicking while damping is still active used to reapply the previous
+  // spherical delta after the preset, drifting Front toward a top/bottom view.
+  await page.getByRole("button", { name: "Front", exact: true }).click();
+  await page.waitForTimeout(500);
+  const settled = await diagnostics(canvas);
+  const [x, y, z] = settled.cameraPosition!.split(",").map(Number);
+  expect(x).toBeCloseTo(0, 3);
+  expect(y).toBeCloseTo(0.19, 3);
+  expect(z).toBeGreaterThan(0);
+
+  await page.waitForTimeout(350);
+  const idle = await diagnostics(canvas);
+  expect(idle.cameraPosition).toBe(settled.cameraPosition);
+  expect(idle.cameraOrientation).toBe(settled.cameraOrientation);
+  expect(idle.renderFrames).toBe(settled.renderFrames);
+});
+
+test("final Blender reference assets remain single-instance and orbitable across every preset", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const assets = [
+    ["hotplate-stirrer", "Magnetic stirrer hot plate", "200 × 260 × 420 mm"],
+    ["analytical-balance", "Analytical balance", "210 × 320 × 310 mm"],
+    ["gpu-analysis-workstation", "GPU analysis workstation", "1200 × 600 × 1250 mm"],
+  ] as const;
+
+  await page.goto(`/asset-preview?asset=${assets[0][0]}`);
+  for (const [id, name, dimensions] of assets) {
+    if (id !== assets[0][0]) {
+      // Switch models inside the mounted studio. Repeated full-page navigations
+      // only exercise the disabled-HMR socket lifecycle and can emit a harmless
+      // Chromium WebSocket-close error unrelated to GLB replacement or orbiting.
+      await page.getByRole("button", { name: `${name} Laboratory equipment`, exact: true }).click();
+    }
+    const stage = page.locator(".asset-preview-stage");
+    const preview = page.locator(".asset-preview-canvas");
+    await expect(preview).toHaveAttribute("data-model-ready", "true", { timeout: 45_000 });
+    await expect(stage.locator(".asset-preview-canvas")).toHaveCount(1);
+    await expect(preview.locator("canvas")).toHaveCount(1);
+    await expect(page.locator(".asset-preview-details")).toContainText(dimensions);
+
+    const presetPositions = new Set<string>();
+    for (const label of ["Front", "Back", "Left", "Right", "Top", "Iso"] as const) {
+      await page.getByRole("button", { name: label, exact: true }).click();
+      await page.waitForTimeout(80);
+      presetPositions.add((await diagnostics(preview.locator("canvas"))).cameraPosition!);
+      await expect(stage.locator(".asset-preview-canvas")).toHaveCount(1);
+      await expect(preview.locator("canvas")).toHaveCount(1);
+    }
+    expect(presetPositions.size).toBe(6);
+    await preview.screenshot({ path: `test-results/final-reference-${id}.png` });
+  }
+  // The isolated server deliberately disables HMR; Chromium can surface the
+  // unopened dev socket closing as a page error even though the app is ready.
+  expect(errors.filter((message) => message !== "WebSocket closed without opened.")).toEqual([]);
 });
 
 test("room, index and facility expose the same quality preference without changing saved content", async ({

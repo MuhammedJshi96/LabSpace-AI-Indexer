@@ -194,6 +194,7 @@ describe("LabSpace room readiness audit", () => {
       hostedOpenings: expect.any(Boolean),
       supportedBenchEquipment: expect.any(Boolean),
       objectsInsideBoundary: expect.any(Boolean),
+      frontWorkingZonesClear: expect.any(Boolean),
       uniqueIndexCodes: expect.any(Boolean),
     });
     expect(result.basis).toContainEqual(expect.stringContaining("not regulatory certification"));
@@ -212,8 +213,33 @@ describe("LabSpace room readiness audit", () => {
       hostedOpenings: true,
       objectsInsideBoundary: true,
       supportedBenchEquipment: true,
+      frontWorkingZonesClear: true,
       uniqueIndexCodes: true,
     });
+  });
+
+  it("detects the awkward DEMO-01 service-face arrangement that the old audit missed", () => {
+    const project = createPublicShowcaseProject();
+    const room = project.rooms.find((entry) => entry.code === "DEMO-01")!;
+    const biosafety = room.scene.objects.find(
+      (entry) => entry.assetDefinitionId === "biosafety-cabinet",
+    )!;
+    const chair = room.scene.objects.find(
+      (entry) => entry.assetDefinitionId === "laboratory-chair",
+    )!;
+    biosafety.rotation.z = 270;
+    chair.rotation.z = 90;
+
+    const result = auditRoom({ roomCode: "DEMO-01" }, () => project);
+
+    expect(result.status).toBe("attention");
+    expect(result.checks.frontWorkingZonesClear).toBe(false);
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({
+        title: "Front working zone obstructed",
+        objectIds: expect.arrayContaining([biosafety.id]),
+      }),
+    );
   });
 
   it("rejects hidden template rooms and unexpected input", () => {
@@ -500,6 +526,81 @@ describe("LabSpace hypothetical move validation", () => {
 });
 
 describe("LabSpace valid-placement recommendations", () => {
+  it("interprets in-front-of from the reference object and returns a facing rotation", () => {
+    const { project, room, first, second } = spatialFixture();
+    first.assetDefinitionId = "biosafety-cabinet";
+    first.name = "Biosafety cabinet";
+    first.dimensions = { width: 1500, depth: 800, height: 2250 };
+    first.position = { x: 4600, y: 3900, z: 0 };
+    second.assetDefinitionId = "laboratory-chair";
+    second.name = "Laboratory chair";
+    second.dimensions = { width: 560, depth: 560, height: 920 };
+    second.position = { x: 2000, y: 2000, z: 0 };
+    second.rotation.z = 0;
+    room.scene.objects = [first, second];
+
+    const result = recommendObjectPlacements(
+      {
+        objectId: first.id,
+        relativeTo: {
+          objectId: second.id,
+          relation: "in-front-of",
+          clearanceMm: 500,
+        },
+        limit: 2,
+      },
+      () => project,
+    );
+
+    expect(result.relativeTo).toMatchObject({
+      objectId: second.id,
+      relation: "in-front-of",
+      clearanceMm: 500,
+      facingRotationDeg: 180,
+    });
+    expect(result.preferredTarget).toEqual({ xMm: 2000, yMm: 3200 });
+    expect(result.candidates.length).toBeGreaterThan(0);
+    expect(result.candidates[0].target.rotationDeg).toBe(180);
+    expect(result.candidates[0].rationale.join(" ")).toContain("authored front");
+    expect(
+      validateObjectMove(
+        {
+          objectId: first.id,
+          target: {
+            xMm: result.candidates[0].target.xMm,
+            yMm: result.candidates[0].target.yMm,
+          },
+          rotationDeg: result.candidates[0].target.rotationDeg,
+        },
+        () => project,
+      ).valid,
+    ).toBe(true);
+  });
+
+  it("returns no candidate instead of silently crossing to the wrong side", () => {
+    const { project, room, first, second } = spatialFixture();
+    first.assetDefinitionId = "biosafety-cabinet";
+    first.dimensions = { width: 1500, depth: 800, height: 2250 };
+    first.position = { x: 3000, y: 3500, z: 0 };
+    second.assetDefinitionId = "laboratory-chair";
+    second.dimensions = { width: 560, depth: 560, height: 920 };
+    second.position = { x: 700, y: 2200, z: 0 };
+    second.rotation.z = 90;
+    room.scene.objects = [first, second];
+
+    const result = recommendObjectPlacements(
+      {
+        objectId: first.id,
+        relativeTo: { objectId: second.id, relation: "in-front-of", clearanceMm: 500 },
+      },
+      () => project,
+    );
+
+    expect(result.preferredTarget.xMm).toBeLessThan(0);
+    expect(result.candidates).toEqual([]);
+    expect(result.relativeTo?.facingRotationDeg).toBe(270);
+  });
+
   it("ranks diverse valid alternatives near a blocked preferred target without mutation", () => {
     const { project, first, second } = spatialFixture();
     const before = structuredClone(project);
@@ -582,6 +683,16 @@ describe("LabSpace valid-placement recommendations", () => {
         () => fresh.project,
       ),
     ).toThrow("Unexpected input field");
+    expect(() =>
+      recommendObjectPlacements(
+        {
+          objectId: fresh.first.id,
+          preferredTarget: { xMm: 2000, yMm: 2000 },
+          relativeTo: { objectId: fresh.second.id, relation: "in-front-of" },
+        },
+        () => fresh.project,
+      ),
+    ).toThrow("either preferredTarget or relativeTo");
   });
 
   it("keeps ranked recommendation evidence compact", () => {

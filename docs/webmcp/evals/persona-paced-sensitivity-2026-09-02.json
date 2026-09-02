@@ -1,0 +1,71 @@
+{
+  "model": "LabSpace persona-paced sensitivity model",
+  "date": "2026-09-02",
+  "source": "productivity-benchmark-v2-2026-09-02.json task medians",
+  "warning": "Synthetic sensitivity analysis only. Profiles and recoveries are explicit assumptions, not observed people, disability claims, or usability-study evidence.",
+  "assumptions": {
+    "charactersPerWord": 5,
+    "totalTime": "Measured system median plus modeled human overhead",
+    "overlapLimitation": "The additive model does not estimate overlap between human reading and background application work.",
+    "typedPrompt": "The complete standardized request is typed from scratch.",
+    "preparedPrompt": "The complete standardized request is read, focused, and pasted; input is not treated as zero-cost.",
+    "voicePrompt": "Includes microphone activation, profile-specific speaking time, and a complete transcript review before submission; perfect recognition and automatic submission are not assumed."
+  },
+  "summaries": [
+    {
+      "profileId": "laboratory-expert",
+      "label": "Laboratory expert · confident PC user",
+      "manualMilliseconds": 211301,
+      "typedWebmcpMilliseconds": 261278,
+      "typedChangePercent": 23.7,
+      "preparedWebmcpMilliseconds": 167701,
+      "preparedChangePercent": -20.6,
+      "voiceWebmcpMilliseconds": 201045,
+      "voiceChangePercent": -4.9
+    },
+    {
+      "profileId": "first-time-labspace-user",
+      "label": "Researcher · first-time LabSpace user",
+      "manualMilliseconds": 274122,
+      "typedWebmcpMilliseconds": 341640,
+      "typedChangePercent": 24.6,
+      "preparedWebmcpMilliseconds": 210060,
+      "preparedChangePercent": -23.4,
+      "voiceWebmcpMilliseconds": 248285,
+      "voiceChangePercent": -9.4
+    },
+    {
+      "profileId": "general-non-researcher",
+      "label": "General professional · no laboratory background",
+      "manualMilliseconds": 325431,
+      "typedWebmcpMilliseconds": 406365,
+      "typedChangePercent": 24.9,
+      "preparedWebmcpMilliseconds": 248568,
+      "preparedChangePercent": -23.6,
+      "voiceWebmcpMilliseconds": 289974,
+      "voiceChangePercent": -10.9
+    },
+    {
+      "profileId": "programmer",
+      "label": "Programmer · strong PC skills, limited laboratory context",
+      "manualMilliseconds": 206722,
+      "typedWebmcpMilliseconds": 248039,
+      "typedChangePercent": 20.0,
+      "preparedWebmcpMilliseconds": 177964,
+      "preparedChangePercent": -13.9,
+      "voiceWebmcpMilliseconds": 209579,
+      "voiceChangePercent": 1.4
+    },
+    {
+      "profileId": "low-digital-confidence",
+      "label": "General user · low digital confidence",
+      "manualMilliseconds": 492522,
+      "typedWebmcpMilliseconds": 627018,
+      "typedChangePercent": 27.3,
+      "preparedWebmcpMilliseconds": 332251,
+      "preparedChangePercent": -32.5,
+      "voiceWebmcpMilliseconds": 381717,
+      "voiceChangePercent": -22.5
+    }
+  ]
+}

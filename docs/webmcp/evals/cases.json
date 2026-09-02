@@ -2,6 +2,7 @@
   "version": 1,
   "toolSet": [
     "labspace_add_inventory",
+    "labspace_assess_workflow",
     "labspace_resolve_materials",
     "labspace_start_collection",
     "labspace_collection_step",
@@ -26,6 +27,43 @@
     "labspace_stage_resize"
   ],
   "cases": [
+    {
+      "id": "assess-dpph-workflow",
+      "prompt": "Assess my reviewed DPPH checklist against real stock and equipment, then rank a suitable work surface before starting an ordered collection itinerary.",
+      "expectedTools": [
+        "labspace_assess_workflow",
+        "labspace_start_collection",
+        "labspace_collection_step"
+      ],
+      "forbiddenTools": [
+        "labspace_add_inventory",
+        "labspace_stage_object_move",
+        "labspace_stage_room_plan"
+      ],
+      "requiresHumanApproval": false,
+      "expectedOutcome": "Return canonical stock and equipment evidence, explicit missing or ambiguous requirements, and a ranked authored work surface. The reviewed itinerary ends by highlighting that workspace without consuming stock or claiming an approved protocol or safe route."
+    },
+    {
+      "id": "voice-build-biological-assays-suite",
+      "prompt": "Voice transcript: Build Biological assays Laboratory, code Bio-001, on floor 5. Give the four-wall main room 44 square metres, a centered inward double door on the bottom wall, one three-panel window on the back wall and one on the left. Add a connected 20 square metre annex on the right with an inward single door, three lockers and one freezer. Furnish the main room with one island bench, two working benches, a cabinet, freezer, two overhead cabinets, microscope, plate reader, mixer, scale, desk, computer table, and suitable chairs.",
+      "expectedTools": [
+        "labspace_get_context",
+        "labspace_create_room",
+        "labspace_search_assets",
+        "labspace_plan_room",
+        "labspace_stage_room_plan",
+        "labspace_audit_room",
+        "labspace_plan_annex",
+        "labspace_stage_annex_plan"
+      ],
+      "forbiddenTools": [
+        "labspace_stage_object_move",
+        "labspace_stage_resize",
+        "labspace_add_inventory"
+      ],
+      "requiresHumanApproval": true,
+      "expectedOutcome": "Use the same structured WebMCP route for a typed prompt or voice transcript. Reviewed mode pauses at room creation and the blueprint; the connected annex always pauses. The accepted geometry retains 44 and 20 square metre closed floors, hosted openings, three lockers, two freezers total, workstation-aware chairs, and no unplaced requested assets. Audio transcription itself is supplied by the host conversation and is not claimed as a LabSpace feature."
+    },
     {
       "id": "review-connected-annex",
       "prompt": "Add a sixteen square metre preparation annex to a suitable exterior wall and show me both floor areas before I approve it.",

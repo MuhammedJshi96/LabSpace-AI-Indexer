@@ -136,6 +136,101 @@ export function objectBounds(object: SceneObject) {
   };
 }
 
+export type FrontAccessRequirement = {
+  clearanceMm: number;
+  lateralMarginMm: number;
+  allowsAlignedOperatorSeat: boolean;
+};
+
+const FRONT_ACCESS_BY_ASSET = new Map<string, FrontAccessRequirement>([
+  ["biosafety-cabinet", { clearanceMm: 900, lateralMarginMm: 0, allowsAlignedOperatorSeat: true }],
+  ["fume-hood", { clearanceMm: 900, lateralMarginMm: 0, allowsAlignedOperatorSeat: true }],
+  ["laminar-flow", { clearanceMm: 900, lateralMarginMm: 0, allowsAlignedOperatorSeat: true }],
+]);
+
+const OPERATOR_SEAT_ASSETS = new Set(["office-chair", "laboratory-chair", "round-stool"]);
+
+/**
+ * Returns the authored front direction in the 2D room coordinate system.
+ * Asset fronts use local +Y; Konva's positive rotation turns that direction
+ * clockwise on the plan, matching the editor and chair-to-desk snap logic.
+ */
+export function objectFrontVector(object: SceneObject) {
+  const rotation = object.rotation.z + (object.flipVertical ? 180 : 0);
+  const angle = (rotation * Math.PI) / 180;
+  return { x: -Math.sin(angle), y: Math.cos(angle) };
+}
+
+export function frontAccessRequirement(object: SceneObject): FrontAccessRequirement | null {
+  return FRONT_ACCESS_BY_ASSET.get(object.assetDefinitionId ?? "") ?? null;
+}
+
+function objectFootprintCorners(object: SceneObject) {
+  const rotation = object.rotation.z + (object.flipVertical ? 180 : 0);
+  const angle = (rotation * Math.PI) / 180;
+  const lateral = { x: Math.cos(angle), y: Math.sin(angle) };
+  const forward = { x: -Math.sin(angle), y: Math.cos(angle) };
+  const halfWidth = object.dimensions.width / 2;
+  const halfDepth = object.dimensions.depth / 2;
+  return [
+    { across: -halfWidth, forward: -halfDepth },
+    { across: halfWidth, forward: -halfDepth },
+    { across: halfWidth, forward: halfDepth },
+    { across: -halfWidth, forward: halfDepth },
+  ].map((point) => ({
+    x: object.position.x + lateral.x * point.across + forward.x * point.forward,
+    y: object.position.y + lateral.y * point.across + forward.y * point.forward,
+  }));
+}
+
+function frontAccessPolygon(object: SceneObject, requirement: FrontAccessRequirement) {
+  const front = objectFrontVector(object);
+  const lateral = { x: front.y, y: -front.x };
+  const halfWidth = object.dimensions.width / 2 + requirement.lateralMarginMm;
+  const near = object.dimensions.depth / 2 + 20;
+  const far = object.dimensions.depth / 2 + requirement.clearanceMm;
+  return [
+    { across: -halfWidth, forward: near },
+    { across: halfWidth, forward: near },
+    { across: halfWidth, forward: far },
+    { across: -halfWidth, forward: far },
+  ].map((point) => ({
+    x: object.position.x + lateral.x * point.across + front.x * point.forward,
+    y: object.position.y + lateral.y * point.across + front.y * point.forward,
+  }));
+}
+
+function polygonsIntersect(
+  first: Array<{ x: number; y: number }>,
+  second: Array<{ x: number; y: number }>,
+) {
+  const separatedOnAnyAxis = (source: Array<{ x: number; y: number }>) => {
+    for (let index = 0; index < source.length; index += 1) {
+      const start = source[index];
+      const end = source[(index + 1) % source.length];
+      const axis = { x: -(end.y - start.y), y: end.x - start.x };
+      const firstProjection = first.map((point) => point.x * axis.x + point.y * axis.y);
+      const secondProjection = second.map((point) => point.x * axis.x + point.y * axis.y);
+      if (
+        Math.max(...firstProjection) <= Math.min(...secondProjection) + 1 ||
+        Math.max(...secondProjection) <= Math.min(...firstProjection) + 1
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+  return !separatedOnAnyAxis(first) && !separatedOnAnyAxis(second);
+}
+
+function isAlignedOperatorSeat(host: SceneObject, candidate: SceneObject) {
+  if (!OPERATOR_SEAT_ASSETS.has(candidate.assetDefinitionId ?? "")) return false;
+  if (candidate.assetDefinitionId === "round-stool") return true;
+  const hostFront = objectFrontVector(host);
+  const seatFront = objectFrontVector(candidate);
+  return seatFront.x * -hostFront.x + seatFront.y * -hostFront.y >= Math.cos(Math.PI / 6);
+}
+
 export function requiresBenchSupport(object: SceneObject): boolean {
   return ASSET_BY_ID.get(object.assetDefinitionId)?.connection === "bench";
 }
@@ -447,6 +542,45 @@ export function validatePlacement(room: Room): ValidationWarning[] {
           message: `${object.name} must rest at ${support.elevationMm} mm on ${support.object.name}.`,
         });
       }
+    }
+  }
+  for (const host of placed) {
+    const requirement = frontAccessRequirement(host);
+    if (!requirement) continue;
+    const accessPolygon = frontAccessPolygon(host, requirement);
+    const accessOutsideFloor = floorPolygon
+      ? accessPolygon.some((point) => !pointIsInsideFloorPolygon(point, floorPolygon))
+      : accessPolygon.some(
+          (point) => point.x < 0 || point.y < 0 || point.x > room.width || point.y > room.depth,
+        );
+    if (accessOutsideFloor) {
+      warnings.push({
+        id: `access-front-boundary-${host.id}`,
+        severity: "warning",
+        objectIds: [host.id],
+        title: "Front working zone faces a boundary",
+        message: `${host.name}'s authored front does not provide its ${requirement.clearanceMm} mm planning access zone inside ${room.name}. Rotate or reposition it before use; this is planning evidence, not a certified clearance assessment.`,
+      });
+    }
+    for (const other of placed) {
+      if (
+        other.id === host.id ||
+        other.parentObjectId === host.id ||
+        host.parentObjectId === other.id ||
+        other.position.z >= Math.min(host.dimensions.height, 1_700) ||
+        other.position.z + other.dimensions.height <= 0 ||
+        !polygonsIntersect(accessPolygon, objectFootprintCorners(other)) ||
+        (requirement.allowsAlignedOperatorSeat && isAlignedOperatorSeat(host, other))
+      ) {
+        continue;
+      }
+      warnings.push({
+        id: `access-front-${host.id}-${other.id}`,
+        severity: "warning",
+        objectIds: [host.id, other.id],
+        title: "Front working zone obstructed",
+        message: `${other.name} occupies ${host.name}'s ${requirement.clearanceMm} mm front working zone. Keep the service face usable or align an operator seat toward it; this is planning evidence, not a certified clearance assessment.`,
+      });
     }
   }
   for (let index = 0; index < placed.length; index += 1) {

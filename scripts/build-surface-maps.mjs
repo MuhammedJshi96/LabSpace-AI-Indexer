@@ -1,6 +1,6 @@
 /** Tiny, original, tileable material data; not photographic color overlays.
  * G stores roughness variation, B=1 preserves the material's metalness factor.
- * Five shared 128px pairs keep the entire catalog's GPU texture budget bounded.
+ * Six shared 128px pairs keep the entire catalog's GPU texture budget bounded.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { deflateSync } from "node:zlib";
@@ -10,9 +10,9 @@ import { Buffer } from "node:buffer";
 import process from "node:process";
 import { URL } from "node:url";
 export const SURFACE_REVISION = "surface-r4";
-export const SURFACES = ["brushed", "enamel", "phenolic", "polymer", "micrograin"];
+export const SURFACES = ["brushed", "enamel", "phenolic", "polymer", "micrograin", "woodgrain"];
 export const surfaceRevision = (surface) =>
-  surface === "micrograin" ? "surface-r5" : SURFACE_REVISION;
+  surface === "micrograin" ? "surface-r5" : surface === "woodgrain" ? "surface-r6" : SURFACE_REVISION;
 const size = 128;
 function crc32(bytes) {
   let crc = 0xffffffff;
@@ -70,6 +70,13 @@ export function buildSurfaceMaps(directory) {
           3;
         return cross * 0.7 + softened * 0.3;
       }
+      if (surface === "woodgrain") {
+        // Directional sealed-laminate pore variation.  This changes reflection
+        // and roughness only; the authored walnut/maple colour remains intact.
+        const band = (1 + Math.sin((y * Math.PI) / 8 + rows[y] * 1.4)) * .5;
+        const pore = grain[y * size + x] * .35 + grain[y * size + ((x + 3) % size)] * .15;
+        return band * .5 + pore;
+      }
       return surface === "brushed"
         ? rows[y] * 0.85 + grain[y * size + x] * 0.15
         : grain[y * size + x];
@@ -80,6 +87,8 @@ export function buildSurfaceMaps(directory) {
     const amplitude =
       surface === "micrograin"
         ? 0.1
+        : surface === "woodgrain"
+          ? 0.032
         : surface === "brushed"
           ? 0.022
           : surface === "enamel"
@@ -98,6 +107,8 @@ export function buildSurfaceMaps(directory) {
         rough[i + 1] =
           surface === "micrograin"
             ? Math.round(226 + height(x, y) * 29)
+            : surface === "woodgrain"
+              ? Math.round(224 + height(x, y) * 24)
             : Math.round(248 + height(x, y) * 7);
         rough[i + 2] = 255;
       }

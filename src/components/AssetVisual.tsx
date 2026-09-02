@@ -16,6 +16,7 @@ import { ProceduralAssetModel } from "./ProceduralAssetModel";
 import { applyStoragePose, cloneStorageScene } from "../lib/storage-articulation";
 import { applyReviewedAuthoredFinish } from "../lib/authored-finish";
 import { bindPresentationMaterials, type PresentationBinding } from "../lib/presentation-materials";
+import { attachExclusiveScene } from "../lib/scene-instance-lifecycle";
 import { useRenderSettings } from "../store/render-settings-store";
 
 type DetailLevel = "room" | "preview";
@@ -137,6 +138,21 @@ function enhanceAuthoredMaterial(material: THREE.Material) {
 function ReadySignal({ onReady }: { onReady?: () => void }) {
   useEffect(() => onReady?.(), [onReady]);
   return null;
+}
+
+function ManagedSceneInstance({ scene }: { scene: THREE.Object3D }) {
+  const host = useRef<THREE.Group>(null);
+  const invalidate = useThree((state) => state.invalidate);
+
+  useLayoutEffect(() => {
+    const current = host.current;
+    if (!current) return;
+    const release = attachExclusiveScene(current, scene);
+    invalidate();
+    return release;
+  }, [invalidate, scene]);
+
+  return <group ref={host} />;
 }
 
 function ProceduralFallback(props: AssetVisualProps & { signalReady?: boolean }) {
@@ -261,7 +277,7 @@ function AuthoredAssetModel({
         depth / (authored.depth / 1000),
       ]}
     >
-      <primitive object={enhancedScene.scene} />
+      <ManagedSceneInstance scene={enhancedScene.scene} />
     </group>
   );
 }

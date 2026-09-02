@@ -1,6 +1,7 @@
 import { buildDigitalTwinIndex } from "../domain/digital-twin-index";
 import type { Project } from "../domain/schema";
 import { resolveStorageAccess } from "../domain/storage-access";
+import { navigateWorkspace } from "../lib/workspace-navigation";
 import { useEditorStore, type SpatialFocusRequest } from "../store/editor-store";
 import type {
   FocusLabRecordInput,
@@ -99,6 +100,9 @@ export function focusLabRecord(
   });
   if (!applied) {
     throw new LabSpaceActionError("LabSpace could not focus the current physical record.");
+  }
+  if (typeof window !== "undefined" && window.location.pathname !== "/digital-twin") {
+    navigateWorkspace("/digital-twin");
   }
 
   const result: FocusLabRecordResult = {

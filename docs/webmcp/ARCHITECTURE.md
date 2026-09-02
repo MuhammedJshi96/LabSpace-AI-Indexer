@@ -6,7 +6,7 @@ LabSpace exposes a semantic laboratory digital twin through the browser-native W
 Browser agent
     |
     v
-document.modelContext (twenty-three bounded WebMCP tools)
+document.modelContext (twenty-four bounded WebMCP tools)
     |
     v
 LabSpace schema/error adapter
@@ -46,11 +46,12 @@ LabSpace schema/error adapter
 | `labspace_stage_resize`          | Apply a reversible resize preview after successful validation             | No; human approval is required before history or autosave        |
 | `labspace_stage_inventory_plan`  | Present proposed inventory records for researcher review                  | No; human approval is required before record creation            |
 | `labspace_stage_room_plan`       | Stage one complete multi-object room blueprint                            | Reviewed by default; bounded Fast Draft first-build write        |
-| `labspace_stage_annex_plan`      | Stage one connected annex transaction                                     | Explicit human approval in every execution mode                   |
+| `labspace_stage_annex_plan`      | Stage one connected annex transaction                                     | Explicit human approval in every execution mode                  |
 | `labspace_audit_room`            | Report deterministic room-readiness evidence                              | No                                                               |
 | `labspace_add_inventory`         | Validate and stage detailed inventory in one call                         | No; researcher approval creates records                          |
+| `labspace_assess_workflow`       | Ground stock/equipment and rank authored work surfaces                    | No; protocol and suitability remain researcher decisions         |
 | `labspace_resolve_materials`     | Match suggested materials to actual stock and equipment                   | No; missing/ambiguous matches remain explicit                    |
-| `labspace_start_collection`      | Begin an exact-record, room-grouped itinerary                             | No; presentation state only                                      |
+| `labspace_start_collection`      | Begin an exact-record itinerary with an optional final workspace          | No; presentation state only                                      |
 | `labspace_collection_step`       | Status, Next, Previous, or finish                                         | No; presentation state only                                      |
 
 There is deliberately no agent-accessible mode switch, approve, delete, reset, import, or unrestricted project-write tool. Reviewed is restored on every application session. Fast Draft is selected only through the visible human interface and its allowlist cannot edit an existing room or stock record.
@@ -64,6 +65,7 @@ There is deliberately no agent-accessible mode switch, approve, delete, reset, i
 - `src/agent/labspace-workspace-actions.ts` validates laboratory and room identity, stages blank-room creation in Reviewed mode, applies it only after approval or bounded Fast Draft authorization, assigns its facility floor, and issues the in-memory one-use initial-plan capability.
 - `src/agent/labspace-layout-actions.ts` searches the canonical asset catalog and calculates bounded multi-object plans from canonical dimensions, the active floor/wall geometry, and the existing placement validator. It pairs seats with workstations, faces perimeter assets inward, places supported equipment at worktop elevation, and resolves canonical wall openings. Plans are read-only.
 - `src/agent/labspace-inventory-actions.ts` lists canonical locations and validates bounded project-wide inventory proposals without mutating project state.
+- `src/agent/labspace-workflow-actions.ts` grounds a researcher-supplied material/equipment checklist and ranks real authored work surfaces using indexed facts and deterministic geometry. It never generates or approves a protocol.
 - `src/agent/labspace-collection-actions.ts` resolves suggested material names against canonical records and stores a session-only collection itinerary. It reuses exact-record focus, never invents a protocol, and does not consume or reserve stock.
 - `src/agent/labspace-staging-actions.ts` creates one reversible room-creation, move, resize, complete-room, or inventory review only after validation. Fast Draft may consume the one-use capability to commit only the first complete blueprint of its newly created pristine room; all other staged changes remain pending review. It never writes directly to SQLite.
 - `src/components/AgentReviewPanel.tsx` is the human trust boundary. Approve creates one normal undoable history entry and schedules the existing autosave; Cancel restores the exact prior object or scene.
@@ -73,7 +75,7 @@ There is deliberately no agent-accessible mode switch, approve, delete, reset, i
 
 ## Registration lifecycle
 
-The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Once canonical project hydration finishes, each mount registers exactly twenty-three tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools. Inventory and annex approvals use the same revision-aware history and autosave boundary as the editor.
+The bridge mounts on `/`, `/digital-twin`, and `/inventory`. Once canonical project hydration finishes, each mount registers exactly twenty-four tools using one `AbortController`. Cleanup aborts that registration before React StrictMode can remount it. Internal `/asset-preview`, `/facility`, and `/procedural-asset-capture` routes receive no tools. Inventory and annex approvals use the same revision-aware history and autosave boundary as the editor.
 
 ## Grounding and safety
 

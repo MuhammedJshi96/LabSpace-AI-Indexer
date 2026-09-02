@@ -359,8 +359,25 @@ function normalizePlanInput(input: unknown): PlanRoomLayoutInput {
   return { brief, assets, aisleMm, roomShell };
 }
 
+const ASSET_SEARCH_ALIASES: Record<string, string[]> = {
+  "computer-workstation": ["computer table", "computer desk", "office workstation", "pc table"],
+  "analytical-balance": ["laboratory scale", "precision scale", "weighing scale"],
+  "wide-window": ["three panel window", "three pane window", "3 panel window"],
+  "lab-bench": ["working bench", "work bench", "standard bench"],
+  "center-island-bench": ["island workbench", "central island"],
+  "wall-cabinet": ["overhead cabinet", "upper cabinet"],
+};
+
 function assetSearchText(asset: AssetDefinition) {
-  return [asset.id, asset.name, asset.shortName, asset.category, asset.description, ...asset.tags]
+  return [
+    asset.id,
+    asset.name,
+    asset.shortName,
+    asset.category,
+    asset.description,
+    ...asset.tags,
+    ...(ASSET_SEARCH_ALIASES[asset.id] ?? []),
+  ]
     .join(" ")
     .toLowerCase();
 }
@@ -381,9 +398,17 @@ export function searchLabAssets(
       terms.every((term) => assetSearchText(asset).includes(term)),
   ).sort((left, right) => {
     const query = normalized.query.toLowerCase();
-    const leftExact = left.name.toLowerCase() === query || left.id === query ? 0 : 1;
-    const rightExact = right.name.toLowerCase() === query || right.id === query ? 0 : 1;
-    return leftExact - rightExact || left.name.localeCompare(right.name);
+    const rank = (asset: AssetDefinition) => {
+      const name = asset.name.toLowerCase();
+      const aliases = ASSET_SEARCH_ALIASES[asset.id] ?? [];
+      if (name === query || asset.id === query) return 0;
+      if (aliases.some((alias) => alias === query)) return 1;
+      if (name.startsWith(query)) return 2;
+      if (name.includes(query)) return 3;
+      if (aliases.some((alias) => alias.includes(query))) return 4;
+      return 5;
+    };
+    return rank(left) - rank(right) || left.name.localeCompare(right.name);
   });
   return {
     query: normalized.query,
@@ -442,9 +467,15 @@ function spatiallyValid(room: Room, candidate: SceneObject) {
   return !validatePlacement(hypothetical).some(
     (warning) =>
       warning.objectIds.includes(candidate.id) &&
-      ["outside-", "below-floor-", "above-ceiling-", "overlap-", "unsupported-", "opening-"].some(
-        (prefix) => warning.id.startsWith(prefix),
-      ),
+      [
+        "outside-",
+        "below-floor-",
+        "above-ceiling-",
+        "overlap-",
+        "unsupported-",
+        "opening-",
+        "access-front-",
+      ].some((prefix) => warning.id.startsWith(prefix)),
   );
 }
 
@@ -557,6 +588,13 @@ function workstationSeatCandidate(
       );
     })
     .sort((left, right) => {
+      const hostRank = (object: SceneObject) => {
+        const profile = ASSET_BY_ID.get(object.assetDefinitionId ?? "")?.profile;
+        // Operator seats belong with explicit workstations/desks before general laboratory benches.
+        return profile === "workstation" ? 0 : profile === "table" ? 1 : 2;
+      };
+      const roleDifference = hostRank(left) - hostRank(right);
+      if (roleDifference) return roleDifference;
       const leftPlanned = left.id.startsWith("plan-") ? 0 : 1;
       const rightPlanned = right.id.startsWith("plan-") ? 0 : 1;
       return leftPlanned - rightPlanned || left.position.x - right.position.x;

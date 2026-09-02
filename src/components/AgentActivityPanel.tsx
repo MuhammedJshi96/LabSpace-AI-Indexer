@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  ArrowRight,
   Browser,
   ChatCircleText,
   Check,
@@ -7,11 +8,14 @@ import {
   Code,
   Copy,
   DownloadSimple,
+  FileArrowDown,
   Lightning,
+  MapPinLine,
   Path,
   Robot,
   ShieldCheck,
   Trash,
+  Waveform,
   X,
 } from "@phosphor-icons/react";
 import {
@@ -27,8 +31,25 @@ import {
   executeReadOnlyToolCompat,
   type ExecutableModelContext,
 } from "../webmcp/execute-tool-compat";
+import { downloadJudgeEvidenceBundle, summarizeJudgeEvidence } from "../agent/judge-evidence";
+import { COMPETITION_EVIDENCE_LAYER_ENABLED } from "../config/competition-evidence";
+import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 
-type InspectorTab = "activity" | "workflows" | "guide" | "tools";
+type InspectorTab = "mission" | "activity" | "workflows" | "guide" | "tools";
+
+const webMcpOnlyPrompt = (task: string) =>
+  `Use only the LabSpace WebMCP tools exposed by this page (the labspace_* tools). Do not click, drag, type into forms, or use browser/computer-control actions for this task. Start with labspace_get_context. If the labspace_* tools are unavailable, stop and tell me WebMCP is not connected; do not fall back to UI automation. ${task}`;
+
+const SIGNATURE_MISSION = {
+  title: "Reveal exact physical evidence",
+  outcome: "Natural language → canonical record → focused storage proof",
+  prompt: webMcpOnlyPrompt(
+    "Find Reference standards in DEMO-01 with labspace_search_records, inspect the returned canonical record with labspace_inspect_record, then use labspace_focus_record to reveal its physical shelf and access preview. Explain the laboratory, room, cabinet, and shelf path using only those returned tool results, then wait for me.",
+  ),
+  voicePrompt: webMcpOnlyPrompt(
+    "Find Reference standards in DEMO-01 and use the canonical record tools to show its exact shelf in 3D. Tell me the verified storage path, then wait.",
+  ),
+} as const;
 
 const WEBMCP_WORKFLOWS = [
   {
@@ -36,56 +57,72 @@ const WEBMCP_WORKFLOWS = [
     mode: "Review",
     title: "Create an inventory record",
     outcome: "Verified destination · detailed entry · researcher approval",
-    prompt:
+    prompt: webMcpOnlyPrompt(
       "Add 12 boxes of pipette tips to the current room. Find suitable recorded storage locations first, ask me to choose if ambiguous, then use labspace_add_inventory to stage the exact entry for my review. Do not invent an owner or expiry date.",
+    ),
   },
   {
     id: "collection",
     mode: "Collect",
     title: "Prepare a grounded collection guide",
     outcome: "Proposed checklist · real stock · Next/Previous evidence",
-    prompt:
+    prompt: webMcpOnlyPrompt(
       "Help prepare a collection checklist for my planned work. Ask for my approved protocol or material list if needed; label your suggestions clearly. Match the materials against LabSpace, report missing or ambiguous stock, then start a collection guide for the records I choose. Do not treat this as an experiment protocol or a safety-approved walking route.",
+    ),
+  },
+  {
+    id: "workflow-assessment",
+    mode: "Assess",
+    title: "Prove an assay workflow",
+    outcome: "Recorded stock · ordered collection · highlighted work surface",
+    prompt: webMcpOnlyPrompt(
+      "Assess a planned DPPH assay using my researcher-approved checklist: DPPH reagent, methanol, sample tubes and pipette tips; require a plate reader and vortex mixer. Use labspace_assess_workflow to ground every item and rank a real clear laboratory work surface. Report missing or ambiguous records. After I choose the exact material records, use labspace_start_collection with the recommended workspaceObjectId so Next/Previous ends by highlighting the working bench. Do not invent a protocol, substitution, safe route, or permission to use anything.",
+    ),
   },
   {
     id: "annex",
     mode: "Review",
     title: "Add a connected annex",
     outcome: "Stable wall split · separate floor · one reviewed commit",
-    prompt:
+    prompt: webMcpOnlyPrompt(
       "Audit the current room, choose a suitable full-height exterior wall, and calculate a 16 square metre preparation annex with an internal narrow-lite door and one outer observation window. Show me the primary and annex areas, then stage the connected annex for my approval. Do not approve it for me.",
+    ),
   },
   {
     id: "build",
     mode: "Create",
     title: "Build a complete room",
     outcome: "Polygon shell · hosted openings · supported equipment",
-    prompt:
-      "Create a six-wall sample-preparation room on Floor 8, about 36 square metres. Add one inward-opening double door, two observation windows, two laboratory benches, storage, and a rotary evaporator on a real worktop. Use LabSpace catalog assets and complete the first validated blueprint.",
+    prompt: webMcpOnlyPrompt(
+      "Build a new room named Biological assays Laboratory, code Bio-001, on Floor 5. Use an 8,000 by 5,500 millimetre four-wall shell (44 square metres), a centered inward double door on wall 1, and one wide three-panel window on wall 3 plus one on wall 4. Add one island bench, two standard lab benches, one cabinet, one freezer, two wall cabinets, a microscope, plate reader, vortex mixer and analytical balance on real worktops, plus one office desk and one computer workstation with a chair paired to each. Stage the complete blueprint for my approval. After approval, audit the room, identify wall 2, calculate a 4,000 by 5,000 millimetre right-side annex near the wall end with a single door opening into the annex, three lockers and one freezer, then stage that annex separately for my approval. Pause at every human review boundary and continue only after I approve.",
+    ),
   },
   {
     id: "evidence",
     mode: "Trace",
     title: "Find exact physical evidence",
     outcome: "Canonical record · storage path · focused 3D scene",
-    prompt:
+    prompt: webMcpOnlyPrompt(
       "Find Reference standards in LabSpace, inspect the exact canonical record, and focus its room and storage location. Explain the laboratory, room, cabinet, shelf or drawer path using only the returned evidence.",
+    ),
   },
   {
     id: "audit",
     mode: "Audit",
     title: "Audit and improve a room",
     outcome: "Deterministic issues · ranked alternative · review preview",
-    prompt:
-      "Audit the active LabSpace room. Summarize its deterministic readiness, identify the highest-priority geometry issue, and—if it involves a movable object—find valid alternatives and stage the best grounded correction for my review. Do not approve it for me.",
+    prompt: webMcpOnlyPrompt(
+      "Audit the active LabSpace room. Summarize its deterministic readiness, identify the highest-priority geometry or front-working-zone issue, and—if it involves a movable object—use labspace_find_valid_placements to find grounded alternatives and stage the best correction for my review. For requests such as in front of or behind another object, pass relativeTo so direction is based on the reference object's authored front. Do not approve it for me.",
+    ),
   },
   {
     id: "resize",
     mode: "Review",
     title: "Resize a hosted opening",
     outcome: "Wall-fit validation · accurate preview · human approval",
-    prompt:
+    prompt: webMcpOnlyPrompt(
       "Inspect the current room's observation windows. Calculate equal widths that fit their shared wall without overlap, validate the new dimensions, then stage the resize previews for my review. Do not approve any change.",
+    ),
   },
 ] as const;
 
@@ -96,6 +133,13 @@ const WEBMCP_TOOL_CATALOG = [
     mode: "Review",
     description:
       "One-call entry: validate exact rooms and locations, then approve the visible inventory review.",
+  },
+  {
+    name: "labspace_assess_workflow",
+    label: "Assess workflow readiness",
+    mode: "Read",
+    description:
+      "Grounds a reviewed material/equipment checklist and ranks real work surfaces for a final highlighted handoff.",
   },
   {
     name: "labspace_resolve_materials",
@@ -109,7 +153,7 @@ const WEBMCP_TOOL_CATALOG = [
     label: "Start collection guide",
     mode: "Navigate",
     description:
-      "Turn reviewed record IDs into a room-grouped Next/Previous checklist with exact-location focus.",
+      "Turn reviewed record IDs into a room-grouped Next/Previous checklist, optionally ending at an assessed work surface.",
   },
   {
     name: "labspace_collection_step",
@@ -123,7 +167,7 @@ const WEBMCP_TOOL_CATALOG = [
     label: "Audit room readiness",
     mode: "Read",
     description:
-      "Summarizes deterministic floor, boundary, support, opening, overlap, height, and identity checks.",
+      "Summarizes deterministic floor, boundary, support, front-working-zone, opening, overlap, height, and identity checks.",
   },
   {
     name: "labspace_create_room",
@@ -173,7 +217,7 @@ const WEBMCP_TOOL_CATALOG = [
     label: "Find valid placements",
     mode: "Simulate",
     description:
-      "Ranks diverse geometry-valid alternatives near a preferred area without changing the room.",
+      "Ranks geometry-valid alternatives near an area or relative to another object's authored front, with a usable service face.",
   },
   {
     name: "labspace_search_assets",
@@ -259,6 +303,8 @@ function bridgeCopy(status: "unavailable" | "registering" | "ready" | "error", c
 }
 
 export function AgentActivityPanel() {
+  const projectName = useEditorStore((state) => state.project.name);
+  const room = useEditorStore(selectActiveRoom);
   const events = useAgentActivityStore((state) => state.events);
   const open = useAgentActivityStore((state) => state.open);
   const bridgeStatus = useAgentActivityStore((state) => state.bridgeStatus);
@@ -271,7 +317,9 @@ export function AgentActivityPanel() {
   const loadEarlier = useAgentActivityStore((state) => state.loadEarlier);
   const executionMode = useWebMcpExecutionPolicyStore((state) => state.mode);
   const setExecutionMode = useWebMcpExecutionPolicyStore((state) => state.setModeFromHumanUi);
-  const [tab, setTab] = useState<InspectorTab>("activity");
+  const [tab, setTab] = useState<InspectorTab>(
+    COMPETITION_EVIDENCE_LAYER_ENABLED ? "mission" : "activity",
+  );
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [copiedWorkflow, setCopiedWorkflow] = useState<string | null>(null);
@@ -279,6 +327,7 @@ export function AgentActivityPanel() {
   const [activityActor, setActivityActor] = useState("all");
   const [activityStatus, setActivityStatus] = useState("all");
   const registeredCount = registeredTools.length;
+  const evidenceSummary = useMemo(() => summarizeJudgeEvidence(events), [events]);
   const filteredEvents = useMemo(
     () =>
       events.filter((event) => {
@@ -323,10 +372,11 @@ export function AgentActivityPanel() {
     }
   };
 
-  const copyWorkflow = async (id: string, prompt: string) => {
+  const copyWorkflow = async (id: string, prompt: string, revealWorkspace = false) => {
     try {
       await navigator.clipboard.writeText(prompt);
       setCopiedWorkflow(id);
+      if (revealWorkspace) setOpen(false);
       window.setTimeout(
         () => setCopiedWorkflow((current) => (current === id ? null : current)),
         1800,
@@ -336,6 +386,21 @@ export function AgentActivityPanel() {
         "The browser could not copy this prompt. Select the text and copy it manually.",
       );
     }
+  };
+
+  const exportJudgeEvidence = () => {
+    downloadJudgeEvidenceBundle(
+      {
+        projectName,
+        roomName: room.name,
+        roomCode: room.code,
+        route: window.location.pathname,
+        bridgeStatus,
+        registeredTools,
+        executionMode,
+      },
+      events,
+    );
   };
 
   const clearActivity = () => {
@@ -350,7 +415,12 @@ export function AgentActivityPanel() {
   if (!open) return null;
 
   return (
-    <aside className="agent-activity-panel" aria-label="WebMCP Inspector">
+    <aside
+      className={`agent-activity-panel${
+        COMPETITION_EVIDENCE_LAYER_ENABLED ? " is-competition-evidence" : ""
+      }`}
+      aria-label="WebMCP Inspector"
+    >
       <header>
         <span className="agent-activity-icon" aria-hidden="true">
           <ClockCounterClockwise size={18} weight="duotone" />
@@ -472,21 +542,195 @@ export function AgentActivityPanel() {
       </section>
 
       <div className="webmcp-tabs" role="tablist" aria-label="WebMCP inspector sections">
+        {COMPETITION_EVIDENCE_LAYER_ENABLED && (
+          <button role="tab" aria-selected={tab === "mission"} onClick={() => setTab("mission")}>
+            Judge mission
+          </button>
+        )}
         <button role="tab" aria-selected={tab === "activity"} onClick={() => setTab("activity")}>
-          Activity history <b>{events.length}</b>
+          {COMPETITION_EVIDENCE_LAYER_ENABLED ? "Evidence" : "Activity history"}{" "}
+          <b>{events.length}</b>
         </button>
-        <button role="tab" aria-selected={tab === "workflows"} onClick={() => setTab("workflows")}>
-          Agent workflows <b>{WEBMCP_WORKFLOWS.length}</b>
-        </button>
+        {!COMPETITION_EVIDENCE_LAYER_ENABLED && (
+          <button
+            role="tab"
+            aria-selected={tab === "workflows"}
+            onClick={() => setTab("workflows")}
+          >
+            Agent workflows <b>{WEBMCP_WORKFLOWS.length}</b>
+          </button>
+        )}
         <button role="tab" aria-selected={tab === "guide"} onClick={() => setTab("guide")}>
-          Use WebMCP
+          {COMPETITION_EVIDENCE_LAYER_ENABLED ? "Setup" : "Use WebMCP"}
         </button>
         <button role="tab" aria-selected={tab === "tools"} onClick={() => setTab("tools")}>
-          Registered tools <b>{registeredCount}</b>
+          {COMPETITION_EVIDENCE_LAYER_ENABLED ? "Tools" : "Registered tools"}{" "}
+          <b>{registeredCount}</b>
         </button>
       </div>
 
-      {tab === "activity" ? (
+      {tab === "mission" ? (
+        <div className="webmcp-mission" role="tabpanel">
+          <section className="webmcp-mission-hero">
+            <span className="webmcp-mission-kicker">60-second signature mission</span>
+            <h2>Ask. Prove. Decide.</h2>
+            <p>
+              Turn one natural-language request into canonical laboratory evidence, a focused 3D
+              location, and a visible human decision boundary.
+            </p>
+            <div className="webmcp-mission-context" aria-label="Active mission context">
+              <span>
+                <MapPinLine size={16} weight="duotone" />
+                <b>{room.name}</b>
+                <small>{room.code}</small>
+              </span>
+              <span className={`webmcp-mission-readiness is-${bridgeStatus}`}>
+                <span className="webmcp-status-dot" aria-hidden="true" />
+                {bridgeStatus === "ready" ? `${registeredCount} tools ready` : "Bridge not ready"}
+              </span>
+            </div>
+          </section>
+
+          <ol className="webmcp-evidence-path" aria-label="Signature WebMCP evidence path">
+            <li>
+              <span>1</span>
+              <div>
+                <small>Intent</small>
+                <b>Ask naturally</b>
+              </div>
+              <ArrowRight size={14} aria-hidden="true" />
+            </li>
+            <li>
+              <span>2</span>
+              <div>
+                <small>Grounding</small>
+                <b>Canonical tools</b>
+              </div>
+              <ArrowRight size={14} aria-hidden="true" />
+            </li>
+            <li>
+              <span>3</span>
+              <div>
+                <small>Spatial proof</small>
+                <b>Exact shelf</b>
+              </div>
+              <ArrowRight size={14} aria-hidden="true" />
+            </li>
+            <li>
+              <span>4</span>
+              <div>
+                <small>Control</small>
+                <b>Human decides</b>
+              </div>
+            </li>
+          </ol>
+
+          <section className="webmcp-signature-card">
+            <header>
+              <span>
+                <small>Recommended first run</small>
+                <strong>{SIGNATURE_MISSION.title}</strong>
+              </span>
+              <em>Read + focus</em>
+            </header>
+            <p>{SIGNATURE_MISSION.prompt}</p>
+            <small>{SIGNATURE_MISSION.outcome}</small>
+            <div>
+              <button
+                className="webmcp-primary-action"
+                onClick={() => void copyWorkflow("signature", SIGNATURE_MISSION.prompt, true)}
+                title="Copy the prompt and close this panel so the focused room stays visible"
+              >
+                {copiedWorkflow === "signature" ? (
+                  <Check size={16} weight="bold" />
+                ) : (
+                  <Copy size={16} />
+                )}
+                {copiedWorkflow === "signature" ? "Copied" : "Copy + show workspace"}
+              </button>
+              <button
+                onClick={() =>
+                  void copyWorkflow("signature-voice", SIGNATURE_MISSION.voicePrompt, true)
+                }
+                title="Copy a shorter voice prompt and close this panel so the workspace stays visible"
+              >
+                {copiedWorkflow === "signature-voice" ? (
+                  <Check size={16} weight="bold" />
+                ) : (
+                  <Waveform size={16} />
+                )}
+                {copiedWorkflow === "signature-voice" ? "Copied" : "Voice + show workspace"}
+              </button>
+            </div>
+          </section>
+
+          <section className="webmcp-proof-strip" aria-label="Current session evidence summary">
+            <header>
+              <span>
+                <small>Session evidence</small>
+                <strong>
+                  {evidenceSummary.toolCalls > 0
+                    ? `${evidenceSummary.toolCalls} tool calls recorded`
+                    : "Ready to record the first call"}
+                </strong>
+              </span>
+              <button onClick={exportJudgeEvidence} aria-label="Export WebMCP session evidence">
+                <FileArrowDown size={16} /> Export proof
+              </button>
+            </header>
+            <div>
+              <span>
+                <b>{evidenceSummary.uniqueToolsUsed}</b>
+                <small>tools used</small>
+              </span>
+              <span>
+                <b>{evidenceSummary.correlatedRuns}</b>
+                <small>grounded runs</small>
+              </span>
+              <span>
+                <b>{evidenceSummary.humanDecisions}</b>
+                <small>human decisions</small>
+              </span>
+              <span className={evidenceSummary.errors > 0 ? "has-errors" : undefined}>
+                <b>{evidenceSummary.errors}</b>
+                <small>errors</small>
+              </span>
+            </div>
+            <p>
+              Bounded tool evidence only—not hidden reasoning, a certified audit log, or an approved
+              protocol.
+            </p>
+          </section>
+
+          <details className="webmcp-more-missions">
+            <summary>
+              More judge workflows <b>{WEBMCP_WORKFLOWS.length}</b>
+            </summary>
+            <div>
+              {WEBMCP_WORKFLOWS.map((workflow) => (
+                <article key={workflow.id}>
+                  <span>
+                    <small>{workflow.mode}</small>
+                    <strong>{workflow.title}</strong>
+                    <em>{workflow.outcome}</em>
+                  </span>
+                  <button
+                    onClick={() => void copyWorkflow(workflow.id, workflow.prompt)}
+                    aria-label={`Copy ${workflow.title} prompt`}
+                  >
+                    {copiedWorkflow === workflow.id ? (
+                      <Check size={15} weight="bold" />
+                    ) : (
+                      <Copy size={15} />
+                    )}
+                    {copiedWorkflow === workflow.id ? "Copied" : "Copy"}
+                  </button>
+                </article>
+              ))}
+            </div>
+          </details>
+        </div>
+      ) : tab === "activity" ? (
         <div className="agent-activity-list" aria-live="polite" role="tabpanel">
           {events.length > 0 && (
             <div className="agent-activity-toolbar">

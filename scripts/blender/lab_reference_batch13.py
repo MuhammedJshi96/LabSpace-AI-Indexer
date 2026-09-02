@@ -258,7 +258,6 @@ def build_workstation(spec):
     for z in (.93, .95): box("PC USB port", (.535, -.079, z), (.025, .003, .008), "shadow", .001)
     for i in range(13): box("PC ventilation grille", (.55, -.079, .841 + i * .005), (.145, .003, .002), "shadow", .0005)
     tube("Monitor power cable", [(-.27, .195, 1.05), (-.27, .25, .89), (-.20, .29, .78), (-.18, .30, .72)], .003, "rubber")
-    cyl("Cable grommet", (-.15, .27, .801), .026, .003, "powder_dark")
 
 
 def build_chiller(spec):
@@ -315,7 +314,15 @@ def build_one(spec, output):
     else: build_chiller(spec)
     # Only the new IDs participate in the existing geometry-derived rig builder.
     storage_anatomy.SUPPORTED.update(STORAGE)
-    f.ROOT["revision"] = "reference-batch13-r2"
+    f.ROOT["revision"] = (
+        "reference-batch13-r3"
+        if spec.asset_id == "computer-lab-bench"
+        else "reference-batch13-r2"
+    )
+    if spec.asset_id == "computer-lab-bench":
+        f.ROOT["clean_work_surface"] = True
+        f.ROOT["generic_surface_grommets"] = False
+        f.ROOT["decorative_service_markers"] = False
     f.ROOT["planning_model"] = True
     f.ROOT["manufacturer_certified"] = False
     f.ROOT["source_note"] = "Original geometry from supplied July 18 reference sheets; see docs/reference-assets-batch13.md"

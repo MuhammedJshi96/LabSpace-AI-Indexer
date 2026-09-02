@@ -27,7 +27,7 @@ export function applyReviewedAuthoredFinish(material: THREE.MeshStandardMaterial
   material.envMapIntensity = Number(material.userData.labspace_env_intensity ?? 1);
   const surface = material.userData.labspace_surface;
   const revision = material.userData.labspace_surface_revision;
-  if (surface && ["surface-r4", "surface-r5"].includes(revision)) {
+  if (surface && ["surface-r4", "surface-r5", "surface-r6"].includes(revision)) {
     material.normalMap = sharedTexture(material.normalMap, `${surface}:normal:${revision}`);
     material.roughnessMap = sharedTexture(
       material.roughnessMap,

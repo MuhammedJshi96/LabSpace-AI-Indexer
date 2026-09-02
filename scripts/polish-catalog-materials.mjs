@@ -15,9 +15,9 @@ const reviewedGroups = {
   casework:
     "lab-bench lab-bench-sink lab-bench-overhead stainless-wash-basin stainless-enclosed-basin island-bench-service-bridge corner-lab-bench center-island-bench mobile-bench asymmetric-lab-bench institutional-sink-cabinet base-cabinet base-drawer-cabinet sink-cabinet wall-cabinet glass-wall-cabinet tall-cabinet sliding-door-cabinet glazed-sliding-cabinet solvent-cabinet chemical-cabinet flammable-cabinet mobile-drawer locker",
   furniture:
-    "office-desk rectangular-table round-stool laboratory-chair office-chair computer-workstation computer-lab-bench open-shelving heavy-duty-rack pegboard laboratory-drying-rack refrigerator-storage freezer-storage slotted-angle-storage-rack plastic-basket-tower wire-basket-trolley rolling-bottle-cart",
+    "office-desk rectangular-table steel-pedestal-desk wood-pedestal-desk maple-steel-desk black-utility-table round-stool laboratory-chair office-chair computer-workstation computer-lab-bench open-shelving heavy-duty-rack pegboard laboratory-drying-rack refrigerator-storage freezer-storage slotted-angle-storage-rack plastic-basket-tower wire-basket-trolley rolling-bottle-cart",
   instruments:
-    "fume-hood biosafety-cabinet laminar-flow hplc-system gas-chromatograph benchtop-centrifuge floor-centrifuge microcentrifuge incubator shaking-incubator autoclave compound-microscope stereo-microscope analytical-balance top-loading-balance hotplate-stirrer water-bath dry-block-heater vortex-mixer pcr-machine real-time-pcr spectrophotometer plate-reader electrophoresis-tank gel-doc lab-refrigerator lab-freezer ultra-low-freezer ice-maker glassware-washer vacuum-pump rotary-evaporator vacuum-cold-trap-system multi-position-heating-bath stainless-process-vessel retort-stand-assembly forced-air-lab-oven gas-cylinder printer recirculating-chiller",
+    "fume-hood biosafety-cabinet laminar-flow hplc-system gas-chromatograph benchtop-centrifuge floor-centrifuge microcentrifuge incubator shaking-incubator autoclave compound-microscope stereo-microscope analytical-balance top-loading-balance hotplate-stirrer water-bath dry-block-heater vortex-mixer pcr-machine real-time-pcr spectrophotometer plate-reader automated-microplate-reader electronic-pipette-station electrophoresis-tank gel-doc lab-refrigerator lab-freezer ultra-low-freezer chest-ultra-low-freezer ice-maker glassware-washer vacuum-pump rotary-evaporator vacuum-cold-trap-system multi-position-heating-bath stainless-process-vessel retort-stand-assembly forced-air-lab-oven gas-cylinder printer high-volume-multifunction-printer compact-ink-tank-printer gpu-analysis-workstation ultrasonic-cleaner recirculating-chiller",
   safety: "eyewash safety-shower fire-extinguisher waste-bin biological-waste-bin",
 };
 export const REVIEWED_ASSETS = Object.fromEntries(
@@ -36,11 +36,12 @@ const familyMembers = {
   bins: "waste-bin biological-waste-bin",
   safetyCabinets: "chemical-cabinet flammable-cabinet",
   seating: "round-stool laboratory-chair office-chair",
-  workstations: "office-desk rectangular-table computer-workstation",
+  workstations:
+    "office-desk rectangular-table steel-pedestal-desk wood-pedestal-desk maple-steel-desk black-utility-table computer-workstation gpu-analysis-workstation",
   racks:
     "open-shelving heavy-duty-rack pegboard laboratory-drying-rack slotted-angle-storage-rack plastic-basket-tower wire-basket-trolley rolling-bottle-cart",
   coldStorage:
-    "refrigerator-storage freezer-storage lab-refrigerator lab-freezer ultra-low-freezer",
+    "refrigerator-storage freezer-storage lab-refrigerator lab-freezer ultra-low-freezer chest-ultra-low-freezer",
 };
 export const FINISH_FAMILIES = {
   ...REVIEWED_ASSETS,
@@ -199,6 +200,15 @@ export function reviewMaterial(material, assetId) {
     surface = "brushed";
   else if (result.name.startsWith("Black phenolic")) surface = "phenolic";
   else if (
+    [
+      "Dark sealed walnut laminate",
+      "Dark walnut laminate edge",
+      "Sealed light maple laminate",
+      "Light maple edge band",
+    ].includes(result.name)
+  )
+    surface = "woodgrain";
+  else if (
     enamel.has(result.name) ||
     familyFaces.has(result.name) ||
     familyStructures.has(result.name)
@@ -332,7 +342,7 @@ export function polishGlb(buffer, id) {
       index,
       extensions: {
         KHR_texture_transform: {
-          scale: surface === "micrograin" ? [8, 8] : [4, 4],
+          scale: surface === "micrograin" ? [8, 8] : surface === "woodgrain" ? [3, 3] : [4, 4],
         },
       },
     };
@@ -368,7 +378,14 @@ if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {
     .sort();
   if (ids.length !== Object.keys(REVIEWED_ASSETS).length || ids.some((id) => !REVIEWED_ASSETS[id]))
     throw new Error("Catalog review must cover every authored asset exactly once.");
-  for (const id of ids) {
+  const selected = argv
+    .slice(2)
+    .flatMap((value, index, values) =>
+      value === "--asset" && values[index + 1] ? [values[index + 1]] : [],
+    );
+  const selectedIds = selected.length ? [...new Set(selected)] : ids;
+  for (const id of selectedIds) {
+    if (!ids.includes(id)) throw new Error(`Unknown authored asset requested for polish: ${id}`);
     const path = resolve(dir, `${id}.glb`);
     // A running dev server may be serving this GLB. Never truncate its live
     // file while a reader is active; publish the complete replacement at once.
@@ -385,6 +402,6 @@ if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {
     }
   }
   stdout.write(
-    `Reviewed finish recipes written for ${ids.length} assets; geometry and storage bindings preserved.\n`,
+    `Reviewed finish recipes written for ${selectedIds.length} assets; geometry and storage bindings preserved.\n`,
   );
 }

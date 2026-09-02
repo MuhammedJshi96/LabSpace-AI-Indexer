@@ -38,17 +38,18 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - A visible, session-only Reviewed/Fast Draft execution boundary. Reviewed stages every project mutation; Fast Draft may apply only a validated additive blank room and its one complete pristine first blueprint, with the blueprint committed as one undoable history update.
 - Human-only Approve/Cancel UI for existing-room layouts, later placements, object moves, and inventory; no agent approval tool or unrestricted persistence bypass.
 - Normal history, Undo/Redo, autosave, and stale-preview protection after approval.
-- A visible in-product WebMCP mission-control inspector that lists the twenty-three browser registrations, their Read/View/Simulate/Create/Review modes, seven copy-ready compositional workflows, and locally recorded, exportable activity evidence.
+- A visible in-product WebMCP mission-control inspector that opens on one 60-second **Ask → Prove → Decide** exact-location journey, then discloses the twenty-four browser registrations, eight additional compositional workflows, and locally recorded activity evidence on demand.
+- A one-click, explicitly bounded session-evidence export containing workspace context, tool registrations, the human-controlled execution mode, outcome counts, and chronological redacted activity—never hidden reasoning, a certified audit log, or an approved protocol.
 - A genuine read-only check executed through `document.modelContext.executeTool`, with bounded tool-name/input/result evidence.
 - Cross-runtime manual execution for ChatGPT object arguments and Chrome testing JSON-string arguments.
 - Bounded activity evidence contains no chain-of-thought and redacts obvious local-path prefixes; ordinary human clicks are not mislabeled as agent calls. A commercial deployment still needs stronger field-aware redaction and scoped retention.
 - Strict schemas, output budgets, controlled errors, safe annotations, and route/lifecycle cleanup.
 - Twenty-six expected-call eval cases plus deterministic contract tests.
-- Independent Playwright coverage for route registration, compact-header evidence, automatic first-room construction, and the complete human-reviewed later-change workflow.
+- Independent Playwright coverage for route registration, compact-header evidence, the complete signature exact-location mission and proof export, automatic first-room construction, and the complete human-reviewed later-change workflow.
 - Independent, automatically saved browser workspaces survive refresh and deployment; stale tabs cannot silently overwrite newer saves. No account or cloud-sync claim is made.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.
 - Judge, deployment, Devpost, video, and screenshot materials.
-- A complete visible Asset Library conversion: 104 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.
+- A complete visible Asset Library conversion: 115 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.
 
 ## Challenge commits
 
@@ -85,9 +86,11 @@ The challenge did not replace or relabel pre-existing product features as new ag
 
 ## Verification evidence
 
-- `npm run release:check`: lint, TypeScript, validation of 106 definitions (104 authored user-visible assets plus two hidden procedural wall primitives), unit/integration tests, and production build.
+- `npm run release:check`: lint, TypeScript, validation of 117 definitions (115 authored user-visible assets plus two hidden procedural wall primitives), unit/integration tests, and production build.
 - `tests/e2e/webmcp-actions.spec.ts`: independent browser workflow tests including route registration, read-only room audit, visible Inspector evidence, Reviewed room creation, bounded Fast Draft, reload reset, later-change review, room-blueprint approval, and reversal.
 - `docs/webmcp/evals/cases.json`: 26 direct, compositional, room-planning, audit, invalid, recommendation, and safety-oriented tool-selection cases.
+- `docs/webmcp/PRODUCTIVITY_BENCHMARK_V2.md`: repeated same-seed application benchmark with one excluded warm-up and five counterbalanced measured trials per task and method. All 140 outcome checks passed; direct operations fell from 54 to 12. Medians and IQRs preserve task-dependent latency, including the slower Reviewed inventory case. The benchmark does not relabel automated UI execution as human speed.
+- `benchmarks/webmcp-productivity.spec.ts`: reproducible, memory-bounded harness for the three equal-outcome paths. It runs one browser context at a time against an isolated database and verifies persisted scene and inventory state.
 - Manual Chrome 151 evidence confirmed `document.modelContext`, tool discovery, `labspace_get_context`, and canonical record search. Browser automation cannot directly observe the main-world producer API in its isolated evaluation context, so deterministic Playwright coverage injects that boundary rather than claiming otherwise.
 
 ## Historical test note

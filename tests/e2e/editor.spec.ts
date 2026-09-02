@@ -553,7 +553,9 @@ test("2D, split, and 3D presentation modes remain mounted", async ({ page }) => 
   await page.getByRole("button", { name: "Split", exact: true }).click();
   await expect(page.getByTestId("2d-editor")).toBeVisible();
   await expect(page.getByTestId("3d-view")).toBeVisible();
-  expect(pageErrors).toEqual([]);
+  // The E2E server disables Vite HMR; Chromium can still report the unopened
+  // development socket closing while the mounted application remains healthy.
+  expect(pageErrors.filter((message) => message !== "WebSocket closed without opened.")).toEqual([]);
 });
 
 test("a completed autosave never overwrites newer 2D edits", async ({ page, request }) => {
@@ -680,11 +682,11 @@ test("the asset browser frames both large equipment and small instruments", asyn
   await page.goto("/asset-preview?asset=compound-microscope");
   await expect(page.getByRole("heading", { name: "Compound microscope" })).toBeVisible();
   await expect(page.locator(".asset-preview-canvas canvas")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Full catalog 104", exact: true })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "Full catalog 115", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".asset-preview-count")).toContainText("104 active · 0 archived");
+  await expect(page.locator(".asset-preview-count")).toContainText("115 active · 0 archived");
   await expect(page.getByText("Straight wall", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Half-height wall", { exact: true })).toHaveCount(0);
   await expect(page.locator(".asset-preview-details")).toContainText("300 × 420 × 480 mm");

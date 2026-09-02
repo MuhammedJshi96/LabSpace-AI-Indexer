@@ -47,6 +47,11 @@ def parse_args() -> argparse.Namespace:
         help="Render both catalog views or only the selected derived view.",
     )
     parser.add_argument("--output-dir", default=str(OUTPUT_DIRECTORY))
+    parser.add_argument(
+        "--model-dir",
+        default=str(MODEL_DIRECTORY),
+        help="Directory containing the GLBs to render (defaults to the shipped hero catalog).",
+    )
     parser.add_argument("--resume", action="store_true", help="Skip views already newer than their source GLB.")
     return parser.parse_args(argv)
 
@@ -351,8 +356,9 @@ def render_model(glb_path: Path, views: tuple[str, ...]) -> None:
 
 
 def main() -> None:
-    global OUTPUT_DIRECTORY
+    global MODEL_DIRECTORY, OUTPUT_DIRECTORY
     args = parse_args()
+    MODEL_DIRECTORY = (PROJECT_ROOT / args.model_dir).resolve()
     OUTPUT_DIRECTORY = (PROJECT_ROOT / args.output_dir).resolve()
     if not MODEL_DIRECTORY.exists():
         raise FileNotFoundError(MODEL_DIRECTORY)

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { ContactShadows, Grid, OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
+import { ContactShadows, Grid, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import {
   Archive,
   ArrowCounterClockwise,
@@ -18,7 +18,7 @@ import { RenderQualityControl } from "./RenderQualityControl";
 import { renderQualityPreset } from "../domain/render-quality";
 import { useRenderSettings } from "../store/render-settings-store";
 import { ASSET_CATALOG } from "../domain/assets";
-import { assetPreviewCameraDistance } from "../domain/asset-preview-camera";
+import { assetPreviewCameraPose, type AssetPreviewView } from "../domain/asset-preview-camera";
 import { BUILD_WEEK_DEMO_ASSET_IDS } from "../domain/build-week-demo";
 import { resolveLayerIdForObjectType } from "../domain/layers";
 import { createBlankRoom } from "../domain/room-factory";
@@ -29,9 +29,7 @@ import { Toasts } from "./Dialogs";
 import { AssetVisual } from "./AssetVisual";
 import { STORAGE_RIGS, storageOpeningParts } from "../domain/storage-access";
 
-type PreviewView = "isometric" | "front" | "back" | "left" | "right" | "top";
-
-const previewViews: Array<{ value: PreviewView; label: string }> = [
+const previewViews: Array<{ value: AssetPreviewView; label: string }> = [
   { value: "isometric", label: "Iso" },
   { value: "front", label: "Front" },
   { value: "back", label: "Back" },
@@ -53,7 +51,7 @@ function PreviewCameraRig({
   depth,
   resetKey,
 }: {
-  view: PreviewView;
+  view: AssetPreviewView;
   extent: number;
   height: number;
   width: number;
@@ -65,26 +63,19 @@ function PreviewCameraRig({
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const controls = useRef<any>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const camera = cameraRef.current;
     if (!camera) return;
-    const distance = assetPreviewCameraDistance({ width, depth, height }, size.width / size.height);
-    const target = new THREE.Vector3(0, height / 2, 0);
-    const positions: Record<PreviewView, [number, number, number]> = {
-      isometric: [1.25, 0.9, 1.6],
-      front: [0, 0, 1],
-      back: [0, 0, -1],
-      left: [-1, 0, 0],
-      right: [1, 0, 0],
-      top: [0, 1, 0.0001],
-    };
-    camera.position.copy(
-      new THREE.Vector3(...positions[view]).normalize().multiplyScalar(distance).add(target),
-    );
+    const pose = assetPreviewCameraPose(view, { width, depth, height }, size.width / size.height);
+    const target = new THREE.Vector3(...pose.target);
+    camera.up.set(0, 1, 0);
+    camera.position.set(...pose.position);
     camera.lookAt(target);
+    camera.updateMatrixWorld(true);
     camera.updateProjectionMatrix();
     controls.current?.target.copy(target);
     controls.current?.update();
+    controls.current?.saveState();
     invalidate();
   }, [width, depth, height, invalidate, view, size.width, size.height, resetKey]);
 
@@ -92,9 +83,14 @@ function PreviewCameraRig({
     <>
       <PerspectiveCamera ref={cameraRef} makeDefault fov={36} near={0.01} far={100} />
       <OrbitControls
+        // A preset/fit action must discard any damped orbit momentum. Without
+        // a fresh controller, a quick drag followed by Front/Top reapplies the
+        // old spherical delta and can carry the camera over or under the model.
+        key={`${view}:${resetKey}:${width}:${depth}:${height}`}
         ref={controls}
         makeDefault
         enableDamping
+        maxPolarAngle={Math.PI / 2}
         minDistance={extent * 0.85}
         maxDistance={extent * 8}
         target={[0, height * 0.48, 0]}
@@ -111,7 +107,7 @@ export function AssetPreviewPage() {
   const archiveAsset = useEditorStore((state) => state.archiveAsset);
   const restoreAsset = useEditorStore((state) => state.restoreAsset);
   const [query, setQuery] = useState("");
-  const [previewView, setPreviewView] = useState<PreviewView>("isometric");
+  const [previewView, setPreviewView] = useState<AssetPreviewView>("isometric");
   const [cameraResetKey, setCameraResetKey] = useState(0);
   const [readyAssetId, setReadyAssetId] = useState<string | null>(null);
   const [lightingReady, setLightingReady] = useState(false);
@@ -156,6 +152,18 @@ export function AssetPreviewPage() {
     : fallbackAsset.id;
   const asset =
     ASSET_STUDIO_CATALOG.find((entry) => entry.id === effectiveAssetId) ?? fallbackAsset;
+  const activeAssetId = useRef(asset.id);
+  useLayoutEffect(() => {
+    // Publish the committed selection before GLTF passive effects can report
+    // readiness. This keeps the guard correct on both ordinary mounts and the
+    // StrictMode effect replay used in development.
+    activeAssetId.current = asset.id;
+  }, [asset.id]);
+  const handleAssetReady = useCallback(() => {
+    // A GLTF requested before a rapid selection change may settle later. Only
+    // the currently selected definition is allowed to mark the stage ready.
+    if (activeAssetId.current === asset.id) setReadyAssetId(asset.id);
+  }, [asset.id]);
   const storageSlots = STORAGE_RIGS[asset.id]?.locations ?? [];
   const selectedSlot =
     storagePreview.assetId === asset.id
@@ -170,13 +178,6 @@ export function AssetPreviewPage() {
   const previewSource = asset.model3d
     ? `${asset.model3d.previewSrc}?v=${encodeURIComponent(asset.model3d.revision)}`
     : null;
-  const previousPreviewSource = useRef<string | null>(null);
-
-  useEffect(() => {
-    const previous = previousPreviewSource.current;
-    previousPreviewSource.current = previewSource;
-    if (previous && previous !== previewSource) useGLTF.clear(previous);
-  }, [previewSource]);
 
   const object = useMemo<SceneObject>(
     () => ({
@@ -352,13 +353,14 @@ export function AssetPreviewPage() {
               <directionalLight position={[-4, 3, -3]} color="#ffffff" intensity={0.35} />
               {lightingReady && (
                 <AssetVisual
+                  key={previewSource ?? `procedural:${asset.id}`}
                   definition={asset}
                   width={object.dimensions.width / 1000}
                   depth={object.dimensions.depth / 1000}
                   height={object.dimensions.height / 1000}
                   detail="preview"
                   openStorageParts={openParts.map((part) => part.id)}
-                  onReady={() => setReadyAssetId(asset.id)}
+                  onReady={handleAssetReady}
                 />
               )}
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.012, 0]}>

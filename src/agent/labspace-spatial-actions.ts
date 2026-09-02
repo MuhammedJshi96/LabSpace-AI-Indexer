@@ -1,6 +1,8 @@
 import {
   findBenchSupport,
+  frontAccessRequirement,
   objectBounds,
+  objectFrontVector,
   requiresBenchSupport,
   roomArea,
   validatePlacement,
@@ -154,6 +156,7 @@ export function auditRoom(
       supportedBenchEquipment:
         !hasIssue("unsupported-") && !hasIssue("below-floor-") && !hasIssue("above-ceiling-"),
       objectsInsideBoundary: !hasIssue("outside-"),
+      frontWorkingZonesClear: !hasIssue("access-front-"),
       uniqueIndexCodes: !hasIssue("duplicate-code-"),
     },
     spaces: spaceAudits,
@@ -167,7 +170,7 @@ export function auditRoom(
         .filter((code): code is string => Boolean(code)),
     })),
     basis: [
-      "Uses the same deterministic boundary, overlap, support, hosted-opening, height, and identifier checks as the visible Layout Editor.",
+      "Uses the same deterministic boundary, overlap, support, front-working-zone, hosted-opening, height, and identifier checks as the visible Layout Editor.",
       "This is a planning-readiness audit, not regulatory certification or a substitute for laboratory safety review.",
       warnings.length > 12
         ? `${warnings.length - 12} additional issues remain available in the Layout Editor validation panel.`
@@ -282,7 +285,7 @@ function normalizeRecommendationInput(input: unknown): RecommendObjectPlacements
   }
   const record = input as Record<string, unknown>;
   const unexpected = Object.keys(record).find(
-    (key) => !["objectId", "preferredTarget", "rotationsDeg", "limit"].includes(key),
+    (key) => !["objectId", "preferredTarget", "relativeTo", "rotationsDeg", "limit"].includes(key),
   );
   if (unexpected) throw new LabSpaceActionError(`Unexpected input field: ${unexpected}.`);
   if (typeof record.objectId !== "string") {
@@ -324,6 +327,57 @@ function normalizeRecommendationInput(input: unknown): RecommendObjectPlacements
     };
   }
 
+  let relativeTo: RecommendObjectPlacementsInput["relativeTo"];
+  if (record.relativeTo !== undefined) {
+    if (
+      !record.relativeTo ||
+      typeof record.relativeTo !== "object" ||
+      Array.isArray(record.relativeTo)
+    ) {
+      throw new LabSpaceActionError("relativeTo must be a JSON object.");
+    }
+    if (preferredTarget) {
+      throw new LabSpaceActionError("Use either preferredTarget or relativeTo, not both.");
+    }
+    const relative = record.relativeTo as Record<string, unknown>;
+    const unexpectedRelative = Object.keys(relative).find(
+      (key) => !["objectId", "relation", "clearanceMm"].includes(key),
+    );
+    if (unexpectedRelative) {
+      throw new LabSpaceActionError(`Unexpected relativeTo field: ${unexpectedRelative}.`);
+    }
+    if (typeof relative.objectId !== "string" || !relative.objectId.trim()) {
+      throw new LabSpaceActionError("relativeTo objectId must be a non-empty string.");
+    }
+    const referenceObjectId = relative.objectId.trim();
+    if (referenceObjectId.length > MAX_OBJECT_ID_LENGTH) {
+      throw new LabSpaceActionError(
+        `relativeTo objectId must be ${MAX_OBJECT_ID_LENGTH} characters or fewer.`,
+      );
+    }
+    if (!["in-front-of", "behind", "left-of", "right-of"].includes(String(relative.relation))) {
+      throw new LabSpaceActionError(
+        "relativeTo relation must be in-front-of, behind, left-of, or right-of.",
+      );
+    }
+    relativeTo = {
+      objectId: referenceObjectId,
+      relation: relative.relation as NonNullable<
+        RecommendObjectPlacementsInput["relativeTo"]
+      >["relation"],
+      ...(relative.clearanceMm === undefined
+        ? {}
+        : {
+            clearanceMm: requireFiniteNumber(
+              relative.clearanceMm,
+              "Relative clearance",
+              100,
+              5_000,
+            ),
+          }),
+    };
+  }
+
   let rotationsDeg: number[] | undefined;
   if (record.rotationsDeg !== undefined) {
     if (!Array.isArray(record.rotationsDeg) || record.rotationsDeg.length === 0) {
@@ -352,6 +406,7 @@ function normalizeRecommendationInput(input: unknown): RecommendObjectPlacements
   return {
     objectId,
     ...(preferredTarget ? { preferredTarget } : {}),
+    ...(relativeTo ? { relativeTo } : {}),
     ...(rotationsDeg ? { rotationsDeg } : {}),
     ...(limit ? { limit } : {}),
   };
@@ -415,6 +470,7 @@ function resizeRestriction(room: Room, object: SceneObject): PlacementConflict |
 function warningType(warning: ValidationWarning): PlacementConflict["type"] | null {
   if (warning.id.startsWith("outside-")) return "outside-room-boundary";
   if (warning.id.startsWith("overlap-")) return "object-collision";
+  if (warning.id.startsWith("access-front-")) return "front-access-obstruction";
   if (warning.id.startsWith("below-floor-")) return "below-floor";
   if (warning.id.startsWith("above-ceiling-")) return "above-room-height";
   if (warning.id.startsWith("unsupported-")) return "missing-support-surface";
@@ -556,6 +612,78 @@ function candidateObjectGap(room: Room, candidate: SceneObject) {
   return Number.isFinite(minimum) ? Math.round(minimum) : null;
 }
 
+function rotationForFrontVector(vector: { x: number; y: number }) {
+  return normalizeRotation((Math.atan2(-vector.x, vector.y) * 180) / Math.PI);
+}
+
+function angularDistance(first: number, second: number) {
+  const distance = Math.abs(normalizeRotation(first) - normalizeRotation(second));
+  return Math.min(distance, 360 - distance);
+}
+
+function resolveRelativePlacement(
+  room: Room,
+  object: SceneObject,
+  relativeTo: NonNullable<RecommendObjectPlacementsInput["relativeTo"]>,
+) {
+  const reference = room.scene.objects.find((entry) => entry.id === relativeTo.objectId);
+  if (!reference || !reference.visible) {
+    throw new LabSpaceActionError(
+      "The relative placement reference must be a visible object in the same room.",
+    );
+  }
+  if (reference.id === object.id) {
+    throw new LabSpaceActionError("An object cannot be placed relative to itself.");
+  }
+  const referenceFront = objectFrontVector(reference);
+  const referenceRight = { x: referenceFront.y, y: -referenceFront.x };
+  const direction =
+    relativeTo.relation === "in-front-of"
+      ? referenceFront
+      : relativeTo.relation === "behind"
+        ? { x: -referenceFront.x, y: -referenceFront.y }
+        : relativeTo.relation === "right-of"
+          ? referenceRight
+          : { x: -referenceRight.x, y: -referenceRight.y };
+  const referenceExtent = ["in-front-of", "behind"].includes(relativeTo.relation)
+    ? reference.dimensions.depth / 2
+    : reference.dimensions.width / 2;
+  const clearanceMm = relativeTo.clearanceMm ?? (frontAccessRequirement(object) ? 600 : 300);
+  const distance = referenceExtent + object.dimensions.depth / 2 + clearanceMm;
+  const preferredTarget = {
+    xMm: Math.round((reference.position.x + direction.x * distance) / 50) * 50,
+    yMm: Math.round((reference.position.y + direction.y * distance) / 50) * 50,
+  };
+  const facingRotationDeg = rotationForFrontVector({ x: -direction.x, y: -direction.y });
+  return {
+    reference,
+    preferredTarget,
+    clearanceMm,
+    facingRotationDeg,
+    direction,
+    referenceExtent,
+    desiredDistanceMm: distance,
+  };
+}
+
+function matchesRelativeCorridor(
+  position: { xMm: number; yMm: number },
+  object: SceneObject,
+  relative: ReturnType<typeof resolveRelativePlacement>,
+) {
+  const dx = position.xMm - relative.reference.position.x;
+  const dy = position.yMm - relative.reference.position.y;
+  const along = dx * relative.direction.x + dy * relative.direction.y;
+  const across = Math.abs(dx * -relative.direction.y + dy * relative.direction.x);
+  const minimumDistance =
+    relative.referenceExtent + object.dimensions.depth / 2 + relative.clearanceMm - 100;
+  return (
+    along >= minimumDistance &&
+    along <= relative.desiredDistanceMm + 1_000 &&
+    across <= Math.max(500, relative.reference.dimensions.width / 2)
+  );
+}
+
 function recommendationPositions(room: Room, preferred: { xMm: number; yMm: number }) {
   const floor = getClosedWallFloorPolygon(room.scene.objects);
   const bounds = floor?.bounds ?? { minX: 0, minY: 0, maxX: room.width, maxY: room.depth };
@@ -605,14 +733,27 @@ export function recommendObjectPlacements(
   const restriction = restrictedConflict(room, object);
   if (restriction) throw new LabSpaceActionError(restriction.message);
 
-  const preferred = normalized.preferredTarget ?? {
-    xMm: object.position.x,
-    yMm: object.position.y,
-  };
-  const rotations = normalized.rotationsDeg ?? [
-    normalizeRotation(object.rotation.z),
-    normalizeRotation(object.rotation.z + 90),
-  ];
+  const relative = normalized.relativeTo
+    ? resolveRelativePlacement(room, object, normalized.relativeTo)
+    : null;
+  const preferred = normalized.preferredTarget ??
+    relative?.preferredTarget ?? {
+      xMm: object.position.x,
+      yMm: object.position.y,
+    };
+  const currentRotation = normalizeRotation(object.rotation.z);
+  const rotations =
+    normalized.rotationsDeg ??
+    (relative
+      ? [relative.facingRotationDeg]
+      : frontAccessRequirement(object)
+        ? [
+            currentRotation,
+            normalizeRotation(currentRotation + 90),
+            normalizeRotation(currentRotation + 180),
+            normalizeRotation(currentRotation + 270),
+          ]
+        : [currentRotation, normalizeRotation(currentRotation + 90)]);
   const limit = normalized.limit ?? 3;
   const positions = recommendationPositions(room, preferred);
   const evaluated: Array<RecommendedPlacement & { score: number }> = [];
@@ -621,11 +762,16 @@ export function recommendObjectPlacements(
   outer: for (const position of positions) {
     for (const rotationDeg of rotations) {
       if (evaluatedTargets >= MAX_RECOMMENDATION_EVALUATIONS) break outer;
+      if (relative && !matchesRelativeCorridor(position, object, relative)) continue;
       const distanceFromCurrent = Math.hypot(
         position.xMm - object.position.x,
         position.yMm - object.position.y,
       );
-      if (distanceFromCurrent < 200) continue;
+      if (
+        distanceFromCurrent < 20 &&
+        angularDistance(rotationDeg, normalizeRotation(object.rotation.z)) < 1
+      )
+        continue;
       evaluatedTargets += 1;
       const validation = validateObjectMove(
         {
@@ -650,7 +796,8 @@ export function recommendObjectPlacements(
         Math.hypot(position.xMm - preferred.xMm, position.yMm - preferred.yMm),
       );
       const nearestObjectGapMm = candidateObjectGap(room, candidate);
-      const rotationPenalty = rotationDeg === normalizeRotation(object.rotation.z) ? 0 : 200;
+      const expectedRotation = relative?.facingRotationDeg ?? currentRotation;
+      const rotationPenalty = angularDistance(rotationDeg, expectedRotation) * 5;
       const clearanceCredit = Math.min(nearestObjectGapMm ?? 1_000, 1_000) * 0.2;
       evaluated.push({
         rank: 0,
@@ -664,6 +811,11 @@ export function recommendObjectPlacements(
           distanceFromPreferredMm === 0
             ? "Matches the preferred target."
             : `${distanceFromPreferredMm} mm from the preferred target.`,
+          ...(relative
+            ? [
+                `Faces ${relative.reference.name} from the requested ${normalized.relativeTo!.relation} relation, interpreted from the reference object's authored front.`,
+              ]
+            : []),
           nearestObjectGapMm === null
             ? "No comparable neighboring object was found."
             : `Nearest axis-aligned plan gap is approximately ${nearestObjectGapMm} mm.`,
@@ -702,10 +854,26 @@ export function recommendObjectPlacements(
     objectIndexCode: object.indexCode,
     roomCode: room.code,
     preferredTarget: preferred,
+    ...(relative && normalized.relativeTo
+      ? {
+          relativeTo: {
+            objectId: relative.reference.id,
+            objectName: relative.reference.name,
+            relation: normalized.relativeTo.relation,
+            clearanceMm: relative.clearanceMm,
+            facingRotationDeg: relative.facingRotationDeg,
+          },
+        }
+      : {}),
     evaluatedTargets,
     candidates,
     basis: [
-      "Candidates reuse LabSpace's deterministic room-boundary, overlap, elevation, and room-height rules.",
+      "Candidates reuse LabSpace's deterministic room-boundary, overlap, elevation, room-height, and front-working-zone rules.",
+      ...(relative
+        ? [
+            `Relative directions use ${relative.reference.name}'s authored front, never the current camera or screen axes.`,
+          ]
+        : []),
       "Gap values are planning estimates from scene geometry, not regulatory or manufacturer-certified clearances.",
       "Recommendations are read-only; staging and explicit researcher approval remain separate steps.",
     ],

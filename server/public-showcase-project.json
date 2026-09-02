@@ -424,9 +424,7 @@
             "createdAt": "2026-07-19T02:37:32.319Z",
             "updatedAt": "2026-08-26T13:13:05.757Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "2708aabb-200e-41a5-ab70-4c71816e4936"
-            ],
+            "childLocationIds": ["2708aabb-200e-41a5-ab70-4c71816e4936"],
             "zIndex": 1,
             "flipHorizontal": false,
             "flipVertical": false
@@ -461,9 +459,7 @@
             "createdAt": "2026-07-19T02:37:32.319Z",
             "updatedAt": "2026-07-19T02:51:25.162Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "94d0e5ce-28c1-4a95-8500-f698785552e8"
-            ],
+            "childLocationIds": ["94d0e5ce-28c1-4a95-8500-f698785552e8"],
             "zIndex": 2,
             "flipHorizontal": false,
             "flipVertical": false
@@ -498,9 +494,7 @@
             "createdAt": "2026-07-19T02:37:32.319Z",
             "updatedAt": "2026-07-19T13:03:50.232Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "18fb9f73-1d41-41db-a38f-1a490f3a8a84"
-            ],
+            "childLocationIds": ["18fb9f73-1d41-41db-a38f-1a490f3a8a84"],
             "zIndex": 5,
             "flipHorizontal": false,
             "flipVertical": false
@@ -535,9 +529,7 @@
             "createdAt": "2026-07-19T02:37:32.319Z",
             "updatedAt": "2026-07-19T13:04:49.473Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "6aaba37c-1b82-48de-b961-ffd673277bc2"
-            ],
+            "childLocationIds": ["6aaba37c-1b82-48de-b961-ffd673277bc2"],
             "zIndex": 9,
             "flipHorizontal": false,
             "flipVertical": false
@@ -609,9 +601,7 @@
             "createdAt": "2026-07-19T02:37:32.319Z",
             "updatedAt": "2026-07-19T13:02:48.985Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "0d15f66a-fd31-4370-8b22-e81454948948"
-            ],
+            "childLocationIds": ["0d15f66a-fd31-4370-8b22-e81454948948"],
             "zIndex": 14,
             "flipHorizontal": false,
             "flipVertical": false
@@ -795,9 +785,7 @@
             "createdAt": "2026-07-19T02:47:50.318Z",
             "updatedAt": "2026-07-19T05:26:14.629Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "e62c5eec-d6ef-4e35-95d3-a52b4cd964f6"
-            ],
+            "childLocationIds": ["e62c5eec-d6ef-4e35-95d3-a52b4cd964f6"],
             "zIndex": 127,
             "flipHorizontal": false,
             "flipVertical": false
@@ -902,9 +890,7 @@
             "createdAt": "2026-07-19T02:52:42.549Z",
             "updatedAt": "2026-07-19T13:03:29.275Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "6989761f-81f6-465c-a851-2fa4c1ea1d58"
-            ],
+            "childLocationIds": ["6989761f-81f6-465c-a851-2fa4c1ea1d58"],
             "zIndex": 130,
             "flipHorizontal": false,
             "flipVertical": false
@@ -1114,9 +1100,7 @@
             "createdAt": "2026-07-19T02:55:15.765Z",
             "updatedAt": "2026-08-30T05:53:36.415Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "1ca1f614-6522-47cc-b9ba-f009edcde695"
-            ],
+            "childLocationIds": ["1ca1f614-6522-47cc-b9ba-f009edcde695"],
             "zIndex": 136,
             "flipHorizontal": false,
             "flipVertical": false
@@ -1151,9 +1135,7 @@
             "createdAt": "2026-07-19T02:55:23.963Z",
             "updatedAt": "2026-08-30T05:54:03.936Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "2977dfc3-402c-49da-9c73-e582ee58ad2c"
-            ],
+            "childLocationIds": ["2977dfc3-402c-49da-9c73-e582ee58ad2c"],
             "zIndex": 137,
             "flipHorizontal": false,
             "flipVertical": false
@@ -1223,9 +1205,7 @@
             "createdAt": "2026-07-19T02:56:55.694Z",
             "updatedAt": "2026-07-21T14:44:22.056Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "75fdb619-983d-45fc-befc-697c29e28b38"
-            ],
+            "childLocationIds": ["75fdb619-983d-45fc-befc-697c29e28b38"],
             "zIndex": 139,
             "flipHorizontal": false,
             "flipVertical": false
@@ -1319,7 +1299,7 @@
             "rotation": {
               "x": 0,
               "y": 0,
-              "z": 270
+              "z": 90
             },
             "layerId": "layer-equipment-005",
             "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
@@ -1400,9 +1380,7 @@
             "createdAt": "2026-07-19T03:57:25.397Z",
             "updatedAt": "2026-07-19T03:58:09.216Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "9d322327-48b4-4b00-beda-ada935ebab4e"
-            ],
+            "childLocationIds": ["9d322327-48b4-4b00-beda-ada935ebab4e"],
             "zIndex": 144,
             "flipHorizontal": false,
             "flipVertical": false
@@ -1919,9 +1897,7 @@
             "createdAt": "2026-07-19T05:27:42.110Z",
             "updatedAt": "2026-07-19T05:27:56.699Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "c9d84e6f-fe75-49b4-912c-b58e71cd689c"
-            ],
+            "childLocationIds": ["c9d84e6f-fe75-49b4-912c-b58e71cd689c"],
             "zIndex": 158,
             "flipHorizontal": false,
             "flipVertical": false
@@ -2015,7 +1991,7 @@
             "rotation": {
               "x": 0,
               "y": 0,
-              "z": 89.99999999999989
+              "z": 270
             },
             "layerId": "layer-furniture-003",
             "roomId": "93f219ff-c437-4168-90d4-ddac2c100b38",
@@ -2226,9 +2202,7 @@
             "indexCode": "LAB-R809-Z01-CAB-003",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "61aa9f7b-e0d3-4665-affd-756e55ea2617"
-            ],
+            "childIds": ["61aa9f7b-e0d3-4665-affd-756e55ea2617"],
             "createdAt": "2026-07-19T02:37:32.319Z",
             "updatedAt": "2026-07-19T02:37:32.319Z"
           },
@@ -2510,9 +2484,7 @@
             "indexCode": "LAB-R809-Z01-CAB-001-CP-01",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "3b3db65f-93ef-4a4d-b932-e942a43a02b0"
-            ],
+            "childIds": ["3b3db65f-93ef-4a4d-b932-e942a43a02b0"],
             "normalizedBounds": {
               "x": 0,
               "y": 0.15294119482634466,
@@ -4507,9 +4479,7 @@
             "indexCode": "LAB-01-DEMO-01-Z01-OBJ-010",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "6798fbf6-47dc-4eb6-8c08-58abb3d7385c"
-            ],
+            "childIds": ["6798fbf6-47dc-4eb6-8c08-58abb3d7385c"],
             "createdAt": "2026-08-30T06:53:38.858Z",
             "updatedAt": "2026-08-30T06:53:38.858Z"
           },
@@ -4546,9 +4516,7 @@
             "indexCode": "LAB-01-DEMO-01-Z01-OBJ-011",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "3c2c23a1-42bd-45f4-b9cb-f2fbdba01d4a"
-            ],
+            "childIds": ["3c2c23a1-42bd-45f4-b9cb-f2fbdba01d4a"],
             "createdAt": "2026-08-30T06:53:38.858Z",
             "updatedAt": "2026-08-30T06:53:38.858Z"
           },
@@ -4654,9 +4622,7 @@
             "indexCode": "LAB-01-DEMO-01-Z01-CAB-003-CP-01",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "b8d0983c-9957-4acd-91b0-b60c3eaa67d5"
-            ],
+            "childIds": ["b8d0983c-9957-4acd-91b0-b60c3eaa67d5"],
             "normalizedBounds": {
               "x": 0,
               "y": 0.05999999489103036,
@@ -5743,9 +5709,7 @@
             "createdAt": "2026-07-19T05:39:06.654Z",
             "updatedAt": "2026-07-19T05:39:33.736Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "5d262a78-0fba-446b-9687-11c0beab02ae"
-            ],
+            "childLocationIds": ["5d262a78-0fba-446b-9687-11c0beab02ae"],
             "zIndex": 10,
             "flipHorizontal": false,
             "flipVertical": false
@@ -5780,9 +5744,7 @@
             "createdAt": "2026-07-19T05:39:14.143Z",
             "updatedAt": "2026-07-19T05:39:30.203Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "3717b62d-7bfa-4cd4-84c1-60e23a5db4aa"
-            ],
+            "childLocationIds": ["3717b62d-7bfa-4cd4-84c1-60e23a5db4aa"],
             "zIndex": 11,
             "flipHorizontal": false,
             "flipVertical": false
@@ -5852,9 +5814,7 @@
             "createdAt": "2026-07-19T05:40:10.638Z",
             "updatedAt": "2026-07-19T05:41:26.386Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "3f695574-16e1-45de-b4c4-1dd45ce1564c"
-            ],
+            "childLocationIds": ["3f695574-16e1-45de-b4c4-1dd45ce1564c"],
             "zIndex": 13,
             "flipHorizontal": false,
             "flipVertical": false
@@ -5889,9 +5849,7 @@
             "createdAt": "2026-07-19T05:41:31.467Z",
             "updatedAt": "2026-07-19T05:41:49.995Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "32ed1a2d-2039-4ff3-a6eb-dd03af4cbc6c"
-            ],
+            "childLocationIds": ["32ed1a2d-2039-4ff3-a6eb-dd03af4cbc6c"],
             "zIndex": 14,
             "flipHorizontal": false,
             "flipVertical": false
@@ -5926,9 +5884,7 @@
             "createdAt": "2026-07-19T05:42:12.297Z",
             "updatedAt": "2026-07-19T05:43:17.387Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "8516cffc-38b3-494c-9d1f-0544117e6cb9"
-            ],
+            "childLocationIds": ["8516cffc-38b3-494c-9d1f-0544117e6cb9"],
             "zIndex": 15,
             "flipHorizontal": false,
             "flipVertical": false
@@ -5963,9 +5919,7 @@
             "createdAt": "2026-07-19T05:42:47.754Z",
             "updatedAt": "2026-07-19T05:43:07.919Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "08e2e331-569c-4177-8797-1f2773cb97a0"
-            ],
+            "childLocationIds": ["08e2e331-569c-4177-8797-1f2773cb97a0"],
             "zIndex": 16,
             "flipHorizontal": false,
             "flipVertical": false
@@ -6573,9 +6527,7 @@
             "indexCode": "LAB-01-DEMO-02-CAB-003",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "8a354688-47a6-407d-8329-f2c85ecb2bc4"
-            ],
+            "childIds": ["8a354688-47a6-407d-8329-f2c85ecb2bc4"],
             "createdAt": "2026-07-19T05:42:12.297Z",
             "updatedAt": "2026-07-19T05:42:12.297Z"
           },
@@ -6589,9 +6541,7 @@
             "indexCode": "LAB-01-DEMO-02-CAB-004",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "b5bc55f3-47c3-4e16-aeb9-e670cb4c3a74"
-            ],
+            "childIds": ["b5bc55f3-47c3-4e16-aeb9-e670cb4c3a74"],
             "createdAt": "2026-07-19T05:42:47.754Z",
             "updatedAt": "2026-07-19T05:42:47.754Z"
           },
@@ -7021,9 +6971,7 @@
             "createdAt": "2026-08-29T15:12:43.094Z",
             "updatedAt": "2026-08-29T15:19:49.651Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "cb0fb630-1f79-4601-9fb6-ef4b270657d1"
-            ],
+            "childLocationIds": ["cb0fb630-1f79-4601-9fb6-ef4b270657d1"],
             "zIndex": 1,
             "flipHorizontal": false,
             "flipVertical": false
@@ -7058,9 +7006,7 @@
             "createdAt": "2026-08-29T15:13:15.041Z",
             "updatedAt": "2026-08-29T15:19:49.651Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "f9d2799c-cc70-4760-9801-8b89fac5353a"
-            ],
+            "childLocationIds": ["f9d2799c-cc70-4760-9801-8b89fac5353a"],
             "zIndex": 2,
             "flipHorizontal": false,
             "flipVertical": false
@@ -7095,9 +7041,7 @@
             "createdAt": "2026-08-29T15:16:08.566Z",
             "updatedAt": "2026-08-29T15:21:49.719Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "ee9f69c8-7377-480b-b579-e24e5036d0ca"
-            ],
+            "childLocationIds": ["ee9f69c8-7377-480b-b579-e24e5036d0ca"],
             "zIndex": 3,
             "flipHorizontal": false,
             "flipVertical": false
@@ -7132,9 +7076,7 @@
             "createdAt": "2026-08-29T15:18:05.475Z",
             "updatedAt": "2026-08-29T15:23:14.493Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "98781588-0f3c-48e1-b1cd-f3cd7e68d9f0"
-            ],
+            "childLocationIds": ["98781588-0f3c-48e1-b1cd-f3cd7e68d9f0"],
             "zIndex": 5,
             "flipHorizontal": false,
             "flipVertical": false
@@ -7169,9 +7111,7 @@
             "createdAt": "2026-08-29T15:18:54.136Z",
             "updatedAt": "2026-08-29T15:20:05.826Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "0a0fcabd-ca4f-4747-abb4-be3d68723502"
-            ],
+            "childLocationIds": ["0a0fcabd-ca4f-4747-abb4-be3d68723502"],
             "zIndex": 6,
             "flipHorizontal": false,
             "flipVertical": false
@@ -7206,9 +7146,7 @@
             "createdAt": "2026-08-29T15:19:13.547Z",
             "updatedAt": "2026-08-29T15:20:03.693Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "27ff9fdd-906d-44e1-8a43-d623f7b14ae3"
-            ],
+            "childLocationIds": ["27ff9fdd-906d-44e1-8a43-d623f7b14ae3"],
             "zIndex": 7,
             "flipHorizontal": false,
             "flipVertical": false
@@ -10248,9 +10186,7 @@
             "indexCode": "LAB-01-R809-CAB-001-CP-01",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "8afec22f-e50c-49ab-abc0-d1368cd01f3a"
-            ],
+            "childIds": ["8afec22f-e50c-49ab-abc0-d1368cd01f3a"],
             "normalizedBounds": {
               "x": 0,
               "y": 0.15294119482634466,
@@ -10342,9 +10278,7 @@
             "indexCode": "LAB-01-R809-CAB-002-CP-01",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "a6d70f8d-bfc6-452c-8eea-d20431beab2d"
-            ],
+            "childIds": ["a6d70f8d-bfc6-452c-8eea-d20431beab2d"],
             "normalizedBounds": {
               "x": 0,
               "y": 0.15294119482634466,
@@ -10534,9 +10468,7 @@
             "indexCode": "LAB-01-R809-CAB-004-CP-01",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "296ad442-d1a7-4efe-8a0e-c894e13b9ceb"
-            ],
+            "childIds": ["296ad442-d1a7-4efe-8a0e-c894e13b9ceb"],
             "normalizedBounds": {
               "x": -0.3265305874199738,
               "y": 0.11224489403945866,
@@ -10582,9 +10514,7 @@
             "indexCode": "LAB-01-R809-CAB-004-CP-02",
             "order": 1,
             "capacityNotes": "",
-            "childIds": [
-              "d1335708-71c7-43fb-b882-d0437042efe0"
-            ],
+            "childIds": ["d1335708-71c7-43fb-b882-d0437042efe0"],
             "normalizedBounds": {
               "x": 0,
               "y": 0.11224489403945866,
@@ -10630,9 +10560,7 @@
             "indexCode": "LAB-01-R809-CAB-004-CP-03",
             "order": 2,
             "capacityNotes": "",
-            "childIds": [
-              "f816aaec-0939-482a-849e-9ac947325dc0"
-            ],
+            "childIds": ["f816aaec-0939-482a-849e-9ac947325dc0"],
             "normalizedBounds": {
               "x": 0.3265305874199738,
               "y": 0.11224489403945866,
@@ -11479,9 +11407,7 @@
             "createdAt": "2026-08-29T16:13:07.709Z",
             "updatedAt": "2026-08-29T16:17:54.041Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "2820bf5a-61a3-461d-adae-ddbb252e0f83"
-            ],
+            "childLocationIds": ["2820bf5a-61a3-461d-adae-ddbb252e0f83"],
             "zIndex": 10,
             "flipHorizontal": false,
             "flipVertical": false
@@ -11849,9 +11775,7 @@
             "createdAt": "2026-08-29T16:18:14.049Z",
             "updatedAt": "2026-08-29T16:18:42.191Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "8ace9d6a-296d-4bf7-bdab-f8af4cb8dacc"
-            ],
+            "childLocationIds": ["8ace9d6a-296d-4bf7-bdab-f8af4cb8dacc"],
             "zIndex": 20,
             "flipHorizontal": false,
             "flipVertical": false
@@ -12192,9 +12116,7 @@
             "indexCode": "LAB-01-R808-CAB-001",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "a593b13f-9b61-411c-9ec8-5d495024fa7e"
-            ],
+            "childIds": ["a593b13f-9b61-411c-9ec8-5d495024fa7e"],
             "createdAt": "2026-08-29T16:18:14.049Z",
             "updatedAt": "2026-08-29T16:18:14.049Z"
           },
@@ -12780,9 +12702,7 @@
             "createdAt": "2026-08-29T16:52:16.684Z",
             "updatedAt": "2026-08-29T16:52:25.318Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "896fb62b-08c0-4938-beaf-022d8312ef5e"
-            ],
+            "childLocationIds": ["896fb62b-08c0-4938-beaf-022d8312ef5e"],
             "zIndex": 7,
             "flipHorizontal": false,
             "flipVertical": false
@@ -12817,9 +12737,7 @@
             "createdAt": "2026-08-29T16:52:16.685Z",
             "updatedAt": "2026-08-29T16:52:25.318Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "9c155975-4571-42ab-a070-000688f80fc5"
-            ],
+            "childLocationIds": ["9c155975-4571-42ab-a070-000688f80fc5"],
             "zIndex": 8,
             "flipHorizontal": false,
             "flipVertical": false
@@ -12854,9 +12772,7 @@
             "createdAt": "2026-08-29T16:52:16.685Z",
             "updatedAt": "2026-08-29T16:52:25.318Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "d56618d7-ec32-435b-8beb-41a0f13708d5"
-            ],
+            "childLocationIds": ["d56618d7-ec32-435b-8beb-41a0f13708d5"],
             "zIndex": 9,
             "flipHorizontal": false,
             "flipVertical": false
@@ -12891,9 +12807,7 @@
             "createdAt": "2026-08-29T16:52:16.685Z",
             "updatedAt": "2026-08-29T16:52:25.318Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "044e4a0d-9600-45ea-bcc9-071cd60e28bc"
-            ],
+            "childLocationIds": ["044e4a0d-9600-45ea-bcc9-071cd60e28bc"],
             "zIndex": 10,
             "flipHorizontal": false,
             "flipVertical": false
@@ -13068,9 +12982,7 @@
             "createdAt": "2026-08-29T16:52:16.685Z",
             "updatedAt": "2026-08-29T16:53:14.404Z",
             "parentObjectId": null,
-            "childLocationIds": [
-              "2bad322e-e58c-48d4-9464-db2f95b12c4b"
-            ],
+            "childLocationIds": ["2bad322e-e58c-48d4-9464-db2f95b12c4b"],
             "zIndex": 15,
             "flipHorizontal": false,
             "flipVertical": false
@@ -13180,9 +13092,7 @@
             "indexCode": "LAB-01-812-CAB-001",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "3b39cc4c-31dd-4661-964a-9a9dd5bab9b6"
-            ],
+            "childIds": ["3b39cc4c-31dd-4661-964a-9a9dd5bab9b6"],
             "createdAt": "2026-08-29T16:52:16.685Z",
             "updatedAt": "2026-08-29T16:52:16.685Z"
           },
@@ -13196,9 +13106,7 @@
             "indexCode": "LAB-01-812-OBJ-007",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "c6f929ab-3d44-4047-b765-f1d0aed38e9b"
-            ],
+            "childIds": ["c6f929ab-3d44-4047-b765-f1d0aed38e9b"],
             "createdAt": "2026-08-30T07:02:32.557Z",
             "updatedAt": "2026-08-30T07:02:32.557Z"
           },
@@ -13235,9 +13143,7 @@
             "indexCode": "LAB-01-812-OBJ-008",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "c763abde-b960-4f5a-a5e7-93ec815ce25e"
-            ],
+            "childIds": ["c763abde-b960-4f5a-a5e7-93ec815ce25e"],
             "createdAt": "2026-08-30T07:02:32.557Z",
             "updatedAt": "2026-08-30T07:02:32.557Z"
           },
@@ -13274,9 +13180,7 @@
             "indexCode": "LAB-01-812-OBJ-009",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "48c637d6-5753-46b0-93d5-368911ccd59a"
-            ],
+            "childIds": ["48c637d6-5753-46b0-93d5-368911ccd59a"],
             "createdAt": "2026-08-30T07:02:32.557Z",
             "updatedAt": "2026-08-30T07:02:32.557Z"
           },
@@ -13313,9 +13217,7 @@
             "indexCode": "LAB-01-812-OBJ-010",
             "order": 0,
             "capacityNotes": "",
-            "childIds": [
-              "16a615cc-afd9-443c-b2a3-46b32b714452"
-            ],
+            "childIds": ["16a615cc-afd9-443c-b2a3-46b32b714452"],
             "createdAt": "2026-08-30T07:02:32.557Z",
             "updatedAt": "2026-08-30T07:02:32.557Z"
           },

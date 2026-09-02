@@ -101,6 +101,15 @@ describe("LabSpace browser-agent room planning", () => {
         connection: "wall",
       }),
     );
+    expect(searchLabAssets({ query: "computer table" }).results[0]).toMatchObject({
+      assetId: "computer-workstation",
+    });
+    expect(searchLabAssets({ query: "laboratory scale" }).results[0]).toMatchObject({
+      assetId: "analytical-balance",
+    });
+    expect(searchLabAssets({ query: "3 panel window" }).results[0]).toMatchObject({
+      assetId: "wide-window",
+    });
     expect(() => searchLabAssets({ query: "", unexpected: true })).toThrow();
   });
 
@@ -326,6 +335,61 @@ describe("LabSpace browser-agent room planning", () => {
       position: { xMm: 4200, yMm: 5900, zMm: 0 },
       rotationDeg: 90,
     });
+  });
+
+  it("plans the 44 square metre biological-assay suite and pairs chairs to office workstations", () => {
+    blankLayoutFixture();
+    const plan = planRoomLayout({
+      brief: "Biological assays Laboratory, Bio-001, Floor 5",
+      aisleMm: 700,
+      roomShell: { widthMm: 8000, depthMm: 5500, wallHeightMm: 3000 },
+      assets: [
+        {
+          assetId: "double-door",
+          quantity: 1,
+          host: { wallIndex: 1, offsetMm: 4000, swing: "inward" },
+        },
+        {
+          assetId: "wide-window",
+          quantity: 1,
+          host: { wallIndex: 3, offsetMm: 4000, sillHeightMm: 900 },
+        },
+        {
+          assetId: "wide-window",
+          quantity: 1,
+          host: { wallIndex: 4, offsetMm: 2750, sillHeightMm: 900 },
+        },
+        { assetId: "center-island-bench", quantity: 1, placement: "island" },
+        { assetId: "lab-bench", quantity: 2, placement: "perimeter" },
+        { assetId: "tall-cabinet", quantity: 1, placement: "perimeter" },
+        { assetId: "lab-freezer", quantity: 1, placement: "perimeter" },
+        { assetId: "wall-cabinet", quantity: 2, placement: "perimeter" },
+        { assetId: "compound-microscope", quantity: 1, placement: "surface" },
+        { assetId: "plate-reader", quantity: 1, placement: "surface" },
+        { assetId: "vortex-mixer", quantity: 1, placement: "surface" },
+        { assetId: "analytical-balance", quantity: 1, placement: "surface" },
+        { assetId: "office-desk", quantity: 1, placement: "perimeter" },
+        { assetId: "computer-workstation", quantity: 1, placement: "perimeter" },
+        { assetId: "office-chair", quantity: 2, placement: "open" },
+      ],
+    });
+
+    expect(plan.shell).toMatchObject({ widthMm: 8000, depthMm: 5500 });
+    expect((plan.shell.widthMm * plan.shell.depthMm) / 1_000_000).toBe(44);
+    expect(plan.requestedObjects).toBe(18);
+    expect(plan.unplaced).toEqual([]);
+    expect(plan.proposals).toHaveLength(18);
+    const chairs = plan.proposals.filter((proposal) => proposal.assetId === "office-chair");
+    const hostNames = chairs.map((chair) => chair.snappedTo?.name).sort();
+    expect(hostNames).toEqual(["Computer workstation", "Office desk"]);
+    expect(
+      plan.proposals.find((proposal) => proposal.assetId === "double-door")?.opening,
+    ).toMatchObject({ wallIndex: 1, offsetMm: 4000, swing: "inward" });
+    expect(
+      plan.proposals
+        .filter((proposal) => proposal.assetId === "wide-window")
+        .map((proposal) => proposal.opening?.wallIndex),
+    ).toEqual([3, 4]);
   });
 
   it("rejects self-crossing custom room polygons", () => {

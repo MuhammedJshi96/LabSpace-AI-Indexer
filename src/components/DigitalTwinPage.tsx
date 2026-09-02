@@ -41,6 +41,7 @@ import { TopBar } from "./TopBar";
 import { CollectionGuide } from "./CollectionGuide";
 import { ProcessTracker } from "./ProcessTracker";
 import { TwoDEditor } from "./TwoDEditor";
+import { useCollectionStore } from "../agent/labspace-collection-actions";
 
 class TwinRendererBoundary extends Component<
   { children: ReactNode; label: string },
@@ -169,6 +170,7 @@ export function DigitalTwinPage() {
   const pushToast = useEditorStore((state) => state.pushToast);
   const environmentContextVisible = useEditorStore((state) => state.environmentContextVisible);
   const toggleEnvironmentContext = useEditorStore((state) => state.toggleEnvironmentContext);
+  const collectionRoute = useCollectionStore((state) => state.route);
 
   useEffect(() => {
     void hydrate();
@@ -209,7 +211,33 @@ export function DigitalTwinPage() {
     spatialFocus?.recordId === selectedRecord.id &&
     spatialFocus.roomId === room.id,
   );
-  const focusedObjectId = focusMatchesSelectedRecord ? (spatialFocus?.objectId ?? null) : null;
+  const workflowWorkspaceFocus = Boolean(
+    spatialFocus?.recordId.startsWith("workflow-workspace:") && spatialFocus.roomId === room.id,
+  );
+  const workflowWorkspaceObject = workflowWorkspaceFocus
+    ? room.scene.objects.find((object) => object.id === spatialFocus?.objectId && object.visible)
+    : undefined;
+  const workflowWorkspaceAsset = workflowWorkspaceObject?.assetDefinitionId
+    ? getAssetDefinition(workflowWorkspaceObject.assetDefinitionId)
+    : undefined;
+  const workflowWorkspaceSnapshot =
+    workflowWorkspaceObject &&
+    collectionRoute?.workspace?.objectId === workflowWorkspaceObject.id &&
+    collectionRoute.workspace.roomId === room.id
+      ? collectionRoute.workspace
+      : undefined;
+  const workflowWorkspacePath =
+    workflowWorkspaceSnapshot?.path ??
+    (workflowWorkspaceObject
+      ? [
+          laboratory?.name ?? "Laboratory",
+          room.name,
+          room.scene.zones.find((zone) => zone.id === workflowWorkspaceObject.zoneId)?.name,
+          workflowWorkspaceObject.name,
+        ].filter((entry): entry is string => Boolean(entry))
+      : []);
+  const focusedObjectId =
+    focusMatchesSelectedRecord || workflowWorkspaceFocus ? (spatialFocus?.objectId ?? null) : null;
   const storageAccessOpen = Boolean(focusMatchesSelectedRecord && spatialFocus?.showStorageAccess);
   const accessRoom = project.rooms.find((entry) => entry.id === selectedRecord?.roomId);
   const accessObject = accessRoom?.scene.objects.find(
@@ -627,6 +655,89 @@ export function DigitalTwinPage() {
           {!processOpen && <CollectionGuide embedded />}
           {processOpen ? (
             <ProcessTracker onClose={() => setProcessOpen(false)} />
+          ) : workflowWorkspaceObject ? (
+            <>
+              <header className="twin-detail-heading twin-workflow-heading">
+                <span>
+                  <small>
+                    Workflow workspace · {laboratory?.code ?? "LAB"}/{room.code}
+                  </small>
+                  <h1>{workflowWorkspaceObject.name}</h1>
+                </span>
+                <span className="twin-status twin-status-ok">
+                  <CheckCircle size={14} weight="fill" />
+                  Ready to review
+                </span>
+              </header>
+              <div className="twin-detail-scroll">
+                <section className="twin-workflow-proof" aria-label="Workflow evidence handoff">
+                  <header>
+                    <span>Ask</span>
+                    <span>Ground</span>
+                    <span>Collect</span>
+                    <span className="active">Decide</span>
+                  </header>
+                  <div>
+                    <CheckCircle size={22} weight="fill" />
+                    <span>
+                      <small>Evidence handoff</small>
+                      <b>Materials lead to a real work surface</b>
+                      <p>
+                        The itinerary ends here after its indexed inventory stops. Review the
+                        surface, local clearance, and your approved method before work begins.
+                      </p>
+                    </span>
+                  </div>
+                </section>
+
+                <dl className="twin-record-facts twin-workflow-facts">
+                  <div>
+                    <dt>Authored surface</dt>
+                    <dd>{workflowWorkspaceAsset?.shortName ?? "Research workspace"}</dd>
+                  </div>
+                  <div>
+                    <dt>Evidence itinerary</dt>
+                    <dd>
+                      {collectionRoute ? collectionRoute.recordIds.length + 1 : 1} reviewed stops
+                    </dd>
+                  </div>
+                </dl>
+
+                <section className="twin-location-card twin-workflow-location">
+                  <header>
+                    <MapPin size={18} weight="duotone" />
+                    <span>
+                      <small>Final workspace</small>
+                      <b>{workflowWorkspaceObject.indexCode}</b>
+                    </span>
+                  </header>
+                  <ol>
+                    {workflowWorkspacePath.map((entry, index) => (
+                      <li key={`${entry}-${index}`}>
+                        <span />
+                        {entry}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+
+                <section className="twin-notes twin-workflow-boundary">
+                  <small>Research boundary</small>
+                  <p>
+                    This is an ordered evidence itinerary—not a safe walking route, protocol,
+                    suitability decision, reservation, or stock transaction. The researcher keeps
+                    the final decision.
+                  </p>
+                </section>
+              </div>
+              <div className="twin-detail-actions twin-workflow-actions">
+                <a
+                  href={`/?room=${encodeURIComponent(room.id)}&object=${encodeURIComponent(workflowWorkspaceObject.id)}&panel=properties`}
+                >
+                  Open workspace in editor
+                </a>
+              </div>
+            </>
           ) : selectedRecord ? (
             <>
               <header className="twin-detail-heading">

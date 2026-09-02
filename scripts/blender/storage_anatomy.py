@@ -4,7 +4,7 @@ import re
 import bpy
 from mathutils import Vector
 
-SUPPORTED = set("wall-cabinet base-cabinet base-drawer-cabinet lab-bench mobile-bench lab-bench-sink lab-bench-overhead stainless-enclosed-basin sink-cabinet island-bench-service-bridge center-island-bench corner-lab-bench glass-wall-cabinet tall-cabinet sliding-door-cabinet glazed-sliding-cabinet solvent-cabinet chemical-cabinet flammable-cabinet mobile-drawer locker refrigerator-storage freezer-storage office-desk open-shelving heavy-duty-rack plastic-basket-tower stainless-wash-basin".split())
+SUPPORTED = set("wall-cabinet base-cabinet base-drawer-cabinet lab-bench mobile-bench lab-bench-sink lab-bench-overhead stainless-enclosed-basin sink-cabinet island-bench-service-bridge center-island-bench corner-lab-bench glass-wall-cabinet tall-cabinet sliding-door-cabinet glazed-sliding-cabinet solvent-cabinet chemical-cabinet flammable-cabinet mobile-drawer locker refrigerator-storage freezer-storage office-desk steel-pedestal-desk wood-pedestal-desk maple-steel-desk open-shelving heavy-duty-rack plastic-basket-tower stainless-wash-basin".split())
 
 def prepare(f):
     root=f.ROOT

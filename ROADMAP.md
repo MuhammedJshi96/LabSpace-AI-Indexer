@@ -3,7 +3,7 @@
 ## Recommended next phase
 
 1. Complete multi-laboratory management with guarded laboratory deletion, laboratory/room reordering, duplicate-as-template, and dependency handling. Creation, activation, deliberate renaming, and guarded room deletion are implemented today.
-2. Continue reference-led fidelity and performance refinement across the 104 all-sided authored user-visible GLBs while preserving the exact top/isometric same-model render contract and progressing toward the `references/ref1.png` and `references/ref2.png` photoreal target.
+2. Continue reference-led fidelity and performance refinement across the 115 all-sided authored user-visible GLBs while preserving the exact top/isometric same-model render contract and progressing toward the `references/ref1.png` and `references/ref2.png` photoreal target.
 3. Extend the project-wide Spatial Index Finder with governed/licensed item imagery, saved evidence viewpoints, richer authored internal storage geometry, optional measured/scan-derived room backgrounds, and controlled cross-room move workflows. Inventory already accepts an online image URL or a browser-embedded local image.
 4. Register reusable non-showcase environment profiles for common chemistry, biology, instrument, and pilot-plant rooms. Keep the DEMO-01 reference-services profile optional and add measured MEP detail only to templates backed by survey data.
 5. Field-check and photorealistically finish DEMO-01. Its concave shell, entrance recess, hosted openings, islands, perimeter casework, storage, and circulation were informed by Room 809 reference captures; measured dimensions, richer room materials, indirect light, and dense small-scale context remain.
@@ -26,7 +26,7 @@
 - One simple closed straight-wall loop can define rectangular, concave, split-edge, or skewed floors. Open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters deliberately retain the rectangular fallback.
 - Environment profiles are optional per room, but only the DEMO-01 showcase profile is bundled today; it is sparse 3D visual dressing, not selectable or measured MEP geometry.
 - Light-gray epoxy includes photographic maps; sealed concrete and welded vinyl currently use procedural plan/PBR treatments.
-- All 104 user-visible assets are authored GLBs; the two hidden variable-length wall primitives remain procedural. Catalog-wide construction and shader QA should continue against the `ref1`/`ref2` photoreal benchmark.
+- All 115 user-visible assets are authored GLBs; the two hidden variable-length wall primitives remain procedural. Catalog-wide construction and shader QA should continue against the `ref1`/`ref2` photoreal benchmark.
 - The Spatial Index Finder is connected to canonical records, but item cards fall back to their containing spatial asset and the room view is not a measured or scan-derived facility capture.
 - No embedded model provider ships in the current runtime. A compatible browser agent may invoke the current WebMCP tools, while LabSpace remains the deterministic source of project, geometry, inventory, and evidence facts.
 - Browser print-to-PDF is the supported PDF path.

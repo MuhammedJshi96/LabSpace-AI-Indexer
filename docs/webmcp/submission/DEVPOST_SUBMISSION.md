@@ -20,11 +20,34 @@ A generic browser agent would otherwise need to inspect text and click pixels, t
 
 This makes the application meaningfully better when a researcher and agent work together. The agent handles discovery and structured reasoning; LabSpace remains the source of truth; the researcher sees and controls the physical change.
 
+## The 60-second judge experience
+
+Open **WebMCP** and LabSpace starts with one mission—not a wall of developer controls:
+
+1. **Ask:** copy or speak “Find Reference standards in DEMO-01 and show me its exact shelf.”
+2. **Prove:** the agent searches and inspects canonical records, then LabSpace focuses the real cabinet/shelf in its synchronized room.
+3. **Decide:** the visible Reviewed boundary keeps mutations under human control; only a researcher can approve later changes.
+
+The prompt action closes the Inspector so the room remains visually dominant. Reopen it to inspect
+the exact tool inputs/results or export a bounded JSON proof containing workspace context, all
+registered tools, execution mode, outcome counts, and the chronological session trail. The export
+is evidence—not chain-of-thought, a certified audit log, or an approved protocol.
+
+Every copied judge request starts with a WebMCP-only boundary: use the page's `labspace_*` tools,
+never silently fall back to browser clicks or computer control, and report an unavailable bridge.
+Placement audits also cover authored front working zones; relative requests return position and
+facing rotation from the referenced object's own orientation rather than the camera.
+
+A repeated same-outcome browser benchmark passed **140/140 outcome checks**. Across exact-location,
+reviewed inventory, and room-building tasks, direct operations fell from **54 to 12 (77.8% fewer)**.
+The report publishes medians, IQRs, and the honest case where Reviewed inventory took longer at
+machine input speed; it does not mislabel browser automation as observed human speed.
+
 ## What it does
 
-LabSpace registers twenty-three focused browser-native tools:
+LabSpace registers twenty-four focused browser-native tools:
 
-1. audit an active or selected room with deterministic floor, boundary, support, hosted-opening, overlap, height, and identity checks;
+1. audit an active or selected room with deterministic floor, boundary, support, front-working-zone, hosted-opening, overlap, height, and identity checks;
 2. create, activate, and save one genuinely blank room in a selected laboratory;
 3. read active laboratory context;
 4. search equipment, inventory, and exact storage;
@@ -43,10 +66,11 @@ LabSpace registers twenty-three focused browser-native tools:
 17. stage a dimension-accurate resize as a reversible visual preview;
 18. validate and stage detailed inventory in one reviewed call;
 19. ground a proposed material checklist in actual stock, preserving missing/ambiguous results;
-20. start a room-grouped collection guide from reviewed canonical records;
-21. follow exact locations with Next/Previous without consuming inventory;
-22. calculate a connected annex by splitting one stable primary wall while preserving separate closed floor evidence; and
-23. stage that annex as one reversible, human-reviewed transaction.
+20. assess a researcher-supplied workflow against indexed stock/equipment and rank real authored work surfaces without generating a protocol;
+21. start an ordered collection guide from reviewed canonical records, optionally ending at the assessed workspace;
+22. follow exact locations and the final work surface with Next/Previous without consuming inventory;
+23. calculate a connected annex by splitting one stable primary wall while preserving separate closed floor evidence; and
+24. stage that annex as one reversible, human-reviewed transaction.
 
 An agent can propose room 812, infer Floor 8, calculate a six-wall office of roughly 32 square metres, host a door and window, pair four chairs with four desks, and orient the cabinet correctly. Reviewed mode visibly pauses before creation and before the blueprint commit. A researcher may instead authorize Fast Draft for the session, allowing only the validated additive blank room and its complete pristine first blueprint to apply; the blueprint is one Undo-capable history update. The agent can also locate the BÜCHI rotary evaporator, trace its flask set to the exact shelf or drawer, reject a trolley collision, and stage a corrected target for researcher review.
 
@@ -56,7 +80,10 @@ LabSpace uses a human-controlled, risk-based policy instead of one blanket confi
 
 Every later room change, object move, object resize, and inventory proposal remains **Preview · not saved**. LabSpace shows current and proposed evidence, blocks competing edits, and exposes only human-facing Approve/Cancel controls. Approval creates one ordinary undoable history entry; Cancel restores the exact prior state.
 
-Agent Activity records compact factual evidence—search result, focused record, blocked conflict, staged preview, human decision, and commit—without exposing chain-of-thought.
+The WebMCP mission control records compact factual evidence—search result, focused record, blocked
+conflict, staged preview, human decision, and commit—without exposing chain-of-thought. It supports
+one signature typed/voice-ready journey, progressive access to eight additional workflows and all
+twenty-four tool contracts, and a portable session-evidence export.
 
 ## How it works
 
@@ -80,7 +107,7 @@ Before the challenge, LabSpace already had the 2D/3D editor, multi-room project 
 
 ## What was built during the challenge
 
-The challenge branch adds the twenty-three-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, human-controlled Reviewed/Fast Draft execution, bounded blank-room creation, deterministic polygon room, connected-annex and inventory planning, room-readiness auditing, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement and resize validation, ranked alternatives, capability-scoped additive Fast Draft, reversible human-reviewed staging, safe history/autosave handoff, locally recorded exportable activity history and copy-ready workflows, strict contracts and error containment, eval cases, independent Playwright workflows, deployment configuration, and judge materials.
+The challenge branch adds the twenty-four-tool WebMCP surface, shared browser-agent action layer, canonical asset/location discovery, human-controlled Reviewed/Fast Draft execution, bounded blank-room creation, deterministic polygon room, connected-annex and inventory planning, room-readiness and grounded workflow assessment, wall-hosted openings, workstation pairing, inward-facing perimeter transforms, support-aware elevations, focus integration, placement and resize validation, ranked alternatives, capability-scoped additive Fast Draft, reversible human-reviewed staging, safe history/autosave handoff, the Ask → Prove → Decide mission control, bounded exportable session evidence, repeated productivity and persona-sensitivity benchmarks, strict contracts and error containment, eval cases, independent Playwright workflows, deployment configuration, and judge materials.
 
 ## Challenges
 
@@ -98,7 +125,14 @@ The next product step is authenticated multi-user persistence with PostgreSQL, r
 
 ## Testing instructions
 
-Open LabSpace in a WebMCP-capable browser and use the prompts in `docs/webmcp/JUDGE_GUIDE.md`. Twenty-three tools should appear on `/`, `/digital-twin`, and `/inventory`; the agent should create and complete a pristine six-wall room under the visible Reviewed/Fast Draft boundary, require review for its next change, propose exact-location inventory, find DEMO-01 evidence, reject invalid moves or hosted-opening dimensions, and stage a grounded correction for a human decision.
+Open LabSpace in a WebMCP-capable browser, choose the header **WebMCP** control, and start with the
+60-second **Judge mission**. Twenty-four tools should appear on `/`, `/digital-twin`, and
+`/inventory`; the signature prompt should find DEMO-01 Reference standards, focus the exact storage
+evidence, retain three bounded activity calls, and export the session proof. Continue with the
+prompts in `docs/webmcp/JUDGE_GUIDE.md`: the agent should create and complete a pristine six-wall room
+under the visible Reviewed/Fast Draft boundary, require review for its next change, propose
+exact-location inventory, reject invalid moves or hosted-opening dimensions, and stage a grounded
+correction for a human decision.
 
 Local verification:
 
@@ -106,8 +140,13 @@ Local verification:
 npm ci
 npm run release:check
 npx playwright test tests/e2e/webmcp-actions.spec.ts
+npx playwright test tests/e2e/webmcp-mission-control.spec.ts
 npm run dev
 ```
+
+The mission-control layer is independently reversible with
+`VITE_COMPETITION_EVIDENCE_LAYER=0`; that flag changes no tool contract, execution policy, room,
+inventory record, asset, material, or saved workspace.
 
 ## Links
 

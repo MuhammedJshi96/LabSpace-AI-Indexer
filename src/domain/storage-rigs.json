@@ -6000,6 +6000,121 @@
       }
     ]
   },
+  "maple-steel-desk": {
+    "parts": [
+      {
+        "id": "Maple steel desk drawer 1",
+        "kind": "drawer",
+        "bay": "Maple steel desk drawer 1",
+        "angle": 0,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
+        "region": {
+          "x": 0.30999999489103036,
+          "y": 0.7773279052619158,
+          "z": 0.4350000268220906,
+          "width": 0.3121428564130043,
+          "height": 0.16194332700258537,
+          "depth": 0.03142859308087133
+        }
+      },
+      {
+        "id": "Maple steel desk drawer 2",
+        "kind": "drawer",
+        "bay": "Maple steel desk drawer 2",
+        "angle": 0,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
+        "region": {
+          "x": 0.30999999489103036,
+          "y": 0.5101214478828969,
+          "z": 0.4350000268220906,
+          "width": 0.3121428564130043,
+          "height": 0.25641021412868187,
+          "depth": 0.03142859308087133
+        }
+      },
+      {
+        "id": "Maple steel desk drawer 3",
+        "kind": "drawer",
+        "bay": "Maple steel desk drawer 3",
+        "angle": 0,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
+        "region": {
+          "x": 0.30999999489103036,
+          "y": 0.09446692734515522,
+          "z": 0.4350000268220906,
+          "width": 0.3121428564130043,
+          "height": 0.4048583175064634,
+          "depth": 0.03142859308087133
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Maple steel desk drawer 1",
+        "name": "Maple steel desk drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.30999999489103036,
+          "y": 0.7773279052619158,
+          "z": 0.4350000268220906,
+          "width": 0.3121428564130043,
+          "height": 0.16194332700258537,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "Maple steel desk drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Maple steel desk drawer 2",
+        "name": "Maple steel desk drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.30999999489103036,
+          "y": 0.5101214478828969,
+          "z": 0.4350000268220906,
+          "width": 0.3121428564130043,
+          "height": 0.25641021412868187,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "Maple steel desk drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Maple steel desk drawer 3",
+        "name": "Maple steel desk drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.30999999489103036,
+          "y": 0.09446692734515522,
+          "z": 0.4350000268220906,
+          "width": 0.3121428564130043,
+          "height": 0.4048583175064634,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "Maple steel desk drawer 3"
+        ]
+      }
+    ]
+  },
   "mobile-bench": {
     "parts": [
       {
@@ -6302,10 +6417,10 @@
         ],
         "region": {
           "x": 0.2999999957425253,
-          "y": 0.8704454027484256,
+          "y": 0.8716216651604412,
           "z": 0.32857144012743134,
           "width": 0.24000002213886842,
-          "height": 0.06477729862578716,
+          "height": 0.06486483438769115,
           "depth": 0.022857146992975422
         }
       }
@@ -6318,10 +6433,10 @@
         "type": "drawer",
         "region": {
           "x": 0.2999999957425253,
-          "y": 0.8704454027484256,
+          "y": 0.8716216651604412,
           "z": 0.32857144012743134,
           "width": 0.24000002213886842,
-          "height": 0.06477729862578716,
+          "height": 0.06486483438769115,
           "depth": 0.022857146992975422
         },
         "partIds": [
@@ -7151,6 +7266,121 @@
       }
     ]
   },
+  "steel-pedestal-desk": {
+    "parts": [
+      {
+        "id": "Steel pedestal desk drawer 1",
+        "kind": "drawer",
+        "bay": "Steel pedestal desk drawer 1",
+        "angle": 0,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.7773279052619158,
+          "z": 0.4350000268220906,
+          "width": 0.3091666476262948,
+          "height": 0.16194332700258537,
+          "depth": 0.03142859308087133
+        }
+      },
+      {
+        "id": "Steel pedestal desk drawer 2",
+        "kind": "drawer",
+        "bay": "Steel pedestal desk drawer 2",
+        "angle": 0,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.5101214478828969,
+          "z": 0.4350000268220906,
+          "width": 0.3091666476262948,
+          "height": 0.25641021412868187,
+          "depth": 0.03142859308087133
+        }
+      },
+      {
+        "id": "Steel pedestal desk drawer 3",
+        "kind": "drawer",
+        "bay": "Steel pedestal desk drawer 3",
+        "angle": 0,
+        "travel": 0.40599998703848533,
+        "translation": [
+          0,
+          0,
+          0.4059999883174896
+        ],
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.09446692734515522,
+          "z": 0.4350000268220906,
+          "width": 0.3091666476262948,
+          "height": 0.4048583175064634,
+          "depth": 0.03142859308087133
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Steel pedestal desk drawer 1",
+        "name": "Steel pedestal desk drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.7773279052619158,
+          "z": 0.4350000268220906,
+          "width": 0.3091666476262948,
+          "height": 0.16194332700258537,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "Steel pedestal desk drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Steel pedestal desk drawer 2",
+        "name": "Steel pedestal desk drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.5101214478828969,
+          "z": 0.4350000268220906,
+          "width": 0.3091666476262948,
+          "height": 0.25641021412868187,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "Steel pedestal desk drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Steel pedestal desk drawer 3",
+        "name": "Steel pedestal desk drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.09446692734515522,
+          "z": 0.4350000268220906,
+          "width": 0.3091666476262948,
+          "height": 0.4048583175064634,
+          "depth": 0.03142859308087133
+        },
+        "partIds": [
+          "Steel pedestal desk drawer 3"
+        ]
+      }
+    ]
+  },
   "tall-cabinet": {
     "defaultAccessFace": "front",
     "parts": [
@@ -7412,6 +7642,121 @@
           "wall cabinet right door"
         ],
         "parentKey": "bay:Wall cabinet"
+      }
+    ]
+  },
+  "wood-pedestal-desk": {
+    "parts": [
+      {
+        "id": "Walnut pedestal desk drawer 1",
+        "kind": "drawer",
+        "bay": "Walnut pedestal desk drawer 1",
+        "angle": 0,
+        "travel": 0.37699996578155687,
+        "translation": [
+          0,
+          0,
+          0.37699997425079346
+        ],
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.7802929278418754,
+          "z": 0.4350000320948099,
+          "width": 0.3091666476262948,
+          "height": 0.15978694713917566,
+          "depth": 0.03384617782908872
+        }
+      },
+      {
+        "id": "Walnut pedestal desk drawer 2",
+        "kind": "drawer",
+        "bay": "Walnut pedestal desk drawer 2",
+        "angle": 0,
+        "travel": 0.37699996578155687,
+        "translation": [
+          0,
+          0,
+          0.37699997425079346
+        ],
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.5166444571255324,
+          "z": 0.4350000320948099,
+          "width": 0.3091666476262948,
+          "height": 0.2529959864091894,
+          "depth": 0.03384617782908872
+        }
+      },
+      {
+        "id": "Walnut pedestal desk drawer 3",
+        "kind": "drawer",
+        "bay": "Walnut pedestal desk drawer 3",
+        "angle": 0,
+        "travel": 0.37699996578155687,
+        "translation": [
+          0,
+          0,
+          0.37699997425079346
+        ],
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.09320903927001378,
+          "z": 0.4350000320948099,
+          "width": 0.3091666476262948,
+          "height": 0.4127829335483651,
+          "depth": 0.03384617782908872
+        }
+      }
+    ],
+    "shelfLevels": [],
+    "locations": [
+      {
+        "key": "drawer:Walnut pedestal desk drawer 1",
+        "name": "Walnut pedestal desk drawer 1",
+        "type": "drawer",
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.7802929278418754,
+          "z": 0.4350000320948099,
+          "width": 0.3091666476262948,
+          "height": 0.15978694713917566,
+          "depth": 0.03384617782908872
+        },
+        "partIds": [
+          "Walnut pedestal desk drawer 1"
+        ]
+      },
+      {
+        "key": "drawer:Walnut pedestal desk drawer 2",
+        "name": "Walnut pedestal desk drawer 2",
+        "type": "drawer",
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.5166444571255324,
+          "z": 0.4350000320948099,
+          "width": 0.3091666476262948,
+          "height": 0.2529959864091894,
+          "depth": 0.03384617782908872
+        },
+        "partIds": [
+          "Walnut pedestal desk drawer 2"
+        ]
+      },
+      {
+        "key": "drawer:Walnut pedestal desk drawer 3",
+        "name": "Walnut pedestal desk drawer 3",
+        "type": "drawer",
+        "region": {
+          "x": 0.30583333250549105,
+          "y": 0.09320903927001378,
+          "z": 0.4350000320948099,
+          "width": 0.3091666476262948,
+          "height": 0.4127829335483651,
+          "depth": 0.03384617782908872
+        },
+        "partIds": [
+          "Walnut pedestal desk drawer 3"
+        ]
       }
     ]
   }

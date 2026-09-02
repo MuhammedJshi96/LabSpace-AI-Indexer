@@ -20,7 +20,7 @@ describe("complete authored storage catalog", () => {
     }),
   );
   it("creates assignable geometry-bound locations for every supported family", () => {
-    expect(Object.keys(STORAGE_RIGS)).toHaveLength(31);
+    expect(Object.keys(STORAGE_RIGS)).toHaveLength(34);
     for (const definition of ASSET_CATALOG.filter((asset) => STORAGE_RIGS[asset.id])) {
       const id = useEditorStore.getState().addAsset(definition.id)!;
       const state = useEditorStore.getState();

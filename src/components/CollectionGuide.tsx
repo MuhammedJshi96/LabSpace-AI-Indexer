@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import "./collection-guide.css";
 import { ArrowLeft, ArrowRight, ListChecks, MapPin, X } from "@phosphor-icons/react";
 import {
+  collectionCurrentStopId,
+  collectionTotalSteps,
   controlCollection,
   confirmCollectionStop,
-  focusCollectionRecord,
+  focusCollectionStep,
   useCollectionStore,
 } from "../agent/labspace-collection-actions";
 import { buildDigitalTwinIndex } from "../domain/digital-twin-index";
@@ -18,17 +20,37 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
   const [error, setError] = useState("");
   useEffect(() => {
     if (!route || !hydrated || route.projectId !== project.id) return;
-    const id = route.recordIds[route.step];
-    if (useEditorStore.getState().digitalTwinSelectedRecordId === id) return;
+    const id = collectionCurrentStopId(route);
+    if (
+      useEditorStore.getState().spatialFocus?.recordId === id ||
+      useEditorStore.getState().digitalTwinSelectedRecordId === id
+    )
+      return;
     try {
-      focusCollectionRecord(id);
+      focusCollectionStep(route);
     } catch {
       /* The guide renders an unavailable stop without inventing a replacement. */
     }
   }, [route, hydrated, project.id]);
   if (!route || !hydrated || route.projectId !== project.id) return null;
   const index = buildDigitalTwinIndex(project);
-  const current = index.find((record) => record.id === route.recordIds[route.step]);
+  const totalSteps = collectionTotalSteps(route);
+  const workspaceStep = Boolean(route.workspace && route.step === route.recordIds.length);
+  const current = workspaceStep
+    ? null
+    : index.find((record) => record.id === route.recordIds[route.step]);
+  const currentStopId = collectionCurrentStopId(route);
+  const currentName = workspaceStep ? route.workspace?.name : current?.name;
+  const currentPath = workspaceStep ? route.workspace?.path : current?.path;
+  const currentAvailable = workspaceStep
+    ? Boolean(
+        project.rooms
+          .find((room) => room.id === route.workspace?.roomId)
+          ?.scene.objects.some(
+            (object) => object.id === route.workspace?.objectId && object.visible,
+          ),
+      )
+    : Boolean(current?.objectId);
   const act = (action: "next" | "previous" | "finish") => {
     try {
       controlCollection({ action }, "Human");
@@ -39,14 +61,15 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
   };
   return (
     <section
-      className={`collection-guide${embedded ? " is-embedded" : ""}`}
+      className={`collection-guide${embedded ? " is-embedded" : ""}${workspaceStep ? " is-workspace-step" : ""}`}
       aria-label="Collection guide"
     >
       <header>
         <ListChecks size={22} />
         <span>
           <small>
-            COLLECTION GUIDE · {route.step + 1} / {route.recordIds.length}
+            {route.workspace ? "WORKFLOW ITINERARY" : "COLLECTION GUIDE"} · {route.step + 1} /{" "}
+            {totalSteps}
           </small>
           <strong>{route.title}</strong>
         </span>
@@ -60,17 +83,20 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
       </header>
       <div className="collection-progress">
         <span>
-          {route.checked.length} of {route.recordIds.length} locations checked
+          {route.checked.length} of {totalSteps} stops checked
         </span>
-        <progress value={route.checked.length} max={route.recordIds.length} />
+        <progress value={route.checked.length} max={totalSteps} />
       </div>
       <div className="collection-current" aria-live="polite">
-        <strong>{current?.name ?? "Record unavailable"}</strong>
+        {workspaceStep && <small>FINAL WORKSPACE</small>}
+        <strong>{currentName ?? "Record unavailable"}</strong>
         <span>
-          {current?.path.join(" → ") ?? "This record was removed. Choose another stop or finish."}
+          {currentPath?.join(" → ") ?? "This stop was removed. Choose another stop or finish."}
         </span>
         <small>
-          {current?.primaryValue} {current?.status ? `· ${current.status}` : ""}
+          {workspaceStep
+            ? "Assessed work surface · researcher review required"
+            : `${current?.primaryValue ?? ""}${current?.status ? ` · ${current.status}` : ""}`}
         </small>
       </div>
       <nav aria-label="Collection steps">
@@ -79,7 +105,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
         </button>
         <button
           className="primary"
-          disabled={route.step === route.recordIds.length - 1}
+          disabled={route.step === totalSteps - 1}
           onClick={() => act("next")}
         >
           Next <ArrowRight size={16} />
@@ -88,7 +114,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
       <button
         className="collection-confirm"
         disabled={
-          !current?.objectId || route.checked.some((entry) => entry.recordId === current.id)
+          !currentAvailable || route.checked.some((entry) => entry.recordId === currentStopId)
         }
         onClick={() => {
           try {
@@ -99,9 +125,13 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
           }
         }}
       >
-        {route.checked.some((entry) => entry.recordId === current?.id)
-          ? "Location checked"
-          : "Confirm location checked"}
+        {route.checked.some((entry) => entry.recordId === currentStopId)
+          ? workspaceStep
+            ? "Workspace reviewed"
+            : "Location checked"
+          : workspaceStep
+            ? "Confirm workspace reviewed"
+            : "Confirm location checked"}
       </button>
       <div className="collection-links">
         <button onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
@@ -115,7 +145,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
         <button
           onClick={() => {
             try {
-              focusCollectionRecord(route.recordIds[route.step]);
+              focusCollectionStep(route);
               setError("");
             } catch (failure) {
               setError(failure instanceof Error ? failure.message : "Stop unavailable.");
@@ -133,11 +163,24 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
               {index.find((record) => record.id === id)?.name ?? "Record unavailable"}
             </li>
           ))}
+          {route.workspace && (
+            <li
+              key={`workflow-workspace:${route.workspace.objectId}`}
+              aria-current={workspaceStep ? "step" : undefined}
+            >
+              {route.checked.some(
+                (entry) => entry.recordId === `workflow-workspace:${route.workspace?.objectId}`,
+              )
+                ? "✓ "
+                : "◇ "}
+              Final workspace · {route.workspace.name}
+            </li>
+          )}
         </ol>
       )}
       {error && <p role="alert">{error}</p>}
       <footer>
-        Collection only—not a safety-approved route or protocol. Stock is not deducted.
+        Ordered evidence only—not a safety-approved route or protocol. Stock is not deducted.
       </footer>
     </section>
   );

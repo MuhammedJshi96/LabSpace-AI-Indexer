@@ -584,6 +584,431 @@
 .agent-activity-panel .webmcp-workflows strong {
   font-size: 14px;
 }
+
+/* Reversible competition evidence layer: one judge mission, one evidence path,
+   and one exportable proof bundle. It changes presentation only. */
+.agent-activity-panel.is-competition-evidence {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(780px, calc(100vh - 96px));
+}
+.agent-activity-panel.is-competition-evidence .webmcp-connection {
+  padding: 9px 16px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-execution-gate {
+  gap: 7px;
+  padding: 9px 13px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-execution-heading > span:first-child {
+  width: 28px;
+  height: 28px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-mode-switch button {
+  min-height: 40px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-execution-rail {
+  min-height: 36px;
+  padding-block: 6px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-execution-rail > span {
+  margin-block: -6px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-execution-gate > p {
+  display: none;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-execution-rail small {
+  display: none;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-tabs {
+  padding: 5px 10px;
+}
+.agent-activity-panel.is-competition-evidence .webmcp-tabs button {
+  min-height: 36px;
+  padding-block: 5px;
+}
+
+.webmcp-mission {
+  min-height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--graphite);
+  background:
+    linear-gradient(rgba(8, 127, 112, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 127, 112, 0.035) 1px, transparent 1px), #f7faf9;
+  background-size: 24px 24px;
+}
+.webmcp-mission-hero {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  padding: 18px 18px 16px;
+  overflow: hidden;
+  color: var(--porcelain);
+  background: var(--lab-enamel);
+  border-bottom: 1px solid #184f49;
+}
+.webmcp-mission-hero::after {
+  position: absolute;
+  right: -36px;
+  bottom: -62px;
+  width: 170px;
+  height: 170px;
+  border: 1px solid rgba(102, 218, 208, 0.24);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 22px rgba(102, 218, 208, 0.04),
+    0 0 0 48px rgba(102, 218, 208, 0.025);
+  content: "";
+  pointer-events: none;
+}
+.webmcp-mission-kicker {
+  color: var(--glass-cyan);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.webmcp-mission-hero h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #f8fffd;
+  font:
+    650 24px/1.05 Bahnschrift,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.025em;
+}
+.webmcp-mission-hero > p {
+  position: relative;
+  z-index: 1;
+  max-width: 430px;
+  margin: 0;
+  color: #c7e2dc;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.webmcp-mission-context {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin-top: 3px;
+}
+.webmcp-mission-context > span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 9px;
+  color: #e6f7f3;
+  background: rgba(244, 248, 247, 0.08);
+  border: 1px solid rgba(199, 211, 208, 0.22);
+  border-radius: 5px;
+  font-size: 11px;
+}
+.webmcp-mission-context small {
+  color: #9dcac1;
+  font-size: 11px;
+}
+.webmcp-mission-context .webmcp-mission-readiness {
+  margin-left: auto;
+}
+.webmcp-mission-readiness .webmcp-status-dot {
+  width: 7px;
+  height: 7px;
+  border-color: var(--lab-enamel);
+}
+
+.webmcp-evidence-path {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 12px 14px;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--rule);
+}
+.webmcp-evidence-path li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  padding-right: 14px;
+}
+.webmcp-evidence-path li > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: #eafffa;
+  background: var(--teal-dark);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 0 0 3px var(--teal-soft);
+}
+.webmcp-evidence-path li > div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.webmcp-evidence-path small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.webmcp-evidence-path b {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.webmcp-evidence-path svg {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  color: #88a7a0;
+}
+
+.webmcp-signature-card,
+.webmcp-proof-strip,
+.webmcp-more-missions {
+  margin: 12px 14px 0;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(6, 60, 53, 0.055);
+}
+.webmcp-signature-card {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border-left: 3px solid var(--instrument-teal);
+}
+.webmcp-signature-card > header,
+.webmcp-proof-strip > header {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  justify-content: space-between;
+}
+.webmcp-signature-card > header > span,
+.webmcp-proof-strip > header > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.webmcp-signature-card header small,
+.webmcp-proof-strip header small {
+  color: var(--teal-dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.webmcp-signature-card header strong,
+.webmcp-proof-strip header strong {
+  font-size: 14px;
+}
+.webmcp-signature-card header em {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  color: var(--teal-dark);
+  background: var(--teal-soft);
+  border: 1px solid #b9ddd5;
+  border-radius: 999px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 750;
+}
+.webmcp-signature-card > p {
+  margin: 0;
+  padding: 10px 11px;
+  color: var(--ink-secondary);
+  background: #f4f8f7;
+  border-left: 2px solid var(--stainless);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.webmcp-signature-card > small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.webmcp-signature-card > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.webmcp-signature-card button,
+.webmcp-proof-strip button,
+.webmcp-more-missions article button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--teal-dark);
+  background: white;
+  border: 1px solid #9dcfc5;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.webmcp-signature-card .webmcp-primary-action {
+  color: #f3fffc;
+  background: var(--teal-dark);
+  border-color: var(--teal-dark);
+}
+.webmcp-signature-card button:hover,
+.webmcp-proof-strip button:hover,
+.webmcp-more-missions article button:hover {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
+}
+
+.webmcp-proof-strip {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+}
+.webmcp-proof-strip > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.webmcp-proof-strip > div > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  padding: 8px;
+  border-right: 1px solid var(--rule);
+}
+.webmcp-proof-strip > div > span:last-child {
+  border-right: 0;
+}
+.webmcp-proof-strip > div b {
+  color: var(--teal-dark);
+  font-size: 16px;
+}
+.webmcp-proof-strip > div small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.webmcp-proof-strip > div .has-errors b {
+  color: #b0444c;
+}
+.webmcp-proof-strip > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.webmcp-more-missions {
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.webmcp-more-missions > summary {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 43px;
+  padding: 0 13px;
+  color: var(--teal-dark);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  list-style: none;
+}
+.webmcp-more-missions > summary::-webkit-details-marker {
+  display: none;
+}
+.webmcp-more-missions > summary::before {
+  content: "+";
+  font-size: 16px;
+  font-weight: 500;
+}
+.webmcp-more-missions[open] > summary::before {
+  content: "−";
+}
+.webmcp-more-missions > summary b {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--teal-soft);
+  border-radius: 999px;
+  font-size: 10px;
+}
+.webmcp-more-missions > div {
+  border-top: 1px solid var(--rule);
+}
+.webmcp-more-missions article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.webmcp-more-missions article:last-child {
+  border-bottom: 0;
+}
+.webmcp-more-missions article > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.webmcp-more-missions article small {
+  color: var(--teal-dark);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.webmcp-more-missions article strong {
+  font-size: 12px;
+}
+.webmcp-more-missions article em {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .webmcp-evidence-path {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+  .webmcp-evidence-path li:nth-child(2) svg {
+    display: none;
+  }
+  .webmcp-proof-strip > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .webmcp-proof-strip > div > span:nth-child(2) {
+    border-right: 0;
+  }
+  .webmcp-proof-strip > div > span:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--rule);
+  }
+}
 .process-tracker-trigger {
   display: flex;
   align-items: center;

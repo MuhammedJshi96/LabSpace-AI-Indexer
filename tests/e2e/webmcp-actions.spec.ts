@@ -4,6 +4,7 @@ import type { Project, Room, SceneObject } from "../../src/domain/schema";
 
 const WEBMCP_TOOL_NAMES = [
   "labspace_add_inventory",
+  "labspace_assess_workflow",
   "labspace_audit_room",
   "labspace_collection_step",
   "labspace_create_room",
@@ -210,7 +211,7 @@ test("adds reviewed inventory through one tool and guides exact collection stops
   await expect(guide).toContainText("1 / 2");
   await expect(guide).toContainText("Stock is not deducted");
   await guide.getByRole("button", { name: "Confirm location checked", exact: true }).click();
-  await expect(guide).toContainText("1 of 2 locations checked");
+  await expect(guide).toContainText("1 of 2 stops checked");
   await page.getByRole("button", { name: "Process tracker", exact: true }).click();
   const tracker = page.getByRole("region", { name: "Process tracker", exact: true });
   await expect(tracker).toContainText("1/2 checked");
@@ -253,6 +254,61 @@ test("adds reviewed inventory through one tool and guides exact collection stops
     .toBe(true);
 });
 
+test("grounds a workflow and ends its evidence itinerary at an authored work surface", async ({
+  page,
+}) => {
+  await page.goto("/digital-twin");
+  await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
+  await page.getByRole("button", { name: "2D fallback", exact: true }).click();
+  const before = await readProject(page);
+
+  const assessment = await executeTool<{
+    readiness: string;
+    missing: string[];
+    ambiguous: string[];
+    materialEvidence: Array<{ candidates: Array<{ recordId: string }> }>;
+    recommendedWorkspace: { objectId: string; objectName: string } | null;
+  }>(page, "labspace_assess_workflow", {
+    brief: "DPPH evidence handoff without generating a protocol",
+    materials: ["Reference standards"],
+    equipment: ["laboratory scale"],
+    roomCode: "DEMO-01",
+    workspacePreference: "laboratory-bench",
+    minimumClearAreaM2: 0.25,
+  });
+
+  expect(assessment).toMatchObject({
+    readiness: "ready-for-researcher-review",
+    missing: [],
+    ambiguous: [],
+    recommendedWorkspace: { objectId: expect.any(String), objectName: expect.any(String) },
+  });
+  expect(await readProject(page)).toEqual(before);
+
+  const recordId = assessment.materialEvidence[0].candidates[0].recordId;
+  await executeTool(page, "labspace_start_collection", {
+    title: "DPPH evidence handoff",
+    recordIds: [recordId],
+    workspaceObjectId: assessment.recommendedWorkspace!.objectId,
+  });
+  const guide = page.getByRole("region", { name: "Collection guide" });
+  await expect(guide).toContainText("WORKFLOW ITINERARY · 1 / 2");
+  await guide.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(guide).toContainText("FINAL WORKSPACE");
+  await expect(
+    page.getByRole("heading", {
+      name: assessment.recommendedWorkspace!.objectName,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("region", { name: "Workflow evidence handoff" })).toContainText(
+    "Materials lead to a real work surface",
+  );
+  await expect(guide).toContainText("not a safety-approved route or protocol");
+  expect((await readProject(page)).rooms).toEqual(before.rooms);
+  await executeTool(page, "labspace_collection_step", { action: "finish" });
+});
+
 test("Ctrl+D duplicates a focused item and undo restores the room", async ({ page }) => {
   await page.goto("/");
   await expect.poll(() => registeredToolNames(page)).toEqual(WEBMCP_TOOL_NAMES);
@@ -262,6 +318,9 @@ test("Ctrl+D duplicates a focused item and undo restores the room", async ({ pag
   await executeTool(page, "labspace_focus_record", {
     recordId: `${demo.id}:equipment:${equipment.id}`,
   });
+  await expect(page).toHaveURL(/\/digital-twin$/);
+  await page.getByRole("link", { name: "Layout Editor", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
   await page.keyboard.press("Control+d");
   await expect
     .poll(
@@ -278,7 +337,7 @@ test("Ctrl+D duplicates a focused item and undo restores the room", async ({ pag
     .toBe(demo.scene.objects.length);
 });
 
-test("registers exactly twenty-three tools on product routes and excludes internal asset routes", async ({
+test("registers exactly twenty-four tools on product routes and excludes internal asset routes", async ({
   page,
 }) => {
   for (const route of ["/", "/digital-twin", "/inventory"]) {
@@ -338,7 +397,7 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
   await page.getByRole("button", { name: /Open WebMCP Inspector/ }).click();
   const inspector = page.getByRole("complementary", { name: "WebMCP Inspector" });
   await expect(inspector).toBeVisible();
-  await inspector.getByRole("tab", { name: "Use WebMCP" }).click();
+  await inspector.getByRole("tab", { name: "Setup" }).click();
   await expect(inspector).toContainText("Type this in your browser-agent conversation");
   await expect(inspector).toContainText("there is no second chat box");
 
@@ -346,7 +405,7 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
   await expect(inspector).toContainText("labspace_get_context");
   await expect(inspector).toContainText("Empty lab plan");
 
-  await inspector.getByRole("tab", { name: "Use WebMCP" }).click();
+  await inspector.getByRole("tab", { name: "Setup" }).click();
   await expect(inspector).toContainText("ChatGPT in-app browser");
   await expect(inspector).toContainText("Chrome Model Context Tool Inspector");
   await expect(inspector).toContainText("Chrome DevTools WebMCP pane");

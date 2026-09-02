@@ -1,0 +1,145 @@
+{
+  "benchmark": "LabSpace human-paced UI versus WebMCP",
+  "date": "2026-09-02",
+  "environment": {
+    "application": "local isolated LabSpace development server",
+    "manualOrigin": "http://localhost:3104",
+    "webmcpOrigin": "http://127.0.0.1:3104",
+    "browser": "Codex in-app browser",
+    "executionMode": "Reviewed",
+    "renderQuality": "Balanced"
+  },
+  "method": {
+    "runsPerTask": 1,
+    "manual": "Visible controls only, with fixed reading, orientation, typing, and result-inspection pauses. Canvas geometry used a visible drag and was corrected after reading the resulting area.",
+    "webmcp": "Registered public WebMCP tools only, plus the same visible human approval controls required by Reviewed mode.",
+    "timingBoundary": "Task start after the page was loaded through authoritative visible completion. WebMCP time includes tool execution, staged-preview rendering, and human approval pauses, but excludes language-model inference and prompt composition.",
+    "interactionDefinition": "One click, field entry, selection, drag, approval, or WebMCP tool call. Passive waits are timed but not counted as interactions.",
+    "scopeWarning": "This is one controlled local comparison, not a population usability study or a claim about every device, browser, model, or user."
+  },
+  "tasks": [
+    {
+      "id": "exact-location",
+      "brief": "Find Rotary evaporator flask set and reveal its exact physical location.",
+      "manual": {
+        "milliseconds": 17544,
+        "interactions": 5,
+        "outcome": "Found the canonical inventory record and displayed North reagent cabinet / Drawer 02."
+      },
+      "webmcp": {
+        "milliseconds": 9948,
+        "interactions": 2,
+        "tools": ["labspace_search_records", "labspace_focus_record"],
+        "outcome": "Found and focused the same canonical record and storage path."
+      },
+      "comparison": {
+        "timeChangePercent": -43.3,
+        "interactionReductionPercent": 60.0
+      }
+    },
+    {
+      "id": "assign-inventory",
+      "brief": "Add 4 bottles of Benchmark buffer solution to DEMO-01 / North reagent cabinet / Drawer 01.",
+      "manual": {
+        "milliseconds": 27138,
+        "interactions": 13,
+        "outcome": "Created the item directly at Drawer 01 through the Storage workspace."
+      },
+      "webmcp": {
+        "milliseconds": 14533,
+        "interactions": 3,
+        "toolExecutionMilliseconds": 10625,
+        "humanApprovalMilliseconds": 3908,
+        "tools": ["labspace_inventory_locations", "labspace_add_inventory"],
+        "outcome": "Resolved the canonical Drawer 01 ID, staged one record, and saved it only after visible approval."
+      },
+      "comparison": {
+        "timeChangePercent": -46.4,
+        "interactionReductionPercent": 76.9
+      }
+    },
+    {
+      "id": "collect-two-materials",
+      "brief": "Locate Nitrile gloves, M and Reference standards and advance through both locations.",
+      "manual": {
+        "milliseconds": 13823,
+        "interactions": 8,
+        "outcome": "Searched and focused each item separately, reading both physical address trails."
+      },
+      "webmcp": {
+        "milliseconds": 14361,
+        "interactions": 3,
+        "tools": [
+          "labspace_resolve_materials",
+          "labspace_start_collection",
+          "labspace_collection_step"
+        ],
+        "outcome": "Matched both canonical records and created a persistent Next/Previous collection guide without changing stock."
+      },
+      "comparison": {
+        "timeChangePercent": 3.9,
+        "interactionReductionPercent": 62.5,
+        "note": "WebMCP was 0.538 seconds slower but produced a resumable, timestamped collection guide rather than two independent searches."
+      }
+    },
+    {
+      "id": "room-readiness-audit",
+      "brief": "Check whether DEMO-01 has current deterministic planning issues.",
+      "manual": {
+        "milliseconds": 4712,
+        "interactions": 2,
+        "outcome": "Opened Issues and read 0 placement warnings."
+      },
+      "webmcp": {
+        "milliseconds": 4839,
+        "interactions": 1,
+        "tools": ["labspace_audit_room"],
+        "outcome": "Returned ready status, zero issues, five named deterministic checks, room metrics, and bounded non-certification language."
+      },
+      "comparison": {
+        "timeChangePercent": 2.7,
+        "interactionReductionPercent": 50.0,
+        "note": "WebMCP was 0.127 seconds slower and returned substantially more structured evidence."
+      }
+    },
+    {
+      "id": "create-32m2-room-shell",
+      "brief": "Create Benchmark Office, code B812, on Floor 8 with an exact 8 m by 4 m closed room shell.",
+      "manual": {
+        "milliseconds": 21545,
+        "interactions": 16,
+        "correctionMilliseconds": 6130,
+        "outcome": "The first visible drag produced 36.80 m2; Undo and a second grid-aligned drag produced the required 32.00 m2 shell."
+      },
+      "webmcp": {
+        "milliseconds": 36789,
+        "interactions": 5,
+        "toolExecutionMilliseconds": 28986,
+        "humanApprovalMilliseconds": 7803,
+        "tools": ["labspace_create_room", "labspace_plan_room", "labspace_stage_room_plan"],
+        "outcome": "Created a blank Floor 8 room and an exact 32.00 m2 shell after separate room-identity and blueprint approvals."
+      },
+      "comparison": {
+        "timeChangePercent": 70.8,
+        "interactionReductionPercent": 68.8,
+        "note": "Reviewed WebMCP was slower because it rendered a deterministic staged preview and preserved two explicit human approval boundaries."
+      }
+    }
+  ],
+  "totals": {
+    "manualMilliseconds": 84762,
+    "webmcpMilliseconds": 80470,
+    "timeChangePercent": -5.1,
+    "manualInteractions": 44,
+    "webmcpInteractions": 14,
+    "interactionReductionPercent": 68.2,
+    "successfulOutcomes": {
+      "manual": 5,
+      "webmcp": 5
+    }
+  },
+  "browserDiagnostics": {
+    "applicationErrors": 0,
+    "warnings": ["Existing Three.js THREE.Clock deprecation warning; no task interruption"]
+  }
+}

@@ -4,19 +4,19 @@ Audited on 2026-09-01 against the [published Devpost judging criteria](https://w
 
 ## WebMCP Leverage — strong evidence
 
-- Twenty-three imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning/addition, bounded creation, material resolution, and guided collection.
+- Twenty-four imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, grounded workflow assessment, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning/addition, bounded creation, material resolution, and guided collection.
 - Tools call the same canonical index, geometry, persistence, history, and validation actions used by the visible product; they do not automate clicks or scrape presentation text.
 - Tool registration survives normal product-route changes and is excluded from internal asset/capture routes.
 - Twenty-six deterministic eval cases and fourteen dedicated browser E2E cases cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, guided collection, keyboard duplication, and undo.
-- The visible WebMCP inspector exposes connection status, registered tools, bounded inputs/results, copy-ready workflows, and a clear usage guide without presenting hidden reasoning.
+- The visible WebMCP inspector leads with one 60-second Ask → Prove → Decide mission, keeps the twenty-four-tool surface progressive, exposes bounded inputs/results, supports typed and voice-ready prompts, and exports portable session evidence without presenting hidden reasoning.
 
 ## Execution — strong evidence
 
 - Public application: <https://labspace-agent-twin.onrender.com/>
 - Public source: <https://github.com/MuhammedJshi96/LabSpace-AI-Indexer>
 - The coherent product includes a multi-room Layout Editor, facility-by-floor view, synchronized 2D/3D planning, Spatial Index, Inventory Studio, Asset Studio, validation, persistence, and browser-agent workflows.
-- The release gate covers lint, TypeScript, validation of all 106 asset definitions, the complete unit/integration suite, and a production build. The dated release-candidate audit records the final pass totals rather than freezing them in this scorecard.
-- All 104 user-visible catalog assets use original authored GLBs; only two hidden variable-length wall primitives remain procedural.
+- The release gate covers lint, TypeScript, validation of all 117 asset definitions, the complete unit/integration suite, and a production build. The dated release-candidate audit records the final pass totals rather than freezing them in this scorecard.
+- All 115 user-visible catalog assets use original authored GLBs; only two hidden variable-length wall primitives remain procedural.
 
 ## Potential Impact — credible and specific
 
@@ -25,6 +25,7 @@ Audited on 2026-09-01 against the [published Devpost judging criteria](https://w
 - The agent can calculate a room or inventory proposal while deterministic application logic checks boundaries, overlaps, wall hosting, support surfaces, and identifiers.
 - Later changes remain reversible previews until a researcher approves them. This preserves accountability in a physical workplace.
 - Submission claims remain bounded to demonstrated counts and test evidence. Search-time or usability improvements should be described as estimates unless measured before submission.
+- A repeated, same-outcome [productivity benchmark v2](PRODUCTIVITY_BENCHMARK_V2.md) records one excluded warm-up and five counterbalanced trials per method across exact-location evidence, batched inventory, and a furnished 48 m² office. All 140 measured outcome checks passed. Direct operations fell from 54 to 12 (77.8% fewer). Per-task system medians are reported with IQRs, including the honest result that Reviewed inventory staging was slower at machine input speed. The report explicitly distinguishes automated application execution from human completion time.
 
 ## Creativity & Ambition — differentiated concept
 

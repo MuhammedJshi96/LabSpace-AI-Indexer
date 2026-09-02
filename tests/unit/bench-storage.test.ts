@@ -126,14 +126,16 @@ describe("reference-based bench storage", () => {
     "island-bench-service-bridge",
   ])("%s delivers genuinely recessed cabinets without moving the drawer datum", (id) => {
     const definition = getAssetDefinition(id);
-    expect(definition.model3d?.revision).toBe("recessed-casework-r1-catalog-polish-r7");
+    const constructionRevision =
+      id === "center-island-bench" ? "recessed-casework-clean-top-r2" : "recessed-casework-r1";
+    expect(definition.model3d?.revision).toBe(`${constructionRevision}-catalog-polish-r7`);
     const data = readFileSync(`public/models/hero/${id}.glb`);
     const gltf = JSON.parse(data.subarray(20, 20 + data.readUInt32LE(12)).toString());
     const root = gltf.nodes.find(
       (n: { extras?: { asset_id?: string } }) => n.extras?.asset_id === id,
     );
     expect(root.extras.cabinet_setback_m).toBe(0.075);
-    expect(root.extras.revision).toBe("recessed-casework-r1");
+    expect(root.extras.revision).toBe(constructionRevision);
     const fixedJoints = root.extras.fixed_worktop_joints as {
       supportTop: number;
       bearingBottom: number;

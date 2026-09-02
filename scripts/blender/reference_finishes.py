@@ -8,7 +8,7 @@ import bpy
 import re
 
 LAMINATE_BENCHES = set("lab-bench lab-bench-sink lab-bench-overhead center-island-bench island-bench-service-bridge asymmetric-lab-bench corner-lab-bench".split())
-COATED_CASEWORK = LAMINATE_BENCHES | set("mobile-bench computer-lab-bench base-cabinet base-drawer-cabinet sink-cabinet institutional-sink-cabinet wall-cabinet glass-wall-cabinet tall-cabinet sliding-door-cabinet glazed-sliding-cabinet solvent-cabinet mobile-drawer chemical-cabinet flammable-cabinet locker".split())
+COATED_CASEWORK = LAMINATE_BENCHES | set("mobile-bench computer-lab-bench base-cabinet base-drawer-cabinet sink-cabinet institutional-sink-cabinet wall-cabinet glass-wall-cabinet tall-cabinet sliding-door-cabinet glazed-sliding-cabinet solvent-cabinet mobile-drawer chemical-cabinet flammable-cabinet locker steel-pedestal-desk wood-pedestal-desk maple-steel-desk".split())
 PAINTED_DOORS = set("single-door double-door narrow-lite-door wide-lite-door single-transom-door double-transom-door double-egress-door sliding-door double-sliding-door cleanroom-glazed-door".split())
 PANEL_CATEGORIES = set("carcass|end gable|drawer front|drawer|door|cabinet door|overhead cabinet|glazed hutch end panel|glazed hutch divider|hutch top cap|recessed cabinet construction|recessed cabinet soffit|interior shelf|manufactured edge".split("|"))
 PAINT_NAMES = {"Room 809 light gray powder coat", "Warm gray powder coat highlight", "Casework interior enamel", "Institutional porcelain door enamel", "Institutional warm grey casework"}

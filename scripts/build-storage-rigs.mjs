@@ -1,6 +1,36 @@
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import console from "node:console";
 
+// Physical access is an authored semantic, not something that can be inferred
+// safely from a highlight region. Keep the small set of non-front facades
+// explicit when the geometry-derived manifest is regenerated.
+const ACCESS_POLICIES = {
+  "center-island-bench": {
+    defaultAccessFace: "front",
+    accessFaceOverrides: [
+      { keyPrefix: "drawer:Island north", face: "rear" },
+      { keyPrefix: "bay:Island north", face: "rear" },
+    ],
+  },
+  "island-bench-service-bridge": {
+    defaultAccessFace: "front",
+    accessFaceOverrides: [
+      { keyPrefix: "drawer:Island north", face: "rear" },
+      { keyPrefix: "bay:Island north", face: "rear" },
+    ],
+  },
+  "corner-lab-bench": {
+    defaultAccessFace: "front",
+    accessFaceOverrides: [
+      { keyPrefix: "drawer:return utility drawer", face: "rear" },
+      { keyPrefix: "bay:Return cabinet", face: "rear" },
+      { keyPrefix: "drawer:corner run drawer", face: "left" },
+    ],
+  },
+  "lab-bench-overhead": { defaultAccessFace: "front" },
+  "tall-cabinet": { defaultAccessFace: "front" },
+};
+
 // Derive the runtime manifest from the delivered models, never from guessed
 // cabinet dimensions. Run after generation/compression of a verified model.
 const ids = readdirSync("public/models/hero")
@@ -100,7 +130,12 @@ for (const id of ids) {
         [],
       );
     }
-  rigs[id] = { parts, shelfLevels: root.extras.storage_shelf_levels ?? [], locations };
+  rigs[id] = {
+    ...(ACCESS_POLICIES[id] ?? {}),
+    parts,
+    shelfLevels: root.extras.storage_shelf_levels ?? [],
+    locations,
+  };
 }
 writeFileSync("src/domain/storage-rigs.json", JSON.stringify(rigs, null, 2) + "\n");
 console.log(`Verified ${Object.keys(rigs).length} storage rigs from delivered GLBs.`);

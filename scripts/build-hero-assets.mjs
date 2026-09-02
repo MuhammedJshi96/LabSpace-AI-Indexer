@@ -61,7 +61,32 @@ const jobs = [
     args: ["--output-dir", outputDir],
   },
   { script: "scripts/blender/lab_reference_batch13.py", args: ["--output-dir", outputDir] },
+  {
+    script: "scripts/blender/lab_diversity_batch14.py",
+    args: [
+      "--output-dir",
+      outputDir,
+      "--save-blend-dir",
+      "assets/blender/batch14",
+    ],
+  },
+  {
+    script: "scripts/blender/inspect_batch14_sources.py",
+    args: ["--source-dir", "assets/blender/batch14"],
+  },
+  {
+    script: "scripts/blender/audit_batch14_shells.py",
+    args: ["--source-dir", "assets/blender/batch14"],
+  },
   { script: "scripts/blender/compress_hero_glbs.py", args: ["--model-dir", outputDir] },
+  {
+    script: "scripts/blender/audit_runtime_coplanar_surfaces.py",
+    args: [
+      `${outputDir}/high-volume-multifunction-printer.glb`,
+      `${outputDir}/compact-ink-tank-printer.glb`,
+      `${outputDir}/ultrasonic-cleaner.glb`,
+    ],
+  },
 ];
 
 for (const job of jobs) {

@@ -1512,7 +1512,7 @@ export function TwoDEditor() {
   const placementWarnings = useMemo(
     () =>
       validatePlacement(room).filter((warning) =>
-        ["outside-", "below-floor-", "above-ceiling-", "overlap-"].some((prefix) =>
+        ["outside-", "below-floor-", "above-ceiling-", "overlap-", "access-front-"].some((prefix) =>
           warning.id.startsWith(prefix),
         ),
       ),

@@ -1,7 +1,12 @@
 # Blender asset authoring
 
+The non-negotiable production methodology, acceptance gates, and
+visual-versus-spatial responsibility split are defined in
+[`docs/3d/ASSET_PIPELINE.md`](../../docs/3d/ASSET_PIPELINE.md). This file
+documents the current Blender implementation of that standard.
+
 This folder contains the deterministic, headless Blender sources for LabSpace's
-104 authored catalog models. Every searchable catalog item has an authored GLB;
+115 authored catalog models. Every searchable catalog item has an authored GLB;
 hidden wall construction primitives remain procedural. Casework generators share strict
 face-reveal, pull, plinth, and module-proportion rules so a revision rebuilds one
 current asset per catalog id rather than stacking a legacy model beneath it.
@@ -14,7 +19,7 @@ From the repository root, rebuild every authored GLB with:
 npm run assets:build
 ```
 
-The wrapper uses the project-local Blender 4.5.11 LTS executable, runs all eighteen
+The wrapper uses the project-local Blender 4.5.11 LTS executable, runs all nineteen
 authoring sources, compresses geometry, applies the explicit family/role finish
 recipes, rebuilds storage rigs, and then runs `render_hero_catalog.py` to regenerate the
 transparent isometric and top images used in the Asset Library and 2D plan:
@@ -39,6 +44,7 @@ transparent isometric and top images used in the Asset Library and 2D plan:
 | `lab_remaining_equipment_batch11.py` | `laminar-flow.glb`, `stereo-microscope.glb`, `electrophoresis-tank.glb`, `gel-doc.glb`, `ice-maker.glb`, `glassware-washer.glb`                                                                                                                               |
 | `lab_catalog_completion_batch12.py`  | Columns, corner/mobile benches, desks, wall/safety cabinets, mobile drawers, lockers, racks, cold storage, computer workstation, printer, shower and bins                                                                                                     |
 | `lab_reference_batch13.py`           | Wide-lite/transom/egress doors, blind/clerestory windows, asymmetric bench, institutional trough sink, computer laboratory bench and chiller                                                                                                                  |
+| `lab_diversity_batch14.py`           | Passive five-position pipette holder, automated plate reader, chest ULT freezer, GPU workstation, three pedestal desks, utility table, two printers, and ultrasonic cleaner                                                                                   |
 
 The files are written to `public/models/hero/`. They use metric, real-scale
 planning dimensions; a footprint-centred, zero-height floor anchor; orbitable
@@ -49,7 +55,7 @@ parts are consolidated by material to keep room rendering practical.
 `public/models/hero/renders/<asset>-isometric.png` at 384×256 and
 `<asset>-top.png` at 384×384. These are derived artifacts; the GLB and its Python
 authoring source remain authoritative. The current authored set therefore
-provides 208 same-geometry static renders. Cycles denoising gives glass and metal
+provides 230 same-geometry static renders. Cycles denoising gives glass and metal
 clean offline catalog captures without increasing runtime rendering cost.
 
 `polish-catalog-materials.mjs` is the authoritative delivered finish review. Its
@@ -111,9 +117,41 @@ $blender = '.\.tools\blender-4.5.11-windows-x64\blender.exe'
 & $blender --background --factory-startup `
   --python scripts\blender\inspect_glb.py -- `
   public\models\hero\lab-bench.glb
+
+& $blender --background --factory-startup `
+  --python scripts\blender\inspect_batch14_sources.py -- `
+  --source-dir assets\blender\batch14
+
+& $blender --background --factory-startup `
+  --python-exit-code 1 `
+  --python scripts\blender\audit_runtime_coplanar_surfaces.py --
 ```
 
 `inspect_glb.py` re-imports a delivered model for structural inspection, while
 `render_glb_preview.py` produces deterministic studio QA views. Generated QA
-cameras and lights are not included in production GLBs. The Python authoring
-scripts, rather than optional `.blend` snapshots, remain the source of truth.
+cameras and lights are not included in production GLBs. Most catalog batches
+remain reproducible from their Python authoring scripts. Batch 14 additionally
+treats `assets/blender/batch14/*.blend` as the editable product-model source and
+rollback artifact: those files are saved before material batching so named parts,
+modifiers, and hierarchy remain intact. Its Python script is the deterministic
+constructor; its compressed GLB is the runtime delivery artifact.
+
+The current batch-14 delivery is runtime revision `diversity-batch14-r12` from
+editable source revision `batch14-product-source-r7`. The reference-led ultrasonic
+cleaner remains the unchanged construction benchmark: continuous formed enclosure and rim,
+nested physical returns, stepped/recessed controls, and credible side/rear service
+anatomy. Printer controllers, cassette pulls, level indicators and service fields
+follow the same depth-cascade rule; do not place same-facing decorative surfaces
+on one plane. The printer product models use bounded paper paths and rollers, not
+invented loose paper sheets.
+
+`audit_runtime_coplanar_surfaces.py` is deliberately sequential to keep memory
+bounded. Its default render-risk mode fails exposed cross-material same-plane
+overlaps that can produce orbit streaking; `--strict` is an optional exhaustive
+diagnostic for hidden bearing contacts and same-material construction. The current
+eleven-model batch-14 runtime is 2,949,608 bytes. The separately rebuilt legacy
+`printer` brings the verified eleven-target rework set to 2,908,640 bytes versus
+11,197,112 bytes before compression (74.0% smaller). This r12 refresh remains
+local and reversible until publication is explicitly approved. Its asset-level
+requirements and reference-confidence boundaries are recorded in
+`docs/3d/BATCH14_REFERENCE_REWORK.md`.

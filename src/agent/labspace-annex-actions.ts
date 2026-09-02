@@ -8,7 +8,14 @@ import {
   pointIsInsideFloorPolygon,
   type PlanPoint,
 } from "../domain/room-geometry";
-import type { AssetDefinition, Project, Room, RoomSpace, Scene, SceneObject } from "../domain/schema";
+import type {
+  AssetDefinition,
+  Project,
+  Room,
+  RoomSpace,
+  Scene,
+  SceneObject,
+} from "../domain/schema";
 import { openingOverlapsSibling } from "../domain/wall-openings";
 import { useEditorStore } from "../store/editor-store";
 import type {
@@ -54,12 +61,7 @@ function finiteNumber(value: unknown, name: string, minimum: number, maximum: nu
   return value;
 }
 
-function optionalFiniteNumber(
-  value: unknown,
-  name: string,
-  minimum: number,
-  maximum: number,
-) {
+function optionalFiniteNumber(value: unknown, name: string, minimum: number, maximum: number) {
   return value === undefined ? undefined : finiteNumber(value, name, minimum, maximum);
 }
 
@@ -184,12 +186,7 @@ function normalizeAnnexInput(input: unknown): PlanAnnexInput {
       MAX_SPACE_MM,
     ),
     wallHeightMm: optionalFiniteNumber(record.wallHeightMm, "wallHeightMm", 2200, 6000),
-    wallThicknessMm: optionalFiniteNumber(
-      record.wallThicknessMm,
-      "wallThicknessMm",
-      80,
-      400,
-    ),
+    wallThicknessMm: optionalFiniteNumber(record.wallThicknessMm, "wallThicknessMm", 80, 400),
     floorFinish:
       record.floorFinish === undefined
         ? undefined
@@ -309,13 +306,7 @@ function createOpeningObject(
     project.laboratories.find((laboratory) => laboratory.id === room.laboratoryId)?.code ?? "LAB";
   return {
     id: crypto.randomUUID(),
-    indexCode: generateObjectIndexCode(
-      room,
-      scene,
-      definition.objectType,
-      null,
-      laboratoryCode,
-    ),
+    indexCode: generateObjectIndexCode(room, scene, definition.objectType, null, laboratoryCode),
     name: definition.name,
     assetDefinitionId: definition.id,
     objectType: definition.objectType,
@@ -378,11 +369,13 @@ function remapHostedOpening(
   let wall = shared;
   let offset = object.opening.offset - startOffset;
   if (object.opening.offset < startOffset) {
-    if (!prefix) throw new LabSpaceActionError(`${object.name} cannot be remapped before the annex.`);
+    if (!prefix)
+      throw new LabSpaceActionError(`${object.name} cannot be remapped before the annex.`);
     wall = prefix;
     offset = object.opening.offset;
   } else if (object.opening.offset > endOffset) {
-    if (!suffix) throw new LabSpaceActionError(`${object.name} cannot be remapped after the annex.`);
+    if (!suffix)
+      throw new LabSpaceActionError(`${object.name} cannot be remapped after the annex.`);
     wall = suffix;
     offset = object.opening.offset - endOffset;
   }
@@ -424,13 +417,7 @@ function createFreeAsset(
     project.laboratories.find((laboratory) => laboratory.id === room.laboratoryId)?.code ?? "LAB";
   return {
     id: crypto.randomUUID(),
-    indexCode: generateObjectIndexCode(
-      room,
-      scene,
-      definition.objectType,
-      null,
-      laboratoryCode,
-    ),
+    indexCode: generateObjectIndexCode(room, scene, definition.objectType, null, laboratoryCode),
     name: definition.name,
     assetDefinitionId: definition.id,
     objectType: definition.objectType,
@@ -487,13 +474,17 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
       : primary.wallIds,
   );
   if (!primaryWallIds.has(host.id)) {
-    throw new LabSpaceActionError("The selected host wall is not part of the primary space boundary.");
+    throw new LabSpaceActionError(
+      "The selected host wall is not part of the primary space boundary.",
+    );
   }
   const primaryFloor = getClosedWallFloorPolygon(
     room.scene.objects.filter((object) => object.wall && primaryWallIds.has(object.id)),
   );
   if (!primaryFloor) {
-    throw new LabSpaceActionError("The primary space must have a closed valid floor before adding an annex.");
+    throw new LabSpaceActionError(
+      "The primary space must have a closed valid floor before adding an annex.",
+    );
   }
 
   const hostLength = wallLength(host);
@@ -527,9 +518,7 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
       "The selected wall does not expose one unambiguous exterior side of the primary space.",
     );
   }
-  const outward = rightInside
-    ? { x: -rightNormal.x, y: -rightNormal.y }
-    : rightNormal;
+  const outward = rightInside ? { x: -rightNormal.x, y: -rightNormal.y } : rightNormal;
   const outerStart = {
     x: start.x + outward.x * normalized.outwardDepthMm,
     y: start.y + outward.y * normalized.outwardDepthMm,
@@ -553,9 +542,7 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
     existingSpaceFloors.some(
       (floor) =>
         annexPoints.some((point) => pointIsInsideFloorPolygon(point, floor, 10)) ||
-        floor.points.some((point) =>
-          pointIsInsideFloorPolygon(point, { points: annexPoints }, 10),
-        ),
+        floor.points.some((point) => pointIsInsideFloorPolygon(point, { points: annexPoints }, 10)),
     )
   ) {
     throw new LabSpaceActionError("The proposed annex overlaps an existing child space.");
@@ -624,7 +611,10 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
 
   const wallThickness = normalized.wallThicknessMm ?? host.wall.thickness;
   const wallHeight = normalized.wallHeightMm ?? host.wall.height;
-  const wallTemplate = { ...host, wall: { ...host.wall, thickness: wallThickness, height: wallHeight } };
+  const wallTemplate = {
+    ...host,
+    wall: { ...host.wall, thickness: wallThickness, height: wallHeight },
+  };
   const endWall = segmentObject(
     project,
     room,
@@ -686,8 +676,7 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
         handing: normalized.connector.handing ?? "left",
         swing: connectorDefinition.id.includes("sliding") ? "sliding" : "inward",
         connectsSpaceIds: [primary.id, annexSpaceId],
-        opensIntoSpaceId:
-          normalized.connector.opensInto === "annex" ? annexSpaceId : primary.id,
+        opensIntoSpaceId: normalized.connector.opensInto === "annex" ? annexSpaceId : primary.id,
       },
     );
     proposedScene.objects.push(connector);
@@ -735,7 +724,8 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
     let placed: SceneObject | null = null;
     for (let candidateIndex = 0; candidateIndex < 9 && !placed; candidateIndex += 1) {
       const along = fractions[(candidateIndex + index) % fractions.length];
-      const depth = fractions[(Math.floor(candidateIndex / fractions.length) + index) % fractions.length];
+      const depth =
+        fractions[(Math.floor(candidateIndex / fractions.length) + index) % fractions.length];
       const point = {
         x:
           start.x +
@@ -775,8 +765,8 @@ export function planAnnex(input: unknown, readProject = () => useEditorStore.get
       const blocking = validatePlacement(hypothetical).some(
         (warning) =>
           warning.objectIds.includes(candidate.id) &&
-          ["outside-", "overlap-", "unsupported-", "above-ceiling-"].some((prefix) =>
-            warning.id.startsWith(prefix),
+          ["outside-", "overlap-", "unsupported-", "above-ceiling-", "access-front-"].some(
+            (prefix) => warning.id.startsWith(prefix),
           ),
       );
       if (!blocking) placed = candidate;
@@ -980,7 +970,9 @@ export function stageAnnexPlan(input: unknown): StageRoomLayoutResult {
     throw new LabSpaceActionError("Approve or cancel the current agent preview first.");
   }
   if (state.saveStatus !== "saved") {
-    throw new LabSpaceActionError("LabSpace must finish saving human edits before staging an annex.");
+    throw new LabSpaceActionError(
+      "LabSpace must finish saving human edits before staging an annex.",
+    );
   }
   const room = state.project.rooms.find((candidate) => candidate.id === stored.result.roomId);
   if (!room || room.id !== state.project.activeRoomId) {

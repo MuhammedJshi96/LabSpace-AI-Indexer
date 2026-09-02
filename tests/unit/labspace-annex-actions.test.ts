@@ -4,10 +4,7 @@ import {
   planAnnex,
   stageAnnexPlan,
 } from "../../src/agent/labspace-annex-actions";
-import {
-  clearStoredRoomPlans,
-  planRoomLayout,
-} from "../../src/agent/labspace-layout-actions";
+import { clearStoredRoomPlans, planRoomLayout } from "../../src/agent/labspace-layout-actions";
 import {
   approveStagedChange,
   cancelStagedChange,
@@ -59,7 +56,9 @@ function annexFixture() {
     pendingAgentChange: null,
   });
   const room = committed.project.rooms.find((entry) => entry.id === project.activeRoomId)!;
-  const opening = room.scene.objects.find((object) => object.assetDefinitionId === "standard-window")!;
+  const opening = room.scene.objects.find(
+    (object) => object.assetDefinitionId === "standard-window",
+  )!;
   const host = room.scene.objects.find((object) => object.id === opening.opening?.wallId)!;
   return { room, host, opening };
 }
@@ -80,9 +79,7 @@ function request(hostWallId: string) {
       handing: "left",
       opensInto: "annex",
     },
-    windows: [
-      { assetId: "standard-window", wall: "outer", sillHeightMm: 900 },
-    ],
+    windows: [{ assetId: "standard-window", wall: "outer", sillHeightMm: 900 }],
     assets: [],
   };
 }
@@ -108,6 +105,40 @@ describe("reviewed connected-space annex planning", () => {
     });
     expect(plan.connectorId).toBeTruthy();
     expect(plan.windowIds).toHaveLength(1);
+  });
+
+  it("plans the 20 square metre right-side Bio-001 annex with an inward door and four assets", () => {
+    const { room } = annexFixture();
+    const rightWall = room.scene.objects.find(
+      (object) =>
+        object.wall && object.wall.start.x === room.width && object.wall.end.x === room.width,
+    )!;
+    const plan = planAnnex({
+      parentRoomCode: "MAIN-01",
+      name: "Biological assays annex",
+      code: "BIO-001-A",
+      hostWallId: rightWall.id,
+      widthAlongWallMm: 4000,
+      outwardDepthMm: 5000,
+      offsetAlongWallMm: 1900,
+      connector: {
+        assetId: "single-door",
+        offsetMm: 2000,
+        handing: "right",
+        opensInto: "annex",
+      },
+      assets: [
+        { assetId: "locker", quantity: 3 },
+        { assetId: "lab-freezer", quantity: 1 },
+      ],
+    });
+
+    expect(plan.areas).toMatchObject({ primaryM2: 48, annexM2: 20, totalM2: 68 });
+    expect(plan.connectorId).toBeTruthy();
+    expect(plan.assetIds).toHaveLength(4);
+    expect(plan.diagnostics).toContain(
+      "Internal connector records both connected spaces and its opening destination.",
+    );
   });
 
   it("rejects a split junction that crosses an existing hosted opening", () => {
@@ -168,13 +199,9 @@ describe("reviewed connected-space annex planning", () => {
     expect(committedState.history).toHaveLength(1);
     expect(committedState.history[0]).toMatchObject({ roomId: plan.roomId });
     expect(floors.map((floor) => floor.areaMm2 / 1_000_000).sort((a, b) => a - b)).toEqual([
-      16.2,
-      48,
+      16.2, 48,
     ]);
-    expect(connector.opening?.connectsSpaceIds).toEqual([
-      plan.primarySpaceId,
-      plan.annexSpaceId,
-    ]);
+    expect(connector.opening?.connectsSpaceIds).toEqual([plan.primarySpaceId, plan.annexSpaceId]);
     expect(connector.opening?.opensIntoSpaceId).toBe(plan.annexSpaceId);
 
     useEditorStore.getState().undo();

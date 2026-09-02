@@ -11,6 +11,7 @@ import { labSpaceLayoutActions } from "../agent/labspace-layout-actions";
 import { labSpaceInventoryActions } from "../agent/labspace-inventory-actions";
 import { labSpaceWorkspaceActions } from "../agent/labspace-workspace-actions";
 import { labSpaceCollectionActions } from "../agent/labspace-collection-actions";
+import { labSpaceWorkflowActions } from "../agent/labspace-workflow-actions";
 import { executionDecisionForTool } from "../agent/webmcp-execution-policy";
 import { labSpaceAnnexActions } from "../agent/labspace-annex-actions";
 import type {
@@ -25,6 +26,7 @@ import type {
 } from "../agent/labspace-action-types";
 import {
   auditRoomSchema,
+  assessWorkflowSchema,
   resolveMaterialsSchema,
   startCollectionSchema,
   collectionStepSchema,
@@ -51,6 +53,7 @@ import type { LabSpaceToolRegistration, RegisterLabSpaceToolsOptions } from "./w
 
 export const LABSPACE_WEBMCP_TOOL_NAMES = [
   "labspace_add_inventory",
+  "labspace_assess_workflow",
   "labspace_audit_room",
   "labspace_collection_step",
   "labspace_create_room",
@@ -120,20 +123,24 @@ function completeControlledExecution(
               ? Array.isArray(resultRecord.candidates) && resultRecord.candidates.length > 0
                 ? "found"
                 : "blocked"
-              : toolName === "labspace_plan_room" || toolName === "labspace_plan_annex"
-                ? Number(resultRecord.plannedObjects) > 0
-                  ? "found"
-                  : "blocked"
-                : toolName === "labspace_validate_object_move" ||
-                    toolName === "labspace_validate_resize"
-                  ? resultRecord.valid === false
-                    ? "blocked"
-                    : "valid"
-                  : toolName === "labspace_focus_record"
-                    ? "focused"
-                    : toolName === "labspace_search_records"
-                      ? "found"
-                      : "read";
+              : toolName === "labspace_assess_workflow"
+                ? resultRecord.readiness === "blocked"
+                  ? "blocked"
+                  : "found"
+                : toolName === "labspace_plan_room" || toolName === "labspace_plan_annex"
+                  ? Number(resultRecord.plannedObjects) > 0
+                    ? "found"
+                    : "blocked"
+                  : toolName === "labspace_validate_object_move" ||
+                      toolName === "labspace_validate_resize"
+                    ? resultRecord.valid === false
+                      ? "blocked"
+                      : "valid"
+                    : toolName === "labspace_focus_record"
+                      ? "focused"
+                      : toolName === "labspace_search_records"
+                        ? "found"
+                        : "read";
   const subject =
     typeof resultRecord.objectName === "string"
       ? resultRecord.objectName
@@ -215,6 +222,22 @@ export function createLabSpaceToolDefinitions(
         ),
     },
     {
+      name: "labspace_assess_workflow",
+      title: "Assess a grounded laboratory workflow",
+      description:
+        "Match a researcher-supplied material and equipment checklist to canonical records, then rank real authored work surfaces by clear area and current geometry. Returns evidence and a final workspace ID for the collection guide. It does not generate or approve a protocol, certify suitability, or claim a safe route.",
+      inputSchema: assessWorkflowSchema,
+      annotations: { readOnlyHint: true, untrustedContentHint: true },
+      execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
+        controlledExecution(
+          context?.signal,
+          "labspace_assess_workflow",
+          "Workflow readiness assessment",
+          input,
+          () => labSpaceWorkflowActions.assessLabWorkflow(input),
+        ),
+    },
+    {
       name: "labspace_resolve_materials",
       title: "Match suggested materials to real stock",
       description:
@@ -234,7 +257,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_start_collection",
       title: "Start a guided collection itinerary",
       description:
-        "Create a Next/Previous guide from reviewed canonical record IDs, grouped by room. Focuses exact spatial evidence, without modifying stock. This is a collection checklist, not a verified walking path, safety instruction, or permission to run an experiment.",
+        "Create a Next/Previous guide from reviewed canonical record IDs, grouped by room, with an optional assessed work surface as the final highlighted stop. Focuses spatial evidence without modifying stock. This is an ordered itinerary, not a verified walking path, safety instruction, or permission to run an experiment.",
       inputSchema: startCollectionSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -266,7 +289,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_audit_room",
       title: "Audit LabSpace room readiness",
       description:
-        "Summarize the active or selected editable room using LabSpace's deterministic floor, boundary, overlap, support, opening, height, and identity checks without changing project state.",
+        "Summarize the active or selected editable room using deterministic floor, boundary, overlap, support, front-working-zone, opening, height, and identity checks without changing project state.",
       inputSchema: auditRoomSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -298,7 +321,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_find_valid_placements",
       title: "Find valid LabSpace placements",
       description:
-        "Rank diverse geometry-valid positions near a preferred area without changing the room, preview, history, or saved project.",
+        "Rank geometry-valid positions near a preferred area or relative to another object's authored front. Preserves usable front working zones and returns a facing rotation without changing the room, preview, history, or saved project.",
       inputSchema: recommendObjectPlacementsSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -506,7 +529,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_stage_object_move",
       title: "Stage LabSpace object move",
       description:
-        "Validate and display a reversible object-move preview for explicit human approval. The preview is not saved and creates no history entry until a researcher approves it in LabSpace.",
+        "Validate and display a reversible object-move preview for explicit human approval. For in-front-of, behind, left-of, or right-of requests, call labspace_find_valid_placements first and stage its returned position and rotation. The preview is not saved until approved.",
       inputSchema: stageObjectMoveSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -538,7 +561,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_validate_object_move",
       title: "Validate LabSpace object move",
       description:
-        "Evaluate a hypothetical object position with current LabSpace room geometry without changing project, preview, or history state.",
+        "Evaluate a hypothetical position, including collisions and front working zones, without changing project, preview, or history. Use labspace_find_valid_placements for object-relative language so orientation comes from authored fronts.",
       inputSchema: validateObjectMoveSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>

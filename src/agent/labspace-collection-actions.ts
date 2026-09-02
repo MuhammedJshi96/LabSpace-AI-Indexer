@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { ASSET_BY_ID } from "../domain/assets";
 import { buildDigitalTwinIndex, filterDigitalTwinIndex } from "../domain/digital-twin-index";
 import type { Project } from "../domain/schema";
+import { navigateWorkspace } from "../lib/workspace-navigation";
 import { useEditorStore } from "../store/editor-store";
 import { focusLabRecord } from "./labspace-navigation-actions";
 import { LabSpaceActionError } from "./labspace-read-actions";
@@ -18,6 +20,7 @@ const routeInput = z
   .object({
     title: z.string().trim().min(1).max(120),
     recordIds: z.array(z.string().trim().min(1).max(300)).min(1).max(24),
+    workspaceObjectId: z.string().trim().min(1).max(200).optional(),
   })
   .strict();
 const controlInput = z
@@ -44,7 +47,7 @@ const storedRouteSchema = z
       .default([]),
     checked: z
       .array(z.object({ recordId: z.string().max(300), at: z.string() }))
-      .max(24)
+      .max(25)
       .default([]),
     trail: z
       .array(
@@ -60,9 +63,18 @@ const storedRouteSchema = z
     projectId: z.string(),
     title: z.string().max(120),
     recordIds: z.array(z.string().max(300)).min(1).max(24),
+    workspace: z
+      .object({
+        objectId: z.string().max(200),
+        roomId: z.string(),
+        name: z.string(),
+        indexCode: z.string(),
+        path: z.array(z.string()),
+      })
+      .optional(),
     step: z.number().int().min(0),
   })
-  .refine((route) => route.step < route.recordIds.length);
+  .refine((route) => route.step < route.recordIds.length + (route.workspace ? 1 : 0));
 
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
@@ -161,13 +173,90 @@ function currentRoute(project: Project) {
   return route;
 }
 
+export function collectionTotalSteps(route: CollectionRoute) {
+  return route.recordIds.length + (route.workspace ? 1 : 0);
+}
+
+export function collectionCurrentStopId(route: CollectionRoute) {
+  return route.step < route.recordIds.length
+    ? route.recordIds[route.step]
+    : route.workspace
+      ? `workflow-workspace:${route.workspace.objectId}`
+      : route.recordIds[route.recordIds.length - 1];
+}
+
+function focusCollectionWorkspace(route: CollectionRoute) {
+  const workspace = route.workspace;
+  if (!workspace) throw new LabSpaceActionError("This collection guide has no workspace stop.");
+  const state = useEditorStore.getState();
+  const room = state.project.rooms.find(
+    (entry) => entry.id === workspace.roomId && entry.roomKind !== "demo-template",
+  );
+  const object = room?.scene.objects.find(
+    (entry) => entry.id === workspace.objectId && entry.visible,
+  );
+  if (!room || !object) {
+    throw new LabSpaceActionError("The selected workflow workspace is no longer available.");
+  }
+  const { digitalTwinSpatialMode, presentation } = state;
+  const applied = state.applySpatialFocus({
+    requestId: crypto.randomUUID(),
+    recordId: `workflow-workspace:${object.id}`,
+    roomId: room.id,
+    objectId: object.id,
+    locationId: null,
+    showStorageAccess: false,
+  });
+  useEditorStore.setState({ digitalTwinSpatialMode, presentation });
+  if (!applied) throw new LabSpaceActionError("LabSpace could not focus the workflow workspace.");
+  if (typeof window !== "undefined" && window.location.pathname !== "/digital-twin") {
+    navigateWorkspace("/digital-twin");
+  }
+  return {
+    kind: "workspace" as const,
+    objectId: object.id,
+    name: object.name,
+    roomCode: room.code,
+    path: workspace.path,
+    focused: true as const,
+  };
+}
+
+export function focusCollectionStep(route: CollectionRoute, step = route.step) {
+  if (step < route.recordIds.length) return focusCollectionRecord(route.recordIds[step]);
+  return focusCollectionWorkspace(route);
+}
+
 export function collectionStatus(project = useEditorStore.getState().project) {
   const route = currentRoute(project);
   const index = buildDigitalTwinIndex(project);
+  const totalSteps = collectionTotalSteps(route);
+  const workspaceStop = route.workspace
+    ? {
+        stopId: `workflow-workspace:${route.workspace.objectId}`,
+        kind: "workspace" as const,
+        objectId: route.workspace.objectId,
+        name: route.workspace.name,
+        roomCode: project.rooms.find((room) => room.id === route.workspace?.roomId)?.code ?? null,
+        path: route.workspace.path,
+        available: Boolean(
+          project.rooms
+            .find((room) => room.id === route.workspace?.roomId)
+            ?.scene.objects.some(
+              (object) => object.id === route.workspace?.objectId && object.visible,
+            ),
+        ),
+        checkedAt:
+          route.checked.find(
+            (entry) => entry.recordId === `workflow-workspace:${route.workspace?.objectId}`,
+          )?.at ?? null,
+      }
+    : null;
   return {
     title: route.title,
     step: route.step + 1,
-    totalSteps: route.recordIds.length,
+    totalSteps,
+    currentKind: route.step < route.recordIds.length ? ("record" as const) : ("workspace" as const),
     checkedStops: route.checked.length,
     processId: route.id,
     stops: route.recordIds.map((id) => {
@@ -181,8 +270,9 @@ export function collectionStatus(project = useEditorStore.getState().project) {
         checkedAt: route.checked.find((entry) => entry.recordId === id)?.at ?? null,
       };
     }),
+    workspace: workspaceStop,
     notice:
-      "Grouped collection itinerary, not a verified walking route or experiment protocol. No stock is consumed or reserved.",
+      "Ordered collection and workspace itinerary, not a verified walking route or experiment protocol. No stock is consumed or reserved.",
   };
 }
 
@@ -195,7 +285,7 @@ export function focusCollectionRecord(recordId: string) {
 }
 
 export function startCollection(input: unknown) {
-  const { title, recordIds } = parse(routeInput, input);
+  const { title, recordIds, workspaceObjectId } = parse(routeInput, input);
   if (new Set(recordIds).size !== recordIds.length)
     throw new LabSpaceActionError("Collection record IDs must be unique.");
   const project = useEditorStore.getState().project;
@@ -208,6 +298,26 @@ export function startCollection(input: unknown) {
       );
     return record;
   });
+  const workspace = workspaceObjectId
+    ? project.rooms
+        .filter((room) => room.roomKind !== "demo-template")
+        .flatMap((room) =>
+          room.scene.objects
+            .filter((object) => object.id === workspaceObjectId && object.visible)
+            .map((object) => ({ room, object })),
+        )[0]
+    : null;
+  if (workspaceObjectId && !workspace) {
+    throw new LabSpaceActionError("The selected workflow workspace was not found.");
+  }
+  if (
+    workspace &&
+    !["bench", "table", "workstation"].includes(
+      ASSET_BY_ID.get(workspace.object.assetDefinitionId ?? "")?.profile ?? "",
+    )
+  ) {
+    throw new LabSpaceActionError("The selected workflow destination is not a work surface.");
+  }
   // Group by laboratory/room without pretending to know doors, stairs, or safe walking paths.
   const rooms = [...new Set(records.map((record) => record.roomId))];
   const ordered = rooms.flatMap((roomId) => records.filter((record) => record.roomId === roomId));
@@ -215,21 +325,19 @@ export function startCollection(input: unknown) {
   const previous = useCollectionStore.getState().route;
   if (previous) {
     const at = new Date().toISOString();
-    useCollectionStore
-      .getState()
-      .archive({
-        ...previous,
-        endedAt: at,
-        trail: [
-          ...previous.trail,
-          {
-            action: "Replaced by a new guide",
-            actor: "WebMCP" as const,
-            at,
-            recordId: previous.recordIds[previous.step],
-          },
-        ].slice(-96),
-      });
+    useCollectionStore.getState().archive({
+      ...previous,
+      endedAt: at,
+      trail: [
+        ...previous.trail,
+        {
+          action: "Replaced by a new guide",
+          actor: "WebMCP" as const,
+          at,
+          recordId: collectionCurrentStopId(previous),
+        },
+      ].slice(-96),
+    });
   }
   useCollectionStore.getState().setRoute({
     id: crypto.randomUUID(),
@@ -253,6 +361,31 @@ export function startCollection(input: unknown) {
     projectId: project.id,
     title,
     recordIds: ordered.map((record) => record.id),
+    ...(workspace
+      ? {
+          workspace: {
+            objectId: workspace.object.id,
+            roomId: workspace.room.id,
+            name: workspace.object.name,
+            indexCode: workspace.object.indexCode,
+            path: [
+              project.laboratories.find((lab) => lab.id === workspace.room.laboratoryId)?.name ??
+                "Laboratory",
+              workspace.room.name,
+              (() => {
+                const space = workspace.room.spaces.find(
+                  (entry) => entry.id === workspace.object.spaceId,
+                );
+                return space && (space.kind === "annex" || space.name !== workspace.room.name)
+                  ? space.name
+                  : undefined;
+              })(),
+              workspace.room.scene.zones.find((zone) => zone.id === workspace.object.zoneId)?.name,
+              workspace.object.name,
+            ].filter((entry): entry is string => Boolean(entry)),
+          },
+        }
+      : {}),
     step: 0,
   });
   return collectionStatus();
@@ -264,39 +397,38 @@ export function controlCollection(input: unknown, actor: "Human" | "WebMCP" = "W
   const route = currentRoute(useEditorStore.getState().project);
   if (action === "finish") {
     const endedAt = new Date().toISOString();
-    useCollectionStore
-      .getState()
-      .archive({
-        ...route,
-        endedAt,
-        trail: [
-          ...route.trail,
-          { action: "Guide ended", at: endedAt, actor, recordId: route.recordIds[route.step] },
-        ].slice(-96),
-      });
+    useCollectionStore.getState().archive({
+      ...route,
+      endedAt,
+      trail: [
+        ...route.trail,
+        { action: "Guide ended", at: endedAt, actor, recordId: collectionCurrentStopId(route) },
+      ].slice(-96),
+    });
     return { finished: true, inventoryChanged: false };
   }
   if (action !== "status") {
     const step = Math.max(
       0,
-      Math.min(route.recordIds.length - 1, route.step + (action === "next" ? 1 : -1)),
+      Math.min(collectionTotalSteps(route) - 1, route.step + (action === "next" ? 1 : -1)),
     );
-    focusCollectionRecord(route.recordIds[step]);
-    useCollectionStore
-      .getState()
-      .setRoute({
-        ...route,
-        step,
-        trail: [
-          ...route.trail,
-          {
-            action: action === "next" ? "Next location viewed" : "Previous location viewed",
-            actor,
-            at: new Date().toISOString(),
-            recordId: route.recordIds[step],
-          },
-        ].slice(-96),
-      });
+    focusCollectionStep(route, step);
+    useCollectionStore.getState().setRoute({
+      ...route,
+      step,
+      trail: [
+        ...route.trail,
+        {
+          action: action === "next" ? "Next location viewed" : "Previous location viewed",
+          actor,
+          at: new Date().toISOString(),
+          recordId:
+            step < route.recordIds.length
+              ? route.recordIds[step]
+              : `workflow-workspace:${route.workspace?.objectId}`,
+        },
+      ].slice(-96),
+    });
   }
   return collectionStatus();
 }
@@ -316,30 +448,45 @@ export function processHistory() {
 /** An explicit human checkpoint is separate from agent navigation and stock transactions. */
 export function confirmCollectionStop() {
   const route = currentRoute(useEditorStore.getState().project);
-  const recordId = route.recordIds[route.step];
-  if (
-    !buildDigitalTwinIndex(useEditorStore.getState().project).some(
-      (record) => record.id === recordId && record.objectId,
+  const recordId = collectionCurrentStopId(route);
+  if (route.step < route.recordIds.length) {
+    if (
+      !buildDigitalTwinIndex(useEditorStore.getState().project).some(
+        (record) => record.id === recordId && record.objectId,
+      )
     )
-  )
-    throw new LabSpaceActionError(
-      "This location is no longer available. Review the assignment first.",
-    );
+      throw new LabSpaceActionError(
+        "This location is no longer available. Review the assignment first.",
+      );
+  } else {
+    const workspace = route.workspace;
+    const available = workspace
+      ? useEditorStore
+          .getState()
+          .project.rooms.find((room) => room.id === workspace.roomId)
+          ?.scene.objects.some((object) => object.id === workspace.objectId && object.visible)
+      : false;
+    if (!available)
+      throw new LabSpaceActionError("This workflow workspace is no longer available.");
+  }
   if (route.checked.some((entry) => entry.recordId === recordId)) return;
   const at = new Date().toISOString();
-  useCollectionStore
-    .getState()
-    .setRoute({
-      ...route,
-      checked: [...route.checked, { recordId, at }],
-      trail: [
-        ...route.trail,
-        { action: "Location checked", actor: "Human" as const, recordId, at },
-      ].slice(-96),
-    });
+  useCollectionStore.getState().setRoute({
+    ...route,
+    checked: [...route.checked, { recordId, at }],
+    trail: [
+      ...route.trail,
+      {
+        action: route.step < route.recordIds.length ? "Location checked" : "Workspace reviewed",
+        actor: "Human" as const,
+        recordId,
+        at,
+      },
+    ].slice(-96),
+  });
   agentActivityActions.record({
     actor: "Human",
-    action: "Location checked",
+    action: route.step < route.recordIds.length ? "Location checked" : "Workspace reviewed",
     subject: route.title,
     status: "approved",
     evidence: "User confirmed this checkpoint. No stock consumed or reserved.",

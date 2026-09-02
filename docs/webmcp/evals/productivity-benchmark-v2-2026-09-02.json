@@ -1,0 +1,111 @@
+{
+  "benchmark": "LabSpace same-outcome UI and Reviewed WebMCP system benchmark v2",
+  "date": "2026-09-02",
+  "environment": {
+    "application": "isolated local LabSpace benchmark server",
+    "browser": "Playwright Desktop Chrome",
+    "viewport": "1440x900",
+    "rendering": "2D-only benchmark preparation; trace, screenshots, and video disabled",
+    "executionMode": "Reviewed"
+  },
+  "method": {
+    "warmupsPerTaskAndMethod": 1,
+    "measuredRunsPerTaskAndMethod": 5,
+    "ordering": "Alternating manual-first and WebMCP-first trials",
+    "reset": "Fresh browser context and identical test seed before every path",
+    "timingBoundary": "Prepared page to verified visible or persisted outcome",
+    "excludedFromTiming": [
+      "page load",
+      "seed reset",
+      "language-model inference",
+      "prompt composition"
+    ],
+    "warning": "Automated browser execution time is not observed human completion time."
+  },
+  "tasks": [
+    {
+      "id": "locate-three-materials",
+      "outcome": "Select and visibly verify three canonical inventory records and their exact locations.",
+      "manual": {
+        "milliseconds": [20856, 18474, 20916, 11875, 19741],
+        "medianMilliseconds": 19741,
+        "iqrMilliseconds": [18474, 20856],
+        "operations": 6,
+        "outcomeChecks": 30,
+        "outcomeChecksPassed": 30
+      },
+      "webmcp": {
+        "milliseconds": [518, 545, 522, 521, 572],
+        "medianMilliseconds": 522,
+        "iqrMilliseconds": [521, 545],
+        "toolCalls": 4,
+        "approvals": 0,
+        "operations": 4,
+        "outcomeChecks": 40,
+        "outcomeChecksPassed": 40
+      },
+      "medianSystemTimeChangePercent": -97.4,
+      "operationReductionPercent": 33.3
+    },
+    {
+      "id": "add-five-inventory-items",
+      "outcome": "Persist five exact named and quantified records at one canonical drawer.",
+      "manual": {
+        "milliseconds": [1045, 965, 922, 1062, 1643],
+        "medianMilliseconds": 1045,
+        "iqrMilliseconds": [965, 1062],
+        "operations": 30,
+        "outcomeChecks": 10,
+        "outcomeChecksPassed": 10
+      },
+      "webmcp": {
+        "milliseconds": [2327, 2247, 1269, 2303, 1314],
+        "medianMilliseconds": 2247,
+        "iqrMilliseconds": [1314, 2303],
+        "toolCalls": 2,
+        "approvals": 1,
+        "operations": 3,
+        "outcomeChecks": 10,
+        "outcomeChecksPassed": 10
+      },
+      "medianSystemTimeChangePercent": 115.0,
+      "operationReductionPercent": 90.0
+    },
+    {
+      "id": "furnish-office",
+      "outcome": "Persist an exact 8x6 m room, four walls, two desks, two chairs, and one tall cabinet.",
+      "manual": {
+        "milliseconds": [8987, 9683, 9040, 11862, 11116],
+        "medianMilliseconds": 9683,
+        "iqrMilliseconds": [9040, 11116],
+        "operations": 18,
+        "outcomeChecks": 25,
+        "outcomeChecksPassed": 25
+      },
+      "webmcp": {
+        "milliseconds": [7193, 6649, 7102, 6422, 7902],
+        "medianMilliseconds": 7102,
+        "iqrMilliseconds": [6649, 7193],
+        "toolCalls": 3,
+        "approvals": 2,
+        "operations": 5,
+        "outcomeChecks": 25,
+        "outcomeChecksPassed": 25
+      },
+      "medianSystemTimeChangePercent": -26.7,
+      "operationReductionPercent": 72.2
+    }
+  ],
+  "suiteSummary": {
+    "sumOfManualTaskMediansMilliseconds": 30469,
+    "sumOfWebmcpTaskMediansMilliseconds": 9871,
+    "compositeSystemTimeChangePercent": -67.6,
+    "manualOperations": 54,
+    "webmcpOperations": 12,
+    "operationReductionPercent": 77.8,
+    "measuredOutcomeChecks": 140,
+    "measuredOutcomeChecksPassed": 140,
+    "capturedApplicationErrors": 0,
+    "warning": "The composite depends on this fixed task mix and is secondary to per-task medians."
+  }
+}

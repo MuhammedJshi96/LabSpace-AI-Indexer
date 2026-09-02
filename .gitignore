@@ -24,7 +24,7 @@ data/*.sqlite-wal
 docs/screenshots/*.tmp.png
 scripts/blender/__pycache__/
 *.py[cod]
+*.blend1
 *.log
-/AGENTS.md
 /GOAL_PROGRESS.md
 /design-qa.md

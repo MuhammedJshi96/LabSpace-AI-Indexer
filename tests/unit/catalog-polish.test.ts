@@ -19,8 +19,8 @@ function delivered(id: string) {
 describe("reviewed full-catalog polish", () => {
   const assets = ASSET_CATALOG.filter((a) => a.model3d);
   it("covers every authored catalog family with revision-keyed, explicit PBR decisions", () => {
-    expect(assets).toHaveLength(104);
-    expect(readdirSync("public/models/hero").filter((n) => n.endsWith(".glb"))).toHaveLength(104);
+    expect(assets).toHaveLength(115);
+    expect(readdirSync("public/models/hero").filter((n) => n.endsWith(".glb"))).toHaveLength(115);
     for (const asset of assets) {
       expect(asset.model3d!.revision).toContain("catalog-polish-r7");
       const doc = delivered(asset.id);
@@ -61,7 +61,7 @@ describe("reviewed full-catalog polish", () => {
     expect(applyReviewedAuthoredFinish(new THREE.MeshStandardMaterial())).toBe(false);
   });
 
-  it("uses ten small shared microfinish maps, not per-model photo overlays", () => {
+  it("uses twelve small shared microfinish maps, not per-model photo overlays", () => {
     const uris = new Set<string>();
     for (const asset of assets) {
       const doc = delivered(asset.id);
@@ -73,13 +73,17 @@ describe("reviewed full-catalog polish", () => {
       for (const m of doc.materials) {
         if (!m.extras.labspace_surface) continue;
         expect(m.extras.labspace_surface_revision).toBe(
-          m.extras.labspace_surface === "micrograin" ? "surface-r5" : "surface-r4",
+          m.extras.labspace_surface === "micrograin"
+            ? "surface-r5"
+            : m.extras.labspace_surface === "woodgrain"
+              ? "surface-r6"
+              : "surface-r4",
         );
         for (const info of [m.normalTexture, m.pbrMetallicRoughness.metallicRoughnessTexture]) {
           const texture = doc.textures[info.index];
           const uri = doc.images[texture.source].uri;
           expect(uri).toMatch(
-            /^\.\.\/\.\.\/materials\/pbr\/\w+-surface-r[45]-(normal|roughness)\.png$/,
+            /^\.\.\/\.\.\/materials\/pbr\/\w+-surface-r[456]-(normal|roughness)\.png$/,
           );
           if (uris.has(uri)) continue;
           uris.add(uri);
@@ -89,7 +93,7 @@ describe("reviewed full-catalog polish", () => {
         }
       }
     }
-    expect(uris.size).toBe(10);
+    expect(uris.size).toBe(12);
     const bytes = [...uris].reduce(
       (sum, uri) => sum + statSync(resolve("public/models/hero", uri)).size,
       0,
@@ -302,9 +306,10 @@ describe("reviewed full-catalog polish", () => {
     expect(pull.pbrMetallicRoughness.metallicFactor).toBe(0);
   });
 
-  it("preserves all 31 existing storage identity graphs through construction changes", () => {
-    expect(Object.keys(STORAGE_RIGS)).toEqual(Object.keys(stableBindings));
-    for (const [id, rig] of Object.entries(STORAGE_RIGS)) {
+  it("preserves all preexisting storage identity graphs through additive catalog changes", () => {
+    expect(Object.keys(STORAGE_RIGS)).toEqual(expect.arrayContaining(Object.keys(stableBindings)));
+    for (const [id, binding] of Object.entries(stableBindings)) {
+      const rig = STORAGE_RIGS[id];
       expect(
         {
           parts: rig.parts.map(({ id, kind, bay }) => ({ id, kind, bay })),
@@ -316,9 +321,19 @@ describe("reviewed full-catalog polish", () => {
           })),
         },
         id,
-      ).toEqual(stableBindings[id as keyof typeof stableBindings]);
+      ).toEqual(binding);
     }
   });
+
+  it.each(["steel-pedestal-desk", "wood-pedestal-desk", "maple-steel-desk"])(
+    "%s exposes three independently opening drawers",
+    (id) => {
+      const rig = STORAGE_RIGS[id];
+      expect(rig.parts).toHaveLength(3);
+      expect(rig.parts.every((part) => part.kind === "drawer")).toBe(true);
+      expect(rig.locations?.filter((location) => location.type === "drawer")).toHaveLength(3);
+    },
+  );
 
   it("uses identical shared role finishes within and across each reviewed family", () => {
     const roles = new Map<string, unknown>();

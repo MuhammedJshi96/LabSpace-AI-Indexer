@@ -1,6 +1,6 @@
 # Inventory and collection workflows
 
-LabSpace AI Agent Twin exposes **23 WebMCP tools**. Write natural-language requests in your browser agent's chat—not inside the LabSpace inspector. The inspector shows tools, examples, execution evidence and human review.
+LabSpace AI Agent Twin exposes **24 WebMCP tools**. Write natural-language requests in your browser agent's chat—not inside the LabSpace inspector. The inspector shows tools, examples, execution evidence and human review.
 
 ## Add inventory
 
@@ -44,13 +44,32 @@ Ask: “Use my approved preparation list, match it against our inventory, show a
 
 - The agent may propose a checklist based on your task, but must label suggestions and ask for the approved protocol when necessary.
 - `labspace_resolve_materials` takes `{brief, materials:["Reference standards", "Nitrile gloves"]}` and checks canonical inventory/equipment across eligible rooms. It returns exact matches, review candidates, quantities/status as recorded, and missing items. Factory templates are excluded.
-- The researcher chooses the relevant records. `labspace_start_collection` takes `{title, recordIds:[...]}` using those real IDs and starts a room-grouped itinerary.
+- The researcher chooses the relevant records. `labspace_start_collection` takes `{title, recordIds:[...]}` using those real IDs and starts an ordered itinerary.
 - The visible **Collection guide** has **Previous**, **Next**, **Focus**, and **All stops**. `labspace_collection_step` offers `previous`, `next`, `status`, `finish`, and read-only `history` operations to the agent.
 - The Spatial Index **Process tracker** records guide-start snapshots (names, room/path, recorded amounts), timestamped navigation and explicit human **Confirm location checked** checkpoints. Next/Previous never confirms collection, consumes stock or approves a procedure. Matching physical drawers and cabinet doors open automatically on focus; legacy mismatches have a physical-link repair path in Storage.
 - History retains eight ended guides plus the active guide in this tab's session storage. Reloading the tab preserves them; this is not cloud sync, a permanent audit service or a tamper-proof log. Export JSON evidence before closing the tab. `labspace_collection_step({action:"history"})` returns only the current project's runs and cannot record a human checkpoint.
 - Each stop focuses the canonical room object and storage location while retaining your chosen 2D/3D view. The guide survives navigation in the same browser tab. It does not deduct, reserve, or fabricate stock.
 
 This is a collection checklist, **not** a validated pedestrian route, regulatory safety assessment, or authorization to run an experiment. It does not infer safe substitutions or chemical compatibility. Unlocated/deleted records fail explicitly.
+
+## Assess a workflow and finish at a work surface
+
+Ask: “Assess my reviewed DPPH checklist against real stock and equipment, then finish the
+collection itinerary at a suitable authored work surface.”
+
+1. `labspace_assess_workflow` accepts the researcher-supplied brief, material and equipment names,
+   optional room code, work-surface preference, and bounded minimum clear area.
+2. It returns exact, ambiguous, and missing index evidence plus ranked real benches/tables. Ranking
+   uses authored support surfaces, mounted-equipment footprints, current placement warnings, and
+   estimated clear surface area; it does not invent a protocol.
+3. After review, pass the chosen material `recordIds` and returned `workspaceObjectId` to
+   `labspace_start_collection`.
+4. Previous/Next focuses each physical inventory location, then highlights the work surface as the
+   final stop. The Spatial Index inspector presents **Ask → Ground → Collect → Decide** while the
+   selected 3D bench remains visible.
+
+The final work surface is planning evidence only—not a protocol, suitability determination,
+safety-approved walking route, reservation, stock transaction, or permission to use equipment.
 
 ## Office and presentation polish
 

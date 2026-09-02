@@ -155,7 +155,7 @@ describe("LabSpace WebMCP registration", () => {
     const tools = await modelContext.getTools();
 
     expect(tools.map((tool) => tool.name)).toEqual([...LABSPACE_WEBMCP_TOOL_NAMES]);
-    expect(tools).toHaveLength(23);
+    expect(tools).toHaveLength(24);
     for (const tool of tools) {
       expect(tool.annotations?.untrustedContentHint).toBe(true);
       expect(tool.annotations?.readOnlyHint).toBe(
@@ -497,15 +497,15 @@ describe("LabSpace WebMCP registration", () => {
     const modelContext = new MockModelContext();
     const first = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await first.ready;
-    expect(modelContext.activeTools.size).toBe(23);
+    expect(modelContext.activeTools.size).toBe(24);
 
     first.unregister();
     expect(modelContext.activeTools.size).toBe(0);
 
     const second = registerLabSpaceTools({ modelContext, actions: fakeActions() });
     await second.ready;
-    expect(modelContext.activeTools.size).toBe(23);
-    expect([...modelContext.activeTools]).toHaveLength(23);
+    expect(modelContext.activeTools.size).toBe(24);
+    expect([...modelContext.activeTools]).toHaveLength(24);
     second.unregister();
     expect(modelContext.activeTools.size).toBe(0);
   });

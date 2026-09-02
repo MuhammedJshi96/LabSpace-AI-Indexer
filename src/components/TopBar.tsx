@@ -81,10 +81,7 @@ export function TopBar({ activeArea = "layout", contextLabel = "Editable Layout"
             !path
           )
             return;
-          if (
-            ["/", "/inventory"].includes(path) &&
-            ["/", "/inventory"].includes(window.location.pathname)
-          ) {
+          if (["/", "/facility", "/digital-twin", "/inventory", "/asset-preview"].includes(path)) {
             event.preventDefault();
             navigateWorkspace(path);
           }

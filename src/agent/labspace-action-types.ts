@@ -137,6 +137,7 @@ export type PlacementConflict = {
     | "missing-support-surface"
     | "opening-outside-wall"
     | "opening-overlap"
+    | "front-access-obstruction"
     | "restricted-object";
   objectId?: string;
   indexCode?: string;
@@ -179,6 +180,11 @@ export type ValidateObjectResizeResult = {
 export type RecommendObjectPlacementsInput = {
   objectId: string;
   preferredTarget?: { xMm: number; yMm: number };
+  relativeTo?: {
+    objectId: string;
+    relation: "in-front-of" | "behind" | "left-of" | "right-of";
+    clearanceMm?: number;
+  };
   rotationsDeg?: number[];
   limit?: number;
 };
@@ -197,6 +203,13 @@ export type RecommendObjectPlacementsResult = {
   objectIndexCode: string;
   roomCode: string;
   preferredTarget: { xMm: number; yMm: number };
+  relativeTo?: {
+    objectId: string;
+    objectName: string;
+    relation: "in-front-of" | "behind" | "left-of" | "right-of";
+    clearanceMm: number;
+    facingRotationDeg: number;
+  };
   evaluatedTargets: number;
   candidates: RecommendedPlacement[];
   basis: string[];
@@ -241,6 +254,7 @@ export type RoomAuditResult = {
     hostedOpenings: boolean;
     supportedBenchEquipment: boolean;
     objectsInsideBoundary: boolean;
+    frontWorkingZonesClear: boolean;
     uniqueIndexCodes: boolean;
   };
   spaces: Array<{

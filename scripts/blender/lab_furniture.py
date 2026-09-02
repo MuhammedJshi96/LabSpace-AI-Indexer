@@ -1224,36 +1224,6 @@ def add_center_island(
         # the outermost plan envelope even when the end panel is inspected.
         add_end_service_plate(name, end_x, normal)
 
-    # Two flush cable/service grommets remain within the 900 mm catalog height.
-    for index, x in enumerate((-spec.width * 0.258, spec.width * 0.258), 1):
-        add_cylinder(
-            f"Island worktop grommet {index} outer",
-            (x, 0.0, 0.899),
-            0.040,
-            0.002,
-            MATERIALS["black"],
-            vertices=48,
-            bevel=0.0006,
-            category="worktop utility",
-        )
-        add_cylinder(
-            f"Island worktop grommet {index} center",
-            (x, 0.0, 0.8995),
-            0.026,
-            0.001,
-            MATERIALS["powder_dark"],
-            vertices=48,
-            category="worktop utility",
-        )
-        add_box(
-            f"Island worktop grommet {index} cable notch",
-            (x + 0.025, 0.0, 0.8995),
-            (0.018, 0.010, 0.001),
-            MATERIALS["shadow"],
-            bevel=0.001,
-            category="worktop utility",
-        )
-
     # Eight real leveling points support the two-sided steel carcass.
     outer_leveler_x = spec.width / 2.0 - 0.14
     inner_leveler_x = spec.width / 6.0
@@ -1320,6 +1290,28 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
         for modifier in list(obj.modifiers):
             bpy.ops.object.modifier_apply(modifier=modifier.name)
 
+    # Freeze non-interactive presentation pivots before material batching.
+    # Joining objects that have different parents (for example, an open lid
+    # leaf plus fixed stainless hardware) can otherwise reinterpret the joined
+    # vertices in the active object's pivot space.  Flatten each static mesh to
+    # the product root while preserving matrix_world; genuine storage-moving
+    # parts retain their authored mechanism parent and remain interactive.
+    for obj in meshes:
+        parent = obj.parent
+        if parent is not None and "storageMechanism" in parent:
+            continue
+        world_matrix = obj.matrix_world.copy()
+        obj.parent = ROOT
+        obj.matrix_world = world_matrix
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        # Bake the now-root-relative presentation transform into the mesh.
+        # This gives every static material group one common identity basis, so
+        # Blender's join operator cannot rotate or translate sibling parts into
+        # the active object's former hinge-pivot coordinates.
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
     groups: dict[str, list[bpy.types.Object]] = {}
     for obj in meshes:
         material = obj.data.materials[0] if obj.data.materials else None
@@ -1340,7 +1332,15 @@ def consolidate_static_meshes_by_material() -> dict[str, int]:
         active.name = f"Runtime batch - {material_name}"
         active["part_category"] = "static material batch"
         active["source_part_count"] = len(objects)
+        # Static product parts may be authored below hinge/lid pivots.  Joining
+        # correctly bakes their evaluated world geometry, but assigning a new
+        # parent without restoring matrix_world applies the old pivot transform
+        # a second time and can detach the delivered GLB even though the source
+        # .blend is correct.  Preserve the joined batch in world space while
+        # retaining actual storage-mechanism parenting for interactive parts.
+        world_matrix = active.matrix_world.copy()
         active.parent = parent if parent and "storageMechanism" in parent else ROOT
+        active.matrix_world = world_matrix
         # Joining objects that reference the same material can leave redundant
         # slots in some Blender versions. Remove them to preserve one primitive.
         bpy.ops.object.material_slot_remove_unused()
@@ -1415,9 +1415,36 @@ def validate_statistics(spec: AssetSpec, stats: dict[str, object], *, imported: 
     # A formed all-stainless sink legitimately shares a small material palette.
     # Requiring 14 colors encouraged gratuitous labels/markers on clean steel.
     formed_wash = spec.asset_id == "stainless-wash-basin"
-    if stats["mesh_objects"] < (4 if formed_wash else 12):
+    # A deliberately minimalist welded table should not need decorative
+    # plaques or fittings merely to satisfy an instrument-oriented richness
+    # floor. Its real finish roles are the sealed top/frame, threaded stems and
+    # elastomer glides; the supplied reference has no rear brace or service
+    # decoration.
+    clean_welded_table = spec.asset_id == "black-utility-table"
+    clean_pedestal_desk = spec.asset_id in {
+        "steel-pedestal-desk", "wood-pedestal-desk", "maple-steel-desk"
+    }
+    # The passive holder gains realism from contoured pipette anatomy, not a
+    # fourteenth decorative color.  Keep a strong 12-role floor while rejecting
+    # invented charging indicators, colored docks, cables and status plaques.
+    passive_pipette_holder = spec.asset_id == "electronic-pipette-station"
+    minimum_batches = (
+        3 if clean_welded_table
+        else 4 if formed_wash
+        else 7 if clean_pedestal_desk
+        else 12 if passive_pipette_holder
+        else 12
+    )
+    minimum_materials = (
+        3 if clean_welded_table
+        else 4 if formed_wash
+        else 7 if clean_pedestal_desk
+        else 12 if passive_pipette_holder
+        else 14
+    )
+    if stats["mesh_objects"] < minimum_batches:
         errors.append(f"only {stats['mesh_objects']} material batches")
-    if stats["materials"] < (4 if formed_wash else 14):
+    if stats["materials"] < minimum_materials:
         errors.append(f"only {stats['materials']} exported PBR materials")
     if imported:
         disallowed = [
@@ -1575,6 +1602,11 @@ def build_one(
         ROOT["pbr_materials"] = authored["materials"]
         ROOT["source_part_count"] = batching["source_parts"]
         ROOT["runtime_material_batches"] = batching["runtime_batches"]
+        if spec.asset_id == "center-island-bench":
+            ROOT["revision"] = "recessed-casework-clean-top-r2"
+            ROOT["clean_work_surface"] = True
+            ROOT["generic_surface_grommets"] = False
+            ROOT["decorative_service_markers"] = False
 
     if save_blend_dir is not None:
         save_blend_dir.mkdir(parents=True, exist_ok=True)

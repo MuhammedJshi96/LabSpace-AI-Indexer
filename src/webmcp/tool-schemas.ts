@@ -202,13 +202,40 @@ export const recommendObjectPlacementsSchema = {
       required: ["xMm", "yMm"],
       additionalProperties: false,
     },
+    relativeTo: {
+      type: "object",
+      properties: {
+        objectId: {
+          type: "string",
+          minLength: 1,
+          maxLength: 200,
+          description: "Canonical reference-object ID in the same room.",
+        },
+        relation: {
+          type: "string",
+          enum: ["in-front-of", "behind", "left-of", "right-of"],
+          description:
+            "Relation interpreted from the reference object's authored front, not the screen or camera.",
+        },
+        clearanceMm: {
+          type: "number",
+          minimum: 100,
+          maximum: 5000,
+          description:
+            "Optional clear edge-to-edge gap. Defaults to a role-aware working distance.",
+        },
+      },
+      required: ["objectId", "relation"],
+      additionalProperties: false,
+    },
     rotationsDeg: {
       type: "array",
       items: { type: "number", minimum: -360, maximum: 360 },
       minItems: 1,
       maxItems: 4,
       uniqueItems: true,
-      description: "Optional Z-axis rotations to evaluate. Defaults to current and quarter-turn.",
+      description:
+        "Optional rotations. Relative placement faces the reference; front-serviced equipment otherwise checks cardinal orientations.",
     },
     limit: {
       type: "integer",
@@ -478,14 +505,7 @@ export const planAnnexSchema = {
       },
     },
   },
-  required: [
-    "parentRoomCode",
-    "name",
-    "code",
-    "hostWallId",
-    "widthAlongWallMm",
-    "outwardDepthMm",
-  ],
+  required: ["parentRoomCode", "name", "code", "hostWallId", "widthAlongWallMm", "outwardDepthMm"],
   additionalProperties: false,
 } as const;
 
@@ -616,6 +636,54 @@ export const resolveMaterialsSchema = {
   additionalProperties: false,
 } as const;
 
+export const assessWorkflowSchema = {
+  type: "object",
+  properties: {
+    brief: {
+      type: "string",
+      minLength: 1,
+      maxLength: 240,
+      description: "Researcher-supplied workflow context, not an executable protocol.",
+    },
+    materials: {
+      type: "array",
+      minItems: 1,
+      maxItems: 20,
+      uniqueItems: true,
+      items: { type: "string", minLength: 1, maxLength: 120 },
+      description: "Material names to ground against recorded inventory.",
+    },
+    equipment: {
+      type: "array",
+      maxItems: 12,
+      uniqueItems: true,
+      items: { type: "string", minLength: 1, maxLength: 120 },
+      description: "Optional equipment names to ground against indexed equipment.",
+    },
+    roomCode: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      description: "Optional exact editable room code for equipment and workspace ranking.",
+    },
+    workspacePreference: {
+      type: "string",
+      enum: ["laboratory-bench", "island-bench", "any-work-surface"],
+      default: "laboratory-bench",
+      description: "Requested authored work-surface family.",
+    },
+    minimumClearAreaM2: {
+      type: "number",
+      minimum: 0.25,
+      maximum: 6,
+      default: 0.6,
+      description: "Planning-only minimum estimated clear surface area in square metres.",
+    },
+  },
+  required: ["brief", "materials"],
+  additionalProperties: false,
+} as const;
+
 export const startCollectionSchema = {
   type: "object",
   properties: {
@@ -628,6 +696,13 @@ export const startCollectionSchema = {
       items: { type: "string", minLength: 1, maxLength: 300 },
       description:
         "Reviewed canonical record IDs from search or material resolution, with physical locations.",
+    },
+    workspaceObjectId: {
+      type: "string",
+      minLength: 1,
+      maxLength: 200,
+      description:
+        "Optional reviewed work-surface ID from assess_workflow; becomes the final highlighted stop.",
     },
   },
   required: ["title", "recordIds"],

@@ -286,7 +286,7 @@ function asset(
       options.description ??
       `Parametric planning representation of ${name.toLowerCase()}; dimensions are editable and not manufacturer-certified.`,
     storageTemplate: authoredStorageTemplate(id) ?? options.storageTemplate,
-    // All 104 delivered GLBs have an explicit reviewed finish packet. Include
+    // All 115 delivered GLBs have an explicit reviewed finish packet. Include
     // that revision in model AND thumbnail URLs so existing rooms refresh their
     // visuals without changing any scene objects or persisted dimensions.
     model3d: options.model3d
@@ -306,11 +306,17 @@ function catalogCompletionModel(
       depth: dimensions[1],
       height: dimensions[2],
     },
-    revision: ["wall-cabinet", "mobile-bench"].includes(id)
+    revision: id === "office-desk"
+      ? "catalog-completion-batch12-r6"
+      : id === "rectangular-table"
+        ? "catalog-completion-batch12-r3"
+        : ["wall-cabinet", "mobile-bench"].includes(id)
       ? "storage-articulation-r1"
       : ["office-desk", "corner-lab-bench", "computer-workstation"].includes(id)
         ? "catalog-completion-batch12-r5"
-        : "catalog-completion-batch12-r2",
+        : id === "printer"
+          ? "catalog-printer-reference-r2"
+          : "catalog-completion-batch12-r2",
   };
 }
 
@@ -322,6 +328,19 @@ function referencePackModel(
     previewSrc: `/models/hero/${id}.glb`,
     authoredDimensions: { width, depth, height },
     revision: "reference-batch13-r2",
+  };
+}
+
+function diversityPackModel(
+  id: string,
+  [width, depth, height]: [number, number, number],
+): NonNullable<AssetDefinition["model3d"]> {
+  return {
+    previewSrc: `/models/hero/${id}.glb`,
+    authoredDimensions: { width, depth, height },
+    revision: id === "gpu-analysis-workstation"
+      ? "diversity-batch14-r14"
+      : "diversity-batch14-r12",
   };
 }
 
@@ -452,7 +471,10 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       indexingBehavior: "storage",
       description:
         "Laboratory computer bench with black phenolic worktop, satin frame and levelling feet, three-drawer right pedestal, open left knee space, modesty panel and cable tray. Includes a detailed monitor, keyboard, mouse and compact PC. Three assignable drawers articulate as complete trays; overall height includes monitor.",
-      model3d: referencePackModel("computer-lab-bench", [1600, 750, 1350]),
+      model3d: {
+        ...referencePackModel("computer-lab-bench", [1600, 750, 1350]),
+        revision: "reference-batch13-r3",
+      },
     },
   ),
   asset(
@@ -789,7 +811,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     model3d: {
       previewSrc: "/models/hero/center-island-bench.glb",
       authoredDimensions: { width: 3000, depth: 1200, height: 900 },
-      revision: "recessed-casework-r1",
+      revision: "recessed-casework-clean-top-r2",
     },
   }),
   asset("mobile-bench", "Mobile bench", "Furniture", [1200, 700, 900], {
@@ -808,7 +830,7 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "table",
     material: "white",
     description:
-      "Professional light-laminate office desk with a connected powder-coated square-tube frame, satin-metal fixing brackets, modesty panel, flush cable grommet, pencil drawer, levelling feet, and fully modeled rear construction.",
+      "Professional light-laminate office desk with a clean uninterrupted work surface, connected powder-coated square-tube frame, satin-metal fixing brackets, modesty panel, pencil drawer, levelling feet, and fully modeled rear construction.",
     model3d: catalogCompletionModel("office-desk", [1400, 700, 740]),
   }),
   asset("rectangular-table", "Rectangular table", "Furniture", [1600, 800, 740], {
@@ -816,8 +838,43 @@ export const ASSET_CATALOG: AssetDefinition[] = [
     profile: "table",
     material: "white",
     description:
-      "Clean laboratory meeting and preparation table with a light sealed work surface, satin-aluminum underframe, square-tube legs, modesty rail, cable grommet, and adjustable feet.",
+      "Clean laboratory meeting and preparation table with an uninterrupted light sealed work surface, satin-aluminum underframe, square-tube legs, modesty rail, and adjustable feet.",
     model3d: catalogCompletionModel("rectangular-table", [1600, 800, 740]),
+  }),
+  asset("steel-pedestal-desk", "Steel pedestal office desk", "Furniture", [1200, 700, 740], {
+    shortName: "Steel pedestal desk",
+    profile: "table",
+    material: "white",
+    indexingBehavior: "storage",
+    description:
+      "Institutional powder-coated steel desk with a clean hygienic work surface, connected C-leg and modesty construction, one lockable three-drawer pedestal, black coated pulls, closed rear construction, and adjustable glides. The three drawers open independently and remain assignable storage.",
+    model3d: diversityPackModel("steel-pedestal-desk", [1200, 700, 740]),
+  }),
+  asset("wood-pedestal-desk", "Walnut pedestal office desk", "Furniture", [1200, 650, 750], {
+    shortName: "Walnut pedestal desk",
+    profile: "table",
+    material: "dark",
+    indexingBehavior: "storage",
+    description:
+      "Compact sealed-walnut office desk with a clean woodgrain work surface, slab sides, a full modesty return, a lockable three-drawer pedestal, matte-black pulls, reinforced underside, and modeled rear construction. It is a workplace-furniture variant rather than laboratory casework.",
+    model3d: diversityPackModel("wood-pedestal-desk", [1200, 650, 750]),
+  }),
+  asset("maple-steel-desk", "Maple-top steel pedestal desk", "Furniture", [1400, 700, 740], {
+    shortName: "Maple pedestal desk",
+    profile: "table",
+    material: "white",
+    indexingBehavior: "storage",
+    description:
+      "Clean light maple-laminate work surface on a connected laboratory-white steel frame, with a rear modesty panel, adjustable glides, and one lockable three-drawer pedestal with black coated pulls. The distinct material palette broadens office and write-up-zone planning.",
+    model3d: diversityPackModel("maple-steel-desk", [1400, 700, 740]),
+  }),
+  asset("black-utility-table", "Graphite steel utility table", "Furniture", [1600, 800, 740], {
+    shortName: "Utility table",
+    profile: "table",
+    material: "dark",
+    description:
+      "Supplied-reference dark utility table with a clean uninterrupted sealed graphite work surface, connected powder-coated square-tube frame, continuous aprons, rear brace, adjustable glides, and credible all-sided construction without decorative service fittings.",
+    model3d: diversityPackModel("black-utility-table", [1600, 800, 740]),
   }),
   asset("round-stool", "Round stool", "Furniture", [440, 440, 520], {
     shortName: "Stool",
@@ -1259,17 +1316,17 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       revision: "remaining-equipment-batch11-r1",
     },
   }),
-  asset("analytical-balance", "Analytical balance", "Laboratory equipment", [212, 411, 345], {
+  asset("analytical-balance", "Analytical balance", "Laboratory equipment", [210, 320, 310], {
     connection: "bench",
     profile: "box",
     material: "glass",
     accent: "#416d80",
     description:
-      "Official-dimension-informed analytical balance with a 91 mm weighing pan, four-sided glass draft shield, sliding access panels, readable process display, levelling controls, feet, and rear service details. Original logo-free planning geometry; not manufacturer-certified.",
+      "Reference-sheet-matched 210 × 320 × 310 mm analytical balance with a continuous formed base, 90 mm brushed-stainless weighing pan, captured low-iron glass draft shield, separately modelled front and side sliding doors, physical tracks and pulls, readable 0.0000 g display, membrane controls, levelling indicator and rear IEC/RS232 service. Editable original Blender product geometry; logo-free and not manufacturer-certified.",
     model3d: {
       previewSrc: "/models/hero/analytical-balance.glb",
-      authoredDimensions: { width: 212, depth: 411, height: 345 },
-      revision: "fidelity-batch6-r1",
+      authoredDimensions: { width: 210, depth: 320, height: 310 },
+      revision: "final-reference-r13",
     },
   }),
   asset("top-loading-balance", "Top-loading balance", "Laboratory equipment", [190, 317, 78], {
@@ -1285,17 +1342,17 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       revision: "fidelity-batch6-r1",
     },
   }),
-  asset("hotplate-stirrer", "Hotplate stirrer", "Laboratory equipment", [220, 335, 105], {
+  asset("hotplate-stirrer", "Magnetic stirrer hot plate", "Laboratory equipment", [200, 260, 420], {
     connection: "bench",
     profile: "box",
     material: "steel",
     accent: "#6e9698",
     description:
-      "Official IKA C-MAG HS 7-class footprint-informed hotplate stirrer with a light instrument-grey formed housing, ceramic heating surface, raised rim, dual tactile controls, process display, power status, side and rear service details, casing seams, and stable feet. Original logo-free planning geometry; not manufacturer-certified.",
+      "Reference-sheet-matched magnetic stirrer hot plate with a 200 × 260 × 120 mm navy formed body, 180 mm white ceramic-coated plate on four isolators, twin knurled controls, recessed 120 °C / 1500 rpm LED display, status lamps, rear IEC inlet, stable feet and a removable stainless support rod extending the complete planning envelope to 420 mm. Editable original Blender product geometry; logo-free and not manufacturer-certified.",
     model3d: {
       previewSrc: "/models/hero/hotplate-stirrer.glb",
-      authoredDimensions: { width: 220, depth: 335, height: 105 },
-      revision: "fidelity-batch7-r1",
+      authoredDimensions: { width: 200, depth: 260, height: 420 },
+      revision: "final-reference-r13",
     },
   }),
   asset("water-bath", "Water bath", "Laboratory equipment", [310, 360, 230], {
@@ -1390,6 +1447,38 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       revision: "fidelity-batch7-r1",
     },
   }),
+  asset(
+    "automated-microplate-reader",
+    "Automated microplate reader",
+    "Laboratory equipment",
+    [520, 500, 330],
+    {
+      shortName: "Automated plate reader",
+      connection: "bench",
+      profile: "box",
+      material: "white",
+      accent: "#315b8c",
+      description:
+        "Automated absorbance-reader class instrument with a continuous softly formed light enclosure, deep bounded sample chamber, projected motorized carriage, modeled 96-well plate, integrated front screen and key cluster, side ventilation, and a complete rear exhaust and power/data service panel. Original logo-free planning geometry; not manufacturer-certified.",
+      model3d: diversityPackModel("automated-microplate-reader", [520, 500, 330]),
+    },
+  ),
+  asset(
+    "electronic-pipette-station",
+    "Laboratory pipette holder",
+    "Laboratory equipment",
+    [345, 150, 260],
+    {
+      shortName: "Pipette holder",
+      connection: "bench",
+      profile: "rack",
+      material: "white",
+      accent: "#00a995",
+      description:
+        "Compact passive five-position laboratory pipette holder with a connected weighted A-frame, keyed hanger beam, individual bearing saddles, and visibly different micro, standard, large-volume, electronic and eight-channel pipettes. Plungers, volume windows, finger rests, controls, manifold and disposable tips are modeled individually. The holder has no charging hardware or power connection; original logo-free planning geometry is illustrative rather than manufacturer-certified.",
+      model3d: diversityPackModel("electronic-pipette-station", [345, 150, 260]),
+    },
+  ),
   asset("electrophoresis-tank", "Electrophoresis tank", "Laboratory equipment", [405, 180, 94], {
     connection: "bench",
     profile: "box",
@@ -1455,6 +1544,21 @@ export const ASSET_CATALOG: AssetDefinition[] = [
         authoredDimensions: { width: 950, depth: 900, height: 2000 },
         revision: "room809-r1",
       },
+    },
+  ),
+  asset(
+    "chest-ultra-low-freezer",
+    "Chest ultra-low-temperature freezer",
+    "Laboratory equipment",
+    [900, 760, 980],
+    {
+      shortName: "Chest ULT freezer",
+      profile: "box",
+      material: "white",
+      accent: "#486f9d",
+      description:
+        "Chest-format ULT freezer with a continuous insulated enamel cabinet, thick sealed top lid, gasket and trim, front latch, abstract controller, pressure-equalization port, lid hinges, side condenser ventilation, rear compressor cover, power service, and leveling hardware. Original logo-free planning geometry; it does not claim certified temperature performance.",
+      model3d: diversityPackModel("chest-ultra-low-freezer", [900, 760, 980]),
     },
   ),
   asset("ice-maker", "Ice maker", "Laboratory equipment", [633, 506, 930], {
@@ -1633,14 +1737,75 @@ export const ASSET_CATALOG: AssetDefinition[] = [
       "Professional T-leg computer workstation with a light laminate desktop, connected frame and levelling glides, concealed cable trough, supported CPU cradle, slim pivot-mounted monitor, low-profile keyboard, sculpted mouse, and all-sided service detail.",
     model3d: catalogCompletionModel("computer-workstation", [1400, 700, 1350]),
   }),
+  asset(
+    "gpu-analysis-workstation",
+    "GPU analysis workstation",
+    "Laboratory equipment",
+    [1200, 600, 1250],
+    {
+      shortName: "GPU workstation",
+      profile: "workstation",
+      material: "white",
+      accent: "#00a995",
+      description:
+        "Reference-led 1200 × 600 mm analysis workstation with a 25 mm light-wood top, welded 25 mm square-tube frame, full rear modesty panel and mounted power strip, supported tower shelf, serviceable compute chassis with a smoked tempered side window and visible internal components, monitor, keyboard, mouse, reference-required 60 mm cable grommet, and routed display, peripheral and mains cabling. Original logo-free planning geometry; no performance specification is implied.",
+      model3d: diversityPackModel("gpu-analysis-workstation", [1200, 600, 1250]),
+    },
+  ),
   asset("printer", "Printer", "Laboratory equipment", [500, 500, 350], {
     profile: "box",
     material: "white",
     accent: "#53666d",
     description:
-      "Compact multifunction laboratory printer with sealed light enclosure, scanner body and lid, output bay and tray, angled control display, paper path, ventilation, and rear service construction.",
+      "Compact monochrome multifunction printer with a continuous formed light enclosure, bounded paper path, physical output returns and rollers, inset cassette and pull, scanner deck, gasket, hinged lid, integrated recessed controller, rear exhaust, data/power service, and isolation feet. Original logo-free all-sided planning geometry.",
     model3d: catalogCompletionModel("printer", [500, 500, 350]),
   }),
+  asset(
+    "high-volume-multifunction-printer",
+    "High-volume multifunction printer",
+    "Laboratory equipment",
+    [580, 480, 380],
+    {
+      shortName: "High-volume printer",
+      profile: "box",
+      material: "white",
+      accent: "#526d72",
+      description:
+        "Large office-laboratory multifunction printer with a scanner and automatic document feeder, input and output paper paths, two independent paper cassettes, touch interface, ink-service bay and level windows, rear exhaust, data panel, service cover, and isolation feet. Original logo-free all-sided planning geometry.",
+      model3d: diversityPackModel("high-volume-multifunction-printer", [580, 480, 380]),
+    },
+  ),
+  asset(
+    "compact-ink-tank-printer",
+    "Compact multifunction printer",
+    "Laboratory equipment",
+    [480, 420, 250],
+    {
+      shortName: "Compact printer",
+      profile: "box",
+      material: "white",
+      accent: "#4f777c",
+      description:
+        "Low, wide laboratory-office multifunction printer with a continuous molded enclosure, flat scanner lid, full-width integrated control bridge, bounded output path, large lower paper cassette, reference-led right ink/service bay with separated level indicators, right-side ventilation, dark rear service panel, data/power connections, and grounded feet. Original logo-free all-sided planning geometry.",
+      model3d: diversityPackModel("compact-ink-tank-printer", [480, 420, 250]),
+    },
+  ),
+  asset(
+    "ultrasonic-cleaner",
+    "Benchtop ultrasonic cleaner",
+    "Laboratory equipment",
+    [360, 330, 330],
+    {
+      shortName: "Ultrasonic cleaner",
+      connection: "bench",
+      profile: "box",
+      material: "steel",
+      accent: "#315f9b",
+      description:
+        "Reference-led benchtop ultrasonic cleaner with a shallow formed satin-stainless enclosure, watertight pressed basin, one continuous annular rim, a mechanically connected 20° open formed lid and full-width hinge, recessed dual-value controller and rotary knob, right drain with blue lever, recessed carry handle, rear louvres and mains service, and four isolation feet. Original logo-free planning geometry; no cleaning validation is implied.",
+      model3d: diversityPackModel("ultrasonic-cleaner", [360, 330, 330]),
+    },
+  ),
 
   asset("eyewash", "Emergency eyewash", "Safety", [450, 400, 1050], {
     shortName: "Eyewash",

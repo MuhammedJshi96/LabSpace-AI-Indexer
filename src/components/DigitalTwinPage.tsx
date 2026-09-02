@@ -1,8 +1,18 @@
-import { Component, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from "react";
+import {
+  Component,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import QRCode from "qrcode";
 import {
   ArrowRight,
   Bell,
+  CaretLeft,
+  CaretRight,
   ChartBar,
   CheckCircle,
   CirclesThreePlus,
@@ -149,6 +159,8 @@ export function DigitalTwinPage() {
   const [scope, setScope] = useState<DigitalTwinScope>("project");
   const [wallCutaway, setWallCutaway] = useState(false);
   const [qrCode, setQrCode] = useState("");
+  const resultListRef = useRef<HTMLDivElement>(null);
+  const [resultScrollState, setResultScrollState] = useState({ backward: false, forward: false });
   const hydrate = useEditorStore((state) => state.hydrate);
   const hydrated = useEditorStore((state) => state.hydrated);
   const dirtyRevision = useEditorStore((state) => state.dirtyRevision);
@@ -201,6 +213,40 @@ export function DigitalTwinPage() {
     [allRecords, mode, query, room.id, scope],
   );
   const showResultStrip = Boolean(query.trim() || mode !== "browse");
+  const resultModeLabel = navItems.find((item) => item.mode === mode)?.label ?? "Spatial Index";
+
+  useEffect(() => {
+    const list = resultListRef.current;
+    if (!list || !showResultStrip) {
+      setResultScrollState({ backward: false, forward: false });
+      return;
+    }
+    const update = () => {
+      const maximum = Math.max(0, list.scrollWidth - list.clientWidth);
+      setResultScrollState({
+        backward: list.scrollLeft > 2,
+        forward: list.scrollLeft < maximum - 2,
+      });
+    };
+    list.scrollLeft = 0;
+    const frame = window.requestAnimationFrame(update);
+    list.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      list.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [filteredRecords.length, mode, query, showResultStrip]);
+
+  const scrollResultList = (direction: -1 | 1) => {
+    const list = resultListRef.current;
+    if (!list) return;
+    list.scrollBy({
+      left: direction * Math.max(280, list.clientWidth * 0.72),
+      behavior: "smooth",
+    });
+  };
 
   const effectiveSelectedRecordId = allRecords.some((record) => record.id === selectedRecordId)
     ? selectedRecordId
@@ -581,8 +627,44 @@ export function DigitalTwinPage() {
                         scope === "project" ? "entire project" : room.name
                       }`}
                 </small>
+                <span
+                  className="twin-result-scroll-controls"
+                  aria-label={`Scroll ${resultModeLabel.toLowerCase()} result row`}
+                >
+                  <button
+                    type="button"
+                    aria-label={`Scroll ${resultModeLabel.toLowerCase()} row left`}
+                    disabled={!resultScrollState.backward}
+                    onClick={() => scrollResultList(-1)}
+                  >
+                    <CaretLeft size={16} weight="bold" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Scroll ${resultModeLabel.toLowerCase()} row right`}
+                    disabled={!resultScrollState.forward}
+                    onClick={() => scrollResultList(1)}
+                  >
+                    <CaretRight size={16} weight="bold" />
+                  </button>
+                </span>
               </header>
-              <div className="twin-result-list">
+              <div
+                ref={resultListRef}
+                className="twin-result-list"
+                tabIndex={0}
+                aria-label={`${resultModeLabel} result row`}
+                onWheel={(event) => {
+                  const list = event.currentTarget;
+                  if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+                  const maximum = Math.max(0, list.scrollWidth - list.clientWidth);
+                  const canConsume =
+                    event.deltaY > 0 ? list.scrollLeft < maximum - 2 : list.scrollLeft > 2;
+                  if (!canConsume) return;
+                  event.preventDefault();
+                  list.scrollLeft += event.deltaY;
+                }}
+              >
                 {filteredRecords.map((record) => (
                   <button
                     key={record.id}

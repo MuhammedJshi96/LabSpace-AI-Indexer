@@ -209,8 +209,15 @@ test("the 3D canvas renders real pixels and Asset Studio opens safely", async ({
 test("the Spatial Index links indexed search results to the live room and editor", async ({
   page,
 }) => {
+  await page.request.post("/api/testing/reset");
   const project: Project = await (await page.request.get("/api/project")).json();
-  const room = project.rooms.find((entry) => entry.id === project.activeRoomId)!;
+  const room = project.rooms.find(
+    (entry) =>
+      entry.roomKind !== "demo-template" &&
+      entry.scene.inventoryItems.some((item) => item.name === "Reference standards"),
+  )!;
+  project.activeRoomId = room.id;
+  expect((await page.request.put(`/api/project/${project.id}`, { data: project })).ok()).toBe(true);
   const item = room.scene.inventoryItems.find((entry) => entry.name === "Reference standards")!;
   const location = room.scene.storageLocations.find(
     (entry) => entry.id === item.storageLocationId,
@@ -304,6 +311,29 @@ test("the Spatial Index presents the selected inventory evidence image", async (
   await expect(
     detail.getByRole("img", { name: "HPLC autosampler vials, 2 mL evidence image" }),
   ).toHaveAttribute("src", "/images/inventory/hplc-vials.png");
+});
+
+test("the Spatial Index inventory row scrolls with visible controls and a mouse wheel", async ({
+  page,
+}) => {
+  await page.request.post("/api/testing/reset");
+  await page.goto("/digital-twin");
+  await page.getByRole("button", { name: /^Inventory \d+$/ }).click();
+
+  const row = page.locator(".twin-result-list");
+  const next = page.getByRole("button", { name: "Scroll inventory row right" });
+  const previous = page.getByRole("button", { name: "Scroll inventory row left" });
+  await expect(next).toBeEnabled();
+  await expect(previous).toBeDisabled();
+
+  await next.click();
+  await expect.poll(() => row.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  await expect(previous).toBeEnabled();
+
+  await row.evaluate((element) => element.scrollTo({ left: 0, behavior: "instant" }));
+  await row.hover();
+  await page.mouse.wheel(0, 480);
+  await expect.poll(() => row.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
 });
 
 test("project search switches to a record in another laboratory and preserves the editor trace", async ({

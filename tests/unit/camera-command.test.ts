@@ -121,14 +121,14 @@ describe("Spatial Index exact-location camera approach", () => {
         focusedEnvelope: 3.6,
         exactLocation: true,
       }),
-    ).toBeLessThanOrEqual(6.4);
+    ).toBeLessThanOrEqual(4.6);
     expect(
       digitalTwinFocusDistance({
         roomExtent: 8.7,
         focusedEnvelope: 0.45,
         exactLocation: true,
       }),
-    ).toBeCloseTo(3.8);
+    ).toBeCloseTo(3.1);
   });
 
   it("keeps the evidence camera inside the available aisle", () => {
@@ -168,6 +168,91 @@ describe("Spatial Index exact-location camera approach", () => {
 
     expect(position.lateralBias).toBeLessThan(0);
     expect(position.blockerIds).toEqual([]);
+  });
+
+  it("widens or shortens the aisle view instead of accepting a blocked shelf camera", () => {
+    const position = chooseDigitalTwinFocusCameraPosition({
+      target: { x: 0, y: 1.25, z: -1.8 },
+      desiredDistance: 3.4,
+      approach: { forwardX: 0, forwardZ: 1, lateralX: 1, lateralZ: 0 },
+      roomWidth: 8,
+      roomDepth: 8,
+      exactLocation: true,
+      obstacles: [
+        {
+          id: "opposite-island",
+          minX: -1.2,
+          maxX: 1.2,
+          minY: 0,
+          maxY: 2.1,
+          minZ: -0.2,
+          maxZ: 1.6,
+        },
+      ],
+    });
+
+    expect(position.blockerIds).toEqual([]);
+    expect(Math.abs(position.lateralBias) >= 0.72 || position.distanceScale < 1).toBe(true);
+    expect(position.y - 1.25).toBeGreaterThanOrEqual(0.75);
+    expect(position.y - 1.25).toBeLessThanOrEqual(1.05);
+  });
+
+  it("skirts the end of a deep island that screens an R-002 perimeter cabinet", () => {
+    const position = chooseDigitalTwinFocusCameraPosition({
+      target: { x: -1.953, y: 0.461, z: 0.6 },
+      desiredDistance: 3.1,
+      approach: { forwardX: 1, forwardZ: 0, lateralX: 0, lateralZ: -1 },
+      roomWidth: 8.2,
+      roomDepth: 6,
+      exactLocation: true,
+      obstacles: [
+        {
+          id: "r002-service-island",
+          minX: -0.791,
+          maxX: 0.689,
+          minY: 0,
+          maxY: 2.1,
+          minZ: -0.74,
+          maxZ: 3.14,
+        },
+      ],
+    });
+
+    expect(position.blockerIds).toEqual([]);
+    expect(Math.abs(position.lateralBias)).toBeGreaterThanOrEqual(1.16);
+    expect(Math.hypot(position.x + 1.953, position.z - 0.6)).toBeLessThanOrEqual(3.11);
+    expect(position.y).toBeGreaterThan(1.15);
+  });
+
+  it("uses an elevated but still readable low-drawer evidence angle", () => {
+    const position = chooseDigitalTwinFocusCameraPosition({
+      target: { x: 0, y: 0.35, z: 0 },
+      desiredDistance: 3.1,
+      approach: { forwardX: 0, forwardZ: 1, lateralX: 1, lateralZ: 0 },
+      roomWidth: 8,
+      roomDepth: 8,
+      exactLocation: true,
+    });
+
+    expect(position.y).toBeGreaterThanOrEqual(1.08);
+    expect(position.y).toBeLessThanOrEqual(1.4);
+  });
+
+  it("keeps a readable distance outside a near-wall authored facade for cutaway", () => {
+    const target = { x: 2.84, y: 0.56, z: -2.3 };
+    const position = chooseDigitalTwinFocusCameraPosition({
+      target,
+      desiredDistance: 3.1,
+      approach: { forwardX: 0, forwardZ: -1, lateralX: -1, lateralZ: 0 },
+      roomWidth: 8.2,
+      roomDepth: 6,
+      exactLocation: true,
+    });
+
+    expect(Math.hypot(position.x - target.x, position.z - target.z)).toBeCloseTo(3.1);
+    expect(position.z).toBeLessThan(-3);
+    expect(position.y).toBeGreaterThan(1.2);
+    expect(position.y).toBeLessThan(1.65);
   });
 });
 

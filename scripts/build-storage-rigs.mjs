@@ -24,7 +24,10 @@ const ACCESS_POLICIES = {
     accessFaceOverrides: [
       { keyPrefix: "drawer:return utility drawer", face: "rear" },
       { keyPrefix: "bay:Return cabinet", face: "rear" },
-      { keyPrefix: "drawer:corner run drawer", face: "left" },
+      // The completed Blender scene rotates the drawer run onto local +X.
+      // The normalized region sits on the negative-X side of the envelope,
+      // but that position is not the drawer's outward face normal.
+      { keyPrefix: "drawer:corner run drawer", face: "right" },
     ],
   },
   "lab-bench-overhead": { defaultAccessFace: "front" },

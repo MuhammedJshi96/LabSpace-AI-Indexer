@@ -7648,6 +7648,43 @@ body:has(#procedural-catalog-capture) #root {
   font-size: 13px;
 }
 
+.twin-results > header > small {
+  min-width: 0;
+  margin-left: auto;
+}
+
+.twin-result-scroll-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.twin-result-scroll-controls button {
+  display: grid;
+  width: 30px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  color: var(--twin-teal-dark);
+  background: #fff;
+  border: 1px solid #cbd8d4;
+  border-radius: 6px;
+}
+
+.twin-result-scroll-controls button:hover:not(:disabled),
+.twin-result-scroll-controls button:focus-visible {
+  color: #fff;
+  background: var(--twin-teal-dark);
+  border-color: var(--twin-teal-dark);
+}
+
+.twin-result-scroll-controls button:disabled {
+  color: #aebbb7;
+  background: #f0f3f2;
+  border-color: #e0e6e4;
+  cursor: default;
+}
+
 .twin-results > header b {
   margin-right: 4px;
   color: var(--twin-teal-dark);
@@ -7671,8 +7708,16 @@ body:has(#procedural-catalog-capture) #root {
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
   scrollbar-color: #a9bbb6 transparent;
   scrollbar-width: thin;
+}
+
+.twin-result-list:focus-visible {
+  outline: 2px solid rgba(0, 169, 149, 0.55);
+  outline-offset: 3px;
 }
 
 .twin-result-list > button {

@@ -716,7 +716,10 @@ function CameraRig({
       )
       .map((object) => {
         const bounds = objectBounds(object);
-        const padding = 80;
+        // Keep the camera ray clear of silhouettes as well as raw footprints.
+        // The extra clearance is inexpensive and prevents a chair/freezer edge
+        // from still covering the selected shelf after candidate scoring.
+        const padding = 140;
         return {
           id: object.id,
           minX: mmToMetres(bounds.left - padding - commandRoom.width / 2),

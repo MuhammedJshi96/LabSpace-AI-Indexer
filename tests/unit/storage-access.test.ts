@@ -104,7 +104,7 @@ describe("authored storage access", () => {
     const side = rig.locations.find((slot) => slot.key.startsWith("drawer:corner run"))!;
     const rear = rig.locations.find((slot) => slot.key === "drawer:return utility drawer")!;
     for (const [slot, expected] of [
-      [side, "left"],
+      [side, "right"],
       [rear, "rear"],
     ] as const) {
       const selected = {

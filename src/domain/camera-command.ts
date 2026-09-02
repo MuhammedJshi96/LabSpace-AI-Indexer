@@ -51,6 +51,7 @@ export type DigitalTwinFocusCameraPosition = {
   y: number;
   z: number;
   lateralBias: number;
+  distanceScale: number;
   blockerIds: string[];
 };
 
@@ -134,8 +135,8 @@ export function digitalTwinFocusDistance({
   exactLocation: boolean;
 }) {
   if (exactLocation) {
-    const roomCap = Math.min(6.4, Math.max(4.6, roomExtent * 0.72));
-    return Math.min(roomCap, Math.max(3.8, focusedEnvelope * 1.45 + 1));
+    const roomCap = Math.min(4.6, Math.max(3.4, roomExtent * 0.52));
+    return Math.min(roomCap, Math.max(3.1, focusedEnvelope * 0.95 + 0.65));
   }
   const roomCap = Math.min(7.4, Math.max(5, roomExtent * 0.84));
   return Math.min(roomCap, Math.max(4.2, focusedEnvelope * 1.85 + 1.2));
@@ -224,37 +225,75 @@ export function chooseDigitalTwinFocusCameraPosition({
   exactLocation: boolean;
   obstacles?: readonly DigitalTwinFocusObstacle[];
 }): DigitalTwinFocusCameraPosition {
-  const lateralBiases = [0.22, -0.22, 0.44, -0.44, 0];
-  const minimumDistance = exactLocation ? 1.65 : 2.15;
-  const candidates = lateralBiases.map((lateralBias, preferenceIndex) => {
-    const rawX = approach.forwardX * 0.94 + approach.lateralX * lateralBias;
-    const rawZ = approach.forwardZ * 0.94 + approach.lateralZ * lateralBias;
-    const length = Math.max(1e-6, Math.hypot(rawX, rawZ));
-    const direction = { x: rawX / length, z: rawZ / length };
-    const availableDistance = distanceToRoomEdge(target, direction, roomWidth, roomDepth);
-    const distance = Math.min(
-      desiredDistance,
-      Math.max(minimumDistance, availableDistance || desiredDistance),
-    );
-    const rise = exactLocation
-      ? clamp(distance * 0.44, 1.05, 2.05)
-      : clamp(distance * 0.46, 1.25, 2.45);
-    const position = {
-      x: target.x + direction.x * distance,
-      y: target.y + rise,
-      z: target.z + direction.z * distance,
-    };
-    const blockerIds = obstacles
-      .filter((obstacle) => obstacleBlocksSightline(position, target, obstacle))
-      .map((obstacle) => obstacle.id);
-    const outsidePenalty = Math.max(0, minimumDistance - availableDistance) * 20;
-    return {
-      ...position,
-      lateralBias,
-      blockerIds,
-      score: blockerIds.length * 100 + outsidePenalty + preferenceIndex * 0.08,
-    };
-  });
+  // A narrow five-angle fan was not enough for dense rooms: every candidate
+  // could sit behind the same island, chair or freezer. Keep every option on
+  // the authored-front hemisphere, but add wider aisle-side views and a
+  // nearer fallback before accepting an occluded sightline.
+  const lateralBiases = [
+    0.18,
+    -0.18,
+    0,
+    0.42,
+    -0.42,
+    0.72,
+    -0.72,
+    1.02,
+    -1.02,
+    1.16,
+    -1.16,
+    1.45,
+    -1.45,
+    2,
+    -2,
+  ];
+  const distanceScales = exactLocation ? [1, 0.84, 0.68] : [1, 0.84];
+  const minimumAisleDistance = exactLocation ? 1.35 : 1.9;
+  const candidates = lateralBiases.flatMap((lateralBias, lateralIndex) =>
+    distanceScales.map((distanceScale, distanceIndex) => {
+      const rawX = approach.forwardX * 0.94 + approach.lateralX * lateralBias;
+      const rawZ = approach.forwardZ * 0.94 + approach.lateralZ * lateralBias;
+      const length = Math.max(1e-6, Math.hypot(rawX, rawZ));
+      const direction = { x: rawX / length, z: rawZ / length };
+      const availableDistance = distanceToRoomEdge(target, direction, roomWidth, roomDepth);
+      const preferredDistance = desiredDistance * distanceScale;
+      // If the authored facade is effectively against a wall, squeezing the
+      // camera into the remaining sliver produces a clipped view through the
+      // host worktop or cabinet. Keep the readable product-view distance and
+      // let the focused-wall cutaway remove only the intersecting wall. When
+      // a real aisle exists, remain inside it as before.
+      const distance =
+        availableDistance >= minimumAisleDistance
+          ? Math.min(preferredDistance, availableDistance)
+          : preferredDistance;
+      const rise = exactLocation
+        ? clamp(distance * 0.24, 0.75, 1.05)
+        : clamp(distance * 0.3, 0.95, 1.8);
+      const position = {
+        x: target.x + direction.x * distance,
+        // Evidence cameras follow the selected storage height from a modestly
+        // elevated three-quarter angle. This keeps the exact drawer or shelf
+        // readable while showing enough surrounding floor and casework to
+        // understand its placement in the room.
+        y: target.y + rise,
+        z: target.z + direction.z * distance,
+      };
+      const blockerIds = obstacles
+        .filter((obstacle) => obstacleBlocksSightline(position, target, obstacle))
+        .map((obstacle) => obstacle.id);
+      const outsidePenalty =
+        availableDistance >= minimumAisleDistance
+          ? 0
+          : Math.max(0, minimumAisleDistance - availableDistance) * 0.02;
+      return {
+        ...position,
+        lateralBias,
+        distanceScale,
+        blockerIds,
+        score:
+          blockerIds.length * 100 + outsidePenalty + lateralIndex * 0.055 + distanceIndex * 0.045,
+      };
+    }),
+  );
 
   const selected = candidates.sort((first, second) => first.score - second.score)[0];
   return {
@@ -262,6 +301,7 @@ export function chooseDigitalTwinFocusCameraPosition({
     y: selected.y,
     z: selected.z,
     lateralBias: selected.lateralBias,
+    distanceScale: selected.distanceScale,
     blockerIds: selected.blockerIds,
   };
 }

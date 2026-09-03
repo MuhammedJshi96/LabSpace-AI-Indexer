@@ -575,7 +575,9 @@ export function DigitalTwinPage() {
           </div>
         </nav>
 
-        <main className={`twin-workspace ${showResultStrip ? "with-results" : "scene-only"}`}>
+        <main
+          className={`twin-workspace ${showResultStrip ? "with-results" : "scene-only"}${collectionRoute?.projectId === project.id ? " with-collection" : ""}`}
+        >
           <section className="twin-scene" aria-label="Spatial laboratory index">
             <div className="twin-scene-mode">
               <span className="twin-live-dot" />
@@ -612,6 +614,8 @@ export function DigitalTwinPage() {
               </span>
             </div>
           </section>
+
+          <CollectionGuide embedded />
 
           {showResultStrip && (
             <section className="twin-results" aria-label="Search results">
@@ -734,7 +738,6 @@ export function DigitalTwinPage() {
         </main>
 
         <aside className="twin-detail" aria-label="Selected record details">
-          {!processOpen && <CollectionGuide embedded />}
           {processOpen ? (
             <ProcessTracker onClose={() => setProcessOpen(false)} />
           ) : workflowWorkspaceObject ? (

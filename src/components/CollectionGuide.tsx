@@ -14,12 +14,13 @@ import { useEditorStore } from "../store/editor-store";
 
 export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
   const route = useCollectionStore((state) => state.route);
+  const pending = useCollectionStore((state) => state.pending);
   const project = useEditorStore((state) => state.project);
   const hydrated = useEditorStore((state) => state.hydrated);
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
-    if (!route || !hydrated || route.projectId !== project.id) return;
+    if (!route || !hydrated || route.projectId !== project.id || pending) return;
     const id = collectionCurrentStopId(route);
     if (
       useEditorStore.getState().spatialFocus?.recordId === id ||
@@ -31,7 +32,7 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
     } catch {
       /* The guide renders an unavailable stop without inventing a replacement. */
     }
-  }, [route, hydrated, project.id]);
+  }, [route, hydrated, project.id, pending]);
   if (!route || !hydrated || route.projectId !== project.id) return null;
   const index = buildDigitalTwinIndex(project);
   const totalSteps = collectionTotalSteps(route);
@@ -59,6 +60,104 @@ export function CollectionGuide({ embedded = false }: { embedded?: boolean }) {
       setError(failure instanceof Error ? failure.message : "This stop is unavailable.");
     }
   };
+  const checked = route.checked.some((entry) => entry.recordId === currentStopId);
+  const confirmLabel = checked
+    ? workspaceStep
+      ? "Workspace reviewed"
+      : "Location checked"
+    : workspaceStep
+      ? "Confirm workspace reviewed"
+      : "Confirm location checked";
+  const stops = (
+    <ol className="collection-stop-list">
+      {route.recordIds.map((id, step) => (
+        <li key={id} aria-current={step === route.step ? "step" : undefined}>
+          {route.checked.some((entry) => entry.recordId === id) ? "✓ " : "○ "}
+          {index.find((record) => record.id === id)?.name ?? "Record unavailable"}
+        </li>
+      ))}
+      {route.workspace && (
+        <li aria-current={workspaceStep ? "step" : undefined}>
+          Final workspace · {route.workspace.name}
+        </li>
+      )}
+    </ol>
+  );
+  if (embedded)
+    return (
+      <section
+        className={`collection-guide is-embedded${workspaceStep ? " is-workspace-step" : ""}`}
+        aria-label="Collection guide"
+      >
+        <div className="collection-rail-main">
+          <div className="collection-rail-subject" aria-live="polite">
+            <small>
+              {route.workspace ? "WORKFLOW ITINERARY" : "COLLECTION GUIDE"} · {route.step + 1} /{" "}
+              {totalSteps}
+              {workspaceStep ? " · FINAL WORKSPACE" : ""}
+            </small>
+            <strong title={currentName}>{currentName ?? "Record unavailable"}</strong>
+          </div>
+          <nav aria-label="Collection steps">
+            <button disabled={route.step === 0} onClick={() => act("previous")}>
+              <ArrowLeft size={16} /> Previous
+            </button>
+            <button
+              className="primary"
+              disabled={route.step === totalSteps - 1}
+              onClick={() => act("next")}
+            >
+              Next <ArrowRight size={16} />
+            </button>
+            <button
+              aria-label="Close collection guide"
+              title="Finish guide without changing inventory"
+              onClick={() => act("finish")}
+            >
+              <X size={16} />
+            </button>
+          </nav>
+        </div>
+        <div className="collection-rail-controls">
+          <span>
+            {route.checked.length} of {totalSteps} stops checked
+          </span>
+          <button
+            disabled={!currentAvailable || checked}
+            onClick={() => {
+              try {
+                confirmCollectionStop();
+                setError("");
+              } catch (failure) {
+                setError(failure instanceof Error ? failure.message : "Cannot confirm this stop.");
+              }
+            }}
+          >
+            {confirmLabel}
+          </button>
+          <button onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+            {expanded ? "Hide stops" : "All stops"}
+          </button>
+          <button
+            onClick={() => {
+              try {
+                focusCollectionStep(route);
+                setError("");
+              } catch (failure) {
+                setError(failure instanceof Error ? failure.message : "Stop unavailable.");
+              }
+            }}
+          >
+            <MapPin size={14} /> Focus
+          </button>
+        </div>
+        {expanded && stops}
+        {error && <p role="alert">{error}</p>}
+        <footer>
+          Ordered evidence only—not a safety-approved route or protocol. Stock is not deducted.
+        </footer>
+      </section>
+    );
   return (
     <section
       className={`collection-guide${embedded ? " is-embedded" : ""}${workspaceStep ? " is-workspace-step" : ""}`}

@@ -40,8 +40,8 @@
         "labspace_stage_object_move",
         "labspace_stage_room_plan"
       ],
-      "requiresHumanApproval": false,
-      "expectedOutcome": "Return canonical stock and equipment evidence, explicit missing or ambiguous requirements, and a ranked authored work surface. The reviewed itinerary ends by highlighting that workspace without consuming stock or claiming an approved protocol or safe route."
+      "requiresHumanApproval": true,
+      "expectedOutcome": "Return canonical stock and equipment evidence, explicit missing or ambiguous requirements, and a ranked authored work surface. Open the in-app Review collection dialog and wait for human approval before navigation. The guide ends at that workspace without consuming stock or claiming an approved protocol or safe route."
     },
     {
       "id": "voice-build-biological-assays-suite",
@@ -93,8 +93,8 @@
         "labspace_stage_inventory_plan",
         "labspace_stage_object_move"
       ],
-      "requiresHumanApproval": false,
-      "expectedOutcome": "Missing and ambiguous materials are reported. Reviewed records form a Next/Previous collection itinerary; no safety certification or inventory consumption is implied."
+      "requiresHumanApproval": true,
+      "expectedOutcome": "Missing and ambiguous materials are reported. Exact records appear in the in-app Review collection dialog; only human approval starts the Next/Previous guide. No safety certification or inventory consumption is implied."
     },
     {
       "id": "audit-active-room-readiness",

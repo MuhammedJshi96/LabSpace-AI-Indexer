@@ -125,13 +125,15 @@ export function resolveMaterials(input: unknown, project = useEditorStore.getSta
     missing: requirements.filter((entry) => entry.status === "missing").map((entry) => entry.query),
     requiresResearcherReview: true,
     notice:
-      "Materials are agent/user suggestions, not an approved protocol. Matches are stored facts, not proof of suitability, sufficient stock, or permission to use. Confirm candidates before starting a collection guide.",
+      "Materials are agent/user suggestions, not an approved protocol. Matches are stored facts, not proof of suitability, sufficient stock, or permission to use. Call labspace_start_collection with proposed canonical IDs to open the in-app review; the researcher must approve there before navigation starts.",
   };
 }
 
 export type CollectionRoute = z.infer<typeof storedRouteSchema>;
+type CollectionProposal = { route: CollectionRoute; fingerprint: string };
 export const useCollectionStore = create<{
   route: CollectionRoute | null;
+  pending: CollectionProposal | null;
   history: CollectionRoute[];
   setRoute: (route: CollectionRoute | null) => void;
   archive: (route: CollectionRoute) => void;
@@ -139,6 +141,7 @@ export const useCollectionStore = create<{
   persist(
     (set) => ({
       route: null,
+      pending: null,
       history: [],
       setRoute: (route) => set({ route }),
       archive: (route) =>
@@ -284,7 +287,7 @@ export function focusCollectionRecord(recordId: string) {
   return result;
 }
 
-export function startCollection(input: unknown) {
+function prepareCollection(input: unknown): CollectionProposal {
   const { title, recordIds, workspaceObjectId } = parse(routeInput, input);
   if (new Set(recordIds).size !== recordIds.length)
     throw new LabSpaceActionError("Collection record IDs must be unique.");
@@ -321,27 +324,9 @@ export function startCollection(input: unknown) {
   // Group by laboratory/room without pretending to know doors, stairs, or safe walking paths.
   const rooms = [...new Set(records.map((record) => record.roomId))];
   const ordered = rooms.flatMap((roomId) => records.filter((record) => record.roomId === roomId));
-  focusCollectionRecord(ordered[0].id);
-  const previous = useCollectionStore.getState().route;
-  if (previous) {
-    const at = new Date().toISOString();
-    useCollectionStore.getState().archive({
-      ...previous,
-      endedAt: at,
-      trail: [
-        ...previous.trail,
-        {
-          action: "Replaced by a new guide",
-          actor: "WebMCP" as const,
-          at,
-          recordId: collectionCurrentStopId(previous),
-        },
-      ].slice(-96),
-    });
-  }
-  useCollectionStore.getState().setRoute({
+  const route: CollectionRoute = {
     id: crypto.randomUUID(),
-    startedAt: new Date().toISOString(),
+    startedAt: "",
     checked: [],
     records: ordered.map((record) => ({
       id: record.id,
@@ -350,14 +335,7 @@ export function startCollection(input: unknown) {
       path: record.path,
       recordedAmount: record.primaryValue,
     })),
-    trail: [
-      {
-        action: "Guide started",
-        actor: "WebMCP",
-        recordId: ordered[0].id,
-        at: new Date().toISOString(),
-      },
-    ],
+    trail: [],
     projectId: project.id,
     title,
     recordIds: ordered.map((record) => record.id),
@@ -387,13 +365,145 @@ export function startCollection(input: unknown) {
         }
       : {}),
     step: 0,
+  };
+  return {
+    route,
+    fingerprint: JSON.stringify({
+      records: ordered.map((record) => ({
+        id: record.id,
+        name: record.name,
+        objectId: record.objectId,
+        locationId: record.locationId,
+        path: record.path,
+        amount: record.primaryValue,
+        status: record.status,
+      })),
+      workspace: workspace ? { roomId: workspace.room.id, object: workspace.object } : null,
+    }),
+  };
+}
+
+/** Stage a visible, human-only review. Never focus, replace a guide, or infer chat approval. */
+export function startCollection(input: unknown) {
+  if (useEditorStore.getState().pendingAgentChange) {
+    throw new LabSpaceActionError(
+      "Approve or cancel the current project preview before reviewing a collection.",
+    );
+  }
+  const proposal = prepareCollection(input);
+  const existing = useCollectionStore.getState().pending;
+  if (
+    existing?.route.projectId === proposal.route.projectId &&
+    (existing.fingerprint !== proposal.fingerprint || existing.route.title !== proposal.route.title)
+  ) {
+    throw new LabSpaceActionError(
+      "Review or cancel the current collection proposal before proposing another guide.",
+    );
+  }
+  const pending = existing?.route.projectId === proposal.route.projectId ? existing : proposal;
+  useCollectionStore.setState({ pending });
+  return {
+    staged: true,
+    started: false,
+    requiresHumanApproval: true,
+    proposalId: pending.route.id,
+    title: pending.route.title,
+    totalSteps: collectionTotalSteps(pending.route),
+    stops: pending.route.records,
+    workspace: pending.route.workspace ?? null,
+    inventoryChanged: false,
+    nextStep:
+      "The Review collection dialog is open in LabSpace. Stop for the researcher to click Approve & start guide; do not ask for a separate chat confirmation or call collection_step yet.",
+  };
+}
+
+/** Deliberately not exported through WebMCP: only the review dialog may approve this proposal. */
+export function approveCollection(proposalId: string) {
+  const pending = useCollectionStore.getState().pending;
+  const project = useEditorStore.getState().project;
+  if (!pending || pending.route.id !== proposalId || pending.route.projectId !== project.id) {
+    throw new LabSpaceActionError("This collection proposal is no longer available.");
+  }
+  if (useEditorStore.getState().pendingAgentChange) {
+    throw new LabSpaceActionError("Approve or cancel the current project preview first.");
+  }
+  const current = prepareCollection({
+    title: pending.route.title,
+    recordIds: pending.route.recordIds,
+    ...(pending.route.workspace ? { workspaceObjectId: pending.route.workspace.objectId } : {}),
+  });
+  if (current.fingerprint !== pending.fingerprint) {
+    throw new LabSpaceActionError(
+      "Records, quantities, locations, or workspace changed. Cancel this review and ask for an updated collection.",
+    );
+  }
+  focusCollectionRecord(pending.route.recordIds[0]);
+  const at = new Date().toISOString();
+  const previous = useCollectionStore.getState().route;
+  if (previous)
+    useCollectionStore.getState().archive({
+      ...previous,
+      endedAt: at,
+      trail: [
+        ...previous.trail,
+        {
+          action: "Replaced by a researcher-approved guide",
+          actor: "Human" as const,
+          at,
+          recordId: collectionCurrentStopId(previous),
+        },
+      ].slice(-96),
+    });
+  useCollectionStore.setState({
+    pending: null,
+    route: {
+      ...pending.route,
+      startedAt: at,
+      trail: [
+        {
+          action: "Guide approved and started",
+          actor: "Human",
+          at,
+          recordId: pending.route.recordIds[0],
+        },
+      ],
+    },
+  });
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Collection approved",
+    subject: pending.route.title,
+    status: "approved",
+    evidence:
+      "Exact records and final workspace reviewed in LabSpace. No stock consumed or reserved.",
   });
   return collectionStatus();
+}
+
+export function cancelCollectionReview(proposalId: string) {
+  const pending = useCollectionStore.getState().pending;
+  if (!pending || pending.route.id !== proposalId) return;
+  useCollectionStore.setState({ pending: null });
+  agentActivityActions.record({
+    actor: "Human",
+    action: "Collection review cancelled",
+    subject: pending.route.title,
+    status: "rejected",
+    evidence: "No guide started; the previous guide and inventory are unchanged.",
+  });
 }
 
 export function controlCollection(input: unknown, actor: "Human" | "WebMCP" = "WebMCP") {
   const { action } = parse(controlInput, input);
   if (action === "history") return processHistory();
+  const pending = useCollectionStore.getState().pending;
+  if (pending?.route.projectId === useEditorStore.getState().project.id) {
+    if (action === "status")
+      return { started: false, requiresHumanApproval: true, proposalId: pending.route.id };
+    throw new LabSpaceActionError(
+      "Approve or cancel the collection review in LabSpace before navigating a guide.",
+    );
+  }
   const route = currentRoute(useEditorStore.getState().project);
   if (action === "finish") {
     const endedAt = new Date().toISOString();

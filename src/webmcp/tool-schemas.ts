@@ -696,14 +696,14 @@ export const startCollectionSchema = {
       uniqueItems: true,
       items: { type: "string", minLength: 1, maxLength: 300 },
       description:
-        "Reviewed canonical record IDs from search or material resolution, with physical locations.",
+        "Canonical record IDs from search or material resolution, with physical locations, to present in the in-app researcher review.",
     },
     workspaceObjectId: {
       type: "string",
       minLength: 1,
       maxLength: 200,
       description:
-        "Optional reviewed work-surface ID from assess_workflow; becomes the final highlighted stop.",
+        "Optional work-surface ID from assess_workflow to include in the review; becomes the final highlighted stop after human approval.",
     },
   },
   required: ["title", "recordIds"],

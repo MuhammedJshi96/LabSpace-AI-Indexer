@@ -90,6 +90,27 @@ test("presents the three-part judge demonstration and exports bounded session pr
   await expect(
     inspector.getByRole("note", { name: "Recommended in-app browser view" }),
   ).toContainText("creation, furnishing, and the final read-only audit");
+  const connectionPrompt = inspector.getByRole("group", { name: "WebMCP connection prompt" });
+  await connectionPrompt.getByText("Read connection prompt", { exact: true }).click();
+  await expect(connectionPrompt).toContainText("Read-only browser setup is allowed");
+  await connectionPrompt.getByRole("button", { name: "Copy connection prompt" }).click();
+  await expect(inspector).toBeHidden();
+  const copiedConnection = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copiedConnection).toContain("discover and load its WebMCP tools");
+  expect(copiedConnection).toContain(
+    "Only report tools unavailable after attempting browser-level discovery",
+  );
+  await webMcpButton.click();
+  await inspector.getByRole("tab", { name: "Setup" }).click();
+  await inspector.getByRole("button", { name: "Copy connection prompt" }).click();
+  await expect(inspector).toBeHidden();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(copiedConnection);
+  await webMcpButton.click();
+  await expect(inspector.getByRole("radio", { name: /Reviewed/i })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await inspector.getByRole("tab", { name: "Judge mission" }).click();
   await page.setViewportSize({ width: 860, height: 912 });
   const compactLayout = await inspector.evaluate((element) => {
     const panel = element.getBoundingClientRect();
@@ -158,8 +179,10 @@ test("presents the three-part judge demonstration and exports bounded session pr
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toContain("create a new room named Researcher Office, code R-003");
   const copiedPrompt = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copiedPrompt).toContain("Use only the LabSpace WebMCP tools");
-  expect(copiedPrompt).toContain("Do not click, drag, type into forms");
+  expect(copiedPrompt).toContain(copiedConnection);
+  expect(copiedPrompt).toContain(
+    "laboratory actions must use labspace_* tools, not clicks, drags, or form edits",
+  );
   expect(copiedPrompt).toContain("do not fall back to UI automation");
   expect(copiedPrompt).toContain("one uninterrupted Fast Draft build");
   expect(copiedPrompt).toContain("without asking me to say continue");

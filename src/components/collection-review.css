@@ -1,0 +1,175 @@
+.collection-review {
+  width: min(720px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  color: #172522;
+  background: #f4f8f7;
+  border: 1px solid #c7d3d0;
+  border-radius: 12px;
+  box-shadow: 0 24px 80px #063c3540;
+  overflow: hidden;
+  font:
+    14px/1.5 "Segoe UI Variable",
+    "Segoe UI",
+    sans-serif;
+}
+.collection-review[open] {
+  display: flex;
+  flex-direction: column;
+}
+.collection-review::backdrop {
+  background: #10292488;
+  backdrop-filter: blur(3px);
+}
+.collection-review > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  background: #063c35;
+  color: #f4f8f7;
+  flex-shrink: 0;
+}
+.collection-review > header > div {
+  flex: 1;
+  min-width: 0;
+}
+.collection-review h2 {
+  margin: 0;
+  font:
+    600 22px/1.3 Bahnschrift,
+    "Segoe UI",
+    sans-serif;
+}
+.collection-review small {
+  display: block;
+  font-size: 12px;
+}
+.collection-review > header small {
+  color: #b8e4dc;
+}
+.collection-review-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 22px;
+  overscroll-behavior: contain;
+}
+.collection-review h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.collection-review p {
+  margin: 6px 0 16px;
+  color: #526a64;
+}
+.collection-review-ledger {
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+  border-block: 1px solid #c7d3d0;
+}
+.collection-review-ledger li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) minmax(70px, 110px);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 0;
+}
+.collection-review-ledger li + li {
+  border-top: 1px solid #dde7e3;
+}
+.collection-review-number {
+  color: #008879;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.collection-review-ledger strong,
+.collection-review-workspace strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.collection-review-ledger small {
+  color: #526a64;
+  overflow-wrap: anywhere;
+}
+.collection-review-amount {
+  text-align: right;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.collection-review-workspace {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-left: 3px solid #00a995;
+  background: #e6f3ef;
+}
+.collection-review-workspace p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.collection-review-workspace small {
+  color: #08796c;
+}
+.collection-review .collection-review-notice {
+  font-size: 12px;
+  margin: 16px 0 0;
+}
+.collection-review [role="alert"] {
+  color: #9b372b;
+}
+.collection-review > footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid #c7d3d0;
+  background: white;
+  flex-shrink: 0;
+}
+.collection-review button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  min-height: 40px;
+  color: #063c35;
+  background: white;
+  border: 1px solid #c7d3d0;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+}
+.collection-review button.primary {
+  color: white;
+  background: #007f72;
+  border-color: #007f72;
+}
+.collection-review button:focus-visible {
+  outline: 3px solid #00a995;
+  outline-offset: 3px;
+}
+.collection-review > header button {
+  color: white;
+  background: transparent;
+  border-color: #48776e;
+  padding: 8px;
+}
+@media (max-width: 480px) {
+  .collection-review > header,
+  .collection-review-body,
+  .collection-review > footer {
+    padding: 14px;
+  }
+  .collection-review-ledger li {
+    grid-template-columns: 20px minmax(0, 1fr) 78px;
+    gap: 8px;
+  }
+}

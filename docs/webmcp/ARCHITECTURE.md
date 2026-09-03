@@ -51,7 +51,7 @@ LabSpace schema/error adapter
 | `labspace_add_inventory`         | Validate and stage detailed inventory in one call                         | No; researcher approval creates records                          |
 | `labspace_assess_workflow`       | Ground stock/equipment and rank authored work surfaces                    | No; protocol and suitability remain researcher decisions         |
 | `labspace_resolve_materials`     | Match suggested materials to actual stock and equipment                   | No; missing/ambiguous matches remain explicit                    |
-| `labspace_start_collection`      | Begin an exact-record itinerary with an optional final workspace          | No; presentation state only                                      |
+| `labspace_start_collection`      | Propose an exact-record itinerary in the in-app review dialog              | No; human approval starts navigation, never consumes stock        |
 | `labspace_collection_step`       | Status, Next, Previous, or finish                                         | No; presentation state only                                      |
 
 There is deliberately no agent-accessible mode switch, approve, delete, reset, import, or unrestricted project-write tool. Reviewed is restored on every application session. Fast Draft is selected only through the visible human interface and its allowlist cannot edit an existing room or stock record.

@@ -208,6 +208,23 @@ test("adds reviewed inventory through one tool and guides exact collection stops
     title: "Preparation checklist",
     recordIds,
   });
+  const reviewCollection = page.getByRole("dialog", { name: "Review collection", exact: true });
+  await expect(reviewCollection).toBeVisible();
+  await expect(reviewCollection).toContainText("Reference standards");
+  await expect(page.getByRole("region", { name: "Collection guide" })).not.toBeVisible();
+  expect(await readProject(page)).toEqual(before);
+  await reviewCollection.press("Escape");
+  await expect(reviewCollection).toBeHidden();
+  await expect(page.getByRole("region", { name: "Collection guide" })).not.toBeVisible();
+  expect(await readProject(page)).toEqual(before);
+  await executeTool(page, "labspace_start_collection", {
+    title: "Preparation checklist",
+    recordIds,
+  });
+  await expect(reviewCollection).toBeVisible();
+  await reviewCollection
+    .getByRole("button", { name: "Approve & start guide", exact: true })
+    .click();
   const guide = page.getByRole("region", { name: "Collection guide" });
   await expect(guide).toContainText("Reference standards");
   await expect(page.getByRole("button", { name: "Return to 3D", exact: true })).toBeVisible();
@@ -302,6 +319,11 @@ test("grounds a workflow and ends its evidence itinerary at an authored work sur
     recordIds: [recordId],
     workspaceObjectId: assessment.recommendedWorkspace!.objectId,
   });
+  const reviewCollection = page.getByRole("dialog", { name: "Review collection", exact: true });
+  await expect(reviewCollection).toContainText(assessment.recommendedWorkspace!.objectName);
+  await reviewCollection
+    .getByRole("button", { name: "Approve & start guide", exact: true })
+    .click();
   const guide = page.getByRole("region", { name: "Collection guide" });
   await expect(guide).toContainText("WORKFLOW ITINERARY · 1 / 2");
   await guide.getByRole("button", { name: "Next", exact: true }).click();
@@ -316,6 +338,26 @@ test("grounds a workflow and ends its evidence itinerary at an authored work sur
     "Materials lead to a real work surface",
   );
   await expect(guide).toContainText("not a safety-approved route or protocol");
+  for (const viewport of [
+    { width: 1569, height: 912 },
+    { width: 1120, height: 800 },
+    { width: 1280, height: 720 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const guideBox = await guide.boundingBox();
+    const sceneBox = await page
+      .getByRole("region", { name: "Spatial laboratory index", exact: true })
+      .boundingBox();
+    const detailBox = await page
+      .getByRole("complementary", { name: "Selected record details" })
+      .boundingBox();
+    expect(guideBox && sceneBox && detailBox).toBeTruthy();
+    expect(guideBox!.x + guideBox!.width).toBeLessThanOrEqual(detailBox!.x + 1);
+    expect(sceneBox!.y + sceneBox!.height).toBeLessThanOrEqual(guideBox!.y + 1);
+    expect(sceneBox!.height).toBeGreaterThan(180);
+    expect(guideBox!.y + guideBox!.height).toBeLessThanOrEqual(viewport.height);
+  }
+  await page.screenshot({ path: "test-results/workflow-docked-guide.png" });
   expect((await readProject(page)).rooms).toEqual(before.rooms);
   await executeTool(page, "labspace_collection_step", { action: "finish" });
 });

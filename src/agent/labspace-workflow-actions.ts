@@ -272,7 +272,7 @@ export function assessLabWorkflow(input: unknown, project = useEditorStore.getSt
       ? {
           tool: "labspace_start_collection",
           instruction:
-            "After the researcher chooses exact material record IDs, start_collection may include this workspaceObjectId as the final highlighted stop.",
+            "Call start_collection with the proposed exact record IDs and this workspaceObjectId to open the in-app Review collection dialog. The researcher approves there before navigation starts; do not replace this dialog with a chat-only confirmation.",
           workspaceObjectId: recommendedWorkspace.objectId,
         }
       : null,

@@ -56,17 +56,26 @@ unrelated Chrome tab. Use GPT-5.6 Sol or Terra, make sure **Settings → Browser
 Website Tools** is on, then open LabSpace's **WebMCP** status control and verify **24 tools ready**.
 No plugin, server, API key, or LabSpace login is required.
 
-Before starting a mission, tell the browser agent: **“Connect to the LabSpace WebMCP tools exposed
-by this open website and confirm `labspace_get_context` is available. Do not use UI automation.”**
-This explicit preflight helps the conversation attach to the page tools before the longer demo
-request is spoken or pasted.
+Before starting a mission, paste this short connection prompt into the browser-agent conversation:
+
+```text
+Select the open LabSpace Atlas browser tab, discover and load its WebMCP tools, then call labspace_get_context. Read-only browser setup is allowed; laboratory actions must use labspace_* tools, not clicks, drags, or form edits. Only report tools unavailable after attempting browser-level discovery.
+```
+
+Wait for the agent to return the actual laboratory and room from `labspace_get_context`, then send
+your mission. The Inspector's **Copy connection prompt** button provides the same text in both
+**Judge mission** and **Setup**. A “24 tools ready” status confirms registration on the page, not
+that a particular conversation has discovered them. Read-only browser discovery is allowed;
+ordinary MCP connection lists or downloaded website code are not a live WebMCP connection check.
 
 The Inspector opens on a connected three-part judge demonstration rather than a tool wall:
 
 1. Run **Build** to create and audit the 38 m² Researcher Office **R-003** from natural language.
 2. Run **Stock** to stage two enzyme records with exact quantities/expiry dates for human approval.
-3. Run **Find the work** to ground the cross-room DPPH checklist, keep chloroform visibly missing,
-   and end a reviewed collection guide at a real R-002 work surface.
+3. Run **Find the work** to ground the DPPH checklist and check chloroform availability separately.
+   Review the exact items in the in-app **Review collection** dialog, then choose **Approve & start
+   guide**. The guide sits below the scene and ends at a real R-002 work surface, leaving the location
+   inspector unobstructed. The checklist does not add methanol or other unrequested solvents.
 
 Every session still begins in **Reviewed**. For the uninterrupted R-003 demonstration, choose the
 clearly labelled **Arm Fast Draft + copy** action once. That human click authorizes only this bounded,
@@ -81,8 +90,8 @@ conversation pane narrower, and give LabSpace roughly two-thirds of the window. 
 only to choose a mission or review evidence. Choose **Copy + show workspace** (or the shorter
 voice-input version) to copy the request and close the Inspector automatically, keeping the exact
 2D/3D result visible while the browser agent works. The copied request explicitly requires the
-page's `labspace_*` WebMCP tools and forbids a silent fallback to clicks, drags, or computer control;
-a missing bridge is reported instead.
+page's `labspace_*` WebMCP tools, allows read-only browser discovery, and forbids a silent fallback
+to clicks, drags, or form edits for laboratory actions. A failed discovery step is reported instead.
 Open **Evidence** to inspect bounded tool inputs/results, then choose **Export proof** for a portable
 session-evidence JSON file.
 
@@ -127,7 +136,7 @@ workspace. See the [rollback checkpoint](docs/rollback/COMPETITION_EVIDENCE_LAYE
 | `labspace_add_inventory`         | Validate and stage detailed inventory entries in one call                                          | Human approval required before records are created              |
 | `labspace_assess_workflow`       | Ground materials/equipment and rank authored work surfaces                                         | Read-only; protocol and suitability remain researcher decisions |
 | `labspace_resolve_materials`     | Match a suggested materials list to actual stock and equipment                                     | Read-only; missing and ambiguous matches stay explicit          |
-| `labspace_start_collection`      | Start an ordered guide ending at an optional assessed workspace                                    | Presentation state only; no stock deduction                     |
+| `labspace_start_collection`      | Open a collection review with exact items and an optional final workspace                           | Human approval before navigation; no stock deduction            |
 | `labspace_collection_step`       | Status, Next, Previous, or finish for the collection guide                                         | Presentation state only                                         |
 
 ```text

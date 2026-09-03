@@ -9,6 +9,7 @@ import { InventoryPage } from "./components/InventoryPage";
 import { ProceduralAssetCapturePage } from "./components/ProceduralAssetCapturePage";
 import { WebMCPBridge } from "./components/WebMCPBridge";
 import { CollectionGuide } from "./components/CollectionGuide";
+import { CollectionReviewDialog } from "./components/CollectionReviewDialog";
 import { ProjectSaveLifecycle } from "./components/ProjectSaveLifecycle";
 
 export function ApplicationRouter() {
@@ -40,6 +41,7 @@ export function ApplicationRouter() {
       {path !== "/digital-twin" && <CollectionGuide />}
       <AgentActivityPanel />
       <AgentReviewPanel />
+      <CollectionReviewDialog />
     </>
   ) : (
     application

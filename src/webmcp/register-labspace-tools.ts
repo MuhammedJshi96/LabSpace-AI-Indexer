@@ -257,9 +257,9 @@ export function createLabSpaceToolDefinitions(
     },
     {
       name: "labspace_start_collection",
-      title: "Start a guided collection itinerary",
+      title: "Review and start a collection itinerary",
       description:
-        "Create a Next/Previous guide from reviewed canonical record IDs, grouped by room, with an optional assessed work surface as the final highlighted stop. Focuses spatial evidence without modifying stock. This is an ordered itinerary, not a verified walking path, safety instruction, or permission to run an experiment.",
+        "Open the in-app Review collection dialog for canonical record IDs and an optional assessed final work surface. Call this to request human review instead of asking for confirmation only in chat. Returns requiresHumanApproval: true; no guide starts or camera moves until the researcher clicks Approve & start guide. This review is required in every execution mode. No stock is changed and this is not a protocol or safety-approved route.",
       inputSchema: startCollectionSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>

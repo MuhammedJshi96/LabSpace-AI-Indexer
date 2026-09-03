@@ -4,6 +4,7 @@ import {
   confirmCollectionStop,
   controlCollection,
   startCollection,
+  approveCollection,
   useCollectionStore,
 } from "../../src/agent/labspace-collection-actions";
 import { assessLabWorkflow } from "../../src/agent/labspace-workflow-actions";
@@ -26,7 +27,7 @@ beforeEach(() => {
     future: [],
     pendingAgentChange: null,
   });
-  useCollectionStore.setState({ route: null, history: [] });
+  useCollectionStore.setState({ route: null, pending: null, history: [] });
 });
 
 describe("grounded workflow assessment", () => {
@@ -76,7 +77,8 @@ describe("grounded workflow assessment", () => {
         recordIds: [inventory.id],
         workspaceObjectId: workspace.objectId,
       }),
-    ).toMatchObject({ step: 1, totalSteps: 2, currentKind: "record" });
+    ).toMatchObject({ started: false, totalSteps: 2, requiresHumanApproval: true });
+    approveCollection(useCollectionStore.getState().pending!.route.id);
     expect(controlCollection({ action: "next" })).toMatchObject({
       step: 2,
       totalSteps: 2,

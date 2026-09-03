@@ -30,10 +30,10 @@ The challenge work made the existing product genuinely usable by a browser agent
 - **Shared deterministic actions** keep the visible UI and the WebMCP adapter on the same canonical project model.
 - **Natural-language planning** can turn a request into a dimensioned room or annex, hosted doors and windows, inward-facing furniture, paired chairs and equipment placed on real support surfaces.
 - **Human-controlled execution** starts every session in Reviewed mode. Mutations are staged for approval, while Fast Draft is a visible session-only option limited to a validated new room and its pristine first blueprint.
-- **Grounded workflow assessment** resolves requested materials and equipment against live stock, keeps missing or ambiguous matches explicit, ranks real work surfaces and builds a navigable collection guide.
+- **Grounded workflow assessment** resolves requested materials and equipment against live stock, keeps missing or ambiguous matches explicit, and ranks real work surfaces. An in-app checklist review requires the researcher's approval before the compact collection guide starts below the scene.
 - **Visible evidence** records tool calls, workspace focus, proposals, approvals, cancellations and undoable commits without claiming hidden model reasoning, protocol approval or certified audit status.
 - **A clean public fixture** contains only `LAB-D-00` with R-001 and R-002. R-003 is intentionally created live.
-- **A visible connection preflight** tells judges to open the live app inside the same ChatGPT or Codex desktop conversation, use Sol or Terra, enable Website Tools, explicitly ask the agent to connect to the LabSpace tools exposed by the open page, and verify `labspace_get_context` plus all twenty-four registered tools before running a mission.
+- **A visible connection preflight** tells judges to open the live app inside the same ChatGPT or Codex desktop conversation, use Sol or Terra, and enable Website Tools. The README and Inspector share a short copyable prompt that explicitly allows read-only browser discovery, loads the page's WebMCP tools, and calls `labspace_get_context` before a mission. Twenty-four registered tools confirm page readiness; the returned laboratory and room confirm a live agent call. Laboratory actions remain WebMCP-only, with no click/drag/form fallback.
 - **One-prompt Build** uses one labelled human action—**Arm Fast Draft + copy**—to authorize only the validated additive R-003 draft. The resulting prompt continues through room creation, the complete first blueprint and the final read-only audit without conversational “continue” pauses; any ineligible or later mutation still stops for review.
 - **Independent browser verification** rehearses Build → Stock → Find against the same public fixture and regenerates the High-quality screenshots used in the README.
 
@@ -59,7 +59,7 @@ Search, validation, planning and tool results are deterministic application beha
 
 1. **Build:** create and audit the 38 m² Researcher Office R-003 with one door, two windows, three desk-and-chair pairs, a locker, extinguisher and waste bin.
 2. **Stock:** stage two enzyme records with exact quantities and expiry dates, then let the researcher approve them.
-3. **Find the work:** resolve the DPPH workflow across R-001 and R-002, preserve chloroform as visibly unavailable, navigate the collection stops and finish at an authored R-002 work surface.
+3. **Find the work:** resolve the requested DPPH checklist against the laboratory without adding solvents. Check chloroform availability separately, approve the in-app collection review, navigate the exact stops and finish at an authored R-002 work surface.
 
 This path is not a prerecorded simulation. It operates on the active project, uses the same room and inventory data shown in the application, and is exercised by the repository's Playwright submission rehearsal.
 

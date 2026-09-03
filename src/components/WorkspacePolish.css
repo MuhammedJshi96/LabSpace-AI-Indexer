@@ -737,7 +737,7 @@
 .webmcp-viewing-setup > svg {
   color: var(--teal-dark);
 }
-.webmcp-viewing-setup > span {
+.webmcp-viewing-setup > div {
   display: grid;
   gap: 2px;
   min-width: 0;
@@ -750,6 +750,22 @@
   color: #45645e;
   font-size: 11px;
   line-height: 1.4;
+}
+
+.webmcp-connection-prompt p {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.webmcp-connection-prompt .webmcp-check-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 9px;
+  font-size: 12px;
+  text-align: left;
 }
 
 .webmcp-evidence-path {

@@ -37,8 +37,11 @@ import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 
 type InspectorTab = "mission" | "activity" | "workflows" | "guide" | "tools";
 
+const WEBMCP_CONNECTION_PROMPT =
+  "Select the open LabSpace Atlas browser tab, discover and load its WebMCP tools, then call labspace_get_context. Read-only browser setup is allowed; laboratory actions must use labspace_* tools, not clicks, drags, or form edits. Only report tools unavailable after attempting browser-level discovery.";
+
 const webMcpOnlyPrompt = (task: string) =>
-  `Use only the LabSpace WebMCP tools exposed by this page (the labspace_* tools). Do not click, drag, type into forms, or use browser/computer-control actions for this task. Start with labspace_get_context. If the labspace_* tools are unavailable, stop and tell me WebMCP is not connected; do not fall back to UI automation. ${task}`;
+  `${WEBMCP_CONNECTION_PROMPT} If discovery fails, stop and explain the failed step; do not fall back to UI automation. ${task}`;
 
 const uninterruptedFastDraftPrompt = (task: string) =>
   webMcpOnlyPrompt(
@@ -79,10 +82,10 @@ const DEMO_MISSIONS = [
     title: "Ground a DPPH collection",
     outcome: "Cross-room evidence · missing stock · route to a real work surface",
     prompt: webMcpOnlyPrompt(
-      "Using my researcher-approved DPPH checklist, find DPPH reagent, methanol, 100 microlitre and 200 microlitre pipette tips, a laboratory pipette holder, and an automated microplate reader. Check chloroform separately and keep it explicitly unavailable if it is absent; chloroform is an availability check, not a DPPH requirement, so do not include it in labspace_assess_workflow. Use labspace_search_records and labspace_inspect_record to ground exact matches, then use labspace_assess_workflow with roomCode R-002 to rank a real work surface while still grounding stock across the laboratory. Report exact, ambiguous, and missing requirements. After I confirm the records, use labspace_start_collection so Next and Previous visit the reviewed items and end at the recommended workspace. Do not invent a protocol, substitution, safety approval, or stock consumption.",
+      "Using my researcher-approved DPPH checklist, find DPPH reagent, 100 microlitre and 200 microlitre pipette tips, a laboratory pipette holder, and an automated microplate reader. Do not add solvents or other requirements to my checklist. Check chloroform separately and keep it explicitly unavailable if it is absent; this is an availability check, not a DPPH requirement. Use labspace_search_records and labspace_inspect_record to ground exact matches, then labspace_assess_workflow with roomCode R-002 to rank a real work surface while grounding stock across the laboratory. Report exact, ambiguous, and missing requirements. Call labspace_start_collection with the proposed exact inventory and equipment record IDs and the recommended workspaceObjectId to open the Review collection dialog in LabSpace. Stop for my approval in that dialog, not a separate chat-only confirmation. After approval, Next and Previous should visit the items and end at the workspace. Do not invent a protocol, substitution, safety approval, or stock consumption.",
     ),
     voicePrompt: webMcpOnlyPrompt(
-      "For my approved DPPH checklist, find DPPH reagent, methanol, 100 and 200 microlitre tips, pipettes, and the plate reader. Check chloroform separately, without treating it as a DPPH requirement. Assess the R-002 equipment and work surfaces, show missing stock, and wait for me before starting the collection guide.",
+      "For my approved DPPH checklist, find DPPH reagent, 100 and 200 microlitre tips, pipettes, and the plate reader. Do not add solvents to my checklist. Check chloroform separately. Assess the R-002 work surfaces, show missing stock, then call labspace_start_collection with the found records and final workspace to open the in-app Review collection dialog. Wait for my approval there, not only in chat.",
     ),
   },
 ] as const;
@@ -103,7 +106,7 @@ const WEBMCP_WORKFLOWS = [
     title: "Prepare a grounded collection guide",
     outcome: "Proposed checklist · real stock · Next/Previous evidence",
     prompt: webMcpOnlyPrompt(
-      "Help prepare a collection checklist for my planned work. Ask for my approved protocol or material list if needed; label your suggestions clearly. Match the materials against LabSpace, report missing or ambiguous stock, then start a collection guide for the records I choose. Do not treat this as an experiment protocol or a safety-approved walking route.",
+      "Help prepare a collection checklist for my planned work. Ask for my approved protocol or material list if needed; label your suggestions clearly. Match the materials against LabSpace and report missing or ambiguous stock. Call labspace_start_collection with the proposed exact records to show the in-app Review collection dialog and stop for my approval there. Do not treat this as an experiment protocol or a safety-approved walking route.",
     ),
   },
   {
@@ -168,10 +171,10 @@ const WEBMCP_TOOL_CATALOG = [
   },
   {
     name: "labspace_start_collection",
-    label: "Start collection guide",
-    mode: "Navigate",
+    label: "Review collection guide",
+    mode: "Review",
     description:
-      "Turn reviewed record IDs into a room-grouped Next/Previous checklist, optionally ending at an assessed work surface.",
+      "Open an in-app checklist for human approval, then guide through exact locations and an optional final work surface.",
   },
   {
     name: "labspace_collection_step",
@@ -449,6 +452,21 @@ export function AgentActivityPanel() {
       clear();
   };
 
+  const connectionPromptControls = (
+    <div className="webmcp-connection-prompt" role="group" aria-label="WebMCP connection prompt">
+      <details className="webmcp-prompt-detail">
+        <summary>Read connection prompt</summary>
+        <p>{WEBMCP_CONNECTION_PROMPT}</p>
+      </details>
+      <button
+        className="webmcp-check-button"
+        onClick={() => void copyWorkflow("connection", WEBMCP_CONNECTION_PROMPT, true)}
+      >
+        <Copy size={14} aria-hidden="true" /> Copy connection prompt
+      </button>
+    </div>
+  );
+
   if (!open) return null;
 
   return (
@@ -634,16 +652,17 @@ export function AgentActivityPanel() {
             aria-label="Recommended in-app browser view"
           >
             <Browser size={20} weight="duotone" aria-hidden="true" />
-            <span>
+            <div>
               <b>Connect once, then run Build in one prompt</b>
               <small>
                 Open LabSpace inside this same ChatGPT or Codex desktop conversation, use Sol or
-                Terra, then first ask: “Connect to the LabSpace WebMCP tools exposed by this open
-                website and confirm labspace_get_context is available.” Confirm 24 tools before the
-                mission. Arm Fast Draft + copy is one explicit human action; creation, furnishing,
-                and the final read-only audit then continue without another LabSpace approval.
+                Terra, then send the connection prompt below. Wait for a successful
+                labspace_get_context result before starting. Arm Fast Draft + copy is one explicit
+                human action; creation, furnishing, and the final read-only audit then continue
+                without another LabSpace approval.
               </small>
-            </span>
+              {connectionPromptControls}
+            </div>
           </aside>
 
           <ol className="webmcp-evidence-path" aria-label="Signature WebMCP evidence path">
@@ -1023,11 +1042,10 @@ export function AgentActivityPanel() {
                 that LabSpace reports 24 registered tools.
               </li>
               <li>
-                Before a mission, tell the agent:{" "}
-                <b>
-                  Connect to the LabSpace WebMCP tools exposed by this open website and confirm
-                  labspace_get_context is available.
-                </b>
+                Before a mission, send the connection prompt below. Tool registration on this page
+                is not proof that the conversation has discovered the tools; wait for the agent to
+                return the actual laboratory and room from labspace_get_context.
+                {connectionPromptControls}
               </li>
               <li>
                 Collapse ChatGPT&apos;s left sidebar, then give LabSpace about two-thirds of the

@@ -197,6 +197,10 @@ async function webmcpLocate(browser: Browser, run: number, warmup: boolean, sequ
       recordIds,
     });
     toolCalls += 1;
+    await page
+      .getByRole("dialog", { name: "Review collection" })
+      .getByRole("button", { name: "Approve & start guide", exact: true })
+      .click();
     const guide = page.getByRole("region", { name: "Collection guide" });
     await expect(guide).toBeVisible();
     for (let index = 0; index < materials.length; index += 1) {
@@ -217,9 +221,9 @@ async function webmcpLocate(browser: Browser, run: number, warmup: boolean, sequ
     }
     return createTrial("locate-three-materials", "reviewed-webmcp", run, warmup, sequence, {
       milliseconds: performance.now() - started,
-      uiActions: 0,
+      uiActions: 1,
       toolCalls,
-      approvals: 0,
+      approvals: 1,
       outcomeChecks: checks,
       outcomeChecksPassed: passed,
       errors,

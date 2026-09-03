@@ -102,7 +102,6 @@
           "brief": "Researcher-reviewed DPPH and solvent stock check; no procedure generation.",
           "materials": [
             "DPPH Reagent",
-            "Methanol Solvent 99.9%",
             "100 uL Pipette tips",
             "200 uL Pipette tips",
             "Chloroform"
@@ -115,7 +114,6 @@
           "brief": "Researcher-reviewed DPPH collection checklist; no protocol generation.",
           "materials": [
             "DPPH Reagent",
-            "Methanol Solvent 99.9%",
             "100 uL Pipette tips",
             "200 uL Pipette tips"
           ],

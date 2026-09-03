@@ -44,7 +44,7 @@ Ask: “Use my approved preparation list, match it against our inventory, show a
 
 - The agent may propose a checklist based on your task, but must label suggestions and ask for the approved protocol when necessary.
 - `labspace_resolve_materials` takes `{brief, materials:["Reference standards", "Nitrile gloves"]}` and checks canonical inventory/equipment across eligible rooms. It returns exact matches, review candidates, quantities/status as recorded, and missing items. Factory templates are excluded.
-- The researcher chooses the relevant records. `labspace_start_collection` takes `{title, recordIds:[...]}` using those real IDs and starts an ordered itinerary.
+- `labspace_start_collection` takes `{title, recordIds:[...]}` using real IDs and opens **Review collection** in LabSpace. The researcher checks the proposed records and clicks **Approve & start guide**; chat text alone does not approve or start it. This review is required in both Reviewed and Fast Draft modes. Cancel leaves the previous guide unchanged, and changed records must be reviewed again.
 - The visible **Collection guide** has **Previous**, **Next**, **Focus**, and **All stops**. `labspace_collection_step` offers `previous`, `next`, `status`, `finish`, and read-only `history` operations to the agent.
 - The Spatial Index **Process tracker** records guide-start snapshots (names, room/path, recorded amounts), timestamped navigation and explicit human **Confirm location checked** checkpoints. Next/Previous never confirms collection, consumes stock or approves a procedure. Matching physical drawers and cabinet doors open automatically on focus; legacy mismatches have a physical-link repair path in Storage.
 - History retains eight ended guides plus the active guide in this tab's session storage. Reloading the tab preserves them; this is not cloud sync, a permanent audit service or a tamper-proof log. Export JSON evidence before closing the tab. `labspace_collection_step({action:"history"})` returns only the current project's runs and cannot record a human checkpoint.
@@ -62,11 +62,12 @@ collection itinerary at a suitable authored work surface.”
 2. It returns exact, ambiguous, and missing index evidence plus ranked real benches/tables. Ranking
    uses authored support surfaces, mounted-equipment footprints, current placement warnings, and
    estimated clear surface area; it does not invent a protocol.
-3. After review, pass the chosen material `recordIds` and returned `workspaceObjectId` to
-   `labspace_start_collection`.
-4. Previous/Next focuses each physical inventory location, then highlights the work surface as the
-   final stop. The Spatial Index inspector presents **Ask → Ground → Collect → Decide** while the
-   selected 3D bench remains visible.
+3. Pass the proposed material and equipment `recordIds` and returned `workspaceObjectId` to
+   `labspace_start_collection` to open the in-app review. Wait for the researcher's approval there,
+   not a separate chat-only confirmation.
+4. After approval, Previous/Next focuses each physical location, then highlights the work surface
+   as the final stop. A compact guide below the Spatial Index scene keeps navigation separate from
+   the right-hand location inspector. **All stops** expands a bounded, scrollable checklist.
 
 The final work surface is planning evidence only—not a protocol, suitability determination,
 safety-approved walking route, reservation, stock transaction, or permission to use equipment.

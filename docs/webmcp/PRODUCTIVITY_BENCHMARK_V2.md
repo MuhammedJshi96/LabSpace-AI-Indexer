@@ -2,6 +2,10 @@
 
 Measured on 2026-09-02 (JST) in an isolated local LabSpace workspace. This supersedes the earlier one-run human-paced pilot as the primary quantitative comparison.
 
+Version note: these historical timings predate the in-app collection-review dialog. The current
+benchmark includes one human approval before collection navigation; the figures below have not
+been remeasured and must not be presented as timings for that updated flow.
+
 ## What this benchmark proves
 
 The benchmark measures repeatable **application execution**, **interaction compression**, and **outcome fidelity** for equal tasks. It does not pretend that browser automation is a person.

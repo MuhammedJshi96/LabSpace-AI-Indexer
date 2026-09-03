@@ -254,7 +254,6 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
 
   const requirements = [
     ["DPPH Reagent", "inventory"],
-    ["Methanol Solvent 99.9%", "inventory"],
     ["100 uL Pipette tips", "inventory"],
     ["200 uL Pipette tips", "inventory"],
     ["Laboratory pipette holder", "equipment"],
@@ -311,12 +310,7 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
     recommendedWorkspace: { objectId: string; objectName: string; roomCode: string } | null;
   }>(page, "labspace_assess_workflow", {
     brief: "Researcher-approved DPPH collection checklist; no protocol generation.",
-    materials: [
-      "DPPH Reagent",
-      "Methanol Solvent 99.9%",
-      "100 uL Pipette tips",
-      "200 uL Pipette tips",
-    ],
+    materials: ["DPPH Reagent", "100 uL Pipette tips", "200 uL Pipette tips"],
     equipment: ["Laboratory pipette holder", "Automated microplate reader"],
     roomCode: "R-002",
     workspacePreference: "any-work-surface",
@@ -332,13 +326,47 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
     recordIds: reviewedRecordIds,
     workspaceObjectId: assessment.recommendedWorkspace!.objectId,
   });
+  const collectionReview = page.getByRole("dialog", { name: "Review collection", exact: true });
+  await expect(collectionReview).toBeVisible();
+  await expect(collectionReview).toContainText("DPPH Reagent");
+  await expect(collectionReview).not.toContainText("Methanol");
+  await expect(
+    collectionReview.getByRole("list", { name: "Proposed collection items" }).getByRole("listitem"),
+  ).toHaveCount(5);
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 860, height: 720 },
+  ]) {
+    await page.setViewportSize(size);
+    const bounds = await collectionReview.boundingBox();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(size.width);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(size.height);
+    await expect(
+      collectionReview.getByRole("button", { name: "Approve & start guide" }),
+    ).toBeInViewport();
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.screenshot({ path: testInfo.outputPath("collection-review.png") });
+  await collectionReview
+    .getByRole("button", { name: "Approve & start guide", exact: true })
+    .click();
   const guide = page.getByRole("region", { name: "Collection guide" });
-  await expect(guide).toContainText("1 / 7");
+  await expect(guide).toContainText("1 / 6");
+  await guide.getByRole("button", { name: "All stops" }).click();
+  await expect(guide.getByRole("listitem")).toHaveCount(6);
+  const guideBounds = await guide.boundingBox();
+  const detailBounds = await page
+    .getByRole("complementary", { name: "Selected record details" })
+    .boundingBox();
+  expect(guideBounds!.x + guideBounds!.width).toBeLessThanOrEqual(detailBounds!.x + 1);
+  await guide.getByRole("button", { name: "Hide stops" }).click();
   for (let step = 0; step < reviewedRecordIds.length; step += 1) {
     await guide.getByRole("button", { name: "Next", exact: true }).click();
   }
   await expect(guide).toContainText("FINAL WORKSPACE");
-  await expect(page.getByText("7 stops · 0 human-confirmed", { exact: true })).toBeVisible();
+  await expect(page.getByText("6 stops · 0 human-confirmed", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: assessment.recommendedWorkspace!.objectName, exact: true }),
   ).toBeVisible();

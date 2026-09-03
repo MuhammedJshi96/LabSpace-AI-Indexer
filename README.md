@@ -29,14 +29,14 @@ The three demonstration missions are the starting line, not the test boundary. A
 
 ### Submission evidence map
 
-| Challenge requirement       | Repository evidence                                                                                                                                                                                            |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Working public project      | [Live HTTPS app](https://labspace-agent-twin.onrender.com) plus `/api/health` and production smoke checks                                                                                                      |
-| WebMCP leverage             | 24 registered `labspace_*` tools; real registration in [`register-labspace-tools.ts`](src/webmcp/register-labspace-tools.ts)                                                                                   |
-| Better human-agent UX       | Natural-language/voice-ready missions, visible exact-location evidence, Reviewed-by-default mutations, and bounded Fast Draft                                                                                  |
-| Public source + licence     | Complete source, required runtime assets, clean-clone instructions, standard [Apache License 2.0](LICENSE), separate [asset/media terms](LICENSE-ASSETS.md), and [third-party notices](THIRD_PARTY_NOTICES.md) |
-| Existing-project boundary   | Annotated tag `pre-webmcp-2026-08-27` and dated [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md)                                                                                                        |
-| Testing and reproducibility | [`npm run test:e2e:submission`](package.json), full release check, public-persistence suite, [final rehearsal spec](tests/e2e/submission-rehearsal.spec.ts), and touch-enabled tablet verification             |
+| Challenge requirement       | Repository evidence                                                                                                                                                                                                                                                                     |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Working public project      | [Live HTTPS app](https://labspace-agent-twin.onrender.com) plus `/api/health` and production smoke checks                                                                                                                                                                               |
+| WebMCP leverage             | 24 registered `labspace_*` tools; real registration in [`register-labspace-tools.ts`](src/webmcp/register-labspace-tools.ts)                                                                                                                                                            |
+| Better human-agent UX       | Natural-language/voice-ready missions, visible exact-location evidence, Reviewed-by-default mutations, and bounded Fast Draft                                                                                                                                                           |
+| Public source + licence     | Complete source, required runtime assets, clean-clone instructions, standard [Apache License 2.0](LICENSE), separate [asset/media terms](LICENSE-ASSETS.md), and [third-party notices](THIRD_PARTY_NOTICES.md)                                                                          |
+| Existing-project boundary   | Annotated tag `pre-webmcp-2026-08-27` and dated [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md)                                                                                                                                                                                 |
+| Testing and reproducibility | Official Chrome [`webmcp-evals`](docs/webmcp/evals/README.md) submission smoke pack, [`npm run test:e2e:submission`](package.json), full release check, public-persistence suite, [final rehearsal spec](tests/e2e/submission-rehearsal.spec.ts), and touch-enabled tablet verification |
 
 This packaging follows the official [WebMCP Challenge page](https://openai.com/webmcp-challenge/), [Devpost requirements](https://webmcp.devpost.com/), [resources](https://webmcp.devpost.com/resources), and [rules](https://webmcp.devpost.com/rules).
 
@@ -285,6 +285,7 @@ The server creates a new local SQLite database from the source-controlled develo
 | `npm run test:e2e`                 | Run the Playwright competition and editor workflows       |
 | `npm run test:e2e:webmcp`          | Run the independent WebMCP judge workflow                 |
 | `npm run test:e2e:submission`      | Rehearse Build/Stock/Find and regenerate README captures  |
+| `npm run eval:webmcp:submission`   | Run the focused Chrome WebMCP submission evaluation pack  |
 | `npm run validate:assets`          | Validate manifests, authored GLBs, and static PNG renders |
 | `npm run release:check`            | Run lint, types, asset validation, tests, and build       |
 | `npm run format`                   | Format source and documentation                           |

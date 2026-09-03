@@ -23,6 +23,7 @@
     "test:e2e:submission": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.submission.config.ts tests/e2e/submission-rehearsal.spec.ts tests/e2e/submission-screenshots.spec.ts",
     "benchmark:webmcp": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.benchmark.config.ts",
     "benchmark:webmcp:personas": "node benchmarks/persona-sensitivity.mjs",
+    "eval:webmcp:submission": "node scripts/run-webmcp-submission-eval.mjs",
     "test:e2e:public": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.public.config.ts",
     "validate:assets": "tsx scripts/validate-assets.ts",
     "release:check": "npm run lint && npm run typecheck && npm run validate:assets && npm run test && npm run build",

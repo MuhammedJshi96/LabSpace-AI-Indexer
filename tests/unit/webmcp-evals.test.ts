@@ -18,6 +18,17 @@ interface WebMcpEvalFixture {
   cases: WebMcpEvalCase[];
 }
 
+interface ChromeExpectedCall {
+  functionName: string;
+  arguments: Record<string, unknown>;
+}
+
+interface ChromeSubmissionEvalCase {
+  name: string;
+  messages: Array<{ role: "user"; type: "message"; content: string }>;
+  expectedCall: ChromeExpectedCall[];
+}
+
 function readEvalFixture(): WebMcpEvalFixture {
   return JSON.parse(
     readFileSync(resolve(process.cwd(), "docs/webmcp/evals/cases.json"), "utf8"),
@@ -62,5 +73,41 @@ describe("LabSpace WebMCP evaluation fixture", () => {
       expect(entry.expectedTools).toContain("labspace_validate_object_move");
       expect(entry.forbiddenTools).toContain("labspace_stage_object_move");
     }
+  });
+
+  it("keeps the Chrome submission smoke pack small, valid, and judge-focused", () => {
+    const cases = JSON.parse(
+      readFileSync(resolve(process.cwd(), "docs/webmcp/evals/submission-smoke.json"), "utf8"),
+    ) as ChromeSubmissionEvalCase[];
+    const knownTools = new Set<string>(LABSPACE_WEBMCP_TOOL_NAMES);
+
+    expect(cases).toHaveLength(4);
+    expect(new Set(cases.map((entry) => entry.name)).size).toBe(cases.length);
+
+    const calledTools = new Set<string>();
+    for (const entry of cases) {
+      expect(entry.name).toMatch(/^Judge gate [1-4] - /);
+      expect(entry.messages).toHaveLength(1);
+      expect(entry.messages[0]).toMatchObject({ role: "user", type: "message" });
+      expect(entry.messages[0].content.trim().length).toBeGreaterThan(20);
+      expect(entry.expectedCall.length).toBeGreaterThan(0);
+      for (const call of entry.expectedCall) {
+        expect(knownTools.has(call.functionName)).toBe(true);
+        expect(call.arguments).toBeTypeOf("object");
+        calledTools.add(call.functionName);
+      }
+    }
+
+    expect(calledTools).toEqual(
+      new Set([
+        "labspace_add_inventory",
+        "labspace_assess_workflow",
+        "labspace_audit_room",
+        "labspace_create_room",
+        "labspace_get_context",
+        "labspace_resolve_materials",
+        "labspace_search_records",
+      ]),
+    );
   });
 });

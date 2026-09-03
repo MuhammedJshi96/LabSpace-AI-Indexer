@@ -1,0 +1,130 @@
+[
+  {
+    "name": "Judge gate 1 - discover the workspace and audit R-001",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "What laboratory and room am I viewing, and is R-001 ready for planning?"
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "labspace_get_context",
+        "arguments": {}
+      },
+      {
+        "functionName": "labspace_audit_room",
+        "arguments": {
+          "roomCode": "R-001"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Judge gate 2 - stage the R-003 room request for human review",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Build a 38 square metre researcher office named Researcher Office, code R-003, in LAB-D-00. Ask me before saving it."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "labspace_get_context",
+        "arguments": {}
+      },
+      {
+        "functionName": "labspace_create_room",
+        "arguments": {
+          "name": "Researcher Office",
+          "code": "R-003",
+          "laboratoryCode": "LAB-D-00"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Judge gate 3 - stage two inventory records for human review",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Add two bottles of alpha-glucosidase enzyme expiring October 6, 2026 and one bottle of lipase enzyme expiring October 16, 2026 to R-002. Let me review before saving."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "labspace_add_inventory",
+        "arguments": {
+          "entries": [
+            {
+              "roomCode": "R-002",
+              "name": "Alpha-glucosidase enzyme",
+              "quantity": 2,
+              "unit": "bottles",
+              "expiryDate": "2026-10-06"
+            },
+            {
+              "roomCode": "R-002",
+              "name": "Lipase enzyme",
+              "quantity": 1,
+              "unit": "bottle",
+              "expiryDate": "2026-10-16"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "Judge gate 4 - ground the DPPH workflow and report missing chloroform",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Find the DPPH materials and equipment, report whether chloroform is in stock, and identify a suitable R-002 work surface without changing stock."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "labspace_search_records",
+        "arguments": {
+          "query": "DPPH Reagent",
+          "scope": "project",
+          "kinds": ["inventory"]
+        }
+      },
+      {
+        "functionName": "labspace_resolve_materials",
+        "arguments": {
+          "brief": "Researcher-reviewed DPPH and solvent stock check; no procedure generation.",
+          "materials": [
+            "DPPH Reagent",
+            "Methanol Solvent 99.9%",
+            "100 uL Pipette tips",
+            "200 uL Pipette tips",
+            "Chloroform"
+          ]
+        }
+      },
+      {
+        "functionName": "labspace_assess_workflow",
+        "arguments": {
+          "brief": "Researcher-reviewed DPPH collection checklist; no protocol generation.",
+          "materials": [
+            "DPPH Reagent",
+            "Methanol Solvent 99.9%",
+            "100 uL Pipette tips",
+            "200 uL Pipette tips"
+          ],
+          "equipment": ["Laboratory pipette holder", "Automated microplate reader"],
+          "roomCode": "R-002",
+          "workspacePreference": "any-work-surface",
+          "minimumClearAreaM2": 0.6
+        }
+      }
+    ]
+  }
+]

@@ -87,6 +87,18 @@ npx playwright test tests/e2e/submission-screenshots.spec.ts
 npm run validate:assets
 ```
 
+The final four-case Chrome WebMCP submission gate can be run against the public
+site without an API key or model charge:
+
+```powershell
+npm run eval:webmcp:submission
+```
+
+It uses Chrome's experimental evaluator in deterministic smoke mode and saves a
+local transcript plus machine-readable summary in the ignored
+`output/webmcp-evals/submission/` folder. It complements rather than replaces the
+deeper Playwright rehearsal.
+
 The WebMCP development examples in `docs/webmcp/LOCAL_TESTING.md` document the
 public tool contract. Personal narration, timed presentation notes, and private
 judge rehearsal scripts are deliberately kept outside the published repository.

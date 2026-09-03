@@ -2,6 +2,24 @@
 
 This folder defines a deterministic competition eval set for the twenty-four public LabSpace WebMCP tools. It is an expected-call suite, not a claim that a language model is embedded in LabSpace or that every model will choose an identical optional inspection step.
 
+For the final submission, `submission-smoke.json` provides a deliberately small
+four-case gate in the format accepted by Chrome's experimental `webmcp-evals`
+CLI. It checks the public deployment's workspace/audit reads, Reviewed room
+proposal, Reviewed two-record inventory proposal, and grounded DPPH workflow.
+Run it without an API key or model charge using:
+
+```powershell
+npm run eval:webmcp:submission
+```
+
+The pinned evaluator opens a fresh Chrome page for every case. Its small runner
+preserves the console transcript and a machine-readable pass summary under
+`output/webmcp-evals/submission/`; that output folder is ignored by Git. This
+smoke gate executes concrete expected calls and does not measure natural-language
+model selection. The existing Playwright submission rehearsal remains the
+authoritative end-to-end check for visible application state, approval,
+persistence, camera handoff, and the final collection itinerary.
+
 The repeated [productivity benchmark v2](../PRODUCTIVITY_BENCHMARK_V2.md) is the primary quantitative comparison. It uses equal persisted outcomes, one excluded warm-up, five counterbalanced measured trials per task and method, medians/IQRs, explicit operation counts, and a strict warning that automated UI timing is not human timing. Its summary and timing arrays are stored in `productivity-benchmark-v2-2026-09-02.json`. The older one-run human-paced pilot remains available for provenance but is superseded.
 
 The [persona-paced sensitivity model](../PERSONA_SENSITIVITY_MODEL.md) applies configurable reading, typing, pointing, orientation, review, and scripted-recovery assumptions to those measured system medians. It is design analysis only, not participant evidence. Its condensed output is stored in `persona-paced-sensitivity-2026-09-02.json`.

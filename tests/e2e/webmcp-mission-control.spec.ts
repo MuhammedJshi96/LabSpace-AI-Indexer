@@ -86,10 +86,10 @@ test("presents the three-part judge demonstration and exports bounded session pr
   ).toBeVisible();
   await expect(
     inspector.getByRole("note", { name: "Recommended in-app browser view" }),
-  ).toContainText("give LabSpace about two-thirds of the window");
+  ).toContainText("same ChatGPT or Codex desktop conversation");
   await expect(
     inspector.getByRole("note", { name: "Recommended in-app browser view" }),
-  ).toContainText("closes this Inspector automatically");
+  ).toContainText("creation, furnishing, and the final read-only audit");
   await page.setViewportSize({ width: 860, height: 912 });
   const compactLayout = await inspector.evaluate((element) => {
     const panel = element.getBoundingClientRect();
@@ -122,9 +122,7 @@ test("presents the three-part judge demonstration and exports bounded session pr
     "aria-checked",
     "true",
   );
-  await expect(
-    inspector.getByRole("button", { name: "Copy + show workspace" }).first(),
-  ).toBeVisible();
+  await expect(inspector.getByRole("button", { name: "Arm Fast Draft + copy" })).toBeVisible();
   if (process.env.LABSPACE_CAPTURE_UI === "1") {
     await page.screenshot({
       path: "test-results/webmcp-mission-control.png",
@@ -154,7 +152,7 @@ test("presents the three-part judge demonstration and exports bounded session pr
   expect(proof.summary).toMatchObject({ toolCalls: 3, uniqueToolsUsed: 3, errors: 0 });
   expect(proof.timeline).toHaveLength(3);
 
-  await inspector.getByRole("button", { name: "Copy + show workspace" }).first().click();
+  await inspector.getByRole("button", { name: "Arm Fast Draft + copy" }).click();
   await expect(inspector).toBeHidden();
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
@@ -163,4 +161,11 @@ test("presents the three-part judge demonstration and exports bounded session pr
   expect(copiedPrompt).toContain("Use only the LabSpace WebMCP tools");
   expect(copiedPrompt).toContain("Do not click, drag, type into forms");
   expect(copiedPrompt).toContain("do not fall back to UI automation");
+  expect(copiedPrompt).toContain("one uninterrupted Fast Draft build");
+  expect(copiedPrompt).toContain("without asking me to say continue");
+  await page.getByRole("button", { name: /Open WebMCP Inspector/i }).click();
+  await expect(inspector.getByRole("radio", { name: /Fast Draft/i })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
 });

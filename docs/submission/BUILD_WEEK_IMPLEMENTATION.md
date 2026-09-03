@@ -33,6 +33,8 @@ The challenge work made the existing product genuinely usable by a browser agent
 - **Grounded workflow assessment** resolves requested materials and equipment against live stock, keeps missing or ambiguous matches explicit, ranks real work surfaces and builds a navigable collection guide.
 - **Visible evidence** records tool calls, workspace focus, proposals, approvals, cancellations and undoable commits without claiming hidden model reasoning, protocol approval or certified audit status.
 - **A clean public fixture** contains only `LAB-D-00` with R-001 and R-002. R-003 is intentionally created live.
+- **A visible connection preflight** tells judges to open the live app inside the same ChatGPT or Codex desktop conversation, use Sol or Terra, enable Website Tools, explicitly ask the agent to connect to the LabSpace tools exposed by the open page, and verify `labspace_get_context` plus all twenty-four registered tools before running a mission.
+- **One-prompt Build** uses one labelled human action—**Arm Fast Draft + copy**—to authorize only the validated additive R-003 draft. The resulting prompt continues through room creation, the complete first blueprint and the final read-only audit without conversational “continue” pauses; any ineligible or later mutation still stops for review.
 - **Independent browser verification** rehearses Build → Stock → Find against the same public fixture and regenerates the High-quality screenshots used in the README.
 
 ## Human-agent execution boundary

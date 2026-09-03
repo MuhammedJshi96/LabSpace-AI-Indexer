@@ -307,7 +307,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_create_room",
       title: "Create a blank LabSpace room",
       description:
-        "Propose one genuinely blank room in the current or selected laboratory. Reviewed mode pauses before creation; human-authorized Fast Draft may apply this validated additive change. The agent cannot select the mode.",
+        "Propose one genuinely blank room in the current or selected laboratory. Reviewed mode pauses before creation; human-authorized Fast Draft may apply this validated additive change. The agent cannot select the mode. When Fast Draft returns created: true and the user's request includes a complete layout, continue directly to planning and staging without asking for another message.",
       inputSchema: createRoomSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -499,7 +499,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_stage_room_plan",
       title: "Stage LabSpace room plan",
       description:
-        "Stage a calculated blueprint. Reviewed mode always pauses for approval. Fast Draft may apply only a complete validated first blueprint in a pristine WebMCP-created room, with Undo; all other layouts escalate to review.",
+        "Stage a calculated blueprint. Reviewed mode always pauses for approval. Fast Draft may apply only a complete validated first blueprint in a pristine WebMCP-created room, with Undo; all other layouts escalate to review. When Fast Draft returns autoCommitted: true and the request includes an audit, call labspace_audit_room immediately without asking for another confirmation.",
       inputSchema: stageRoomLayoutSchema,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>

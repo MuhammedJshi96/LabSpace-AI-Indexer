@@ -40,18 +40,23 @@ type InspectorTab = "mission" | "activity" | "workflows" | "guide" | "tools";
 const webMcpOnlyPrompt = (task: string) =>
   `Use only the LabSpace WebMCP tools exposed by this page (the labspace_* tools). Do not click, drag, type into forms, or use browser/computer-control actions for this task. Start with labspace_get_context. If the labspace_* tools are unavailable, stop and tell me WebMCP is not connected; do not fall back to UI automation. ${task}`;
 
+const uninterruptedFastDraftPrompt = (task: string) =>
+  webMcpOnlyPrompt(
+    `This is one uninterrupted Fast Draft build. Fast Draft must already be visibly authorized by the human in the LabSpace Inspector; never select or bypass that mode yourself. ${task} Continue automatically after every successful tool result without asking me to say continue. If labspace_create_room or labspace_stage_room_plan returns requiresHumanApproval: true, stop at the visible review boundary and explain that Fast Draft was not armed or the proposal was not eligible. If the room plan returns autoCommitted: true, immediately run labspace_audit_room and finish with one concise build-and-audit summary. Do not ask whether I want the furnishing step or the final read-only audit.`,
+  );
+
 const DEMO_MISSIONS = [
   {
     id: "build-r003",
     step: "01 · Build",
-    mode: "Create + review",
+    mode: "Fast Draft · one prompt",
     title: "Create R-003 from one request",
     outcome: "38 m² shell · hosted openings · three paired workstations",
-    prompt: webMcpOnlyPrompt(
-      "In the currently opened laboratory, create a new room named Researcher Office, code R-003. Build a 7,600 by 5,000 millimetre four-wall shell (38 square metres), with one inward single laboratory door centered on wall 3 (the visually bottom wall), one wide three-panel window centered on wall 1 (the visually upper wall), and one wide three-panel window centered on wall 4 (the left wall). Add three office desks, pair one office chair with each desk, one locker, one fire extinguisher, and one waste bin. Use labspace_search_assets, labspace_create_room, labspace_plan_room, labspace_stage_room_plan, then labspace_audit_room. Pause at every human review boundary; never approve a change for me.",
+    prompt: uninterruptedFastDraftPrompt(
+      "In the currently opened laboratory, create a new room named Researcher Office, code R-003. Build a 7,600 by 5,000 millimetre four-wall shell (38 square metres), with one inward single laboratory door centered on wall 3 (the visually bottom wall), one wide three-panel window centered on wall 1 (the visually upper wall), and one wide three-panel window centered on wall 4 (the left wall). Add three office desks, pair one office chair with each desk, one locker, one fire extinguisher, and one waste bin. Use labspace_search_assets, labspace_create_room, labspace_plan_room, labspace_stage_room_plan, then labspace_audit_room.",
     ),
-    voicePrompt: webMcpOnlyPrompt(
-      "In this laboratory, create Researcher Office R-003 as a 38 square metre room. Put a centered inward door on the bottom wall, three-panel windows on the upper and left walls, three desks with matching chairs, one locker, one fire extinguisher, and one waste bin. Plan and audit it with LabSpace tools, and stop for my approval.",
+    voicePrompt: uninterruptedFastDraftPrompt(
+      "In this laboratory, create Researcher Office R-003 as a 38 square metre room. Put a centered inward door on the bottom wall, three-panel windows on the upper and left walls, three desks with matching chairs, one locker, one fire extinguisher, and one waste bin. Plan, furnish, and audit it with the LabSpace tools.",
     ),
   },
   {
@@ -401,6 +406,25 @@ export function AgentActivityPanel() {
     }
   };
 
+  const copyDemoMission = async (
+    id: string,
+    prompt: string,
+    options: { buildMission?: boolean } = {},
+  ) => {
+    if (bridgeStatus !== "ready") {
+      setTab("guide");
+      setConnectionError(
+        "Open LabSpace inside the same ChatGPT or Codex desktop conversation, enable Website Tools, and wait for 24 registered tools before copying a mission.",
+      );
+      return;
+    }
+    if (options.buildMission && executionMode !== "fast-draft") {
+      // The labelled click is the human authorization. No WebMCP tool can select this mode.
+      chooseExecutionMode("fast-draft");
+    }
+    await copyWorkflow(id, prompt, true);
+  };
+
   const exportJudgeEvidence = () => {
     downloadJudgeEvidenceBundle(
       {
@@ -611,11 +635,13 @@ export function AgentActivityPanel() {
           >
             <Browser size={20} weight="duotone" aria-hidden="true" />
             <span>
-              <b>Give the laboratory the larger pane</b>
+              <b>Connect once, then run Build in one prompt</b>
               <small>
-                Collapse ChatGPT&apos;s left sidebar, narrow the conversation pane, and give
-                LabSpace about two-thirds of the window. Copy + show workspace closes this Inspector
-                automatically.
+                Open LabSpace inside this same ChatGPT or Codex desktop conversation, use Sol or
+                Terra, then first ask: “Connect to the LabSpace WebMCP tools exposed by this open
+                website and confirm labspace_get_context is available.” Confirm 24 tools before the
+                mission. Arm Fast Draft + copy is one explicit human action; creation, furnishing,
+                and the final read-only audit then continue without another LabSpace approval.
               </small>
             </span>
           </aside>
@@ -655,46 +681,72 @@ export function AgentActivityPanel() {
           </ol>
 
           <section className="webmcp-demo-missions" aria-label="Judge demonstration prompts">
-            {DEMO_MISSIONS.map((mission, index) => (
-              <article className="webmcp-signature-card" key={mission.id}>
-                <header>
-                  <span>
-                    <small>{mission.step}</small>
-                    <strong>{mission.title}</strong>
-                  </span>
-                  <em>{mission.mode}</em>
-                </header>
-                <p>{mission.prompt}</p>
-                <small>{mission.outcome}</small>
-                <div>
-                  <button
-                    className={index === 0 ? "webmcp-primary-action" : undefined}
-                    onClick={() => void copyWorkflow(mission.id, mission.prompt, true)}
-                    title="Copy this WebMCP-only prompt and close the panel so the workspace remains visible"
-                  >
-                    {copiedWorkflow === mission.id ? (
-                      <Check size={16} weight="bold" />
-                    ) : (
-                      <Copy size={16} />
-                    )}
-                    {copiedWorkflow === mission.id ? "Copied" : "Copy + show workspace"}
-                  </button>
-                  <button
-                    onClick={() =>
-                      void copyWorkflow(`${mission.id}-voice`, mission.voicePrompt, true)
-                    }
-                    title="Copy the shorter voice-ready prompt and close the panel"
-                  >
-                    {copiedWorkflow === `${mission.id}-voice` ? (
-                      <Check size={16} weight="bold" />
-                    ) : (
-                      <Waveform size={16} />
-                    )}
-                    {copiedWorkflow === `${mission.id}-voice` ? "Copied" : "Voice-ready"}
-                  </button>
-                </div>
-              </article>
-            ))}
+            {DEMO_MISSIONS.map((mission, index) => {
+              const isBuildMission = index === 0;
+              const needsFastDraft = isBuildMission && executionMode !== "fast-draft";
+              return (
+                <article className="webmcp-signature-card" key={mission.id}>
+                  <header>
+                    <span>
+                      <small>{mission.step}</small>
+                      <strong>{mission.title}</strong>
+                    </span>
+                    <em>{mission.mode}</em>
+                  </header>
+                  <p>{mission.prompt}</p>
+                  <small>{mission.outcome}</small>
+                  <div>
+                    <button
+                      className={index === 0 ? "webmcp-primary-action" : undefined}
+                      onClick={() =>
+                        void copyDemoMission(mission.id, mission.prompt, {
+                          buildMission: isBuildMission,
+                        })
+                      }
+                      title={
+                        needsFastDraft
+                          ? "Explicitly authorize bounded Fast Draft, copy the uninterrupted build prompt, and show the workspace"
+                          : "Copy this WebMCP-only prompt and close the panel so the workspace remains visible"
+                      }
+                    >
+                      {copiedWorkflow === mission.id ? (
+                        <Check size={16} weight="bold" />
+                      ) : (
+                        <Copy size={16} />
+                      )}
+                      {copiedWorkflow === mission.id
+                        ? "Copied"
+                        : needsFastDraft
+                          ? "Arm Fast Draft + copy"
+                          : "Copy + show workspace"}
+                    </button>
+                    <button
+                      onClick={() =>
+                        void copyDemoMission(`${mission.id}-voice`, mission.voicePrompt, {
+                          buildMission: isBuildMission,
+                        })
+                      }
+                      title={
+                        needsFastDraft
+                          ? "Explicitly authorize bounded Fast Draft and copy the shorter voice-ready build prompt"
+                          : "Copy the shorter voice-ready prompt and close the panel"
+                      }
+                    >
+                      {copiedWorkflow === `${mission.id}-voice` ? (
+                        <Check size={16} weight="bold" />
+                      ) : (
+                        <Waveform size={16} />
+                      )}
+                      {copiedWorkflow === `${mission.id}-voice`
+                        ? "Copied"
+                        : needsFastDraft
+                          ? "Arm + voice"
+                          : "Voice-ready"}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
           </section>
 
           <section className="webmcp-proof-strip" aria-label="Current session evidence summary">
@@ -962,12 +1014,29 @@ export function AgentActivityPanel() {
               <em>Fastest</em>
             </div>
             <ol>
-              <li>Collapse ChatGPT&apos;s left sidebar, then narrow the conversation pane.</li>
-              <li>Give LabSpace about two-thirds of the window before starting the mission.</li>
+              <li>
+                Open the live LabSpace link from the same ChatGPT or Codex desktop conversation so
+                it appears in that conversation&apos;s in-app browser—not an unrelated Chrome tab.
+              </li>
+              <li>
+                Use GPT-5.6 Sol or Terra, enable Website Tools in Browser permissions, and verify
+                that LabSpace reports 24 registered tools.
+              </li>
+              <li>
+                Before a mission, tell the agent:{" "}
+                <b>
+                  Connect to the LabSpace WebMCP tools exposed by this open website and confirm
+                  labspace_get_context is available.
+                </b>
+              </li>
+              <li>
+                Collapse ChatGPT&apos;s left sidebar, then give LabSpace about two-thirds of the
+                window.
+              </li>
               <li>Type or speak your request in the conversation beside the page.</li>
               <li>
-                Choose <b>Copy + show workspace</b> when using a prepared mission; this Inspector
-                closes automatically.
+                For the R-003 demo, choose <b>Arm Fast Draft + copy</b>. That labelled click is the
+                human authorization; the one prompt then creates, furnishes, and audits the room.
               </li>
               <li>Reopen WebMCP to review tool evidence and approve staged changes.</li>
             </ol>

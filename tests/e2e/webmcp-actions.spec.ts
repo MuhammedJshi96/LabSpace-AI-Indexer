@@ -425,9 +425,11 @@ test("keeps WebMCP evidence visible in the compact judge header", async ({ page 
 
   await inspector.getByRole("tab", { name: "Setup" }).click();
   await expect(inspector).toContainText("ChatGPT in-app browser");
+  await expect(inspector).toContainText("same ChatGPT or Codex desktop conversation");
+  await expect(inspector).toContainText("24 registered tools");
   await expect(inspector).toContainText("Collapse ChatGPT's left sidebar");
-  await expect(inspector).toContainText("Give LabSpace about two-thirds of the window");
-  await expect(inspector).toContainText("Copy + show workspace");
+  await expect(inspector).toContainText("give LabSpace about two-thirds of the window");
+  await expect(inspector).toContainText("Arm Fast Draft + copy");
   await expect(inspector).toContainText("Chrome Model Context Tool Inspector");
   await expect(inspector).toContainText("Chrome DevTools WebMCP pane");
   await expect(inspector).toContainText("DevTools is a debugger, not an AI chat");

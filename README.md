@@ -49,15 +49,32 @@ The trust boundary is human-controlled and risk-based. Every application session
 
 ### See WebMCP working
 
-Open the **WebMCP** status control in the LabSpace header. The Inspector opens on a connected
-three-part judge demonstration rather than a tool wall:
+There is one required browser connection step because Website Tools belong to the page open in the
+current agent conversation. From the same ChatGPT or Codex desktop conversation, open the
+**[live judge app](https://labspace-agent-twin.onrender.com)** in its in-app browser—not only in an
+unrelated Chrome tab. Use GPT-5.6 Sol or Terra, make sure **Settings → Browser → Permissions → Enable
+Website Tools** is on, then open LabSpace's **WebMCP** status control and verify **24 tools ready**.
+No plugin, server, API key, or LabSpace login is required.
+
+Before starting a mission, tell the browser agent: **“Connect to the LabSpace WebMCP tools exposed
+by this open website and confirm `labspace_get_context` is available. Do not use UI automation.”**
+This explicit preflight helps the conversation attach to the page tools before the longer demo
+request is spoken or pasted.
+
+The Inspector opens on a connected three-part judge demonstration rather than a tool wall:
 
 1. Run **Build** to create and audit the 38 m² Researcher Office **R-003** from natural language.
 2. Run **Stock** to stage two enzyme records with exact quantities/expiry dates for human approval.
 3. Run **Find the work** to ground the cross-room DPPH checklist, keep chloroform visibly missing,
    and end a reviewed collection guide at a real R-002 work surface.
 
-The Inspector keeps **24 tools ready** and the visible **Reviewed** execution boundary on screen throughout.
+Every session still begins in **Reviewed**. For the uninterrupted R-003 demonstration, choose the
+clearly labelled **Arm Fast Draft + copy** action once. That human click authorizes only this bounded,
+validated additive room and its complete first blueprint; the copied single prompt then continues
+through creation, furnishing, and the read-only room audit without asking for “continue.” Choosing
+Reviewed instead deliberately shows two separate previews before anything is saved.
+
+The Inspector keeps **24 tools ready** and the visible execution boundary on screen throughout.
 
 For the clearest ChatGPT in-app browser view, collapse ChatGPT's left project sidebar, make the
 conversation pane narrower, and give LabSpace roughly two-thirds of the window. Open the Inspector

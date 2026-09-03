@@ -21,6 +21,11 @@ let loadFailed = false;
 
 export const getPersistenceMode = () => persistenceMode;
 
+const hasRetiredPublicLaboratory = (project: Project) =>
+  project.laboratories.some(
+    (laboratory) => laboratory.code.trim().toLocaleUpperCase() === "LAB-01",
+  );
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
@@ -43,7 +48,7 @@ export async function loadProject(): Promise<Project> {
       storageError = error;
       return null;
     });
-    if (existing) {
+    if (existing && !hasRetiredPublicLaboratory(existing.project)) {
       persistenceMode = "browser";
       browserRevision = existing.revision;
       loadFailed = false;
@@ -52,12 +57,27 @@ export async function loadProject(): Promise<Project> {
     const health = await request<{ publicDemo: boolean }>("/api/health");
     persistenceMode = health.publicDemo ? "browser" : "server";
     if (persistenceMode === "browser" && storageError) throw storageError;
+    if (existing && !health.publicDemo) {
+      persistenceMode = "browser";
+      browserRevision = existing.revision;
+      loadFailed = false;
+      return existing.project;
+    }
     const project = ProjectSchema.parse(
       await request<unknown>(`/api/project?revision=${Date.now()}`),
     );
     if (persistenceMode === "server") {
       loadFailed = false;
       return project;
+    }
+    // The final public judge fixture retired LAB-01. Older browser saves remain
+    // authoritative everywhere else, but a public-demo save containing that lab
+    // is replaced atomically so stale rooms cannot contradict the submission.
+    if (existing && health.publicDemo) {
+      const saved = await writeBrowserProject(project, existing.revision, existing.project.id);
+      browserRevision = saved.revision;
+      loadFailed = false;
+      return saved.project;
     }
     // Adopt an existing visitor session once, including its named room versions.
     const versions = (

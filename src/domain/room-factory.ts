@@ -128,8 +128,8 @@ export function createBlankProject(options: BlankProjectOptions = {}): Project {
   const projectId = options.id ?? crypto.randomUUID();
   const laboratory = createBlankLaboratory(projectId, {
     id: options.laboratory?.id,
-    name: options.laboratory?.name ?? "Laboratory 1",
-    code: options.laboratory?.code ?? "LAB-01",
+    name: options.laboratory?.name ?? "New laboratory",
+    code: options.laboratory?.code ?? "LAB-NEW",
   });
   const room = createBlankRoom({
     id: options.room?.id,

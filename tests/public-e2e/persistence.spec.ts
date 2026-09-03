@@ -166,6 +166,50 @@ test("full project data is durable and subsequent loads do not require project A
   expect((await exportProject(page)).name).toBe("Saved without server APIs");
 });
 
+test("the public judge site retires legacy LAB-01 browser workspaces", async ({ page }) => {
+  await page.goto("/inventory");
+  await saved(page);
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("labspace-saved-workspace", 1);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction("workspace", "readwrite");
+        const store = tx.objectStore("workspace");
+        const read = store.get("active");
+        read.onsuccess = () => {
+          const workspace = read.result;
+          const laboratory = workspace.project.laboratories[0];
+          store.put(
+            {
+              ...workspace,
+              revision: workspace.revision + 1,
+              project: {
+                ...workspace.project,
+                name: "Legacy judge workspace",
+                laboratories: [{ ...laboratory, name: "Laboratory 1", code: "LAB-01" }],
+              },
+            },
+            "active",
+          );
+        };
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(new Error("Legacy fixture failed"));
+      };
+    });
+  });
+
+  await page.reload();
+  await saved(page);
+  const migrated = await exportProject(page);
+  expect(migrated.name).not.toBe("Legacy judge workspace");
+  expect(migrated.laboratories.map((laboratory) => laboratory.code)).toEqual(["LAB-D-00"]);
+  expect(migrated.rooms.map((room) => room.code)).toEqual(["R-001", "R-002"]);
+});
+
 test("a stale tab cannot overwrite a newer save", async ({ page, context }) => {
   await page.goto("/inventory");
   await saved(page);

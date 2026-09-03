@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title description">
+  <title id="title">DPPH reagent evidence image</title>
+  <desc id="description">An original laboratory inventory illustration of an amber reagent bottle labelled DPPH.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#edf4f2"/>
+      <stop offset="1" stop-color="#d7e2df"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4a1e0f"/>
+      <stop offset="0.18" stop-color="#a84f19"/>
+      <stop offset="0.48" stop-color="#6f2b12"/>
+      <stop offset="0.78" stop-color="#bd6321"/>
+      <stop offset="1" stop-color="#3c180d"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#424b49"/>
+      <stop offset="0.5" stop-color="#111b19"/>
+      <stop offset="1" stop-color="#050908"/>
+    </linearGradient>
+    <linearGradient id="label" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfdfd"/>
+      <stop offset="1" stop-color="#e8efed"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="800" fill="url(#background)"/>
+  <path d="M0 620h1200v180H0z" fill="#c4d1ce"/>
+  <ellipse cx="612" cy="666" rx="290" ry="60" fill="#23312e" opacity=".22" filter="url(#shadow)"/>
+  <g transform="translate(365 74)">
+    <rect x="108" y="0" width="254" height="96" rx="22" fill="url(#cap)"/>
+    <g opacity=".38" stroke="#73817e" stroke-width="5">
+      <path d="M130 9v78M150 9v78M170 9v78M190 9v78M210 9v78M230 9v78M250 9v78M270 9v78M290 9v78M310 9v78M330 9v78"/>
+    </g>
+    <path d="M146 91h178v51c0 19 11 35 28 44 52 26 83 71 83 126v270c0 61-45 105-107 105H142C80 687 35 643 35 582V312c0-55 31-100 83-126 17-9 28-25 28-44z" fill="url(#glass)" stroke="#54220f" stroke-width="10"/>
+    <path d="M99 218c-26 31-36 63-36 105v241c0 49 33 82 81 82h27V231c-28 1-50-3-72-13z" fill="#ffb252" opacity=".22"/>
+    <path d="M352 211c38 29 55 60 55 111v237c0 52-27 83-76 88" fill="none" stroke="#ffcd7c" stroke-width="18" opacity=".24"/>
+    <rect x="66" y="288" width="338" height="260" rx="16" fill="url(#label)" stroke="#b9c7c4" stroke-width="5"/>
+    <rect x="66" y="288" width="338" height="44" rx="16" fill="#063c35"/>
+    <rect x="66" y="316" width="338" height="16" fill="#063c35"/>
+    <text x="235" y="319" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" font-weight="700" letter-spacing="4" fill="#e8fffb">LABSPACE ATLAS</text>
+    <text x="235" y="401" text-anchor="middle" font-family="Arial, sans-serif" font-size="68" font-weight="800" fill="#39213d">DPPH</text>
+    <text x="235" y="439" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="600" fill="#40504d">LABORATORY REAGENT</text>
+    <path d="M105 472h260" stroke="#b6c5c2" stroke-width="3"/>
+    <text x="104" y="507" font-family="Arial, sans-serif" font-size="18" fill="#50615e">2,2-Diphenyl-1-picrylhydrazyl</text>
+    <text x="104" y="533" font-family="Arial, sans-serif" font-size="17" fill="#6b7775">Inventory evidence · verify SDS before use</text>
+  </g>
+  <g transform="translate(860 566)">
+    <rect width="224" height="92" rx="18" fill="#f7fbfa" stroke="#9eb5b0" stroke-width="3"/>
+    <circle cx="42" cy="46" r="15" fill="#00a995"/>
+    <path d="m34 46 6 6 12-15" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="71" y="41" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#16302b">INDEXED STOCK</text>
+    <text x="71" y="65" font-family="Arial, sans-serif" font-size="15" fill="#55706a">R-002 · Shelf 02</text>
+  </g>
+</svg>

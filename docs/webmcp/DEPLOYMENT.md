@@ -6,7 +6,7 @@ Live judge service: [https://labspace-agent-twin.onrender.com](https://labspace-
 
 ## Render Blueprint
 
-The Blueprint creates one free Node web service from `webmcp-challenge-2026`:
+The Blueprint creates one free Node web service from the single release branch, `main`:
 
 - build: `npm ci --include=dev && npm run build` (the TypeScript build uses
   development-only type packages even though the deployed runtime is production)
@@ -40,12 +40,12 @@ The server still limits bootstrap memory sessions to four hours/250 entries. `/a
 
 Run `npm run build` then `npm run test:e2e:public`. The suite owns an isolated production/public-mode server on port 3114, creates rooms through the UI, verifies exported project identity through reload and a real process restart, checks version survival, disables project APIs, checks browser isolation and stale-tab conflicts, and simulates a storage-quota failure. It never resets or stops the user's development server.
 
-### Verification — 2026-09-02
+### Verification — 2026-09-03
 
-- Release checks passed: lint, strict TypeScript, 106 asset definitions, 212 catalog renders, 59 files / 420 tests and the production build. Existing large-bundle warnings remain non-blocking.
+- Release checks passed: lint, strict TypeScript, 117 asset definitions, 234 catalog renders, 63 unit/integration files / 447 tests and the production build. Existing large-bundle warnings remain non-blocking.
 - Public persistence: 7/7 browser tests passed, including real server restart, full project export equality, named versions, visitor isolation, stale tabs, storage failures, incompatible data, explicit import and deletion without reseeding.
-- Core product and WebMCP browser coverage: 55/55 scenarios passed with one worker and isolated test data.
-- The saved DEMO-01 and published starter both pass the deterministic room audit with zero errors and zero warnings.
+- The dedicated final-submission browser rehearsal passes the complete Build, Stock, and Find-the-work story against isolated test data.
+- The public judge fixture contains only `LAB-D-00`, R-001 and R-002; R-003 is absent until the live demonstration creates it.
 
 ## Production smoke test
 

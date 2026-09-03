@@ -7090,7 +7090,7 @@
           {
             "id": "76f8e7a6-d8e3-4093-b205-16a7ad14aa47",
             "name": "DPPH Reagent",
-            "imageSrc": "https://hoachatthinghiem.org/wp-content/uploads/2020/04/DPPH-TB-1G.jpg",
+            "imageSrc": "/images/inventory/dpph-reagent.svg",
             "quantity": 3,
             "unit": "units",
             "notes": "Proximity-based assignment near the bioassay work area. Confirm SDS/manufacturer temperature, light-protection and compatibility requirements before storage or use.",

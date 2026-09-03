@@ -6,13 +6,36 @@
 
 <p align="center"><strong>Design the lab. Index every location. Find anything instantly.</strong></p>
 
-**LabSpace Atlas** is a local-first, multi-laboratory spatial operating system where researchers and browser agents can design rooms, index physical storage, audit deterministic placement evidence, and navigate exact equipment or inventory locations. Its synchronized 2D/3D editor uses millimetre-accurate scene data, local SQLite persistence, versioning, labels, reports, and validation.
+<p align="center">
+  <a href="https://labspace-agent-twin.onrender.com"><strong>Live judge app</strong></a>
+  · <a href="docs/webmcp/JUDGE_GUIDE.md">60-second judge guide</a>
+  · <a href="docs/submission/FINAL_DEMO_SCRIPT_2026-09-03.md">under-three-minute demo runbook</a>
+  · <a href="LICENSE">Apache-2.0 source licence</a>
+</p>
+
+**LabSpace Atlas** is a browser-native spatial operating system for laboratories. Researchers and browser agents work on the same millimetre-accurate 2D/3D model to design rooms, index physical storage, validate placements, find exact equipment or inventory locations, and hand off a grounded collection route. The application is deterministic, local-first, inspectable, and usable without an API key or paid model call.
 
 ## WebMCP Challenge — LabSpace Atlas
 
 **WebMCP for the physical laboratory.** LabSpace now lets a browser agent work with a structured semantic digital twin instead of scraping pixels or guessing what laboratory controls mean. The agent can create and activate a genuinely blank room, infer its building floor, calculate a rectangular or multi-wall polygon shell, host doors and windows on exact wall segments, pair chairs with workstations, orient perimeter furniture inward, and place bench equipment on real support surfaces. It can also search exact physical records, focus the real 2D/3D workspace, validate equipment moves, and propose project inventory at canonical locations.
 
-**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — the clean public workspace opens in **Lab Space AI Laboratory – DEMO Build (`LAB-D-00`)** with authored rooms **R-001** and **R-002**. The judged build creates **R-003** live. The free instance can take up to about a minute to wake after inactivity.
+![LabSpace Atlas WebMCP mission control showing the three connected judge missions and human-controlled execution boundary](docs/screenshots/submission-webmcp-mission-control.png)
+
+**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — the privacy-checked public workspace contains only laboratory **`LAB-D-00`** with authored rooms **R-001** and **R-002**. **R-003 is deliberately absent** and is created live during judging. The free instance can take up to about a minute to wake after inactivity.
+
+### Submission evidence map
+
+| Challenge requirement       | Repository evidence                                                                                                                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Working public project      | [Live HTTPS app](https://labspace-agent-twin.onrender.com) plus `/api/health` and production smoke checks                                                                                                      |
+| WebMCP leverage             | 24 registered `labspace_*` tools; real registration in [`register-labspace-tools.ts`](src/webmcp/register-labspace-tools.ts)                                                                                   |
+| Better human-agent UX       | Natural-language/voice-ready missions, visible exact-location evidence, Reviewed-by-default mutations, and bounded Fast Draft                                                                                  |
+| Public source + licence     | Complete source, required runtime assets, clean-clone instructions, standard [Apache License 2.0](LICENSE), separate [asset/media terms](LICENSE-ASSETS.md), and [third-party notices](THIRD_PARTY_NOTICES.md) |
+| Existing-project boundary   | Annotated tag `pre-webmcp-2026-08-27` and dated [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md)                                                                                                        |
+| Testing and reproducibility | [`npm run test:e2e:submission`](package.json), full release check, public-persistence suite, and the [final rehearsal spec](tests/e2e/submission-rehearsal.spec.ts)                                            |
+| Demo video preparation      | Timestamped [2:58 recording script](docs/submission/FINAL_DEMO_SCRIPT_2026-09-03.md) with a real product capture after the short optional opener                                                               |
+
+This packaging follows the official [WebMCP Challenge page](https://openai.com/webmcp-challenge/), [Devpost requirements](https://webmcp.devpost.com/), [resources](https://webmcp.devpost.com/resources), and [rules](https://webmcp.devpost.com/rules).
 
 **Measured proof, not a speed fantasy:** a repeated same-outcome browser benchmark passed 140/140
 checks and reduced direct operations from 54 to 12 across exact-location, reviewed inventory, and
@@ -26,11 +49,12 @@ The trust boundary is human-controlled and risk-based. Every application session
 Open the **WebMCP** status control in the LabSpace header. The Inspector opens on a connected
 three-part judge demonstration rather than a tool wall:
 
-1. Confirm **24 tools ready** and the visible **Reviewed** execution boundary.
-2. Run **Build** to create and audit the 38 m² Researcher Office **R-003** from natural language.
-3. Run **Stock** to stage two enzyme records with exact quantities/expiry dates for human approval.
-4. Run **Find the work** to ground the cross-room DPPH checklist, keep chloroform visibly missing,
+1. Run **Build** to create and audit the 38 m² Researcher Office **R-003** from natural language.
+2. Run **Stock** to stage two enzyme records with exact quantities/expiry dates for human approval.
+3. Run **Find the work** to ground the cross-room DPPH checklist, keep chloroform visibly missing,
    and end a reviewed collection guide at a real R-002 work surface.
+
+The Inspector keeps **24 tools ready** and the visible **Reviewed** execution boundary on screen throughout.
 
 Choose **Copy + show workspace** (or the shorter voice-input version); the Inspector closes so
 the exact 2D/3D evidence remains unobstructed while the browser agent works. The copied request
@@ -101,7 +125,13 @@ The runtime remains local and no-billing: LabSpace embeds no model, sends no mod
 
 The complete planning workspace combines the searchable 115-asset library, material-aware 2D plan, synchronized 3D room, editable room data, and surface controls in one desktop composition.
 
-![Finalized LabSpace Layout Editor with synchronized 2D and 3D views](docs/screenshots/layout-editor-final.png)
+![Current LabSpace Atlas Layout Editor with synchronized material-aware 2D and authored 3D views](docs/screenshots/submission-layout-editor.png)
+
+### Inventory Studio
+
+The project-wide stock ledger keeps human names, quantities, status, room, and physical address readable. Storage assignment remains direct and reversible, while technical codes stay available as evidence rather than dominating the interface.
+
+![Current LabSpace Atlas Inventory Studio showing the sanitized LAB-D-00 judge stock](docs/screenshots/submission-inventory-studio.png)
 
 ### Spatial Index Finder and exact-location evidence
 
@@ -109,24 +139,15 @@ The Spatial Index Finder searches canonical equipment, inventory, rooms, and sto
 
 **Inventory → Storage** opens a full-size workspace with a searchable cabinet rail, anatomy-derived **storage map**, inline naming, readable contents and an opt-in **3D access preview** using the original models and materials. Assign existing stock or add a record at an exact shelf; custom/unlinked locations remain available through the complete location directory. The Layout Editor's Storage Inspector is now a contextual summary with **Manage storage**, and returning preserves the editor view and selection. Inventory rows show images, quantities, units and batch-selection checkboxes. Assignments, renames and storage configuration are undoable without rolling back newer stock quantities. See the [inventory organization guide](docs/INVENTORY_ORGANIZATION.md).
 
-<table>
-  <tr>
-    <td width="50%">
-      <img src="docs/screenshots/spatial-index-finder-final.png" alt="Spatial Index Finder locating the BÜCHI rotary evaporator" />
-      <br /><strong>Equipment focus:</strong> deterministic project search, room navigation, equipment identity, service evidence, and one precise spatial selection.
-    </td>
-    <td width="50%">
-      <img src="docs/screenshots/spatial-index-drawer-final.png" alt="Exact Drawer 02 access preview for the rotary evaporator flask set" />
-      <br /><strong>Storage proof:</strong> Drawer 02 opened in place with the inventory photograph, canonical location trail, quantity, owner, and QR identity.
-    </td>
-  </tr>
-</table>
+![Current Spatial Index exact-location evidence for DPPH reagent in R-002](docs/screenshots/submission-spatial-index-dpph.png)
+
+The selected reagent remains tied to one exact storage contour, its human-readable address, canonical code, quantity, room context, and the authored 3D camera. The browser agent invokes the same search, inspect, focus, workflow-assessment, and collection actions that the interface displays.
 
 ### PBR Asset Studio
 
 Authored laboratory models remain orbitable and inspectable from every side, with validated dimensions, materials, indexing behavior, catalog thumbnails, and the same GLB used in the room renderer.
 
-![Asset Studio showing the authored BÜCHI R-300-class rotary evaporator](docs/screenshots/asset-studio-rotary-final.png)
+![Asset Studio showing the authored all-sided benchtop ultrasonic cleaner](docs/screenshots/submission-authored-asset-studio.png)
 
 ## Highlights
 
@@ -142,8 +163,8 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - Only `straight-wall` and `half-height-wall` remain procedural because they are hidden construction primitives controlled by the wall-drawing workflow, not draggable Asset Library products.
 - A visible Asset Studio provides an orbitable PBR preview plus front, back, left, right, top, and isometric camera presets.
 - Interactive select, marquee, pan, wall, door, window, measure, move, resize, rotate, copy, paste, duplicate, delete, lock, hide, and z-order actions.
-- Newly created laboratories and rooms open with genuinely blank planning canvases; **DEMO-01** remains available separately as the competition showcase.
-- DEMO-01 uses a user-authored, storage-first workflow informed by selected layout and equipment references from the author's Room 809 laboratory. It remains separate from the blank planning canvas. The factory demo source is immutable; creating or saving a demo produces a normal persisted room and never rewrites the template.
+- Newly created laboratories and rooms open with genuinely blank planning canvases; historical Build Week fixtures remain isolated for regression compatibility.
+- The final WebMCP public fixture is storage-first and contains only `LAB-D-00`, R-001, and R-002. Factory fixtures are immutable; creating or saving a room produces normal persisted data and never rewrites a template.
 - Selected wall segments can be translated directly or reshaped from endpoint handles while joined corners and hosted openings remain attached.
 - One simple closed straight-wall loop defines the floor: rectangles, concave L-shapes, split edges, and skewed loops share one clipped 2D floor, triangulated 3D floor, area/perimeter result, placement boundary, and normalized undoable resize.
 - Placed objects keep a reliable hit area and pointer-relative drag offset, and Select mode pans with middle-mouse drag, Space+drag, Arrow keys, or WASD.
@@ -153,7 +174,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - Rooms without a saved camera pose open with the user-approved relaxed split-view isometric framing; manual orbit poses persist per room, and ordinary 2D object moves never reset the 3D camera.
 - The Asset Library and Inspector collapse into narrow, labeled, keyboard-accessible rails when more canvas space is needed.
 - A dedicated Favorites tab gives quick access to starred assets; stars update immediately, persist safely across reloads, and remain usable for the current session even when browser storage is unavailable.
-- Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The DEMO-01 reference-services profile is the first bundled example and remains independently hideable.
+- Optional room environment profiles can add 3D-only ceiling, lighting, duct, utility, and service context without altering the indexed scene. The historical reference-services profile remains independently hideable.
 - Visual material libraries synchronize ten floor finishes and ten wall finishes between the 2D plan and 3D PBR room, including porcelain, pearl terrazzo, pale oak, ivory stone, and satin panels with per-wall overrides. Decorative office finishes are not wet-laboratory certification.
 - Cabinet, shelf, drawer, compartment, and bin hierarchies with stable codes and exact inventory locations.
 - Equipment identity, service, ownership, and utility requirements.
@@ -220,7 +241,7 @@ npm run release:check
 npm run dev
 ```
 
-The server creates a new local SQLite database from the source-controlled seed on first launch. SQLite files, local reference photographs, browser-test output, generated caches, and bulk QA captures are intentionally excluded from Git. The seed opens on an empty planning canvas and includes the user's complete sanitized **DEMO-01** video-showcase room. Choose **Demo room** in the header to open that full room immediately. An immutable 12-object factory template is also retained only as an optional copy/reset utility; it is not a reduced build and does not replace any website code or DEMO-01 content. Copying the developer SQLite database is neither required nor recommended.
+The server creates a new local SQLite database from the source-controlled seed on first launch. SQLite files, private reference photographs, browser-test output, generated caches, and bulk QA captures are intentionally excluded from Git. The local seed keeps historical Build Week fixtures only for regression compatibility; the final WebMCP judging path is the sanitized public `LAB-D-00` fixture described above. Copying the developer SQLite database is neither required nor recommended.
 
 For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUIDE.md). The earlier Build Week guide remains at [docs/submission/JUDGE_GUIDE.md](docs/submission/JUDGE_GUIDE.md).
 
@@ -238,6 +259,7 @@ For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUI
 | `npm run test`                     | Run the Vitest unit/integration suite                     |
 | `npm run test:e2e`                 | Run the Playwright competition and editor workflows       |
 | `npm run test:e2e:webmcp`          | Run the independent WebMCP judge workflow                 |
+| `npm run test:e2e:submission`      | Rehearse Build/Stock/Find and regenerate README captures  |
 | `npm run validate:assets`          | Validate manifests, authored GLBs, and static PNG renders |
 | `npm run release:check`            | Run lint, types, asset validation, tests, and build       |
 | `npm run format`                   | Format source and documentation                           |
@@ -254,7 +276,7 @@ I am a biologist, not a programmer. I supplied the laboratory knowledge, Room 80
 
 - **GPT-5.6 — product reasoning and design translation:** GPT-5.6 helped translate laboratory observations into workflows, information architecture, spatial-data requirements, interaction contracts, asset specifications, competition positioning, and clear acceptance criteria. It helped me reason about how an empty-room builder, synchronized 2D/3D editing, exact storage indexing, and deterministic search should operate as one coherent product.
 - **Codex — implementation and verification:** Codex worked directly in the repository to implement the React, TypeScript, Three.js, React Konva, Express, and SQLite application. It built and refined synchronized editor behavior, wall and opening workflows, asset tooling, persistence, validation, search navigation, tests, documentation, and release checks. It also diagnosed failures I reported through hands-on testing and screenshots, including corner snapping, disappearing objects, camera resets, stale saves, and renderer lifecycle problems.
-- **My role — domain authority and product decisions:** I evaluated every result from a laboratory-user perspective, corrected equipment anatomy and proportions, selected priorities, rejected unsuitable implementations, authored the DEMO-01 showcase, and decided when each workflow was acceptable. Codex made developing a professional tool approachable despite my lack of programming experience, while the laboratory and product judgment remained mine.
+- **My role — domain authority and product decisions:** I evaluated every result from a laboratory-user perspective, corrected equipment anatomy and proportions, selected priorities, rejected unsuitable implementations, authored the laboratory showcases, and decided when each workflow was acceptable. Codex made developing a professional tool approachable despite my lack of programming experience, while the laboratory and product judgment remained mine.
 
 The shipped Spatial Index is deterministic local software and requires no OpenAI API key or paid API billing. The primary Codex build session retained for the required `/feedback` evidence is `019f6a4d-25a9-7812-804c-88b695589b2a`.
 
@@ -280,8 +302,8 @@ Before Build Week, the project had a local laboratory layout/indexing prototype,
 - exact cabinet, shelf, drawer, compartment, and bin indexing;
 - project-wide Spatial Index search, photographic result evidence, and exact-location camera navigation;
 - direct Layout Editor placement warnings backed by deterministic geometry validation;
-- a restrained 12-object DEMO-01 factory template with one BÜCHI station and assigned flask evidence;
-- the user's full DEMO-01 video-showcase room as a sanitized source-controlled fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
+- a restrained historical factory template with one BÜCHI station and assigned flask evidence;
+- a sanitized source-controlled Build Week fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
 - authored GLB asset delivery, offline Draco decoding, regression tests, release checks, and submission documentation.
 
 The Build Week work followed the responsibility split documented in **How I used GPT-5.6 and Codex**: I supplied the laboratory expertise and made the product decisions; GPT-5.6 helped structure requirements and workflows; and Codex implemented, debugged, tested, and documented the working system. A possible LabSpace Atlas API remains a clearly labeled future extension rather than a claimed runtime feature.
@@ -304,6 +326,7 @@ React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, 
 - [LICENSE](LICENSE) — Apache License 2.0 for application source code
 - [LICENSE-ASSETS.md](LICENSE-ASSETS.md) — separate terms for models, renders, media, references, and branding
 - [NOTICE](NOTICE) — attribution and trademark boundary
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) — direct dependency licence inventory
 - [INDEXING_SYSTEM.md](INDEXING_SYSTEM.md) — code rules and storage hierarchy
 - [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md) — editor controls
 - [TESTING.md](TESTING.md) — automated and manual validation
@@ -317,23 +340,24 @@ React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, 
 
 ## Licensing
 
-The application source code is licensed under the Apache License 2.0. Visual
-assets, 3D models, renders, photographs, reference material, and LabSpace brand
-artwork are excluded from that software licence and remain All Rights Reserved
-unless explicitly stated otherwise. See [LICENSE-ASSETS.md](LICENSE-ASSETS.md)
-and [ASSET_LICENSES.md](ASSET_LICENSES.md) before redistributing repository
-media.
+The application source code, configuration, tests, and original text documentation are licensed
+under the [Apache License 2.0](LICENSE). This is the standard root licence GitHub should detect for
+the open-source challenge submission. Visual assets, 3D models, renders, photographs, reference
+material, and LabSpace brand artwork use the separate terms in
+[LICENSE-ASSETS.md](LICENSE-ASSETS.md) and [ASSET_LICENSES.md](ASSET_LICENSES.md). Open-source
+dependencies remain under their own licences as summarized in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Known prototype limitations
 
 - This is a single-user local prototype; it has no authentication, organizations, permissions, or concurrent editing.
-- Project navigation supports multiple laboratories and rooms, deliberate project/laboratory/room renaming, and guarded room deletion. Laboratory deletion and general laboratory/room reordering are not yet implemented.
+- Project navigation supports multiple laboratories and rooms, deliberate project/laboratory/room renaming, guarded room deletion, and guarded whole-laboratory deletion. General laboratory/room reordering is not yet implemented.
 - The user-visible 115-asset library is fully authored as orbitable GLBs. Two hidden wall-drawing primitives retain deterministic procedural geometry because their dimensions are created interactively.
 - The Spatial Index workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
 - All 117 definitions have same-geometry top/isometric imagery; the 115 user-visible assets use authored GLBs and the two hidden wall primitives remain procedural. These are planning representations rather than manufacturer-certified BIM objects.
 - Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
 - Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.
-- Only the optional DEMO-01 environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
+- Only one optional historical environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
 - The ten floor and ten wall finishes are optimized planning visuals with a mixture of shared photographic and procedural detail. They are not certified wet-lab, fire, slip, or construction specifications.
 - Labels use browser print-to-PDF rather than a bundled PDF engine.
 - The database stores validated project JSON behind a repository adapter; normalized multi-user relational tables are a future migration.

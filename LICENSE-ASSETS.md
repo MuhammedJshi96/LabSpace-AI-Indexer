@@ -1,12 +1,15 @@
 # LabSpace Atlas asset and media licence
 
-Copyright 2026 LabSpace Atlas contributors. All rights reserved.
+Copyright 2026 Muhammed Al-Jeshi and LabSpace Atlas contributors. All rights reserved.
 
 ## Scope
 
-The Apache License 2.0 in `LICENSE` applies to the software source code,
-configuration, tests, and original text documentation in this repository. It
-does **not** grant rights to the project's visual assets or reference material.
+The standard Apache License 2.0 in `LICENSE` applies to the software source
+code, configuration, tests, and original text documentation in this
+repository. It does **not** grant rights to the project's visual assets or
+reference material. This separation does not restrict cloning, building, or
+evaluating the public challenge submission; it governs redistribution and
+derivative use of the excluded media.
 
 Unless a file carries a different explicit licence, the following are excluded
 from the Apache License and remain **All Rights Reserved**:
@@ -46,16 +49,16 @@ data. Their provenance is documented in `ASSET_LICENSES.md` and
 
 ## Application screenshots and submission media
 
-The repository's Layout Editor, Spatial Index Finder, Asset Studio, evidence
-inspector, and room screenshots are protected LabSpace promotional media under
-this file. The Apache License applies to the source code that renders those
-interfaces, but not to the captured images, the submission banner, or other
-competition artwork unless a specific file states otherwise.
+The repository's Layout Editor, Spatial Index Finder, Asset Studio, WebMCP
+Inspector, evidence views, room screenshots, and competition banner are
+protected LabSpace promotional media under this file. The Apache License
+applies to the source code that renders those interfaces, but not to the
+captured images or competition artwork unless a specific file states
+otherwise.
 
-The current screenshots document deterministic local software. They do not
-contain or license model-generated runtime answers, an OpenAI Platform service,
-or a deployed LabSpace Atlas API. Any future API integration will require its own
-service terms, privacy disclosure, and provider configuration.
+The current screenshots document deterministic software running in a browser.
+They do not contain or license model-generated runtime answers, an OpenAI
+Platform service, or a deployed LabSpace Atlas model API.
 
 ## Permission requests
 

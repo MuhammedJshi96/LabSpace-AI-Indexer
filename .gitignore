@@ -18,6 +18,7 @@ docs/asset-qa/
 docs/screenshots/*
 !docs/screenshots/editor-1920x1080.png
 !docs/screenshots/digital-twin-project-scope-3004.jpg
+!docs/screenshots/submission-*.png
 data/*.sqlite
 data/*.sqlite-shm
 data/*.sqlite-wal

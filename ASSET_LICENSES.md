@@ -76,16 +76,17 @@ tool is not required by or included in the production web application bundle.
 `public/labspace-mark.svg` is original temporary geometric artwork created for
 this prototype at the user's request.
 
-The README submission banner at
-`docs/submission/labspace-ai-indexer-thumbnail-3x2-source-v1.png` was supplied
-by the project owner for this competition entry. It remains protected
-promotional artwork under `LICENSE-ASSETS.md` and is not included in the Apache
-2.0 software grant.
+The README and submission banner at
+`docs/submission/labspace-atlas-thumbnail-3x2-v1.png` is the project owner's
+approved LabSpace Atlas competition artwork. It remains protected promotional
+media under `LICENSE-ASSETS.md` and is not included in the Apache 2.0 software
+grant.
 
-Finalized Layout Editor, Spatial Index Finder, exact-location evidence, and
-Asset Studio screenshots are original captures of the LabSpace application.
-They remain protected submission media rather than reusable UI or catalog
-assets.
+Finalized Layout Editor, Inventory Studio, WebMCP Inspector, Spatial Index
+exact-location evidence, and Asset Studio screenshots are original captures of
+the LabSpace application. The original DPPH evidence illustration is also
+first-party LabSpace media. These files remain protected submission media
+rather than reusable UI or catalog assets.
 
 ## Interface icons
 

@@ -7,8 +7,8 @@ Audited on 2026-09-01 against the [published Devpost judging criteria](https://w
 - Twenty-four imperative WebMCP tools cover context, exact-record search and inspection, camera focus, room audit, grounded workflow assessment, catalog discovery, room planning, valid-placement ranking, resize/move validation, inventory planning/addition, bounded creation, material resolution, and guided collection.
 - Tools call the same canonical index, geometry, persistence, history, and validation actions used by the visible product; they do not automate clicks or scrape presentation text.
 - Tool registration survives normal product-route changes and is excluded from internal asset/capture routes.
-- Twenty-six deterministic eval cases and fourteen dedicated browser E2E cases cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, guided collection, keyboard duplication, and undo.
-- The visible WebMCP inspector leads with one 60-second Ask → Prove → Decide mission, keeps the twenty-four-tool surface progressive, exposes bounded inputs/results, supports typed and voice-ready prompts, and exports portable session evidence without presenting hidden reasoning.
+- Twenty-six deterministic eval cases plus dedicated browser suites cover discovery, orchestration, validation, side effects, lifecycle, approval, persistence, guided collection, the final three-mission rehearsal, screenshot integrity, keyboard duplication, and undo.
+- The visible WebMCP Inspector leads with one connected Build → Stock → Find-the-work demonstration, keeps the twenty-four-tool surface progressive, exposes bounded inputs/results, supports typed and voice-ready prompts, and exports portable session evidence without presenting hidden reasoning.
 
 ## Execution — strong evidence
 

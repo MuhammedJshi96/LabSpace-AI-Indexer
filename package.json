@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test",
     "test:e2e:webmcp": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test tests/e2e/webmcp-actions.spec.ts",
+    "test:e2e:submission": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.submission.config.ts tests/e2e/submission-rehearsal.spec.ts tests/e2e/submission-screenshots.spec.ts",
     "benchmark:webmcp": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.benchmark.config.ts",
     "benchmark:webmcp:personas": "node benchmarks/persona-sensitivity.mjs",
     "test:e2e:public": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config playwright.public.config.ts",

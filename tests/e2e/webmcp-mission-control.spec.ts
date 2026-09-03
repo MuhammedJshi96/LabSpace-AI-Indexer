@@ -84,6 +84,36 @@ test("presents the three-part judge demonstration and exports bounded session pr
   await expect(
     inspector.getByRole("heading", { name: "Build. Stock. Find the work." }),
   ).toBeVisible();
+  await expect(
+    inspector.getByRole("note", { name: "Recommended in-app browser view" }),
+  ).toContainText("give LabSpace about two-thirds of the window");
+  await expect(
+    inspector.getByRole("note", { name: "Recommended in-app browser view" }),
+  ).toContainText("closes this Inspector automatically");
+  await page.setViewportSize({ width: 860, height: 912 });
+  const compactLayout = await inspector.evaluate((element) => {
+    const panel = element.getBoundingClientRect();
+    const note = element
+      .querySelector<HTMLElement>(".webmcp-viewing-setup")!
+      .getBoundingClientRect();
+    return {
+      panelLeft: panel.left,
+      panelRight: panel.right,
+      viewportWidth: window.innerWidth,
+      noteLeft: note.left,
+      noteRight: note.right,
+    };
+  });
+  expect(compactLayout.panelLeft).toBeGreaterThanOrEqual(16);
+  expect(compactLayout.panelRight).toBeLessThanOrEqual(compactLayout.viewportWidth - 16);
+  expect(compactLayout.noteLeft).toBeGreaterThanOrEqual(compactLayout.panelLeft);
+  expect(compactLayout.noteRight).toBeLessThanOrEqual(compactLayout.panelRight);
+  if (process.env.LABSPACE_CAPTURE_UI === "1") {
+    await page.screenshot({
+      path: "test-results/webmcp-mission-control-compact.png",
+      fullPage: true,
+    });
+  }
   await expect(inspector.getByText("Ground evidence", { exact: true })).toBeVisible();
   await expect(inspector.getByText("Create R-003 from one request", { exact: true })).toBeVisible();
   await expect(inspector.getByText("Stage two enzyme records", { exact: true })).toBeVisible();

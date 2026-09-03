@@ -721,6 +721,37 @@
   border-color: var(--lab-enamel);
 }
 
+.webmcp-viewing-setup {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin: 10px 14px 0;
+  padding: 10px 12px;
+  color: var(--graphite);
+  background: #eaf7f4;
+  border: 1px solid #a9d8cf;
+  border-left: 3px solid var(--instrument-teal);
+  border-radius: 7px;
+}
+.webmcp-viewing-setup > svg {
+  color: var(--teal-dark);
+}
+.webmcp-viewing-setup > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.webmcp-viewing-setup b {
+  font-size: 12px;
+  line-height: 1.25;
+}
+.webmcp-viewing-setup small {
+  color: #45645e;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .webmcp-evidence-path {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

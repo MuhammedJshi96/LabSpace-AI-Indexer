@@ -604,6 +604,22 @@ export function AgentActivityPanel() {
             </div>
           </section>
 
+          <aside
+            className="webmcp-viewing-setup"
+            role="note"
+            aria-label="Recommended in-app browser view"
+          >
+            <Browser size={20} weight="duotone" aria-hidden="true" />
+            <span>
+              <b>Give the laboratory the larger pane</b>
+              <small>
+                Collapse ChatGPT&apos;s left sidebar, narrow the conversation pane, and give
+                LabSpace about two-thirds of the window. Copy + show workspace closes this Inspector
+                automatically.
+              </small>
+            </span>
+          </aside>
+
           <ol className="webmcp-evidence-path" aria-label="Signature WebMCP evidence path">
             <li>
               <span>1</span>
@@ -946,9 +962,14 @@ export function AgentActivityPanel() {
               <em>Fastest</em>
             </div>
             <ol>
-              <li>Keep LabSpace open in ChatGPT&apos;s browser.</li>
-              <li>Type your request in the ChatGPT conversation beside the page.</li>
-              <li>Review every structured call here and approve staged changes in LabSpace.</li>
+              <li>Collapse ChatGPT&apos;s left sidebar, then narrow the conversation pane.</li>
+              <li>Give LabSpace about two-thirds of the window before starting the mission.</li>
+              <li>Type or speak your request in the conversation beside the page.</li>
+              <li>
+                Choose <b>Copy + show workspace</b> when using a prepared mission; this Inspector
+                closes automatically.
+              </li>
+              <li>Reopen WebMCP to review tool evidence and approve staged changes.</li>
             </ol>
           </section>
 

@@ -59,10 +59,13 @@ three-part judge demonstration rather than a tool wall:
 
 The Inspector keeps **24 tools ready** and the visible **Reviewed** execution boundary on screen throughout.
 
-Choose **Copy + show workspace** (or the shorter voice-input version); the Inspector closes so
-the exact 2D/3D evidence remains unobstructed while the browser agent works. The copied request
-explicitly requires the page's `labspace_*` WebMCP tools and forbids a silent fallback to clicks,
-drags, or computer control; a missing bridge is reported instead.
+For the clearest ChatGPT in-app browser view, collapse ChatGPT's left project sidebar, make the
+conversation pane narrower, and give LabSpace roughly two-thirds of the window. Open the Inspector
+only to choose a mission or review evidence. Choose **Copy + show workspace** (or the shorter
+voice-input version) to copy the request and close the Inspector automatically, keeping the exact
+2D/3D result visible while the browser agent works. The copied request explicitly requires the
+page's `labspace_*` WebMCP tools and forbids a silent fallback to clicks, drags, or computer control;
+a missing bridge is reported instead.
 Open **Evidence** to inspect bounded tool inputs/results, then choose **Export proof** for a portable
 session-evidence JSON file.
 

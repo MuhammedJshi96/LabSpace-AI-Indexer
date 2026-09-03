@@ -35,7 +35,7 @@ describe("3D camera command identity", () => {
     const afterObjectMove = cameraCommandKey(command);
 
     expect(afterObjectMove).toBe(beforeObjectMove);
-    expect(beforeObjectMove).toBe("room-809-demo:editor:isometric:room:object");
+    expect(beforeObjectMove).toBe("room-809-demo:editor:isometric:room:object:default");
   });
 
   it("changes only for explicit room, preset, presentation, or focus commands", () => {
@@ -129,6 +129,38 @@ describe("Spatial Index exact-location camera approach", () => {
         exactLocation: true,
       }),
     ).toBeCloseTo(3.1);
+  });
+
+  it("keeps a workflow workspace closer than a generic whole-object focus", () => {
+    const workspace = digitalTwinFocusDistance({
+      roomExtent: 8.2,
+      focusedEnvelope: 3.6,
+      exactLocation: false,
+      workspace: true,
+    });
+    const generic = digitalTwinFocusDistance({
+      roomExtent: 8.2,
+      focusedEnvelope: 3.6,
+      exactLocation: false,
+    });
+
+    expect(workspace).toBeLessThan(generic);
+    expect(workspace).toBeGreaterThanOrEqual(3.8);
+  });
+
+  it("uses a three-quarter approach for a work-surface handoff", () => {
+    const position = chooseDigitalTwinFocusCameraPosition({
+      target: { x: 0, y: 0.98, z: 0 },
+      desiredDistance: 4.8,
+      approach: { forwardX: 0, forwardZ: 1, lateralX: 1, lateralZ: 0 },
+      roomWidth: 8.2,
+      roomDepth: 6,
+      exactLocation: false,
+      preferOblique: true,
+    });
+
+    expect(Math.abs(position.lateralBias)).toBeGreaterThanOrEqual(0.72);
+    expect(position.y).toBeGreaterThan(2);
   });
 
   it("keeps the evidence camera inside the available aisle", () => {

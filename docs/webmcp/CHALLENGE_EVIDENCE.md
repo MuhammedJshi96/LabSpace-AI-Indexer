@@ -49,7 +49,7 @@ The baseline documentation commit adds only `docs/webmcp/BASELINE.md`; it states
 - Independent Playwright coverage for route registration, compact-header evidence, the complete signature exact-location mission and proof export, automatic first-room construction, and the complete human-reviewed later-change workflow.
 - Independent, automatically saved browser workspaces survive refresh and deployment; stale tabs cannot silently overwrite newer saves. No account or cloud-sync claim is made.
 - GitHub Actions verification for the release gate and independent WebMCP browser workflow.
-- Judge, deployment, Devpost, video, and screenshot materials.
+- Deployment documentation, repeatable High-quality product screenshots, and public verification evidence.
 - A complete visible Asset Library conversion: 115 authored orbitable PBR GLBs with matching top/isometric renders; only two hidden wall-drawing primitives remain procedural.
 
 ## Challenge commits

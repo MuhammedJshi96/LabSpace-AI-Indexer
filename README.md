@@ -8,12 +8,10 @@
 
 <p align="center">
   <a href="https://labspace-agent-twin.onrender.com"><strong>Live judge app</strong></a>
-  · <a href="docs/webmcp/JUDGE_GUIDE.md">60-second judge guide</a>
-  · <a href="docs/submission/FINAL_DEMO_SCRIPT_2026-09-03.md">under-three-minute demo runbook</a>
   · <a href="LICENSE">Apache-2.0 source licence</a>
 </p>
 
-**LabSpace Atlas** is a browser-native spatial operating system for laboratories. Researchers and browser agents work on the same millimetre-accurate 2D/3D model to design rooms, index physical storage, validate placements, find exact equipment or inventory locations, and hand off a grounded collection route. The application is deterministic, local-first, inspectable, and usable without an API key or paid model call.
+**LabSpace Atlas** is a browser-native spatial operating system for laboratories. Researchers and browser agents work on the same millimetre-accurate 2D/3D model to design rooms, index physical storage, validate placements, find exact equipment or inventory locations, and hand off a grounded collection route. The application is deterministic, inspectable, and usable without an OpenAI API key or paid model call.
 
 ## WebMCP Challenge — LabSpace Atlas
 
@@ -21,7 +19,7 @@
 
 ![LabSpace Atlas WebMCP mission control showing the three connected judge missions and human-controlled execution boundary](docs/screenshots/submission-webmcp-mission-control.png)
 
-**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — the privacy-checked public workspace contains only laboratory **`LAB-D-00`** with authored rooms **R-001** and **R-002**. **R-003 is deliberately absent** and is created live during judging. The free instance can take up to about a minute to wake after inactivity.
+**Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — the privacy-checked public workspace contains only laboratory **`LAB-D-00`** with authored rooms **R-001** and **R-002**. **R-003 is deliberately absent** and is created live during judging.
 
 ### Submission evidence map
 
@@ -33,7 +31,6 @@
 | Public source + licence     | Complete source, required runtime assets, clean-clone instructions, standard [Apache License 2.0](LICENSE), separate [asset/media terms](LICENSE-ASSETS.md), and [third-party notices](THIRD_PARTY_NOTICES.md) |
 | Existing-project boundary   | Annotated tag `pre-webmcp-2026-08-27` and dated [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md)                                                                                                        |
 | Testing and reproducibility | [`npm run test:e2e:submission`](package.json), full release check, public-persistence suite, and the [final rehearsal spec](tests/e2e/submission-rehearsal.spec.ts)                                            |
-| Demo video preparation      | Timestamped [2:58 recording script](docs/submission/FINAL_DEMO_SCRIPT_2026-09-03.md) with a real product capture after the short optional opener                                                               |
 
 This packaging follows the official [WebMCP Challenge page](https://openai.com/webmcp-challenge/), [Devpost requirements](https://webmcp.devpost.com/), [resources](https://webmcp.devpost.com/resources), and [rules](https://webmcp.devpost.com/rules).
 
@@ -115,11 +112,27 @@ browser agent → document.modelContext → LabSpace tool adapter
                                       → history + autosave + Undo + bounded activity evidence
 ```
 
-This challenge work extends the pre-existing LabSpace application. The annotated `pre-webmcp-2026-08-27` tag preserves the verified boundary; later challenge commits add the WebMCP adapter, shared actions, deterministic validation, capability-scoped initial-room creation, human-reviewed later changes, Agent Activity evidence, evals, and independent browser workflow tests. See the [WebMCP judge guide](docs/webmcp/JUDGE_GUIDE.md), [architecture](docs/webmcp/ARCHITECTURE.md), and [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md).
+This challenge work extends the pre-existing LabSpace application. The annotated `pre-webmcp-2026-08-27` tag preserves the verified boundary; later challenge commits add the WebMCP adapter, shared actions, deterministic validation, capability-scoped room creation, human-reviewed mutations, Agent Activity evidence, evaluations, and independent browser workflow tests. See the [architecture](docs/webmcp/ARCHITECTURE.md) and [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md).
 
-The runtime remains local and no-billing: LabSpace embeds no model, sends no model API request, and needs no OpenAI API key. Intelligence comes from the user's WebMCP-capable browser agent; LabSpace supplies deterministic domain tools, a human-controlled execution policy, and the visible review surface.
+LabSpace embeds no model, sends no model API request, and needs no OpenAI API key. Intelligence comes from the user's WebMCP-capable browser agent; LabSpace supplies deterministic domain tools, a human-controlled execution policy, and the visible review surface.
 
 ## Finalized product tour
+
+Every image in this tour is captured from the current public fixture in **High** rendering quality.
+
+### WebMCP mission control and evidence
+
+WebMCP is the centre of the challenge submission. The Inspector turns a natural-language or voice request into a visible **Ask → Prove → Decide** sequence, while the laboratory workspace remains the source of truth.
+
+![LabSpace Atlas WebMCP mission control with three connected voice-ready missions and Reviewed execution](docs/screenshots/submission-webmcp-mission-control.png)
+
+The live registry makes all 24 capabilities and their safety boundaries inspectable instead of asking judges to trust a hidden integration.
+
+![LabSpace Atlas WebMCP tool registry showing the browser-native laboratory tools](docs/screenshots/submission-webmcp-tools.png)
+
+Each call leaves bounded evidence: the tool, decision, workspace focus and human review state are visible without presenting hidden model reasoning as an audit trail.
+
+![LabSpace Atlas WebMCP evidence view tied to an exact DPPH spatial result](docs/screenshots/submission-webmcp-evidence.png)
 
 ### Layout Editor
 
@@ -151,6 +164,9 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 ## Highlights
 
+- **A browser agent can operate the laboratory model through 24 real WebMCP tools.** It can build a validated room, stage inventory for approval, search exact records, assess a workflow, and hand off a step-by-step collection route in the same interface a researcher sees.
+- **Human control is structural, not decorative.** Reviewed mode is the default; risky or destructive work cannot be silently applied, while bounded Fast Draft creation stays visible, validated and undoable.
+- **Every agent claim can be checked against the workspace.** Tool activity, exact storage evidence, room audits, missing materials and final work-surface selection remain inspectable in 2D/3D.
 - One canonical, versioned scene model drives React Konva 2D and React Three Fiber 3D.
 - A project navigator creates and switches among multiple laboratories and rooms; generic project/laboratory/room factories never clone demonstration content into a blank workspace.
 - A dedicated project-wide Spatial Index Finder searches inventory, equipment, and nested storage locations across every laboratory and room, switches the live spatial scene to a selected result, highlights the related 3D asset or drawer/shelf/bin region, and deep-links back to the same room and editor record.
@@ -163,7 +179,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 - Only `straight-wall` and `half-height-wall` remain procedural because they are hidden construction primitives controlled by the wall-drawing workflow, not draggable Asset Library products.
 - A visible Asset Studio provides an orbitable PBR preview plus front, back, left, right, top, and isometric camera presets.
 - Interactive select, marquee, pan, wall, door, window, measure, move, resize, rotate, copy, paste, duplicate, delete, lock, hide, and z-order actions.
-- Newly created laboratories and rooms open with genuinely blank planning canvases; historical Build Week fixtures remain isolated for regression compatibility.
+- Newly created laboratories and rooms open with genuinely blank planning canvases; historical fixtures remain isolated for regression compatibility.
 - The final WebMCP public fixture is storage-first and contains only `LAB-D-00`, R-001, and R-002. Factory fixtures are immutable; creating or saving a room produces normal persisted data and never rewrites a template.
 - Selected wall segments can be translated directly or reshaped from endpoint handles while joined corners and hosted openings remain attached.
 - One simple closed straight-wall loop defines the floor: rectangles, concave L-shapes, split edges, and skewed loops share one clipped 2D floor, triangulated 3D floor, area/perimeter result, placement boundary, and normalized undoable resize.
@@ -194,7 +210,9 @@ The Spatial Index renders every visible object in the active room so evidence al
 
 **Low / Balanced / High rendering** is shared across the editor, Spatial Index, Facility and Asset Studio. Balanced is the default with a one-click reset; High adds restrained contact shading and cached finish microtexture at extra GPU cost. Clear panes retain their transparent blue accent. Quality changes preserve camera, selection, storage openings and saved room data. See the [rendering comparison and rollback notes](docs/local-render-quality.md).
 
-## Start locally
+## Optional local verification
+
+The hosted application above is the primary judge experience. These steps are included so the public source can also be reproduced and tested independently.
 
 Requirements: Node.js 22.5 or newer (Node.js 24 LTS is recommended). The built-in SQLite module is the only platform-sensitive runtime requirement.
 
@@ -215,7 +233,7 @@ Open [http://127.0.0.1:3004/](http://127.0.0.1:3004/). The searchable spatial in
 
 For a non-technical Windows walkthrough, see [SETUP.md](SETUP.md).
 
-## Clean clone and judge setup
+## Reproduce the release
 
 ### Latest competition polish
 
@@ -241,9 +259,7 @@ npm run release:check
 npm run dev
 ```
 
-The server creates a new local SQLite database from the source-controlled seed on first launch. SQLite files, private reference photographs, browser-test output, generated caches, and bulk QA captures are intentionally excluded from Git. The local seed keeps historical Build Week fixtures only for regression compatibility; the final WebMCP judging path is the sanitized public `LAB-D-00` fixture described above. Copying the developer SQLite database is neither required nor recommended.
-
-For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUIDE.md). The earlier Build Week guide remains at [docs/submission/JUDGE_GUIDE.md](docs/submission/JUDGE_GUIDE.md).
+The server creates a new local SQLite database from the source-controlled development seed on first launch. SQLite files, private reference photographs, browser-test output, generated caches, and bulk QA captures are intentionally excluded from Git. The final WebMCP judging path uses the sanitized public `LAB-D-00` fixture described above. Copying the developer SQLite database is neither required nor recommended.
 
 ## Commands
 
@@ -266,9 +282,9 @@ For the WebMCP Challenge, see [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUI
 
 `npm run assets:build` uses Blender 4.5 LTS. It resolves the project-local portable build by default, or a compatible executable supplied through `BLENDER_PATH`.
 
-## Local data
+## Data and persistence
 
-The active database is `<repository>/data/labspace-indexer.sqlite`. No project data, analytics, or telemetry leaves the computer. JSON export is the portable backup format.
+Local development stores the validated project in `<repository>/data/labspace-indexer.sqlite`. The hosted public app persists each visitor's workspace in that browser's IndexedDB; it is not account sync or shared cloud collaboration. LabSpace does not include product analytics or telemetry, and JSON export is the portable backup format.
 
 ## How I used GPT-5.6 and Codex
 
@@ -278,9 +294,9 @@ I am a biologist, not a programmer. I supplied the laboratory knowledge, Room 80
 - **Codex — implementation and verification:** Codex worked directly in the repository to implement the React, TypeScript, Three.js, React Konva, Express, and SQLite application. It built and refined synchronized editor behavior, wall and opening workflows, asset tooling, persistence, validation, search navigation, tests, documentation, and release checks. It also diagnosed failures I reported through hands-on testing and screenshots, including corner snapping, disappearing objects, camera resets, stale saves, and renderer lifecycle problems.
 - **My role — domain authority and product decisions:** I evaluated every result from a laboratory-user perspective, corrected equipment anatomy and proportions, selected priorities, rejected unsuitable implementations, authored the laboratory showcases, and decided when each workflow was acceptable. Codex made developing a professional tool approachable despite my lack of programming experience, while the laboratory and product judgment remained mine.
 
-The shipped Spatial Index is deterministic local software and requires no OpenAI API key or paid API billing. The primary Codex build session retained for the required `/feedback` evidence is `019f6a4d-25a9-7812-804c-88b695589b2a`.
+The shipped Spatial Index and WebMCP actions are deterministic application software and require no OpenAI API key or paid model call.
 
-## WebMCP local test and deployment
+## WebMCP integration and hosting
 
 Use a WebMCP-capable ChatGPT in-app browser for the easiest natural-language flow. In Chrome, enable `chrome://flags/#enable-webmcp-testing`; to use Chrome's DevTools WebMCP pane, also enable `chrome://flags/#devtools-webmcp-support`. On `/` or `/digital-twin`, run:
 
@@ -291,24 +307,25 @@ tools.map((tool) => tool.name);
 
 The result should contain exactly the twenty-four tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
 
-The repository includes [`render.yaml`](render.yaml) for a no-billing Render web service. It builds with `npm ci --include=dev && npm run build`, starts Express, and checks `/api/health`. The public app automatically saves its full project and named room versions in **IndexedDB in the current browser**. “Saved in this browser” confirms a completed disk transaction. Refresh, server-session expiry, Render restart and redeployment do not replace that saved project. First-time visitors adopt their existing isolated server session (or the approved starter snapshot); other browsers remain independent. Older tabs cannot silently overwrite newer saves. This is same-browser/device storage, not account or cloud sync: export JSON before clearing site data, leaving private browsing, or changing computers. Local SQLite and the automated-test seed remain separate. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
+The repository includes [`render.yaml`](render.yaml) for the Render deployment. It builds with `npm ci --include=dev && npm run build`, starts Express, and checks `/api/health`. The public app automatically saves its full project and named room versions in **IndexedDB in the current browser**. “Saved in this browser” confirms a completed disk transaction. Refresh, server-session expiry, Render restart and redeployment do not replace that saved project. First-time visitors adopt their existing isolated server session (or the approved starter snapshot); other browsers remain independent. Older tabs cannot silently overwrite newer saves. This is same-browser/device storage, not account or cloud sync: export JSON before clearing site data, leaving private browsing, or changing computers. Local SQLite and the automated-test seed remain separate. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 
-## Build Week scope and authorship
+## WebMCP Challenge scope and authorship
 
-Before Build Week, the project had a local laboratory layout/indexing prototype, a canonical scene schema, and an early procedural asset catalog. During the competition period, the work concentrated on the judgeable spatial-digital-twin workflow:
+LabSpace existed before the WebMCP Challenge as a laboratory layout editor with a canonical scene model, synchronized 2D/3D views, an asset library, inventory, storage and a Spatial Index. The annotated `pre-webmcp-2026-08-27` tag preserves that boundary.
 
-- immutable demo-template ownership plus user-owned Demo Room persistence;
-- synchronized, material-aware 2D/3D editing with camera-preserving object movement;
-- exact cabinet, shelf, drawer, compartment, and bin indexing;
-- project-wide Spatial Index search, photographic result evidence, and exact-location camera navigation;
-- direct Layout Editor placement warnings backed by deterministic geometry validation;
-- a restrained historical factory template with one BÜCHI station and assigned flask evidence;
-- a sanitized source-controlled Build Week fixture with its authored layout, indexed equipment, inventory, and exact storage hierarchy;
-- authored GLB asset delivery, offline Draco decoding, regression tests, release checks, and submission documentation.
+The challenge work turned that product into a browser-agent workspace:
 
-The Build Week work followed the responsibility split documented in **How I used GPT-5.6 and Codex**: I supplied the laboratory expertise and made the product decisions; GPT-5.6 helped structure requirements and workflows; and Codex implemented, debugged, tested, and documented the working system. A possible LabSpace Atlas API remains a clearly labeled future extension rather than a claimed runtime feature.
+- 24 registered `labspace_*` tools share the same deterministic actions as the visible UI;
+- natural-language room, annex and inventory planners operate on canonical dimensions, hosted openings, support surfaces and exact storage paths;
+- Reviewed and Fast Draft policies create a visible human decision boundary that tool arguments cannot bypass;
+- workflow assessment resolves requested materials against live stock, keeps missing items explicit, ranks real work surfaces and creates a navigable collection guide;
+- every tool call, proposal, approval, cancellation and focus transition produces bounded, exportable activity evidence;
+- the clean public fixture contains only `LAB-D-00`, R-001 and R-002, leaving R-003 for live creation;
+- independent browser tests rehearse the complete Build → Stock → Find path and regenerate the published High-quality product captures.
 
-See [docs/submission/BUILD_WEEK_IMPLEMENTATION.md](docs/submission/BUILD_WEEK_IMPLEMENTATION.md) for the architecture, originality boundary, human/AI collaboration record, and measured demo facts.
+The collaboration remained human-led: I supplied the laboratory expertise, problem definition, references, product direction and acceptance decisions; GPT-5.6 helped structure requirements and workflows; and Codex implemented, debugged, tested and documented the working system.
+
+See the [challenge implementation record](docs/submission/BUILD_WEEK_IMPLEMENTATION.md) and [dated challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md) for the originality boundary and verification trail.
 
 ## Technology
 
@@ -332,8 +349,6 @@ React 19, TypeScript strict mode, Vite, Express, Node's SQLite module, Zustand, 
 - [TESTING.md](TESTING.md) — automated and manual validation
 - [ROADMAP.md](ROADMAP.md) — limitations and recommended next phase
 - [SECURITY_NOTES.md](SECURITY_NOTES.md) — local security model
-- [docs/webmcp/JUDGE_GUIDE.md](docs/webmcp/JUDGE_GUIDE.md) — rapid WebMCP judge workflow
-- [docs/webmcp/CHALLENGE_SCORECARD.md](docs/webmcp/CHALLENGE_SCORECARD.md) — evidence-based judging-criteria audit
 - [docs/webmcp/ARCHITECTURE.md](docs/webmcp/ARCHITECTURE.md) — WebMCP adapter, shared actions, bounded initial creation, and later-change approval
 - [docs/webmcp/CHALLENGE_EVIDENCE.md](docs/webmcp/CHALLENGE_EVIDENCE.md) — dated pre-existing versus challenge-built evidence
 - [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md) — production hosting and smoke checks
@@ -350,12 +365,11 @@ dependencies remain under their own licences as summarized in
 
 ## Known prototype limitations
 
-- This is a single-user local prototype; it has no authentication, organizations, permissions, or concurrent editing.
+- This is a hosted public prototype with browser-local workspaces. It does not yet provide accounts, organizations, permissions, shared cloud projects or concurrent editing.
 - Project navigation supports multiple laboratories and rooms, deliberate project/laboratory/room renaming, guarded room deletion, and guarded whole-laboratory deletion. General laboratory/room reordering is not yet implemented.
 - The user-visible 115-asset library is fully authored as orbitable GLBs. Two hidden wall-drawing primitives retain deterministic procedural geometry because their dimensions are created interactively.
 - The Spatial Index workspace is functionally connected to canonical project data, but the current room renderer is still a planning visualization rather than a measured or scan-derived facility twin. Inventory pictures currently use the containing spatial asset when no item photograph exists.
-- All 117 definitions have same-geometry top/isometric imagery; the 115 user-visible assets use authored GLBs and the two hidden wall primitives remain procedural. These are planning representations rather than manufacturer-certified BIM objects.
-- Authored and parametric assets are planning representations, not manufacturer-certified BIM/CAD models.
+- All 117 definitions have same-geometry top/isometric imagery; the 115 user-visible assets use authored GLBs and the two hidden wall primitives remain procedural. They are planning representations, not manufacturer-certified BIM/CAD objects.
 - Simple single-loop straight-wall floors are supported, but open chains, branches/partitions, multiple loops, holes, curves, and self-crossing perimeters use the rectangular fallback; wall joins and opening anchors are not a full solid-modelling kernel.
 - Only one optional historical environment profile is currently registered; it is sparse visual dressing, not measured or selectable MEP/BIM geometry.
 - The ten floor and ten wall finishes are optimized planning visuals with a mixture of shared photographic and procedural detail. They are not certified wet-lab, fire, slip, or construction specifications.

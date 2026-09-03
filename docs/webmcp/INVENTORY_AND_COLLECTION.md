@@ -4,7 +4,7 @@ LabSpace Atlas exposes **24 WebMCP tools**. Write natural-language requests in y
 
 ## Add inventory
 
-Ask: “Add 12 boxes of pipette tips to DEMO-01. Find a storage destination and let me review the entry.”
+Ask: “Add 12 boxes of 200 µL pipette tips to R-002. Find a storage destination and let me review the entry.”
 
 1. `labspace_inventory_locations` discovers real destinations, with room codes and cabinet/shelf/drawer paths.
 2. `labspace_add_inventory` accepts 1–20 entries. Required: `roomCode`, `name`, `quantity`, `unit`. Optional: `storageLocationId`, `owner`, `notes`, `expiryDate` (`YYYY-MM-DD` or null).
@@ -14,7 +14,7 @@ Ask: “Add 12 boxes of pipette tips to DEMO-01. Find a storage destination and 
 {
   "entries": [
     {
-      "roomCode": "DEMO-01",
+      "roomCode": "R-002",
       "name": "Pipette tips, 200 µL",
       "quantity": 12,
       "unit": "boxes",

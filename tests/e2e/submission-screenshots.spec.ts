@@ -56,19 +56,20 @@ test.beforeEach(async ({ page, request }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
       "labspace-render-settings-v1",
-      JSON.stringify({ version: 1, quality: "balanced" }),
+      JSON.stringify({ version: 1, quality: "high" }),
     );
   });
   await installModelContext(page);
 });
 
 test("captures the final public judge experience from one clean fixture", async ({ page }) => {
+  test.setTimeout(360_000);
   await page.goto("/");
   await expect(page.getByText("Analytical Chemistry Lab", { exact: true }).first()).toBeVisible();
   await expect(page.getByTestId("3d-view").locator("canvas")).toBeVisible();
   await expect.poll(async () => (await documentTools(page)).length).toBe(24);
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true", {
-    timeout: 90_000,
+    timeout: 180_000,
   });
   await page.screenshot({
     path: "docs/screenshots/submission-layout-editor.png",
@@ -82,6 +83,12 @@ test("captures the final public judge experience from one clean fixture", async 
   await page.waitForTimeout(700);
   await page.screenshot({
     path: "docs/screenshots/submission-webmcp-mission-control.png",
+  });
+
+  await inspector.getByRole("tab", { name: /Tools 24/i }).click();
+  await expect(inspector.getByText("labspace_assess_workflow", { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: "docs/screenshots/submission-webmcp-tools.png",
   });
 
   await inspector.getByRole("button", { name: "Close WebMCP Inspector" }).click();
@@ -115,19 +122,30 @@ test("captures the final public judge experience from one clean fixture", async 
         evidenceImage.evaluate(
           (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
         ),
-      { timeout: 30_000 },
+      { timeout: 90_000 },
     )
     .toBe(true);
   await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true", {
-    timeout: 90_000,
+    timeout: 180_000,
   });
   await page.screenshot({
     path: "docs/screenshots/submission-spatial-index-dpph.png",
   });
 
+  await page.getByRole("button", { name: /Open WebMCP Inspector/i }).click();
+  const evidenceInspector = page.getByRole("complementary", { name: "WebMCP Inspector" });
+  await evidenceInspector.getByRole("tab", { name: /Evidence/i }).click();
+  await expect(evidenceInspector.getByText("Record focus", { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: "docs/screenshots/submission-webmcp-evidence.png",
+  });
+  await evidenceInspector.getByRole("button", { name: "Close WebMCP Inspector" }).click();
+
   await page.goto("/asset-preview?asset=ultrasonic-cleaner");
   await expect(page.getByRole("heading", { name: "Benchtop ultrasonic cleaner" })).toBeVisible();
-  await page.waitForTimeout(1_500);
+  await expect(page.locator(".asset-preview-canvas")).toHaveAttribute("data-model-ready", "true", {
+    timeout: 90_000,
+  });
   await page.screenshot({
     path: "docs/screenshots/submission-authored-asset-studio.png",
   });

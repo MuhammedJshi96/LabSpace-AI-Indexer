@@ -39,11 +39,10 @@ saved user data unchanged.
 - `tests/unit/judge-evidence.test.ts`
 - `tests/e2e/webmcp-mission-control.spec.ts`
 - `README.md`
-- `docs/webmcp/JUDGE_GUIDE.md`
 - `docs/webmcp/CHALLENGE_EVIDENCE.md`
-- `docs/webmcp/CHALLENGE_SCORECARD.md`
-- `docs/webmcp/submission/DEVPOST_SUBMISSION.md`
-- `docs/webmcp/submission/SCREENSHOT_PLAN.md`
+- `docs/screenshots/submission-webmcp-mission-control.png`
+- `docs/screenshots/submission-webmcp-tools.png`
+- `docs/screenshots/submission-webmcp-evidence.png`
 
 The layer is deliberately read-only except for copying prompts and downloading an explicit JSON
 evidence file. It never calls a project mutation, modifies the active room, or persists an

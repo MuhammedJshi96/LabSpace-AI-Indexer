@@ -29,3 +29,22 @@ scripts/blender/__pycache__/
 *.log
 /GOAL_PROGRESS.md
 /design-qa.md
+
+# Private working notes and submission preparation (kept locally, never published)
+/AGENTS.md
+/BUILD_WEEK_MASTER_GOAL.md
+/FINAL_REPORT.md
+/docs/FLOORPLANNER_AUTHENTICATED_AUDIT.md
+/docs/design-qa.md
+/docs/qa/
+/docs/submission/DEVPOST_DRAFT.md
+/docs/submission/DEVPOST_STORY_FINAL.md
+/docs/submission/FINAL_DEMO_SCRIPT_2026-09-03.md
+/docs/submission/JUDGE_GUIDE.md
+/docs/submission/LabSpace-AI-Judge-Evidence-Packet.pdf
+/docs/submission/VIDEO_SCRIPT.md
+/docs/submission/screenshots-3x2/
+/docs/submission/labspace-ai-*.png
+/docs/webmcp/CHALLENGE_SCORECARD.md
+/docs/webmcp/JUDGE_GUIDE.md
+/docs/webmcp/submission/

@@ -4,6 +4,7 @@ export type CameraCommandInput = {
   preset: string;
   focusObjectId?: string | null;
   focusLocationId?: string | null;
+  focusMode?: "record" | "workspace" | null;
 };
 
 export function isCameraFocusClear(previous: CameraCommandInput | null, next: CameraCommandInput) {
@@ -129,14 +130,22 @@ export function digitalTwinFocusDistance({
   roomExtent,
   focusedEnvelope,
   exactLocation,
+  workspace = false,
 }: {
   roomExtent: number;
   focusedEnvelope: number;
   exactLocation: boolean;
+  workspace?: boolean;
 }) {
   if (exactLocation) {
     const roomCap = Math.min(4.6, Math.max(3.4, roomExtent * 0.52));
     return Math.min(roomCap, Math.max(3.1, focusedEnvelope * 0.95 + 0.65));
+  }
+  if (workspace) {
+    // A work-surface handoff should show the usable top and its aisle, not
+    // retreat to a room overview or look squarely through an overhead bridge.
+    const roomCap = Math.min(5.2, Math.max(4.2, roomExtent * 0.62));
+    return Math.min(roomCap, Math.max(3.8, focusedEnvelope * 1.15 + 0.65));
   }
   const roomCap = Math.min(7.4, Math.max(5, roomExtent * 0.84));
   return Math.min(roomCap, Math.max(4.2, focusedEnvelope * 1.85 + 1.2));
@@ -215,6 +224,7 @@ export function chooseDigitalTwinFocusCameraPosition({
   roomWidth,
   roomDepth,
   exactLocation,
+  preferOblique = false,
   obstacles = [],
 }: {
   target: { x: number; y: number; z: number };
@@ -223,29 +233,16 @@ export function chooseDigitalTwinFocusCameraPosition({
   roomWidth: number;
   roomDepth: number;
   exactLocation: boolean;
+  preferOblique?: boolean;
   obstacles?: readonly DigitalTwinFocusObstacle[];
 }): DigitalTwinFocusCameraPosition {
   // A narrow five-angle fan was not enough for dense rooms: every candidate
   // could sit behind the same island, chair or freezer. Keep every option on
   // the authored-front hemisphere, but add wider aisle-side views and a
   // nearer fallback before accepting an occluded sightline.
-  const lateralBiases = [
-    0.18,
-    -0.18,
-    0,
-    0.42,
-    -0.42,
-    0.72,
-    -0.72,
-    1.02,
-    -1.02,
-    1.16,
-    -1.16,
-    1.45,
-    -1.45,
-    2,
-    -2,
-  ];
+  const lateralBiases = preferOblique
+    ? [0.92, -0.92, 1.16, -1.16, 0.72, -0.72, 1.45, -1.45, 0.42, -0.42, 2, -2]
+    : [0.18, -0.18, 0, 0.42, -0.42, 0.72, -0.72, 1.02, -1.02, 1.16, -1.16, 1.45, -1.45, 2, -2];
   const distanceScales = exactLocation ? [1, 0.84, 0.68] : [1, 0.84];
   const minimumAisleDistance = exactLocation ? 1.35 : 1.9;
   const candidates = lateralBiases.flatMap((lateralBias, lateralIndex) =>
@@ -317,8 +314,14 @@ export function cameraCommandKey({
   preset,
   focusObjectId,
   focusLocationId,
+  focusMode,
 }: CameraCommandInput) {
-  return [roomId, presentation, preset, focusObjectId ?? "room", focusLocationId ?? "object"].join(
-    ":",
-  );
+  return [
+    roomId,
+    presentation,
+    preset,
+    focusObjectId ?? "room",
+    focusLocationId ?? "object",
+    focusMode ?? "default",
+  ].join(":");
 }

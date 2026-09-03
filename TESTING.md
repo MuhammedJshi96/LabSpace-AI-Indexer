@@ -98,13 +98,13 @@ The authored build uses Blender 4.5 LTS to regenerate 45 all-sided GLBs and 90 s
 
 ## Visual QA
 
-Principal editor, Spatial Index, 3D-room, Asset Studio, and Floorplanner-audit screenshots are stored in `docs/screenshots`. Use `docs/design-qa.md` and `docs/FLOORPLANNER_AUTHENTICATED_AUDIT.md` for the current comparison record. The screenshot set is evidence of the present authored-hero and connected-index phase, not proof that all 96 assets or arbitrary rooms have reached the `references/ref1.png` and `references/ref2.png` photoreal target.
+Current Layout Editor, WebMCP, Inventory, Spatial Index, and Asset Studio captures are stored in `docs/screenshots/submission-*.png`. The deterministic submission screenshot test regenerates them from the privacy-checked public fixture in High rendering quality. These images document the tested release; they do not claim manufacturer-certified geometry or arbitrary-room photorealism.
 
 ## Manual workflow
 
 1. Open the project navigator, create a laboratory with a non-demo code, and confirm its first room is blank and active.
 2. Add another room under that laboratory, switch between both rooms, and confirm their scenes remain independent.
-3. Return to DEMO-01 and confirm the authored shell, islands, perimeter functions, storage workflow, and circulation remain intact.
+3. Open a populated test room and confirm its authored shell, islands, perimeter functions, storage workflow, and circulation remain intact.
 4. Collapse and restore the Asset Library and Inspector separately; confirm each rail is labeled, keyboard reachable, and returns width to the canvas.
 5. Change a blank room among epoxy, sealed concrete, and vinyl; confirm both 2D and 3D update to the selected finish.
 6. Add a furniture asset from the catalog.

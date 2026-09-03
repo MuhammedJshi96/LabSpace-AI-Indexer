@@ -6,23 +6,23 @@ Live judge service: [https://labspace-agent-twin.onrender.com](https://labspace-
 
 ## Render Blueprint
 
-The Blueprint creates one free Node web service from the single release branch, `main`:
+The Blueprint creates one Node web service from the single release branch, `main`:
 
 - build: `npm ci --include=dev && npm run build` (the TypeScript build uses
   development-only type packages even though the deployed runtime is production)
 - start: `npm run start`
 - health check: `/api/health`
 - public judge data: durable same-browser IndexedDB, with isolated server-session bootstrap
-- no API keys, secrets, or paid services required
+- no runtime model API key or application secret required
 
 The server binds to Render's `PORT` on `0.0.0.0`. In production it serves `dist/`, keeps API responses uncached, and does not mount `/api/testing/reset`.
 
-## One external deployment action
+## Create or reconnect the deployment
 
 1. Sign in to Render and choose **New → Blueprint**.
 2. Connect `https://github.com/MuhammedJshi96/LabSpace-AI-Indexer`.
-3. Select/confirm the repository Blueprint and free plan; do not add billing.
-4. After the deploy succeeds, copy the `https://…onrender.com` URL into the Devpost and judge materials.
+3. Select the repository Blueprint and the service plan assigned to the project in the Render dashboard.
+4. After the deploy succeeds, verify the public HTTPS URL and `/api/health`.
 
 No credential belongs in this repository.
 
@@ -42,7 +42,7 @@ Run `npm run build` then `npm run test:e2e:public`. The suite owns an isolated p
 
 ### Verification — 2026-09-03
 
-- Release checks passed: lint, strict TypeScript, 117 asset definitions, 234 catalog renders, 63 unit/integration files / 447 tests and the production build. Existing large-bundle warnings remain non-blocking.
+- Release checks passed: lint, strict TypeScript, 117 asset definitions, 234 catalog renders, 63 unit/integration files / 450 tests and the production build. Existing large-bundle warnings remain non-blocking.
 - Public persistence: 7/7 browser tests passed, including real server restart, full project export equality, named versions, visitor isolation, stale tabs, storage failures, incompatible data, explicit import and deletion without reseeding.
 - The dedicated final-submission browser rehearsal passes the complete Build, Stock, and Find-the-work story against isolated test data.
 - The public judge fixture contains only `LAB-D-00`, R-001 and R-002; R-003 is absent until the live demonstration creates it.
@@ -71,5 +71,4 @@ Official hosting references:
 
 - [Render Blueprint YAML reference](https://render.com/docs/blueprint-spec)
 - [Render web services](https://render.com/docs/web-services)
-- [Render free instance limitations](https://render.com/docs/free)
 - [Render persistent disks](https://render.com/docs/disks)

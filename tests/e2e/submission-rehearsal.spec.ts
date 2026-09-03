@@ -67,6 +67,7 @@ test.beforeEach(async ({ page, request }) => {
 test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
   page,
 }, testInfo) => {
+  if (process.env.LABSPACE_CAPTURE_UI === "1") test.setTimeout(360_000);
   await page.goto("/");
   await expect.poll(async () => (await documentTools(page)).length).toBe(24);
 
@@ -337,6 +338,7 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
     await guide.getByRole("button", { name: "Next", exact: true }).click();
   }
   await expect(guide).toContainText("FINAL WORKSPACE");
+  await expect(page.getByText("7 stops · 0 human-confirmed", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: assessment.recommendedWorkspace!.objectName, exact: true }),
   ).toBeVisible();
@@ -363,6 +365,11 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
   );
 
   if (process.env.LABSPACE_CAPTURE_UI === "1") {
+    const returnTo3d = page.getByRole("button", { name: "Return to 3D", exact: true });
+    if (await returnTo3d.isVisible()) await returnTo3d.click();
+    await expect(page.getByTestId("3d-view")).toHaveAttribute("data-scene-ready", "true", {
+      timeout: 180_000,
+    });
     await page.screenshot({
       path: testInfo.outputPath("final-workspace-handoff.png"),
       fullPage: true,

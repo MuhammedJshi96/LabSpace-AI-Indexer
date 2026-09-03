@@ -2,10 +2,10 @@
 
 LabSpace uses Chrome's experimental WebMCP Imperative API as a progressive enhancement. The Layout Editor and Digital Twin remain fully functional when that API is unavailable.
 
-## Start the challenge branch
+## Start the release branch
 
 ```powershell
-git switch webmcp-challenge-2026
+git switch main
 npm ci
 npm run dev
 ```
@@ -42,6 +42,7 @@ Expected names (Chrome normally sorts them alphabetically):
 
 ```text
 labspace_add_inventory
+labspace_assess_workflow
 labspace_audit_room
 labspace_collection_step
 labspace_create_room
@@ -205,7 +206,7 @@ await document.modelContext.executeTool(
 
 The last call shows a reversible preview in LabSpace. Use the visible **Approve move** or **Cancel** control. No WebMCP tool can approve its own later placement proposal.
 
-The exact UUIDs above belong to the source-controlled DEMO-01 seed. For any edited project, discover current IDs through search rather than copying them.
+Object and record UUIDs belong to one source-controlled development seed. For the public fixture or any edited project, discover current IDs through context and search rather than copying them.
 
 For a wall-hosted window resize, use the window object's current canonical ID from the project or editor selection:
 

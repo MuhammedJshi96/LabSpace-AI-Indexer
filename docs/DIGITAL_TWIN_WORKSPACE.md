@@ -44,6 +44,6 @@ Renderer failures remain isolated inside the spatial pane. Search, exact record 
 
 The workspace implements the supplied references' interaction contract, but it remains a real-time planning visualization rather than a scan-derived or certified facility twin. Item cards use the containing spatial asset when an item-specific licensed photograph is unavailable. Exact normalized bounds align selected demonstration drawers and bins with authored casework, while broader internal-storage authoring, scan-derived rooms, saved viewpoints, and item-image management remain future production phases.
 
-## Future AI API boundary
+## Browser-agent boundary
 
-No conversational assistant or live model provider ships in the current application. GPT-5.6/Codex is documented as the Build Week engineering and design collaborator. A future optional LabSpace Atlas API may translate natural-language requests into calls to the canonical index and validator, but it must preserve the same evidence boundary and must never replace stored records or deterministic geometry with generated facts.
+LabSpace does not embed a second chatbot or a live model provider. A WebMCP-capable browser agent can discover 24 structured LabSpace tools and use them to search, focus, plan, validate and stage changes against the canonical index and geometry engine. The product remains responsible for deterministic records, validation, human review and visible evidence; an agent must never replace stored facts with generated claims.

@@ -17,7 +17,7 @@ owner has confirmed the necessary redistribution rights.
 
 The asset manifests, 2D footprints, generated renders, Blender-authored GLBs,
 and Three.js procedural representations were created specifically for LabSpace
-AI Agent Twin. All 115 user-visible Asset Library entries now use original,
+Atlas. All 115 user-visible Asset Library entries now use original,
 all-sided Blender-authored GLBs with dimension-matched top and isometric
 renders. `straight-wall` and `half-height-wall` remain deterministic procedural
 construction primitives because their dimensions are created interactively by
@@ -39,8 +39,8 @@ Default sizes are editable planning estimates, not certified dimensions.
 
 ## Visual and anatomy references
 
-The photographs supplied by the user of Kyushu University Room 809 are the
-primary visual source for equipment silhouettes, casework, finishes, wear,
+The user's private Room 809 laboratory reference set is the primary visual
+source for equipment silhouettes, casework, finishes, wear,
 cabling, and laboratory context. Official manufacturer pages and manuals listed
 in `docs/ASSET_REFERENCE_CATALOG.md` were consulted only to understand
 conventional equipment anatomy, controls, vents, clearances, service points, and

@@ -44,7 +44,13 @@ import {
   type CameraCommandInput,
 } from "../domain/camera-command";
 import { shouldCutawayWall, shouldCutawayWallForFocus } from "../domain/digital-twin-cutaway";
-import { mmToMetres, objectBounds, wallAngle, wallLength } from "../domain/geometry";
+import {
+  mmToMetres,
+  objectBounds,
+  supportSurfaceElevation,
+  wallAngle,
+  wallLength,
+} from "../domain/geometry";
 import { hasLaboratoryEnvironmentProfile } from "../domain/laboratory-environment";
 import { wallFinishForObject } from "../domain/laboratory-wall-materials";
 import { getClosedWallFloorPolygon } from "../domain/room-geometry";
@@ -495,12 +501,14 @@ function CameraRig({
   preset,
   focusObjectId,
   focusLocationId,
+  focusMode,
   presentation,
 }: {
   room: Room;
   preset: CameraPreset;
   focusObjectId?: string | null;
   focusLocationId?: string | null;
+  focusMode?: "record" | "workspace" | null;
   presentation: "editor" | "digital-twin";
 }) {
   const camera = useThree((state) => state.camera);
@@ -525,18 +533,27 @@ function CameraRig({
     preset,
     focusObjectId,
     focusLocationId,
+    focusMode,
     presentation,
   });
   const previousCommandRef = useRef<CameraCommandInput | null>(null);
   useLayoutEffect(() => {
-    commandDataRef.current = { room, preset, focusObjectId, focusLocationId, presentation };
-  }, [focusLocationId, focusObjectId, presentation, preset, room]);
+    commandDataRef.current = {
+      room,
+      preset,
+      focusObjectId,
+      focusLocationId,
+      focusMode,
+      presentation,
+    };
+  }, [focusLocationId, focusMode, focusObjectId, presentation, preset, room]);
   const activeCameraCommandKey = cameraCommandKey({
     roomId: room.id,
     presentation,
     preset,
     focusObjectId,
     focusLocationId,
+    focusMode,
   });
 
   useFrame((_, delta) => {
@@ -579,6 +596,7 @@ function CameraRig({
       preset: commandPreset,
       focusObjectId: commandFocusObjectId,
       focusLocationId: commandFocusLocationId,
+      focusMode: commandFocusMode,
       presentation: commandPresentation,
     } = commandDataRef.current;
     const command = {
@@ -586,6 +604,7 @@ function CameraRig({
       preset: commandPreset,
       focusObjectId: commandFocusObjectId,
       focusLocationId: commandFocusLocationId,
+      focusMode: commandFocusMode,
       presentation: commandPresentation,
     };
     const clearingFocus = isCameraFocusClear(previousCommandRef.current, command);
@@ -660,6 +679,8 @@ function CameraRig({
           -THREE.MathUtils.degToRad(focusObject?.rotation.z ?? 0),
         )
       : new THREE.Vector3();
+    const workspaceSurfaceElevation =
+      commandFocusMode === "workspace" && focusObject ? supportSurfaceElevation(focusObject) : null;
     const target: [number, number, number] = focusObject
       ? [
           mmToMetres(focusObject.position.x - commandRoom.width / 2) + rotatedStorageOffset.x,
@@ -667,7 +688,9 @@ function CameraRig({
             ? mmToMetres(focusObject.position.z) +
               storageHighlight.position[1] +
               storageHighlight.height / 2
-            : mmToMetres(focusObject.position.z + focusObject.dimensions.height * 0.42),
+            : workspaceSurfaceElevation !== null
+              ? mmToMetres(workspaceSurfaceElevation + 80)
+              : mmToMetres(focusObject.position.z + focusObject.dimensions.height * 0.42),
           mmToMetres(focusObject.position.y - commandRoom.depth / 2) + rotatedStorageOffset.z,
         ]
       : [0, commandPresentation === "digital-twin" ? 0.78 : 0.55, 0];
@@ -688,6 +711,7 @@ function CameraRig({
             roomExtent: Math.max(roomWidth, roomDepth),
             focusedEnvelope,
             exactLocation: Boolean(commandFocusLocationId),
+            workspace: commandFocusMode === "workspace",
           })
         : Math.max(2.8, focusedEnvelope * 3.4)
       : Math.max(roomWidth, roomDepth) * (commandPresentation === "digital-twin" ? 0.93 : 1.1);
@@ -738,6 +762,7 @@ function CameraRig({
           roomWidth,
           roomDepth,
           exactLocation: Boolean(commandFocusLocationId),
+          preferOblique: commandFocusMode === "workspace",
           obstacles: cameraObstacles,
         })
       : null;
@@ -832,11 +857,13 @@ function CameraSystem({
   room,
   focusObjectId,
   focusLocationId,
+  focusMode,
   presentation,
 }: {
   room: Room;
   focusObjectId?: string | null;
   focusLocationId?: string | null;
+  focusMode?: "record" | "workspace" | null;
   presentation: "editor" | "digital-twin";
 }) {
   const preset = useEditorStore((state) => state.cameraPreset);
@@ -865,6 +892,7 @@ function CameraSystem({
         preset={preset}
         focusObjectId={focusObjectId}
         focusLocationId={focusLocationId}
+        focusMode={focusMode}
         presentation={presentation}
       />
     </>
@@ -875,6 +903,7 @@ const RoomScene = memo(function RoomScene({
   room,
   focusObjectId,
   focusLocationId,
+  focusMode,
   quality,
   presentation,
   wallTransparentOverride,
@@ -885,6 +914,7 @@ const RoomScene = memo(function RoomScene({
   room: Room;
   focusObjectId?: string | null;
   focusLocationId?: string | null;
+  focusMode?: "record" | "workspace" | null;
   quality: RenderQuality;
   presentation: "editor" | "digital-twin";
   wallTransparentOverride?: boolean;
@@ -933,7 +963,10 @@ const RoomScene = memo(function RoomScene({
   const focusTarget = focusObject
     ? {
         x: mmToMetres(focusObject.position.x - room.width / 2),
-        y: mmToMetres(focusObject.position.z + focusObject.dimensions.height * 0.42),
+        y:
+          focusMode === "workspace"
+            ? mmToMetres((supportSurfaceElevation(focusObject) ?? focusObject.position.z) + 80)
+            : mmToMetres(focusObject.position.z + focusObject.dimensions.height * 0.42),
         z: mmToMetres(focusObject.position.y - room.depth / 2),
       }
     : null;
@@ -951,6 +984,7 @@ const RoomScene = memo(function RoomScene({
         room={room}
         focusObjectId={focusObjectId}
         focusLocationId={focusLocationId}
+        focusMode={focusMode}
         presentation={presentation}
       />
       <color attach="background" args={[presentation === "digital-twin" ? "#edf1ee" : "#f4f6f5"]} />
@@ -1184,6 +1218,12 @@ export function ThreeDView({
     showStorageAccessOverride === undefined
       ? Boolean(spatialFocus?.roomId === room.id && spatialFocus.showStorageAccess)
       : showStorageAccessOverride;
+  const focusMode =
+    presentation === "digital-twin" &&
+    spatialFocus?.roomId === room.id &&
+    spatialFocus.recordId.startsWith("workflow-workspace:")
+      ? "workspace"
+      : "record";
   const preset = useEditorStore((state) => state.cameraPreset);
   const setPreset = useEditorStore((state) => state.setCameraPreset);
   const floorVisible = useEditorStore((state) => state.floorVisible);
@@ -1213,6 +1253,7 @@ export function ThreeDView({
     preset,
     focusObjectId,
     focusLocationId,
+    focusMode,
   });
   const sceneReady = visibleAssetIds.length === 0 || readySceneSignature === sceneLoadSignature;
   const hasClosedFloor = useMemo(
@@ -1351,6 +1392,7 @@ export function ThreeDView({
             room={room}
             focusObjectId={focusObjectId}
             focusLocationId={focusLocationId}
+            focusMode={focusMode}
             quality={quality}
             presentation={presentation}
             wallTransparentOverride={wallTransparentOverride}

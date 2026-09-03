@@ -780,7 +780,8 @@ export function DigitalTwinPage() {
                   <div>
                     <dt>Evidence itinerary</dt>
                     <dd>
-                      {collectionRoute ? collectionRoute.recordIds.length + 1 : 1} reviewed stops
+                      {collectionRoute ? collectionRoute.recordIds.length + 1 : 1} stops ·{" "}
+                      {collectionRoute?.checked.length ?? 0} human-confirmed
                     </dd>
                   </div>
                 </dl>

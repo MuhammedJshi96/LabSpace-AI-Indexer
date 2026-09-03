@@ -83,7 +83,7 @@ describe("Agent Activity evidence", () => {
     recordControlledToolError(
       "Record inspection",
       new Error(
-        `Unable to open C:\\Users\\Kyushu University\\private records\\record 01.json because access was denied. ${"detail ".repeat(80)}`,
+        `Unable to open C:\\Users\\Example User\\private records\\record 01.json because access was denied. ${"detail ".repeat(80)}`,
       ),
     );
 
@@ -104,12 +104,12 @@ describe("Agent Activity evidence", () => {
     recordWebMCPToolSuccess(
       "labspace_search_records",
       "Spatial search",
-      "C:\\Users\\Kyushu University\\QA runs\\search query.txt",
+      "C:\\Users\\Example User\\QA runs\\search query.txt",
       "found",
       {
         query: "Reference standards",
-        privatePath: "C:\\Users\\Kyushu University\\QA runs\\secret file.json",
-        unixPath: "/Users/Kyushu University/QA runs/secret file.json",
+        privatePath: "C:\\Users\\Example User\\QA runs\\secret file.json",
+        unixPath: "/Users/Example User/QA runs/secret file.json",
       },
       { totalMatches: 1, results: [{ name: "Reference standards" }] },
     );

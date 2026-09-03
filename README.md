@@ -92,11 +92,12 @@ The Inspector keeps **24 tools ready** and the visible execution boundary on scr
 
 For the clearest ChatGPT in-app browser view, collapse ChatGPT's left project sidebar, make the
 conversation pane narrower, and give LabSpace roughly two-thirds of the window. Open the Inspector
-only to choose a mission or review evidence. Choose **Copy + show workspace** (or the shorter
-voice-input version) to copy the request and close the Inspector automatically, keeping the exact
-2D/3D result visible while the browser agent works. The copied request explicitly requires the
-page's `labspace_*` WebMCP tools, allows read-only browser discovery, and forbids a silent fallback
-to clicks, drags, or form edits for laboratory actions. A failed discovery step is reported instead.
+only to choose a mission or review evidence. Choose **Copy + show workspace** (or **Voice-ready**)
+to copy the request and close the Inspector automatically, keeping the exact 2D/3D result visible
+while the browser agent works. Each mission asks for the connected LabSpace WebMCP tools only.
+The separate connection prompt allows read-only browser discovery, rules out manual laboratory
+edits, and asks the agent to report a failed discovery attempt. Tool descriptions carry the detailed
+sequence; LabSpace still enforces the same in-app approval boundaries.
 Open **Evidence** to inspect bounded tool inputs/results, then choose **Export proof** for a portable
 session-evidence JSON file.
 
@@ -242,7 +243,7 @@ Authored laboratory models remain orbitable and inspectable from every side, wit
 
 ## Spatial Index Finder and browser-agent API
 
-The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity, editor deep link, and opt-in physical access preview.
+The competition workflow is fully testable without an OpenAI Platform API key or usage billing. The **Spatial Index Finder** performs deterministic multi-term search over canonical equipment, inventory, laboratory, room, owner, note, identifier, cabinet, drawer, shelf, compartment, and bin data. Selecting a result controls the existing 2D/3D focus, evidence inspector, QR identity and editor deep link. Tracking an exact storage location automatically opens its verified door or drawer when the authored model supports it; **Close access preview** remains available. A fresh page starts unselected, and the preview never changes inventory or saved room geometry.
 
 There is no embedded model response in the shipped runtime. GPT-5.6 and Codex were used to build and validate the product, as documented separately below. A WebMCP-capable browser agent can now discover and invoke LabSpace's twenty-four structured tools, while the canonical catalog, room and annex planners, room-readiness audit, inventory planner, index, geometry validator, capability gate, and human review UI remain deterministic application behavior.
 

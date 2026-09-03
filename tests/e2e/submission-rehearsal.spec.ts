@@ -144,13 +144,13 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
         assetId: "single-door",
         quantity: 1,
         placement: "wall",
-        host: { wallIndex: 1, offsetMm: 3800, handing: "right", swing: "inward" },
+        host: { wallIndex: 3, offsetMm: 3800, handing: "right", swing: "inward" },
       },
       {
         assetId: "wide-window",
         quantity: 1,
         placement: "wall",
-        host: { wallIndex: 3, offsetMm: 3800, sillHeightMm: 900 },
+        host: { wallIndex: 1, offsetMm: 3800, sillHeightMm: 900 },
       },
       {
         assetId: "wide-window",
@@ -171,12 +171,12 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
   ).toBe(true);
   expect(
     plan.proposals.find((proposal) => proposal.assetId === "single-door")?.opening,
-  ).toMatchObject({ wallIndex: 1, offsetMm: 3800, sillHeightMm: 0 });
+  ).toMatchObject({ wallIndex: 3, offsetMm: 3800, sillHeightMm: 0 });
   expect(
     plan.proposals
       .filter((proposal) => proposal.assetId === "wide-window")
       .map((entry) => entry.opening?.wallIndex),
-  ).toEqual([3, 4]);
+  ).toEqual([1, 4]);
 
   const stagedRoom = await executeTool<{
     autoCommitted: boolean;
@@ -315,14 +315,14 @@ test("rehearses the final Build, Stock, and Find-the-work judge story", async ({
       "Methanol Solvent 99.9%",
       "100 uL Pipette tips",
       "200 uL Pipette tips",
-      "Chloroform",
     ],
     equipment: ["Laboratory pipette holder", "Automated microplate reader"],
     roomCode: "R-002",
     workspacePreference: "any-work-surface",
     minimumClearAreaM2: 0.6,
   });
-  expect(assessment.missing).toEqual(["Chloroform"]);
+  expect(assessment.readiness).toBe("ready-for-researcher-review");
+  expect(assessment.missing).toEqual([]);
   expect(assessment.ambiguous).toEqual([]);
   expect(assessment.recommendedWorkspace).toMatchObject({ objectId: expect.any(String) });
 

@@ -103,13 +103,17 @@ function objectPath(
   const zone = room.scene.zones.find((entry) => entry.id === object?.zoneId);
   const spaceId = location?.spaceId ?? object?.spaceId;
   const space = room.spaces.find((entry) => entry.id === spaceId);
-  return [
+  const path = [
     laboratory?.name ?? "Laboratory",
     room.name,
     space && (space.kind === "annex" || space.name !== room.name) ? space.name : undefined,
     zone?.name,
     ...locationPath(location, room.scene.storageLocations).map((entry) => entry.name),
   ].filter((entry): entry is string => Boolean(entry));
+  return path.filter(
+    (entry, index) =>
+      index === 0 || entry.trim().toLocaleLowerCase() !== path[index - 1].trim().toLocaleLowerCase(),
+  );
 }
 
 function recordSpace(

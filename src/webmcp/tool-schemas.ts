@@ -340,7 +340,8 @@ export const planRoomLayoutSchema = {
                 type: "integer",
                 minimum: 1,
                 maximum: 16,
-                description: "One-based wall number from the proposed room-shell segment order.",
+                description:
+                  "One-based shell segment. Standard rectangle: wall 1 is upper, wall 2 right, wall 3 bottom, and wall 4 left in the 2D plan.",
               },
               offsetMm: {
                 type: "number",
@@ -412,7 +413,7 @@ export const planRoomLayoutSchema = {
       oneOf: [{ required: ["widthMm", "depthMm"] }, { required: ["vertices"] }],
       additionalProperties: false,
       description:
-        "Closed rectangular or arbitrary polygon shell for a blank room. Existing walls are never replaced automatically.",
+        "Closed blank-room shell. Standard rectangle: wall 1 upper, wall 2 right, wall 3 bottom, wall 4 left. Existing walls are preserved.",
     },
   },
   required: ["assets"],

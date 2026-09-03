@@ -250,7 +250,10 @@ export function AgentReviewPanel() {
                 {pending.entries.filter((entry) => entry.storageLocationId).length} assigned to
                 exact locations
               </p>
-              <div className="agent-review-manifest" aria-label="Proposed inventory records">
+              <div
+                className="agent-review-manifest agent-review-manifest-inventory"
+                aria-label="Proposed inventory records"
+              >
                 {pending.entries.slice(0, 6).map((entry) => (
                   <span key={entry.itemId}>
                     <Package size={14} weight="duotone" />

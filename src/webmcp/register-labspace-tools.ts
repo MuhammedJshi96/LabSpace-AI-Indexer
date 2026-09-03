@@ -139,7 +139,9 @@ function completeControlledExecution(
                     : toolName === "labspace_focus_record"
                       ? "focused"
                       : toolName === "labspace_search_records"
-                        ? "found"
+                        ? Array.isArray(resultRecord.results) && resultRecord.results.length > 0
+                          ? "found"
+                          : "read"
                         : "read";
   const subject =
     typeof resultRecord.objectName === "string"

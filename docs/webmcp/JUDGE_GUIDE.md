@@ -39,8 +39,8 @@ Use the Inspector's **Create R-003 from one request** prompt. It asks the agent 
 
 - create Researcher Office `R-003` in the currently opened `LAB-D-00` laboratory;
 - construct a 7,600 × 5,000 mm rectangular shell: exactly 38 m² and four connected walls;
-- host one centered inward single door on wall 1;
-- host one wide three-panel window on wall 3 and another on wall 4;
+- host one centered inward single door on wall 3 (the visually bottom wall);
+- host one wide three-panel window on wall 1 (the visually upper wall) and another on wall 4;
 - place three office desks, pair one chair to each desk, and add one locker, fire extinguisher and
   waste bin;
 - stage or Fast-Draft the blueprint, then run `labspace_audit_room`.

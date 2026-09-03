@@ -713,6 +713,51 @@ export function validatePlacement(room: Room): ValidationWarning[] {
         }
       }
     }
+    if (object.visible && object.objectType === "window" && length > 0) {
+      const angle = (wallAngle(wall) * Math.PI) / 180;
+      const cos = Math.cos(angle),
+        sin = Math.sin(angle);
+      const centerX = wall.wall.start.x + cos * object.opening.offset;
+      const centerY = wall.wall.start.y + sin * object.opening.offset;
+      // Preserve the readable glazing plane rather than allowing a tall cabinet or
+      // appliance to be planned directly across it. Furniture that remains below
+      // the sill (for example a writing desk) is intentionally allowed.
+      const readableDepth = Math.max(650, wall.wall.thickness / 2 + 450);
+      for (const item of placed) {
+        const profile = ASSET_BY_ID.get(item.assetDefinitionId ?? "")?.profile;
+        if (profile !== "tall" && profile !== "locker") continue;
+        if (
+          item.position.z >= object.opening.sillHeight + object.opening.height ||
+          item.position.z + item.dimensions.height <= object.opening.sillHeight
+        )
+          continue;
+        const dx = item.position.x - centerX,
+          dy = item.position.y - centerY;
+        const localBounds = objectBounds({
+          ...item,
+          position: {
+            ...item.position,
+            x: dx * cos + dy * sin,
+            y: -dx * sin + dy * cos,
+          },
+          rotation: { ...item.rotation, z: item.rotation.z - wallAngle(wall) },
+        });
+        if (
+          localBounds.right > -width / 2 + 15 &&
+          localBounds.left < width / 2 - 15 &&
+          localBounds.bottom > wall.wall.thickness / 2 + 15 &&
+          localBounds.top < readableDepth
+        ) {
+          warnings.push({
+            id: `opening-window-${object.id}-${item.id}`,
+            severity: "warning",
+            objectIds: [object.id, item.id],
+            title: "Window glazing obstructed",
+            message: `${item.name} blocks the readable area of ${object.name}. Keep tall furniture and equipment clear of the glazing; this is planning evidence, not a certified clearance assessment.`,
+          });
+        }
+      }
+    }
     if (
       width > length ||
       object.opening.offset < width / 2 ||

@@ -58,6 +58,28 @@ describe("LabSpace browser-agent room planning", () => {
     const { xMm, yMm } = cabinet.position;
     expect(Math.abs(xMm - 3000) >= 1200 || yMm >= 1200).toBe(true);
   });
+
+  it("keeps tall perimeter storage out of hosted window glazing", () => {
+    blankLayoutFixture();
+    const plan = planRoomLayout({
+      roomShell: { widthMm: 7600, depthMm: 5000 },
+      assets: [
+        {
+          assetId: "wide-window",
+          quantity: 1,
+          host: { wallIndex: 1, offsetMm: 3800, sillHeightMm: 900 },
+        },
+        { assetId: "office-desk", quantity: 1, placement: "perimeter" },
+        { assetId: "locker", quantity: 1, placement: "perimeter" },
+      ],
+    });
+
+    expect(plan.unplaced).toEqual([]);
+    const locker = plan.proposals.find((entry) => entry.assetId === "locker")!;
+    expect(
+      locker.position.yMm > 900 || Math.abs(locker.position.xMm - 3800) >= (900 + 2400) / 2,
+    ).toBe(true);
+  });
   it("offers the reference pack to WebMCP and shares the editor's high-level window default", () => {
     blankLayoutFixture();
     expect(searchLabAssets({ query: "chiller" }).results).toContainEqual(

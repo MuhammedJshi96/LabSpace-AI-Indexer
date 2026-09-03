@@ -208,6 +208,17 @@ body {
   white-space: nowrap;
 }
 
+.agent-review-manifest-inventory {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+}
+
+.agent-review-manifest-inventory b {
+  overflow: visible;
+  line-height: 1.25;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .agent-review-manifest > .agent-review-shell-item {
   background:
     linear-gradient(90deg, rgba(8, 127, 112, 0.09), rgba(240, 248, 246, 0.72)),

@@ -1169,7 +1169,10 @@ function commitLayout(
           : entry,
       ),
     },
-    selectedIds: pending.proposedObjectIds,
+    // Keep the completed Fast Draft presentation clean; the automatic blueprint
+    // should read as a finished room rather than a cyan multi-selection. A human
+    // approval keeps the proposed elements selected for immediate inspection.
+    selectedIds: mode === "automatic" ? [] : pending.proposedObjectIds,
     pendingAgentChange: null,
     history: [...state.history, command],
     future: [],

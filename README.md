@@ -1,7 +1,7 @@
 # LabSpace Atlas
 
 <p align="center">
-  <img src="docs/submission/labspace-atlas-thumbnail-3x2-v1.png" alt="LabSpace Atlas — The living map of your laboratory" width="100%" />
+  <img src="docs/submission/labspace-atlas-submission-banner-2k.jpeg" alt="LabSpace Atlas — ask, build, find, and guide laboratory work" width="100%" />
 </p>
 
 <p align="center"><strong>Design the lab. Index every location. Find anything instantly.</strong></p>

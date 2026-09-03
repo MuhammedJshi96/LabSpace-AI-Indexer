@@ -77,7 +77,7 @@ tool is not required by or included in the production web application bundle.
 this prototype at the user's request.
 
 The README and submission banner at
-`docs/submission/labspace-atlas-thumbnail-3x2-v1.png` is the project owner's
+`docs/submission/labspace-atlas-submission-banner-2k.jpeg` is the project owner's
 approved LabSpace Atlas competition artwork. It remains protected promotional
 media under `LICENSE-ASSETS.md` and is not included in the Apache 2.0 software
 grant.

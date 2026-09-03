@@ -227,7 +227,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_assess_workflow",
       title: "Assess a grounded laboratory workflow",
       description:
-        "Match a researcher-supplied material and equipment checklist to canonical records, then rank real authored work surfaces by clear area and current geometry. Returns evidence and a final workspace ID for the collection guide. It does not generate or approve a protocol, certify suitability, or claim a safe route.",
+        "Match only the supplied checklist to canonical records and rank real work surfaces. Do not add solvents, requirements or substitutions. Check separate availability questions with labspace_search_records; report missing/ambiguous stock. For a requested guide, call labspace_start_collection with exact resolved record IDs and the recommended workspaceObjectId to open in-app review. No protocol, suitability certification, safety-approved route or stock change.",
       inputSchema: assessWorkflowSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, context?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -339,7 +339,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_get_context",
       title: "Get LabSpace context",
       description:
-        "Return the active LabSpace project, laboratory, room, selection, and compact Spatial Index counts.",
+        "Read the active project, lab, room, selection and index counts. Start here. For a furnished room: search assets, create room, plan complete shell/openings/furniture, stage plan, then audit. Continue requested steps without extra chat confirmations; stop at requiresHumanApproval for the in-app human decision. Never change execution mode. For inventory use labspace_add_inventory; for checklist/workspace use labspace_assess_workflow then labspace_start_collection.",
       inputSchema: emptyObjectSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (_input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>
@@ -419,7 +419,7 @@ export function createLabSpaceToolDefinitions(
       name: "labspace_plan_room",
       title: "Plan a LabSpace room",
       description:
-        "Calculate a validated rectangular or multi-wall shell, wall-hosted openings, and exact catalog assets. Seats pair with workstations, perimeter assets face inward, and bench equipment snaps to worktops. Existing walls are preserved.",
+        "Plan a validated shell, hosted openings and exact catalog assets. Convert metres to mm. Rectangle walls: 1 top, 2 right, 3 bottom, 4 left; omit host.offsetMm to center an opening. Use labspace_search_assets for IDs and variants. Include all requested furniture and paired seats in one plan. Perimeter furniture faces inward; bench equipment uses worktops. Existing walls are preserved.",
       inputSchema: planRoomLayoutSchema,
       annotations: { readOnlyHint: true, untrustedContentHint: true },
       execute: (input, executionContext?: WebMCP.ToolExecuteCallbackOptions) =>

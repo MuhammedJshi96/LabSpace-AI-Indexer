@@ -905,6 +905,11 @@
   color: var(--muted);
   font-size: 11px;
 }
+.webmcp-demo-missions .webmcp-signature-card > p {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
 .webmcp-signature-card > div {
   display: flex;
   flex-wrap: wrap;

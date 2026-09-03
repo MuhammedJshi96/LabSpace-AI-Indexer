@@ -32,6 +32,7 @@ import {
   type ExecutableModelContext,
 } from "../webmcp/execute-tool-compat";
 import { downloadJudgeEvidenceBundle, summarizeJudgeEvidence } from "../agent/judge-evidence";
+import { DEMO_MISSIONS } from "../agent/judge-missions";
 import { COMPETITION_EVIDENCE_LAYER_ENABLED } from "../config/competition-evidence";
 import { selectActiveRoom, useEditorStore } from "../store/editor-store";
 
@@ -42,53 +43,6 @@ const WEBMCP_CONNECTION_PROMPT =
 
 const webMcpOnlyPrompt = (task: string) =>
   `${WEBMCP_CONNECTION_PROMPT} If discovery fails, stop and explain the failed step; do not fall back to UI automation. ${task}`;
-
-const uninterruptedFastDraftPrompt = (task: string) =>
-  webMcpOnlyPrompt(
-    `This is one uninterrupted Fast Draft build. Fast Draft must already be visibly authorized by the human in the LabSpace Inspector; never select or bypass that mode yourself. ${task} Continue automatically after every successful tool result without asking me to say continue. If labspace_create_room or labspace_stage_room_plan returns requiresHumanApproval: true, stop at the visible review boundary and explain that Fast Draft was not armed or the proposal was not eligible. If the room plan returns autoCommitted: true, immediately run labspace_audit_room and finish with one concise build-and-audit summary. Do not ask whether I want the furnishing step or the final read-only audit.`,
-  );
-
-const DEMO_MISSIONS = [
-  {
-    id: "build-r003",
-    step: "01 · Build",
-    mode: "Fast Draft · one prompt",
-    title: "Create R-003 from one request",
-    outcome: "38 m² shell · hosted openings · three paired workstations",
-    prompt: uninterruptedFastDraftPrompt(
-      "In the currently opened laboratory, create a new room named Researcher Office, code R-003. Build a 7,600 by 5,000 millimetre four-wall shell (38 square metres), with one inward single laboratory door centered on wall 3 (the visually bottom wall), one wide three-panel window centered on wall 1 (the visually upper wall), and one wide three-panel window centered on wall 4 (the left wall). Add three office desks, pair one office chair with each desk, one locker, one fire extinguisher, and one waste bin. Use labspace_search_assets, labspace_create_room, labspace_plan_room, labspace_stage_room_plan, then labspace_audit_room.",
-    ),
-    voicePrompt: uninterruptedFastDraftPrompt(
-      "In this laboratory, create Researcher Office R-003 as a 38 square metre room. Put a centered inward door on the bottom wall, three-panel windows on the upper and left walls, three desks with matching chairs, one locker, one fire extinguisher, and one waste bin. Plan, furnish, and audit it with the LabSpace tools.",
-    ),
-  },
-  {
-    id: "stock-enzymes",
-    step: "02 · Stock",
-    mode: "Stage + approve",
-    title: "Stage two enzyme records",
-    outcome: "Exact quantities · ISO expiry dates · no invented location",
-    prompt: webMcpOnlyPrompt(
-      "Add two inventory records to R-002: Alpha-glucosidase enzyme, 2 bottles, expiry 2026-10-06; and Lipase enzyme, 1 bottle, expiry 2026-10-16. Use labspace_get_context and labspace_add_inventory. Keep both records unassigned unless I provide an exact canonical storage location; do not invent an owner, storage position, or suitability. Stop at the visible review panel for my approval.",
-    ),
-    voicePrompt: webMcpOnlyPrompt(
-      "Add two inventory records to R-002: alpha-glucosidase enzyme, two bottles, expiring October sixth 2026; and lipase enzyme, one bottle, expiring October sixteenth 2026. Leave storage unassigned and stop for my approval.",
-    ),
-  },
-  {
-    id: "find-dpph-work",
-    step: "03 · Find the work",
-    mode: "Search + assess",
-    title: "Ground a DPPH collection",
-    outcome: "Cross-room evidence · missing stock · route to a real work surface",
-    prompt: webMcpOnlyPrompt(
-      "Using my researcher-approved DPPH checklist, find DPPH reagent, 100 microlitre and 200 microlitre pipette tips, a laboratory pipette holder, and an automated microplate reader. Do not add solvents or other requirements to my checklist. Check chloroform separately and keep it explicitly unavailable if it is absent; this is an availability check, not a DPPH requirement. Use labspace_search_records and labspace_inspect_record to ground exact matches, then labspace_assess_workflow with roomCode R-002 to rank a real work surface while grounding stock across the laboratory. Report exact, ambiguous, and missing requirements. Call labspace_start_collection with the proposed exact inventory and equipment record IDs and the recommended workspaceObjectId to open the Review collection dialog in LabSpace. Stop for my approval in that dialog, not a separate chat-only confirmation. After approval, Next and Previous should visit the items and end at the workspace. Do not invent a protocol, substitution, safety approval, or stock consumption.",
-    ),
-    voicePrompt: webMcpOnlyPrompt(
-      "For my approved DPPH checklist, find DPPH reagent, 100 and 200 microlitre tips, pipettes, and the plate reader. Do not add solvents to my checklist. Check chloroform separately. Assess the R-002 work surfaces, show missing stock, then call labspace_start_collection with the found records and final workspace to open the in-app Review collection dialog. Wait for my approval there, not only in chat.",
-    ),
-  },
-] as const;
 
 const WEBMCP_WORKFLOWS = [
   {
@@ -653,13 +607,14 @@ export function AgentActivityPanel() {
           >
             <Browser size={20} weight="duotone" aria-hidden="true" />
             <div>
-              <b>Connect once, then run Build in one prompt</b>
+              <b>Connect once. Then ask naturally.</b>
               <small>
                 Open LabSpace inside this same ChatGPT or Codex desktop conversation, use Sol or
                 Terra, then send the connection prompt below. Wait for a successful
                 labspace_get_context result before starting. Arm Fast Draft + copy is one explicit
                 human action; creation, furnishing, and the final read-only audit then continue
-                without another LabSpace approval.
+                without another LabSpace approval. The short requests below are exactly what gets
+                copied—no hidden script.
               </small>
               {connectionPromptControls}
             </div>
@@ -747,8 +702,8 @@ export function AgentActivityPanel() {
                       }
                       title={
                         needsFastDraft
-                          ? "Explicitly authorize bounded Fast Draft and copy the shorter voice-ready build prompt"
-                          : "Copy the shorter voice-ready prompt and close the panel"
+                          ? "Explicitly authorize bounded Fast Draft and copy the spoken version of this request"
+                          : "Copy the spoken version of this request and close the panel"
                       }
                     >
                       {copiedWorkflow === `${mission.id}-voice` ? (

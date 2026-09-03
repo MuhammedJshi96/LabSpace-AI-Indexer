@@ -70,6 +70,11 @@ ordinary MCP connection lists or downloaded website code are not a live WebMCP c
 
 The Inspector opens on a connected three-part judge demonstration rather than a tool wall:
 
+Once connected, ask naturally. The mission cards copy short, everyday requests—not a hidden
+technical script. They keep the room details, stock facts and in-app approval steps; tool descriptions
+carry the planning and handoff guidance. You can edit a request or say it aloud. Connect again when
+starting a new conversation; shortening a prompt does not bypass any approval.
+
 1. Run **Build** to create and audit the 38 m² Researcher Office **R-003** from natural language.
 2. Run **Stock** to stage two enzyme records with exact quantities/expiry dates for human approval.
 3. Run **Find the work** to ground the DPPH checklist and check chloroform availability separately.

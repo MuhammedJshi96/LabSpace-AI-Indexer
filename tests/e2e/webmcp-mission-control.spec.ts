@@ -177,18 +177,40 @@ test("presents the three-part judge demonstration and exports bounded session pr
   await expect(inspector).toBeHidden();
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-    .toContain("create a new room named Researcher Office, code R-003");
+    .toContain("build Researcher Office, R-003");
   const copiedPrompt = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copiedPrompt).toContain(copiedConnection);
-  expect(copiedPrompt).toContain(
-    "laboratory actions must use labspace_* tools, not clicks, drags, or form edits",
-  );
-  expect(copiedPrompt).toContain("do not fall back to UI automation");
-  expect(copiedPrompt).toContain("one uninterrupted Fast Draft build");
-  expect(copiedPrompt).toContain("without asking me to say continue");
+  expect(copiedPrompt).not.toContain(copiedConnection);
+  expect(copiedPrompt).toContain("Use the connected LabSpace WebMCP tools only.");
+  expect(copiedPrompt).toContain("Build, furnish and check the layout in one go");
+  expect(copiedPrompt).toContain("pause only if LabSpace asks for my approval");
+  expect(copiedPrompt.split(/\s+/).length).toBeLessThanOrEqual(110);
+  expect(copiedPrompt).not.toMatch(/labspace_|requiresHumanApproval|autoCommitted/);
   await page.getByRole("button", { name: /Open WebMCP Inspector/i }).click();
   await expect(inspector.getByRole("radio", { name: /Fast Draft/i })).toHaveAttribute(
     "aria-checked",
     "true",
   );
+  // The visible mission is the actual clipboard payload, not a short label
+  // concealing the old technical script. Check every typed and spoken variant.
+  for (const title of [
+    "Create R-003 from one request",
+    "Stage two enzyme records",
+    "Ground a DPPH collection",
+  ]) {
+    const card = inspector.locator("article.webmcp-signature-card").filter({ hasText: title });
+    await expect(card.locator(":scope > p")).toHaveCSS("display", "block");
+    await expect(card.locator(":scope > p")).toHaveCSS("overflow", "visible");
+    const visibleRequest = await card.locator(":scope > p").innerText();
+    await card.getByRole("button", { name: "Copy + show workspace", exact: true }).click();
+    await expect(inspector).toBeHidden();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(visibleRequest);
+    await webMcpButton.click();
+    await card.getByRole("button", { name: "Voice-ready", exact: true }).click();
+    await expect(inspector).toBeHidden();
+    const voice = await page.evaluate(() => navigator.clipboard.readText());
+    expect(voice.split(/\s+/).length).toBeLessThanOrEqual(110);
+    expect(voice).not.toMatch(/labspace_|requiresHumanApproval|autoCommitted/);
+    expect(voice).toContain("my approval");
+    await webMcpButton.click();
+  }
 });

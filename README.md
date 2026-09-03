@@ -21,6 +21,12 @@
 
 **Live judge demo:** [labspace-agent-twin.onrender.com](https://labspace-agent-twin.onrender.com) — the privacy-checked public workspace contains only laboratory **`LAB-D-00`** with authored rooms **R-001** and **R-002**. **R-003 is deliberately absent** and is created live during judging.
 
+### A challenge to judges and testers
+
+The three demonstration missions are the starting line, not the test boundary. After **Build**, **Stock**, and **Find the work**, open **Tools** and challenge LabSpace Atlas with the capabilities that do not appear in the recorded demo: plan an annex, audit another room, validate a move before staging it, test an opening resize, search across both rooms, inspect nested storage, or step forward and backward through a collection. Try an unprepared laboratory request, then check the answer against the visible 2D/3D workspace and exported evidence. The system is designed to be examined, corrected, cancelled, and tried again—not merely watched.
+
+**Tablet-tested:** the public build was exercised with touch-enabled iPad Pro emulation and at representative portrait and landscape tablet viewports. The Layout Editor, WebMCP Inspector, Inventory Studio, Spatial Index search and exact-location evidence, and Asset Studio remained reachable and functional without console errors. Landscape is recommended for the full CAD-style 2D/3D workspace so its evidence panels retain comfortable working space.
+
 ### Submission evidence map
 
 | Challenge requirement       | Repository evidence                                                                                                                                                                                            |
@@ -30,7 +36,7 @@
 | Better human-agent UX       | Natural-language/voice-ready missions, visible exact-location evidence, Reviewed-by-default mutations, and bounded Fast Draft                                                                                  |
 | Public source + licence     | Complete source, required runtime assets, clean-clone instructions, standard [Apache License 2.0](LICENSE), separate [asset/media terms](LICENSE-ASSETS.md), and [third-party notices](THIRD_PARTY_NOTICES.md) |
 | Existing-project boundary   | Annotated tag `pre-webmcp-2026-08-27` and dated [challenge evidence](docs/webmcp/CHALLENGE_EVIDENCE.md)                                                                                                        |
-| Testing and reproducibility | [`npm run test:e2e:submission`](package.json), full release check, public-persistence suite, and the [final rehearsal spec](tests/e2e/submission-rehearsal.spec.ts)                                            |
+| Testing and reproducibility | [`npm run test:e2e:submission`](package.json), full release check, public-persistence suite, [final rehearsal spec](tests/e2e/submission-rehearsal.spec.ts), and touch-enabled tablet verification             |
 
 This packaging follows the official [WebMCP Challenge page](https://openai.com/webmcp-challenge/), [Devpost requirements](https://webmcp.devpost.com/), [resources](https://webmcp.devpost.com/resources), and [rules](https://webmcp.devpost.com/rules).
 

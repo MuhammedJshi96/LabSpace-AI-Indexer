@@ -46,6 +46,20 @@ The browser suites exercise the same interfaces a visitor uses:
 - the final public fixture contains only `LAB-D-00`, R-001, and R-002, with R-003
   intentionally absent until it is created during a live demonstration.
 
+## Tablet verification
+
+The deployed public build was exercised with a touch-enabled iPad Pro browser
+profile and at 1024 × 1366 and 1366 × 1024 tablet-class viewports. The checks
+covered the Layout Editor, WebMCP Inspector, Inventory Studio, Spatial Index and
+Asset Studio. They also entered a DPPH query through the touch profile and opened
+the resulting exact-location record. The tested routes produced no console errors.
+
+At 1366 × 1024, all four primary workspaces fit without document-level horizontal
+overflow. The denser CAD and evidence layouts remain usable in portrait, but
+landscape is the recommended tablet orientation; this keeps the 2D/3D canvas,
+navigation and evidence panels comfortably readable without pretending a
+professional planning workspace is a phone-sized interface.
+
 ## Submission screenshots
 
 Current product captures live in `docs/screenshots/submission-*.png`. Regenerate

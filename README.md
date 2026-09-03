@@ -305,7 +305,7 @@ const tools = await document.modelContext.getTools();
 tools.map((tool) => tool.name);
 ```
 
-The result should contain exactly the twenty-four tools listed above. Full commands and the deterministic demo workflows are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md).
+The result should contain exactly the twenty-four tools listed above. Reproducible tool-contract checks and development examples are in [docs/webmcp/LOCAL_TESTING.md](docs/webmcp/LOCAL_TESTING.md); the private presentation script is intentionally not published.
 
 The repository includes [`render.yaml`](render.yaml) for the Render deployment. It builds with `npm ci --include=dev && npm run build`, starts Express, and checks `/api/health`. The public app automatically saves its full project and named room versions in **IndexedDB in the current browser**. “Saved in this browser” confirms a completed disk transaction. Refresh, server-session expiry, Render restart and redeployment do not replace that saved project. First-time visitors adopt their existing isolated server session (or the approved starter snapshot); other browsers remain independent. Older tabs cannot silently overwrite newer saves. This is same-browser/device storage, not account or cloud sync: export JSON before clearing site data, leaving private browsing, or changing computers. Local SQLite and the automated-test seed remain separate. See [docs/webmcp/DEPLOYMENT.md](docs/webmcp/DEPLOYMENT.md).
 

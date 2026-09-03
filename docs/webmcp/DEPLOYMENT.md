@@ -11,6 +11,7 @@ The Blueprint creates one Node web service from the single release branch, `main
 - build: `npm ci --include=dev && npm run build` (the TypeScript build uses
   development-only type packages even though the deployed runtime is production)
 - start: `npm run start`
+- compute: `1c-2g` (1 CPU / 2 GB RAM), matching the current dashboard service
 - health check: `/api/health`
 - public judge data: durable same-browser IndexedDB, with isolated server-session bootstrap
 - no runtime model API key or application secret required

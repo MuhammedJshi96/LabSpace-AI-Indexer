@@ -2,7 +2,7 @@ services:
   - type: web
     name: labspace-agent-twin
     runtime: node
-    plan: free
+    plan: 1c-2g
     branch: main
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start
